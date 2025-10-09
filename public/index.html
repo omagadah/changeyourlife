@@ -113,18 +113,24 @@
         VANTA.BIRDS({
           el: "#vanta-birds-bg",
           // ... options de Vanta ...
-        })
+        });
     </script>
     
     <script src="//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js" async></script>
 
     <script>
         document.addEventListener('tidioChat-ready', () => {
+          // On cache la bulle de chat par défaut
           tidioChatApi.hide();
+
+          // On cherche notre bouton "URGENCE"
           const urgenceButton = document.getElementById('urgence-btn');
+
           if (urgenceButton) {
+            // On ajoute un écouteur de clic sur notre bouton
             urgenceButton.addEventListener('click', (event) => {
               event.preventDefault();
+              // A chaque clic, on alterne : si c'est ouvert, on ferme. Si c'est fermé, on ouvre.
               tidioChatApi.isChatOpen() ? tidioChatApi.close() : tidioChatApi.open();
             });
           }
