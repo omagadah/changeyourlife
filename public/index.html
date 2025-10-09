@@ -105,37 +105,34 @@
         </main>
     </div>
 
-    <a href="javascript:void(0);" id="urgence-btn">URGENCE</a>
+    <a href="#" id="urgence-btn">URGENCE</a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
+        // NOUVELLE CONFIGURATION VANTA.JS
         VANTA.BIRDS({
           el: "#vanta-birds-bg",
-          // ... options de Vanta ...
-        });
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          scale: 1.00,
+          scaleMobile: 1.00,
+          backgroundColor: 0x7192f,
+          backgroundAlpha: 1.00,
+          color1: 0x0,
+          color2: 0xd1ff,
+          colorMode: "varianceGradient",
+          quantity: 5.00,
+          birdSize: 1.00,
+          wingSpan: 30.00,
+          speedLimit: 5.00,
+          separation: 20.00,
+          alignment: 20.00,
+          cohesion: 20.00
+        })
     </script>
-    
-    <script src="//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js" async></script>
-
-    <script>
-        document.addEventListener('tidioChat-ready', () => {
-          // On cache la bulle de chat par défaut
-          tidioChatApi.hide();
-
-          // On cherche notre bouton "URGENCE"
-          const urgenceButton = document.getElementById('urgence-btn');
-
-          if (urgenceButton) {
-            // On ajoute un écouteur de clic sur notre bouton
-            urgenceButton.addEventListener('click', (event) => {
-              event.preventDefault();
-              // A chaque clic, on alterne : si c'est ouvert, on ferme. Si c'est fermé, on ouvre.
-              tidioChatApi.isChatOpen() ? tidioChatApi.close() : tidioChatApi.open();
-            });
-          }
-        });
-    </script>
-
 </body>
 </html>
