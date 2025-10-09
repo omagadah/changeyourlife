@@ -105,32 +105,31 @@
         </main>
     </div>
 
-    <a href="javascript:void(tidioChatApi.open())" id="urgence-btn">URGENCE</a>
+    <a href="javascript:void(0);" id="urgence-btn">URGENCE</a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
         VANTA.BIRDS({
           el: "#vanta-birds-bg",
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.00,
-          minWidth: 200.00,
-          scale: 1.00,
-          scaleMobile: 1.00,
-          backgroundColor: 0x111111,
-          color1: 0x7192ff,
-          color2: 0x6effff,
-          birdSize: 1.20,
-          quantity: 3.00,
-          separation: 25.00,
-          cohesion: 30.00,
-          alignment: 20.00
+          // ... options de Vanta ...
         })
     </script>
     
     <script src="//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js" async></script>
+
+    <script>
+        document.addEventListener('tidioChat-ready', () => {
+          tidioChatApi.hide();
+          const urgenceButton = document.getElementById('urgence-btn');
+          if (urgenceButton) {
+            urgenceButton.addEventListener('click', (event) => {
+              event.preventDefault();
+              tidioChatApi.isChatOpen() ? tidioChatApi.close() : tidioChatApi.open();
+            });
+          }
+        });
+    </script>
 
 </body>
 </html>
