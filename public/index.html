@@ -26,6 +26,7 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             height: 100%; text-align: center; padding: 2rem; z-index: 1;
         }
+        
         .logo {
             width: 150px; 
             margin-bottom: 1.5rem;
@@ -34,6 +35,29 @@
         .logo:hover {
             transform: scale(1.1);
         }
+        
+        /* --- STYLES POUR LE LOGO ADAPTATIF --- */
+        .logo .logo-main-circle {
+            stroke: #3399ff;
+            stroke-width: 8;
+            fill: black; /* Fond noir par défaut (pour le mode sombre) */
+        }
+        .logo .logo-details {
+            stroke: white; /* Traits blancs par défaut */
+        }
+
+        /* Si le système est en mode clair, on inverse les couleurs */
+        @media (prefers-color-scheme: light) {
+            .logo .logo-main-circle {
+                fill: white; /* Le fond du cercle devient blanc */
+                stroke: #0070f3; /* Le contour reste bleu */
+            }
+            .logo .logo-details {
+                stroke: black; /* Les détails deviennent noirs pour être visibles */
+            }
+        }
+
+
         header h1 { font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 700; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
         header p { font-size: 1.2rem; color: #ddd; margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
         main p { margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
@@ -72,25 +96,29 @@
     <div id="vanta-birds-bg"></div>
 
     <div class="content">
+        
         <svg class="logo" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
           <g stroke-width="3">
-            <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
-            <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-            <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-            <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-            <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-            <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-            <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
-            <g fill="none" stroke="white" stroke-linecap="round">
-              <circle cx="145" cy="30" r="3"/>
-              <circle cx="155" cy="30" r="3"/>
-              <line x1="145" y1="30" x2="155" y2="30"/>
-              <path d="M 150 52 l 6 10 h -12 z" />
-              <circle cx="150" cy="85" r="3"/>
-              <circle cx="144" cy="95" r="3"/>
-              <circle cx="156" cy="95" r="3"/>
-              <line x1="150" y1="85" x2="144" y2="95"/>
-              <line x1="150" y1="85" x2="156" y2="95"/>
+            <circle class="logo-main-circle" cx="60" cy="60" r="40"/>
+            
+            <g class="logo-details">
+              <line x1="100" y1="60" x2="130" y2="30"/>
+              <line x1="100" y1="60" x2="130" y2="60"/>
+              <line x1="100" y1="60" x2="130" y2="90"/>
+              <circle cx="150" cy="30" r="18" fill="none"/>
+              <circle cx="150" cy="60" r="18" fill="none"/>
+              <circle cx="150" cy="90" r="18" fill="none"/>
+              <g fill="none" stroke-linecap="round">
+                <circle cx="145" cy="30" r="3"/>
+                <circle cx="155" cy="30" r="3"/>
+                <line x1="145" y1="30" x2="155" y2="30"/>
+                <path d="M 150 52 l 6 10 h -12 z" />
+                <circle cx="150" cy="85" r="3"/>
+                <circle cx="144" cy="95" r="3"/>
+                <circle cx="156" cy="95" r="3"/>
+                <line x1="150" y1="85" x2="144" y2="95"/>
+                <line x1="150" y1="85" x2="156" y2="95"/>
+              </g>
             </g>
           </g>
         </svg>
@@ -110,27 +138,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
-        // CONFIGURATION VANTA.JS MISE À JOUR
         VANTA.BIRDS({
-          el: "#vanta-birds-bg",
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.00,
-          minWidth: 200.00,
-          scale: 1.00,
-          scaleMobile: 1.00,
-          backgroundColor: 0x0, // Fond noir
-          color1: 0x7192ff,      // Votre couleur bleue
-          color2: 0xd1ff,        // Votre couleur cyan/violet
-          colorMode: "varianceGradient",
-          quantity: 5.00,
-          birdSize: 1.00,
-          wingSpan: 30.00,
-          speedLimit: 5.00,
-          separation: 20.00,
-          alignment: 20.00,
-          cohesion: 20.00
+          el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, minHeight: 200.00,
+          minWidth: 200.00, scale: 1.00, scaleMobile: 1.00, backgroundColor: 0x111111, color1: 0x7192ff,
+          color2: 0x6effff, birdSize: 1.20, quantity: 3.00, separation: 25.00, cohesion: 30.00, alignment: 20.00
         })
     </script>
 </body>
