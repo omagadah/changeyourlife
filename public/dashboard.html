@@ -9,13 +9,20 @@
         html, body {
             width: 100%; height: 100%; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000;
+            background-color: #222; /* Fond de secours gris */
             color: #e0e0e0;
         }
-        #vanta-bg {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; z-index: -1;
+
+        /* CORRECTION : Le style pour le fond d'écran est maintenant ici */
+        #vanta-birds-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
         }
+
         .header {
             position: absolute;
             top: 20px;
@@ -23,6 +30,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
+            z-index: 10;
         }
         .user-panel-trigger {
             width: 40px;
@@ -35,6 +43,10 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+        .user-panel-trigger:hover {
+            transform: scale(1.1);
         }
         .container {
             display: flex;
@@ -76,8 +88,11 @@
             el: "#vanta-birds-bg",
             mouseControls: true, touchControls: true, gyroControls: false,
             minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00,
-            backgroundColor: 0x0, color1: 0x7192ff, color2: 0xd1ff,
-            colorMode: "varianceGradient", quantity: 5.00
+            backgroundColor: 0x222222, // NOUVELLE COULEUR : Gris foncé au lieu de noir
+            color1: 0x7192ff,
+            color2: 0x81d1ff, // Couleur légèrement ajustée pour mieux ressortir sur le gris
+            colorMode: "varianceGradient",
+            quantity: 4.00 // Un peu moins d'oiseaux pour une ambiance plus "application"
         });
     </script>
 
