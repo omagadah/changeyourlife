@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/app",
-      "destination": "/public/dashboard.html"
+      "destination": "/dashboard.html"
     },
     {
       "source": "/login",
-      "destination": "/public/inscription.html"
+      "destination": "/inscription.html"
     }
   ]
 }
