@@ -17,6 +17,32 @@
         #vanta-birds-bg { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
+        
+        /* --- NOUVEAU STYLE POUR LA NOTIFICATION --- */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translate(-50%, -100px); /* Position initiale hors de l'écran */
+            background-color: #28a745; /* Vert fluo */
+            color: white;
+            padding: 16px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            font-size: 1.1rem;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.4s ease-out, opacity 0.4s ease-out, visibility 0.4s;
+        }
+        .notification.show {
+            transform: translate(-50%, 0); /* Position finale visible */
+            opacity: 1;
+            visibility: visible;
+        }
+        /* --- FIN DU NOUVEAU STYLE --- */
+
         .auth-container {
             background: rgba(25, 25, 25, 0.75);
             padding: 2.5rem;
@@ -30,107 +56,48 @@
             text-align: center;
             z-index: 1;
         }
-        .auth-container h1 {
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-        .input-group {
-            margin-bottom: 1.2rem;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: #ccc;
-        }
+        .auth-container h1 { margin-bottom: 1.5rem; font-weight: 600; }
+        .input-group { margin-bottom: 1.2rem; text-align: left; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #ccc; }
         .input-group input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: #fff;
-            font-size: 1rem;
+            width: 100%; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid #555;
+            background-color: #333; color: #fff; font-size: 1rem;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
-        .input-group input:focus {
-            outline: none;
-            border-color: #0070f3;
-            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4);
-        }
+        .input-group input:focus { outline: none; border-color: #0070f3; box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4); }
         .submit-button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            background-color: #0070f3;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
+            width: 100%; padding: 1rem; border: none; border-radius: 8px; background-color: #0070f3;
+            color: white; font-weight: bold; font-size: 1rem; cursor: pointer;
             transition: transform 0.2s ease, background-color 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
-            margin-top: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4); margin-top: 0.5rem;
         }
-        .submit-button:hover {
-            background-color: #0056b3;
-            transform: scale(1.02);
-        }
+        .submit-button:hover { background-color: #0056b3; transform: scale(1.02); }
         .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #888;
-            margin: 1.5rem 0;
-            font-size: 0.9rem;
+            display: flex; align-items: center; text-align: center; color: #888;
+            margin: 1.5rem 0; font-size: 0.9rem;
         }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #555;
-        }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #555; }
         .divider:not(:empty)::before { margin-right: .5em; }
         .divider:not(:empty)::after { margin-left: .5em; }
         .social-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
-            border-radius: 8px; border: 1px solid #555; background-color: #222;
-            color: #fff; font-size: 1rem; font-weight: 500;
-            cursor: pointer; transition: background-color 0.2s;
+            display: flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem;
+            margin-bottom: 1rem; border-radius: 8px; border: 1px solid #555; background-color: #222;
+            color: #fff; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s;
         }
         .social-btn:hover { background-color: #333; }
         .social-btn svg { width: 24px; height: 24px; margin-right: 12px; }
-        #error-message {
-            color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem;
-            min-height: 1.2em;
-        }
-        .extra-links, .auth-toggle {
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-        }
-        .extra-links {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .extra-links a, .auth-toggle a {
-            color: #00aaff;
-            text-decoration: none;
-            font-weight: 600;
-        }
+        #error-message { color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; }
+        .extra-links, .auth-toggle { margin-top: 1.5rem; font-size: 0.9rem; }
+        .extra-links { display: flex; justify-content: space-between; align-items: center; }
+        .extra-links a, .auth-toggle a { color: #00aaff; text-decoration: none; font-weight: 600; }
         .extra-links a:hover, .auth-toggle a:hover { text-decoration: underline; }
-        .back-link {
-            display: inline-block;
-            margin-top: 1rem;
-            color: #aaa;
-            font-size: 0.9rem;
-            text-decoration: none;
-        }
+        .back-link { display: inline-block; margin-top: 1rem; color: #aaa; font-size: 0.9rem; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
+    <div id="notification" class="notification"></div>
+
     <div id="vanta-birds-bg"></div>
     <div class="auth-container">
         <h1 id="auth-title">Connexion</h1>
@@ -172,12 +139,9 @@
     </script>
 
     <script type="module">
-        // Importe uniquement les fonctions nécessaires de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { 
             getAuth, 
-            initializeAuth,
-            browserLocalPersistence,
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
             signInWithPopup, 
@@ -186,7 +150,6 @@
             sendPasswordResetEmail 
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         
-        // Ta configuration Firebase (pense à la sécuriser avec des règles de sécurité et des domaines autorisés)
         const firebaseConfig = {
             apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
             authDomain: "changeyourlife-cc210.firebaseapp.com",
@@ -197,9 +160,7 @@
             measurementId: "G-0MNVL2VVBY"
         };
 
-        // Initialisation de Firebase
         const app = initializeApp(firebaseConfig);
-        // Utilise getAuth() qui est la méthode recommandée
         const auth = getAuth(app);
 
         // --- Références aux éléments du DOM ---
@@ -214,42 +175,39 @@
         const submitButton = document.getElementById('submit-button');
         const authToggleText = document.getElementById('auth-toggle-text');
         const authToggleLink = document.getElementById('auth-toggle-link');
+        const notification = document.getElementById('notification'); // NOUVELLE référence
         
-        // Variable pour savoir si on est en mode Connexion ou Inscription
         let isLoginMode = true;
 
         // --- Fonctions utilitaires ---
         const clearError = () => errorMessage.textContent = '';
         const displayError = (message) => errorMessage.textContent = message;
 
-        // Fonction pour mettre à jour l'interface (Connexion / Inscription)
+        // NOUVELLE FONCTION pour afficher la notification
+        function showNotification(message, duration = 3000) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        // Met à jour la vue (Connexion / Inscription)
         function updateAuthView() {
             clearError();
             if (isLoginMode) {
-                authTitle.textContent = 'Connexion';
-                submitButton.textContent = 'Se connecter';
-                authToggleText.textContent = 'Pas encore de compte ?';
-                authToggleLink.textContent = 'Créer un compte';
-                forgotPasswordLink.style.display = 'inline';
-                passwordInput.autocomplete = 'current-password';
+                authTitle.textContent = 'Connexion'; submitButton.textContent = 'Se connecter';
+                authToggleText.textContent = 'Pas encore de compte ?'; authToggleLink.textContent = 'Créer un compte';
+                forgotPasswordLink.style.display = 'inline'; passwordInput.autocomplete = 'current-password';
             } else {
-                authTitle.textContent = 'Créer un compte';
-                submitButton.textContent = 'S\'inscrire';
-                authToggleText.textContent = 'Déjà un compte ?';
-                authToggleLink.textContent = 'Se connecter';
-                forgotPasswordLink.style.display = 'none';
-                passwordInput.autocomplete = 'new-password';
+                authTitle.textContent = 'Créer un compte'; submitButton.textContent = 'S\'inscrire';
+                authToggleText.textContent = 'Déjà un compte ?'; authToggleLink.textContent = 'Se connecter';
+                forgotPasswordLink.style.display = 'none'; passwordInput.autocomplete = 'new-password';
             }
         }
 
         // --- Gestionnaires d'événements ---
-
-        // Basculer entre Connexion et Inscription
-        authToggleLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            isLoginMode = !isLoginMode;
-            updateAuthView();
-        });
+        authToggleLink.addEventListener('click', (e) => { e.preventDefault(); isLoginMode = !isLoginMode; updateAuthView(); });
 
         // Soumission du formulaire Email/Mot de passe
         authForm.addEventListener('submit', (e) => {
@@ -257,84 +215,67 @@
             clearError();
             const email = emailInput.value;
             const password = passwordInput.value;
+            const authFunction = isLoginMode ? signInWithEmailAndPassword : createUserWithEmailAndPassword;
 
-            if (isLoginMode) {
-                // Connexion
-                signInWithEmailAndPassword(auth, email, password)
-                    .then(userCredential => {
-                        console.log('Utilisateur connecté:', userCredential.user);
-                        window.location.href = '/'; // Redirection vers l'accueil
-                    })
-                    .catch(error => {
-                        console.error("Erreur de connexion:", error.code);
-                        displayError("Email ou mot de passe incorrect.");
-                    });
-            } else {
-                // Inscription
-                createUserWithEmailAndPassword(auth, email, password)
-                    .then(userCredential => {
-                        console.log('Utilisateur créé:', userCredential.user);
-                        window.location.href = '/'; // Redirection vers l'accueil
-                    })
-                    .catch(error => {
-                        console.error("Erreur d'inscription:", error.code);
-                        if (error.code === 'auth/email-already-in-use') {
-                            displayError('Cette adresse e-mail est déjà utilisée.');
-                        } else if (error.code === 'auth/weak-password') {
-                            displayError('Le mot de passe doit contenir au moins 6 caractères.');
-                        } else {
-                            displayError('Une erreur est survenue. Veuillez réessayer.');
-                        }
-                    });
-            }
+            authFunction(auth, email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    console.log('Succès:', user);
+                    // AFFICHE LA NOTIFICATION PUIS REDIRIGE
+                    showNotification(`Félicitations ! Bienvenue, ${user.email}.`);
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 2000); // Laisse 2s pour lire la notif
+                })
+                .catch(error => {
+                    console.error("Erreur:", error.code);
+                    if (error.code === 'auth/email-already-in-use') displayError('Cette adresse e-mail est déjà utilisée.');
+                    else if (error.code === 'auth/weak-password') displayError('Le mot de passe doit contenir au moins 6 caractères.');
+                    else displayError("Email ou mot de passe incorrect.");
+                });
         });
 
-        // Instanciation des fournisseurs d'authentification sociale
+        // Instanciation des fournisseurs
         const googleProvider = new GoogleAuthProvider();
         const githubProvider = new GithubAuthProvider();
 
-        // Fonction générique pour la connexion via Pop-up (Google, GitHub, etc.)
         const handleSocialSignIn = (provider) => {
             clearError();
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    console.log("Connexion sociale réussie:", result.user);
-                    window.location.href = '/'; // Redirection
+                    const user = result.user;
+                    console.log("Connexion sociale réussie:", user);
+                    // AFFICHE LA NOTIFICATION PUIS REDIRIGE
+                    showNotification(`Félicitations ! Bienvenue, ${user.displayName || user.email}.`);
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 2000); // Laisse 2s pour lire la notif
                 })
                 .catch((error) => {
-                    console.error("--- ERREUR DE CONNEXION SOCIALE ---");
-                    console.error("Code:", error.code);
-                    console.error("Message:", error.message);
-                    // Gère le cas où un utilisateur avec le même email existe déjà
+                    console.error("Erreur de connexion sociale:", error.code);
                     if (error.code === 'auth/account-exists-with-different-credential') {
-                        displayError('Un compte existe déjà avec cet e-mail. Essayez de vous connecter avec une autre méthode.');
+                        displayError('Un compte existe déjà avec cet e-mail via une autre méthode.');
                     } else {
                         displayError("La connexion a échoué. Veuillez réessayer.");
                     }
                 });
         };
-
-        // Attache les événements aux boutons
         googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider));
         githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider));
         
-        // Mot de passe oublié
         forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
             clearError();
             const email = prompt("Veuillez entrer votre adresse e-mail pour réinitialiser le mot de passe :");
             if (email) {
                 sendPasswordResetEmail(auth, email)
-                    .then(() => {
-                        alert("Un e-mail de réinitialisation a été envoyé à " + email);
-                    })
+                    .then(() => alert("Un e-mail de réinitialisation a été envoyé à " + email))
                     .catch((error) => {
                         console.error("Erreur d'envoi d'e-mail:", error);
                         displayError("Impossible d'envoyer l'e-mail. Vérifiez l'adresse.");
                     });
             }
         });
-
     </script>
 </body>
 </html>
