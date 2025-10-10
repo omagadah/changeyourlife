@@ -163,7 +163,7 @@
             <span id="auth-toggle-text">Pas encore de compte ?</span>
             <a href="#" id="auth-toggle-link">Créer un compte</a>
         </p>
-        <a href="index.html" class="back-link">Retour à l'accueil</a>
+        <a href="/" class="back-link">Retour à l'accueil</a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -174,7 +174,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, initializeAuth, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
@@ -187,9 +187,10 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const auth = initializeAuth(app, {
+            persistence: browserLocalPersistence
+        });
         
-        // --- DOM Elements ---
         const authForm = document.getElementById('auth-form');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -204,7 +205,6 @@
         
         let isLoginMode = true;
 
-        // --- UI Update Function ---
         function updateAuthView() {
             clearError();
             if (isLoginMode) {
@@ -222,7 +222,6 @@
             }
         }
 
-        // --- Event Listeners ---
         authToggleLink.addEventListener('click', (e) => {
             e.preventDefault();
             isLoginMode = !isLoginMode;
@@ -232,7 +231,6 @@
         const clearError = () => errorMessage.textContent = '';
         const displayError = (message) => errorMessage.textContent = message;
         
-        // --- Email/Password Auth ---
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
             clearError();
@@ -240,12 +238,11 @@
             const password = passwordInput.value;
 
             if (isLoginMode) {
-                // --- Login Logic ---
                 signInWithEmailAndPassword(auth, email, password)
                     .then(userCredential => {
                         console.log('Utilisateur connecté:', userCredential.user);
                         alert('Connexion réussie !');
-                        // window.location.href = '/dashboard.html';
+                        window.location.href = '/';
                     })
                     .catch(error => {
                         let msg = "Email ou mot de passe incorrect.";
@@ -253,12 +250,11 @@
                         displayError(msg);
                     });
             } else {
-                // --- Signup Logic ---
                 createUserWithEmailAndPassword(auth, email, password)
                     .then(userCredential => {
                         console.log('Utilisateur créé:', userCredential.user);
                         alert('Inscription réussie ! Vous êtes maintenant connecté.');
-                        // window.location.href = '/dashboard.html';
+                        window.location.href = '/';
                     })
                     .catch(error => {
                         let msg = 'Une erreur est survenue. Veuillez réessayer.';
@@ -270,7 +266,6 @@
             }
         });
 
-        // --- Social Sign-in (Providers) ---
         const googleProvider = new GoogleAuthProvider();
         const githubProvider = new GithubAuthProvider();
         const handleSocialSignIn = (provider) => {
@@ -279,18 +274,24 @@
                 .then(result => {
                     console.log("Utilisateur connecté via le fournisseur:", result.user);
                     alert("Connexion réussie ! Bienvenue, " + (result.user.displayName || 'Utilisateur'));
-                    // window.location.href = '/dashboard.html';
+                    window.location.href = '/';
                 })
                 .catch(error => {
-                    console.error("Erreur de connexion sociale:", error);
-                    displayError("La connexion a échoué. Veuillez réessayer.");
+                    // --- NOUVEAUX JOURNAUX DE DÉBOGAGE ---
+                    console.error("--- ERREUR DE CONNEXION SOCIALE ---");
+                    console.error("Code d'erreur:", error.code);
+                    console.error("Message d'erreur:", error.message);
+                    if (error.customData) {
+                       console.error("Email du credential:", error.customData.email);
+                    }
+                    console.error("Credential complet:", error.credential);
+                    displayError("La connexion a échoué. Ouvrez la console (F12) pour les détails.");
                 });
         };
 
         googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider));
         githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider));
         
-        // --- Forgot Password ---
         forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
             clearError();
