@@ -23,17 +23,11 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
         .top-right-logo {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 75px; /* Taille réduite de moitié */
-            z-index: 100;
-            transition: transform 0.3s ease;
-            cursor: pointer;
+            position: fixed; top: 20px; right: 20px;
+            width: 75px; z-index: 100;
+            transition: transform 0.3s ease; cursor: pointer;
         }
-        .top-right-logo:hover {
-            transform: scale(1.1);
-        }
+        .top-right-logo:hover { transform: scale(1.1); }
         .content {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             height: 100%; text-align: center; padding: 2rem; z-index: 1;
@@ -76,42 +70,35 @@
 <body>
     <div id="vanta-birds-bg"></div>
 
-    <!-- Logo déplacé ici -->
-    <a href="inscription.html" class="top-right-logo">
+    <a href="/public/inscription.html" id="logo-link" class="top-right-logo">
         <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-          <g stroke-width="3">
-            <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
-            <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-            <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-            <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-            <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-            <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-            <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
-            <g fill="none" stroke="white" stroke-linecap="round">
-              <circle cx="145" cy="30" r="3"/>
-              <circle cx="155" cy="30" r="3"/>
-              <line x1="145" y1="30" x2="155" y2="30"/>
-              <path d="M 150 52 l 6 10 h -12 z" />
-              <circle cx="150" cy="85" r="3"/>
-              <circle cx="144" cy="95" r="3"/>
-              <circle cx="156" cy="95" r="3"/>
-              <line x1="150" y1="85" x2="144" y2="95"/>
-              <line x1="150" y1="85" x2="156" y2="95"/>
+            <g stroke-width="3">
+                <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+                <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+                <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+                <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+                <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+                <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+                <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
+                <g fill="none" stroke="white" stroke-linecap="round">
+                    <circle cx="145" cy="30" r="3"/> <circle cx="155" cy="30" r="3"/>
+                    <line x1="145" y1="30" x2="155" y2="30"/>
+                    <path d="M 150 52 l 6 10 h -12 z" />
+                    <circle cx="150" cy="85" r="3"/> <circle cx="144" cy="95" r="3"/> <circle cx="156" cy="95" r="3"/>
+                    <line x1="150" y1="85" x2="144" y2="95"/> <line x1="150" y1="85" x2="156" y2="95"/>
+                </g>
             </g>
-          </g>
         </svg>
     </a>
 
     <div class="content">
-        <!-- Le logo a été retiré d'ici -->
         <header>
             <h1>ChangeYourLife.ai</h1>
             <p>Une base saine pour construire de grandes choses.</p>
         </header>
         <main>
             <p>Prochaines étapes : formulaire d'inscription, un forum, des outils performant ia gratuits</p>
-            <!-- Lien mis à jour -->
-            <a href="inscription.html" class="cta-button">Commencer l'aventure</a>
+            <a href="/public/inscription.html" id="cta-button" class="cta-button">Commencer l'aventure</a>
         </main>
     </div>
 
@@ -121,29 +108,51 @@
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
         VANTA.BIRDS({
-          el: "#vanta-birds-bg",
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.00,
-          minWidth: 200.00,
-          scale: 1.00,
-          scaleMobile: 1.00,
-          backgroundColor: 0x0,
-          color1: 0x7192ff,
-          color2: 0xd1ff,
-          colorMode: "varianceGradient",
-          quantity: 5.00,
-          birdSize: 1.00,
-          wingSpan: 30.00,
-          speedLimit: 5.00,
-          separation: 20.00,
-          alignment: 20.00,
-          cohesion: 20.00
+            el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false,
+            minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00,
+            backgroundColor: 0x0, color1: 0x7192ff, color2: 0xd1ff,
+            colorMode: "varianceGradient", quantity: 5.00, birdSize: 1.00,
+            wingSpan: 30.00, speedLimit: 5.00, separation: 20.00,
+            alignment: 20.00, cohesion: 20.00
         })
     </script>
-    
     <script src="//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js" async></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
+            authDomain: "changeyourlife-cc210.firebaseapp.com",
+            projectId: "changeyourlife-cc210",
+            storageBucket: "changeyourlife-cc210.appspot.com",
+            messagingSenderId: "801720080785",
+            appId: "1:801720080785:web:1a74aadba5755ea26c2230"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // On cible les DEUX liens à rendre dynamiques
+        const logoLink = document.getElementById('logo-link');
+        const ctaButton = document.getElementById('cta-button');
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Utilisateur connecté : on pointe tout vers le dashboard
+                console.log("Utilisateur connecté. Mise à jour des liens vers le dashboard.");
+                logoLink.href = '/public/dashboard.html';
+                ctaButton.href = '/public/dashboard.html';
+                ctaButton.textContent = "Accéder à mon espace";
+            } else {
+                // Utilisateur déconnecté : on pointe tout vers l'inscription
+                console.log("Utilisateur déconnecté. Liens pointent vers l'inscription.");
+                logoLink.href = '/public/inscription.html';
+                ctaButton.href = '/public/inscription.html';
+                ctaButton.textContent = "Commencer l'aventure";
+            }
+        });
+    </script>
 </body>
 </html>
-
