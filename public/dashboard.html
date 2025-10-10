@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Espace - Change Your Life</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
@@ -11,52 +13,18 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #e0e0e0;
         }
-        
-        /* --- Conteneur Principal "Effet Glace" --- */
-        .app-container {
-            position: absolute;
-            top: 15px;
-            bottom: 15px;
-            left: 15px;
-            right: 15px;
-            
-            background: rgba(20, 20, 20, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            
-            /* MODIFIÉ : On ne centre plus, on laisse le contenu s'aligner en haut */
-            padding: 30px; /* Marge intérieure pour le contenu */
-            z-index: 1;
-        }
-
-        /* --- Style pour le message de bienvenue MODIFIÉ --- */
-        .welcome-message {
-            text-align: left;
-        }
-        .welcome-message h1 {
-            font-size: 1.2rem; /* Taille encore plus réduite */
-            margin-bottom: 0.4rem;
-            font-weight: 600;
-        }
-        .welcome-message p {
-            font-size: 0.8rem; /* Taille encore plus réduite */
-            margin: 0;
-            color: #bbb;
-        }
-        #user-email { font-weight: bold; color: #00aaff; }
-        
-        /* --- Styles du Header & Menu (inchangés) --- */
         .header {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            z-index: 10;
+            position: fixed; top: 20px; right: 30px; z-index: 10;
         }
-        .user-panel-trigger { width: 40px; height: 40px; background-color: #00aaff; border-radius: 50%; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .user-panel-trigger {
+            width: 40px; height: 40px;
+            background-color: #00aaff; border-radius: 50%;
+            cursor: pointer; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.2rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
         .user-panel-trigger:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(0, 170, 255, 0.5); }
         .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
         .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
@@ -65,7 +33,34 @@
         .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
         .user-panel-separator { height: 1px; background-color: rgba(255, 255, 255, 0.1); margin: 8px 0; }
         .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        
+        .app-container {
+            position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px;
+            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            z-index: 1;
+        }
+        .welcome-message { text-align: left; }
+        .welcome-message h1 { font-size: 1.2rem; margin-bottom: 0.4rem; font-weight: 600; }
+        .welcome-message p { font-size: 0.8rem; margin: 0; color: #bbb; }
+        #user-email { font-weight: bold; color: #00aaff; }
+
+        /* NOUVEAU : Style pour customiser la visite guidée */
+        .shepherd-element {
+            background: rgba(35, 35, 35, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .shepherd-header { padding-bottom: 0; }
+        .shepherd-title { font-weight: 600; color: white; }
+        .shepherd-text { color: #ccc; }
+        .shepherd-button { background: #0070f3; border-radius: 8px; }
+        .shepherd-button:not(:disabled):hover { background: #0056b3; }
+        .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.8); }
     </style>
 </head>
 <body>
@@ -74,14 +69,9 @@
     <script>
     window.addEventListener('DOMContentLoaded', () => {
         VANTA.BIRDS({
-            el: "body",
-            mouseControls: true, touchControls: true, gyroControls: false,
-            minHeight: 200.00, minWidth: 200.00,
-            scale: 1.00, scaleMobile: 1.00,
-            backgroundColor: 0x07192f,
-            color1: 0x4a3a3a, color2: 0xcccccc,
-            colorMode: "varianceGradient", birdSize: 0.80,
-            separation: 51.00, quantity: 4.00, speedLimit: 2.00,
+            el: "body", mouseControls: true, touchControls: true, gyroControls: false, minHeight: 200.00, minWidth: 200.00,
+            scale: 1.00, scaleMobile: 1.00, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc,
+            colorMode: "varianceGradient", birdSize: 0.80, separation: 51.00, quantity: 4.00, speedLimit: 2.00,
             alignment: 50.00, cohesion: 50.00
         })
     })
@@ -104,29 +94,93 @@
             <h1>Bienvenue</h1>
             <p>Connecté en tant que : <span id="user-email">Chargement...</span></p>
         </div>
-        </main>
+    </main>
     
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
         const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
+
         const userPanelTrigger = document.querySelector('.user-panel-trigger');
         const userPanel = document.getElementById('user-panel');
         const panelLogoutButton = document.getElementById('panel-logout-button');
-        onAuthStateChanged(auth, (user) => {
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('user-email').textContent = user.email || "Utilisateur Anonyme";
-                const userInitial = (user.email || 'U').charAt(0).toUpperCase();
-                userPanelTrigger.textContent = userInitial;
+                userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
+
+                // NOUVEAU : On vérifie si le tutoriel doit être lancé
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists() && userDoc.data().hasSeenTutorial === false) {
+                    startTutorial(userDocRef);
+                }
+
             } else {
                  // window.location.href = '/login'; // Décommenter avant la mise en prod !
             }
         });
+        
         userPanelTrigger.addEventListener('click', (event) => { event.stopPropagation(); userPanel.classList.toggle('active'); });
         window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); });
+
+        // --- NOUVEAU : TOUTE LA LOGIQUE DE LA VISITE GUIDÉE ---
+        function startTutorial(userDocRef) {
+            const tour = new Shepherd.Tour({
+                useModalOverlay: true,
+                defaultStepOptions: {
+                    classes: 'shepherd-element',
+                    scrollTo: { behavior: 'smooth', block: 'center' }
+                }
+            });
+
+            tour.addStep({
+                title: 'Bienvenue sur votre Espace !',
+                text: 'Ceci est votre tableau de bord personnel. C\'est ici que vous trouverez tous vos outils pour progresser.',
+                attachTo: {
+                    element: '.app-container',
+                    on: 'top'
+                },
+                buttons: [{ action: tour.next, text: 'Suivant &rarr;' }]
+            });
+
+            tour.addStep({
+                title: 'Votre Menu',
+                text: 'Votre menu personnel se trouve ici. Vous pouvez l\'utiliser pour accéder à vos paramètres ou vous déconnecter.',
+                attachTo: {
+                    element: '.user-panel-trigger',
+                    on: 'bottom'
+                },
+                buttons: [
+                    { action: tour.back, secondary: true, text: '&larr; Retour' },
+                    { action: tour.next, text: 'Compris !' }
+                ]
+            });
+            
+            tour.addStep({
+                title: 'Prêt à commencer ?',
+                text: 'Change Your Life est conçu pour vous aider à voir la vie comme un jeu, avec des quêtes et des succès à débloquer. Explorez, apprenez et grandissez. Votre aventure commence maintenant !',
+                buttons: [{ action: tour.complete, text: 'C\'est parti !' }]
+            });
+
+            // Quand la visite est terminée, on met à jour la base de données
+            tour.on('complete', () => {
+                setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true })
+                    .catch(e => console.error("Erreur de mise à jour du tutoriel:", e));
+            });
+
+            tour.start();
+        }
     </script>
 </body>
 </html>
