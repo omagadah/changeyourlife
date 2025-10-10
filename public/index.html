@@ -22,17 +22,21 @@
         #vanta-birds-bg { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
+        .top-right-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 75px; /* Taille réduite de moitié */
+            z-index: 100;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .top-right-logo:hover {
+            transform: scale(1.1);
+        }
         .content {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             height: 100%; text-align: center; padding: 2rem; z-index: 1;
-        }
-        .logo {
-            width: 150px; 
-            margin-bottom: 1.5rem;
-            transition: transform 0.3s ease;
-        }
-        .logo:hover {
-            transform: scale(1.1);
         }
         header h1 { font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 700; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
         header p { font-size: 1.2rem; color: #ddd; margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
@@ -44,7 +48,7 @@
         }
         .cta-button:hover { background-color: #0056b3; transform: scale(1.05); }
         #urgence-btn {
-            position: fixed; bottom: 30px; left: 30px; /* MODIFICATION ICI */ z-index: 1000;
+            position: fixed; bottom: 30px; left: 30px; z-index: 1000;
             padding: 12px 24px;
             background-color: rgba(255, 255, 255, 0.9); color: #d90429; border: 2px solid #d90429;
             border-radius: 50px; font-size: 1rem; font-weight: bold; text-transform: uppercase; text-decoration: none;
@@ -61,19 +65,20 @@
             100% { transform: scale(1); box-shadow: 0 0 15px rgba(217, 4, 41, 0.5); }
         }
         @media (max-width: 768px) {
-            .logo { width: 120px; }
+            .top-right-logo { width: 60px; top: 15px; right: 15px; }
             header h1 { font-size: 2.5rem; }
             header p, main p { font-size: 1rem; }
             .cta-button { padding: 0.8rem 1.5rem; font-size: 0.9rem; }
-            #urgence-btn { font-size: 0.8rem; padding: 8px 16px; bottom: 20px; left: 20px; /* MODIFICATION ICI */ }
+            #urgence-btn { font-size: 0.8rem; padding: 8px 16px; bottom: 20px; left: 20px; }
         }
     </style>
 </head>
 <body>
     <div id="vanta-birds-bg"></div>
 
-    <div class="content">
-        <svg class="logo" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+    <!-- Logo déplacé ici -->
+    <a href="inscription.html" class="top-right-logo">
+        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
           <g stroke-width="3">
             <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
             <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
@@ -95,14 +100,18 @@
             </g>
           </g>
         </svg>
+    </a>
 
+    <div class="content">
+        <!-- Le logo a été retiré d'ici -->
         <header>
             <h1>ChangeYourLife.ai</h1>
             <p>Une base saine pour construire de grandes choses.</p>
         </header>
         <main>
-            <p>Prochaines étapes : Chatbot relié à urgence, un formulaire d'inscription, un forum, des outils performant ia gratuits</p>
-            <a href="#" class="cta-button">Commencer l'aventure</a>
+            <p>Prochaines étapes : formulaire d'inscription, un forum, des outils performant ia gratuits</p>
+            <!-- Lien mis à jour -->
+            <a href="inscription.html" class="cta-button">Commencer l'aventure</a>
         </main>
     </div>
 
