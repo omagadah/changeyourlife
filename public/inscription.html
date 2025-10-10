@@ -128,7 +128,6 @@
         const auth = getAuth(app);
 
         const authForm = document.getElementById('auth-form'), emailInput = document.getElementById('email'), passwordInput = document.getElementById('password'), errorMessage = document.getElementById('error-message'), googleButton = document.getElementById('google-signin'), githubButton = document.getElementById('github-signin'), forgotPasswordLink = document.getElementById('forgot-password-link'), authTitle = document.getElementById('auth-title'), submitButton = document.getElementById('submit-button'), authToggleText = document.getElementById('auth-toggle-text'), authToggleLink = document.getElementById('auth-toggle-link'), notification = document.getElementById('notification');
-        
         let isLoginMode = true;
 
         const clearError = () => errorMessage.textContent = '';
@@ -181,6 +180,13 @@
 
         const handleSocialSignIn = (provider) => {
             clearError();
+            
+            // LA MODIFICATION CHIRURGICALE
+            // On force l'affichage du choix de compte à chaque fois
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+
             signInWithPopup(auth, provider)
                 .then((result) => {
                     const user = result.user;
@@ -188,8 +194,9 @@
                     setTimeout(() => { window.location.href = '/app'; }, 2000);
                 })
                 .catch((error) => {
+                    console.error("Erreur de connexion sociale:", error.code);
                     if (error.code === 'auth/account-exists-with-different-credential') {
-                        displayError('Un compte existe déjà avec cet e-mail via une autre méthode.');
+                        displayError('Cet e-mail est déjà utilisé avec une autre méthode de connexion (Google, Email...).');
                     } else {
                         displayError("La connexion a échoué. Veuillez réessayer.");
                     }
