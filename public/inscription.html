@@ -9,103 +9,33 @@
         html, body {
             width: 100%; height: 100%; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #000;
+            color: #fff; display: flex; justify-content: center; align-items: center; background-color: #000;
         }
-        #vanta-birds-bg { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-        }
+        #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         .auth-container {
-            background: rgba(25, 25, 25, 0.75);
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            width: 100%;
-            max-width: 420px;
-            text-align: center;
-            z-index: 1;
+            background: rgba(25, 25, 25, 0.75); padding: 2.5rem; border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3); width: 100%; max-width: 420px;
+            text-align: center; z-index: 1;
         }
-        .auth-container h1 { margin-bottom: 1.5rem; font-weight: 600; }
-        .input-group { margin-bottom: 1.2rem; text-align: left; }
-        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #ccc; }
-        .input-group input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: #fff;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: #0070f3;
-            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4);
-        }
-        .submit-button {
-            width: 100%; padding: 1rem; border: none; border-radius: 8px;
-            background-color: #0070f3; color: white; font-weight: bold;
-            font-size: 1rem; cursor: pointer;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
-            margin-top: 0.5rem;
-        }
-        .submit-button:hover { background-color: #0056b3; transform: scale(1.02); }
-        .divider {
-            display: flex; align-items: center; text-align: center;
-            color: #888; margin: 1.5rem 0; font-size: 0.9rem;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1; border-bottom: 1px solid #555;
-        }
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
+        h1 { margin-bottom: 1.5rem; font-weight: 600; }
         .social-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
-            border-radius: 8px; border: 1px solid #555; background-color: #222;
-            color: #fff; font-size: 1rem; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; width: 100%;
+            padding: 0.75rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid #555;
+            background-color: #222; color: #fff; font-size: 1rem; font-weight: 500;
             cursor: pointer; transition: background-color 0.2s;
         }
         .social-btn:hover { background-color: #333; }
         .social-btn svg { width: 24px; height: 24px; margin-right: 12px; }
         #error-message { color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; }
-        .extra-links, .auth-toggle { margin-top: 1.5rem; font-size: 0.9rem; }
-        .extra-links { display: flex; justify-content: space-between; align-items: center; }
-        .extra-links a, .auth-toggle a { color: #00aaff; text-decoration: none; font-weight: 600; }
-        .extra-links a:hover, .auth-toggle a:hover { text-decoration: underline; }
-        .back-link { display: inline-block; margin-top: 1rem; color: #aaa; font-size: 0.9rem; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div id="vanta-birds-bg"></div>
     <div class="auth-container">
-        <h1 id="auth-title">Connexion</h1>
-        <form id="auth-form">
-            <div class="input-group">
-                <label for="email">Adresse e-mail</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button id="submit-button" type="submit" class="submit-button">Se connecter</button>
-        </form>
-        <div class="extra-links">
-            <a href="#" id="forgot-password-link">Mot de passe oublié ?</a>
-        </div>
-        <div class="divider">OU</div>
+        <h1>Connexion</h1>
         <button id="google-signin" class="social-btn">
-            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg>
+             <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg>
             Continuer avec Google
         </button>
         <button id="github-signin" class="social-btn">
@@ -113,11 +43,6 @@
             Continuer avec GitHub
         </button>
         <p id="error-message"></p>
-        <p class="auth-toggle" id="auth-toggle-p">
-            <span id="auth-toggle-text">Pas encore de compte ?</span>
-            <a href="#" id="auth-toggle-link">Créer un compte</a>
-        </p>
-        <a href="/" class="back-link">Retour à l'accueil</a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -127,80 +52,58 @@
     </script>
 
     <script type="module">
-        console.log("--- DÉBUT DU SCRIPT ---");
-
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, initializeAuth, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
             authDomain: "changeyourlife-cc210.firebaseapp.com",
             projectId: "changeyourlife-cc210",
-            storageBucket: "changeyourlife-cc210.firebasestorage.app", // Correction appliquée ici
+            storageBucket: "changeyourlife-cc210.firebasestorage.app",
             messagingSenderId: "801720080785",
             appId: "1:801720080785:web:1a74aadba5755ea26c2230",
             measurementId: "G-0MNVL2VVBY"
         };
-        console.log("1. firebaseConfig est défini :", firebaseConfig);
 
         try {
             const app = initializeApp(firebaseConfig);
-            console.log("2. Firebase App initialisée avec succès :", app);
-
-            const auth = initializeAuth(app, {
-                persistence: browserLocalPersistence
-            });
-            console.log("3. Firebase Auth initialisé avec succès :", auth);
+            const auth = getAuth(app);
             
             const googleProvider = new GoogleAuthProvider();
-            console.log("4a. GoogleAuthProvider est prêt.");
             const githubProvider = new GithubAuthProvider();
-            console.log("4b. GithubAuthProvider est prêt.");
+            const errorMessage = document.getElementById('error-message');
 
-
-            const googleButton = document.getElementById('google-signin');
-            const githubButton = document.getElementById('github-signin');
-            
-            const handleSocialSignIn = (provider, providerName) => {
-                console.log(`5. Tentative de connexion avec ${providerName}`);
-                signInWithPopup(auth, provider)
+            document.getElementById('google-signin').addEventListener('click', () => {
+                errorMessage.textContent = '';
+                signInWithPopup(auth, googleProvider)
                     .then(result => {
-                        console.log(`Connexion ${providerName} RÉUSSIE :`, result.user);
-                        alert("Connexion réussie ! Bienvenue, " + (result.user.displayName || 'Utilisateur'));
-                        window.location.href = '/';
+                        console.log("Connexion Google RÉUSSIE", result.user);
+                        alert("Connexion Google réussie !");
+                        // window.location.href = '/'; // Redirection après succès
                     })
                     .catch(error => {
-                        console.error(`--- ERREUR DE CONNEXION ${providerName} ---`);
-                        console.error("Code:", error.code);
-                        console.error("Message:", error.message);
+                        console.error("--- ERREUR Google ---", error);
+                        errorMessage.textContent = `Erreur Google: ${error.code}`;
                     });
-            };
+            });
 
-            googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider, 'Google'));
-            githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider, 'GitHub'));
-            
-            // Le reste du code pour le formulaire email/password reste identique
-            const authForm = document.getElementById('auth-form');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const errorMessage = document.getElementById('error-message');
-            const forgotPasswordLink = document.getElementById('forgot-password-link');
-            const authTitle = document.getElementById('auth-title');
-            const submitButton = document.getElementById('submit-button');
-            const authToggleText = document.getElementById('auth-toggle-text');
-            const authToggleLink = document.getElementById('auth-toggle-link');
-            let isLoginMode = true;
-            const clearError = () => errorMessage.textContent = '';
-            const displayError = (message) => errorMessage.textContent = message;
-
-            function updateAuthView() { /* ... */ }
-            authToggleLink.addEventListener('click', (e) => { /* ... */ });
-            authForm.addEventListener('submit', (e) => { /* ... */ });
-            forgotPasswordLink.addEventListener('click', (e) => { /* ... */ });
+            document.getElementById('github-signin').addEventListener('click', () => {
+                errorMessage.textContent = '';
+                signInWithPopup(auth, githubProvider)
+                    .then(result => {
+                        console.log("Connexion GitHub RÉUSSIE", result.user);
+                        alert("Connexion GitHub réussie !");
+                        // window.location.href = '/'; // Redirection après succès
+                    })
+                    .catch(error => {
+                        console.error("--- ERREUR GitHub ---", error);
+                        errorMessage.textContent = `Erreur GitHub: ${error.code}`;
+                    });
+            });
 
         } catch (e) {
-            console.error("--- ERREUR CRITIQUE À L'INITIALISATION ---");
-            console.error(e);
+            console.error("--- ERREUR FATALE À L'INITIALISATION ---", e);
+            document.getElementById('error-message').textContent = "Erreur critique. Impossible d'initialiser Firebase.";
         }
     </script>
 </body>
