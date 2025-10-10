@@ -9,8 +9,7 @@
         html, body {
             width: 100%; height: 100%; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #1b1c1d; /* Fond de secours */
-            color: #e0e0e-0;
+            color: #e0e0e0;
         }
         .header {
             position: absolute;
@@ -105,17 +104,16 @@
             minWidth: 200.00,
             scale: 1.00,
             scaleMobile: 1.00,
-            backgroundColor: 0x1b1c1d,
+            backgroundColor: 0x07192f, // Le bleu nuit que tu as choisi
             color1: 0x4a3a3a,
             color2: 0xcccccc,
+            colorMode: "varianceGradient",
             birdSize: 0.80,
             separation: 51.00,
-            
-            // --- MODIFICATIONS POUR UNE AMBIANCE PLUS CALME ---
-            quantity: 3.00,      // Moins d'oiseaux
-            speedLimit: 3.00,    // Vitesse maximale réduite
-            alignment: 40.00,      // Volent plus groupés
-            cohesion: 40.00        // Restent plus proches
+            quantity: 2.00,
+            speedLimit: 2.00,
+            alignment: 50.00,
+            cohesion: 50.00
         })
     })
     </script>
