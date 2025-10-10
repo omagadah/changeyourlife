@@ -9,33 +9,148 @@
         html, body {
             width: 100%; height: 100%; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #fff; display: flex; justify-content: center; align-items: center; background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        #vanta-birds-bg { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        }
         .auth-container {
-            background: rgba(25, 25, 25, 0.75); padding: 2.5rem; border-radius: 16px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3); width: 100%; max-width: 420px;
-            text-align: center; z-index: 1;
+            background: rgba(25, 25, 25, 0.75);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            z-index: 1;
         }
-        h1 { margin-bottom: 1.5rem; font-weight: 600; }
+        .auth-container h1 {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #0070f3;
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4);
+        }
+        .submit-button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #0070f3;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
+            margin-top: 0.5rem;
+        }
+        .submit-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.02);
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #555;
+        }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
         .social-btn {
-            display: flex; align-items: center; justify-content: center; width: 100%;
-            padding: 0.75rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid #555;
-            background-color: #222; color: #fff; font-size: 1rem; font-weight: 500;
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border-radius: 8px; border: 1px solid #555; background-color: #222;
+            color: #fff; font-size: 1rem; font-weight: 500;
             cursor: pointer; transition: background-color 0.2s;
         }
         .social-btn:hover { background-color: #333; }
         .social-btn svg { width: 24px; height: 24px; margin-right: 12px; }
-        #error-message { color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; }
+        #error-message {
+            color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem;
+            min-height: 1.2em;
+        }
+        .extra-links, .auth-toggle {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .extra-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .extra-links a, .auth-toggle a {
+            color: #00aaff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .extra-links a:hover, .auth-toggle a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #aaa;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div id="vanta-birds-bg"></div>
     <div class="auth-container">
-        <h1>Connexion</h1>
+        <h1 id="auth-title">Connexion</h1>
+        <form id="auth-form">
+            <div class="input-group">
+                <label for="email">Adresse e-mail</label>
+                <input type="email" id="email" name="email" required autocomplete="email">
+            </div>
+            <div class="input-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+            <button id="submit-button" type="submit" class="submit-button">Se connecter</button>
+        </form>
+        <div class="extra-links">
+            <a href="#" id="forgot-password-link">Mot de passe oublié ?</a>
+        </div>
+        <div class="divider">OU</div>
         <button id="google-signin" class="social-btn">
-             <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg>
+            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg>
             Continuer avec Google
         </button>
         <button id="github-signin" class="social-btn">
@@ -43,6 +158,11 @@
             Continuer avec GitHub
         </button>
         <p id="error-message"></p>
+        <p class="auth-toggle" id="auth-toggle-p">
+            <span id="auth-toggle-text">Pas encore de compte ?</span>
+            <a href="#" id="auth-toggle-link">Créer un compte</a>
+        </p>
+        <a href="/" class="back-link">Retour à l'accueil</a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -52,60 +172,169 @@
     </script>
 
     <script type="module">
+        // Importe uniquement les fonctions nécessaires de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getAuth, 
+            initializeAuth,
+            browserLocalPersistence,
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            GithubAuthProvider, 
+            sendPasswordResetEmail 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         
+        // Ta configuration Firebase (pense à la sécuriser avec des règles de sécurité et des domaines autorisés)
         const firebaseConfig = {
             apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
             authDomain: "changeyourlife-cc210.firebaseapp.com",
             projectId: "changeyourlife-cc210",
-            storageBucket: "changeyourlife-cc210.firebasestorage.app",
+            storageBucket: "changeyourlife-cc210.appspot.com",
             messagingSenderId: "801720080785",
             appId: "1:801720080785:web:1a74aadba5755ea26c2230",
             measurementId: "G-0MNVL2VVBY"
         };
 
-        try {
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            
-            const googleProvider = new GoogleAuthProvider();
-            const githubProvider = new GithubAuthProvider();
-            const errorMessage = document.getElementById('error-message');
+        // Initialisation de Firebase
+        const app = initializeApp(firebaseConfig);
+        // Utilise getAuth() qui est la méthode recommandée
+        const auth = getAuth(app);
 
-            document.getElementById('google-signin').addEventListener('click', () => {
-                errorMessage.textContent = '';
-                signInWithPopup(auth, googleProvider)
-                    .then(result => {
-                        console.log("Connexion Google RÉUSSIE", result.user);
-                        alert("Connexion Google réussie !");
-                        // window.location.href = '/'; // Redirection après succès
-                    })
-                    .catch(error => {
-                        console.error("--- ERREUR Google ---", error);
-                        errorMessage.textContent = `Erreur Google: ${error.code}`;
-                    });
-            });
+        // --- Références aux éléments du DOM ---
+        const authForm = document.getElementById('auth-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('error-message');
+        const googleButton = document.getElementById('google-signin');
+        const githubButton = document.getElementById('github-signin');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const authTitle = document.getElementById('auth-title');
+        const submitButton = document.getElementById('submit-button');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const authToggleLink = document.getElementById('auth-toggle-link');
+        
+        // Variable pour savoir si on est en mode Connexion ou Inscription
+        let isLoginMode = true;
 
-            document.getElementById('github-signin').addEventListener('click', () => {
-                errorMessage.textContent = '';
-                signInWithPopup(auth, githubProvider)
-                    .then(result => {
-                        console.log("Connexion GitHub RÉUSSIE", result.user);
-                        alert("Connexion GitHub réussie !");
-                        // window.location.href = '/'; // Redirection après succès
-                    })
-                    .catch(error => {
-                        console.error("--- ERREUR GitHub ---", error);
-                        errorMessage.textContent = `Erreur GitHub: ${error.code}`;
-                    });
-            });
+        // --- Fonctions utilitaires ---
+        const clearError = () => errorMessage.textContent = '';
+        const displayError = (message) => errorMessage.textContent = message;
 
-        } catch (e) {
-            console.error("--- ERREUR FATALE À L'INITIALISATION ---", e);
-            document.getElementById('error-message').textContent = "Erreur critique. Impossible d'initialiser Firebase.";
+        // Fonction pour mettre à jour l'interface (Connexion / Inscription)
+        function updateAuthView() {
+            clearError();
+            if (isLoginMode) {
+                authTitle.textContent = 'Connexion';
+                submitButton.textContent = 'Se connecter';
+                authToggleText.textContent = 'Pas encore de compte ?';
+                authToggleLink.textContent = 'Créer un compte';
+                forgotPasswordLink.style.display = 'inline';
+                passwordInput.autocomplete = 'current-password';
+            } else {
+                authTitle.textContent = 'Créer un compte';
+                submitButton.textContent = 'S\'inscrire';
+                authToggleText.textContent = 'Déjà un compte ?';
+                authToggleLink.textContent = 'Se connecter';
+                forgotPasswordLink.style.display = 'none';
+                passwordInput.autocomplete = 'new-password';
+            }
         }
+
+        // --- Gestionnaires d'événements ---
+
+        // Basculer entre Connexion et Inscription
+        authToggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            updateAuthView();
+        });
+
+        // Soumission du formulaire Email/Mot de passe
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearError();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (isLoginMode) {
+                // Connexion
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(userCredential => {
+                        console.log('Utilisateur connecté:', userCredential.user);
+                        window.location.href = '/'; // Redirection vers l'accueil
+                    })
+                    .catch(error => {
+                        console.error("Erreur de connexion:", error.code);
+                        displayError("Email ou mot de passe incorrect.");
+                    });
+            } else {
+                // Inscription
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(userCredential => {
+                        console.log('Utilisateur créé:', userCredential.user);
+                        window.location.href = '/'; // Redirection vers l'accueil
+                    })
+                    .catch(error => {
+                        console.error("Erreur d'inscription:", error.code);
+                        if (error.code === 'auth/email-already-in-use') {
+                            displayError('Cette adresse e-mail est déjà utilisée.');
+                        } else if (error.code === 'auth/weak-password') {
+                            displayError('Le mot de passe doit contenir au moins 6 caractères.');
+                        } else {
+                            displayError('Une erreur est survenue. Veuillez réessayer.');
+                        }
+                    });
+            }
+        });
+
+        // Instanciation des fournisseurs d'authentification sociale
+        const googleProvider = new GoogleAuthProvider();
+        const githubProvider = new GithubAuthProvider();
+
+        // Fonction générique pour la connexion via Pop-up (Google, GitHub, etc.)
+        const handleSocialSignIn = (provider) => {
+            clearError();
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    console.log("Connexion sociale réussie:", result.user);
+                    window.location.href = '/'; // Redirection
+                })
+                .catch((error) => {
+                    console.error("--- ERREUR DE CONNEXION SOCIALE ---");
+                    console.error("Code:", error.code);
+                    console.error("Message:", error.message);
+                    // Gère le cas où un utilisateur avec le même email existe déjà
+                    if (error.code === 'auth/account-exists-with-different-credential') {
+                        displayError('Un compte existe déjà avec cet e-mail. Essayez de vous connecter avec une autre méthode.');
+                    } else {
+                        displayError("La connexion a échoué. Veuillez réessayer.");
+                    }
+                });
+        };
+
+        // Attache les événements aux boutons
+        googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider));
+        githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider));
+        
+        // Mot de passe oublié
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearError();
+            const email = prompt("Veuillez entrer votre adresse e-mail pour réinitialiser le mot de passe :");
+            if (email) {
+                sendPasswordResetEmail(auth, email)
+                    .then(() => {
+                        alert("Un e-mail de réinitialisation a été envoyé à " + email);
+                    })
+                    .catch((error) => {
+                        console.error("Erreur d'envoi d'e-mail:", error);
+                        displayError("Impossible d'envoyer l'e-mail. Vérifiez l'adresse.");
+                    });
+            }
+        });
+
     </script>
 </body>
 </html>
-
