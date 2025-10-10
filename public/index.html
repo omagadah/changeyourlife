@@ -70,7 +70,7 @@
 <body>
     <div id="vanta-birds-bg"></div>
 
-    <a href="/inscription.html" id="logo-link" class="top-right-logo">
+    <a href="/login" id="logo-link" class="top-right-logo">
         <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
             <g stroke-width="3">
                 <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
@@ -98,7 +98,7 @@
         </header>
         <main>
             <p>Prochaines étapes : formulaire d'inscription, un forum, des outils performant ia gratuits</p>
-            <a href="/inscription.html" id="cta-button" class="cta-button">Commencer l'aventure</a>
+            <a href="/login" id="cta-button" class="cta-button">Commencer l'aventure</a>
         </main>
     </div>
 
@@ -139,16 +139,14 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Utilisateur connecté : on pointe tout vers le dashboard SANS /public/
-                console.log("Utilisateur connecté. Mise à jour des liens vers le dashboard.");
-                logoLink.href = '/dashboard.html';
-                ctaButton.href = '/dashboard.html';
+                // Utilisateur connecté : on pointe tout vers /app
+                logoLink.href = '/app';
+                ctaButton.href = '/app';
                 ctaButton.textContent = "Accéder à mon espace";
             } else {
-                // Utilisateur déconnecté : on pointe tout vers l'inscription SANS /public/
-                console.log("Utilisateur déconnecté. Liens pointent vers l'inscription.");
-                logoLink.href = '/inscription.html';
-                ctaButton.href = '/inscription.html';
+                // Utilisateur déconnecté : on pointe tout vers /login
+                logoLink.href = '/login';
+                ctaButton.href = '/login';
                 ctaButton.textContent = "Commencer l'aventure";
             }
         });

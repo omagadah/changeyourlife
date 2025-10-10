@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/app",
+      "destination": "/public/dashboard.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/public/inscription.html"
+    }
+  ]
+}

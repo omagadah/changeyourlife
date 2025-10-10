@@ -69,7 +69,7 @@
         <button id="logout-button">Se Déconnecter (Temporaire)</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
         VANTA.BIRDS({
@@ -103,7 +103,8 @@
                 const userInitial = (user.email || 'U').charAt(0).toUpperCase();
                 document.querySelector('.user-panel-trigger').textContent = userInitial;
             } else {
-                window.location.href = '/inscription.html';
+                // Redirection vers /login
+                window.location.href = '/login';
             }
         });
 
