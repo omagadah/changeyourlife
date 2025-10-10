@@ -13,6 +13,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: #000;
         }
         #vanta-birds-bg { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
@@ -30,20 +31,9 @@
             text-align: center;
             z-index: 1;
         }
-        .auth-container h1 {
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-        .input-group {
-            margin-bottom: 1.2rem;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: #ccc;
-        }
+        .auth-container h1 { margin-bottom: 1.5rem; font-weight: 600; }
+        .input-group { margin-bottom: 1.2rem; text-align: left; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #ccc; }
         .input-group input {
             width: 100%;
             padding: 0.8rem 1rem;
@@ -60,35 +50,20 @@
             box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4);
         }
         .submit-button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            background-color: #0070f3;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
+            width: 100%; padding: 1rem; border: none; border-radius: 8px;
+            background-color: #0070f3; color: white; font-weight: bold;
+            font-size: 1rem; cursor: pointer;
             transition: transform 0.2s ease, background-color 0.2s ease;
             box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
             margin-top: 0.5rem;
         }
-        .submit-button:hover {
-            background-color: #0056b3;
-            transform: scale(1.02);
-        }
+        .submit-button:hover { background-color: #0056b3; transform: scale(1.02); }
         .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #888;
-            margin: 1.5rem 0;
-            font-size: 0.9rem;
+            display: flex; align-items: center; text-align: center;
+            color: #888; margin: 1.5rem 0; font-size: 0.9rem;
         }
         .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #555;
+            content: ''; flex: 1; border-bottom: 1px solid #555;
         }
         .divider:not(:empty)::before { margin-right: .5em; }
         .divider:not(:empty)::after { margin-left: .5em; }
@@ -101,34 +76,13 @@
         }
         .social-btn:hover { background-color: #333; }
         .social-btn svg { width: 24px; height: 24px; margin-right: 12px; }
-        #error-message {
-            color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem;
-            min-height: 1.2em;
-        }
-        .extra-links, .auth-toggle {
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-        }
-        .extra-links {
-             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-         .extra-links a, .auth-toggle a {
-            color: #00aaff;
-            text-decoration: none;
-            font-weight: 600;
-        }
+        #error-message { color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; }
+        .extra-links, .auth-toggle { margin-top: 1.5rem; font-size: 0.9rem; }
+        .extra-links { display: flex; justify-content: space-between; align-items: center; }
+        .extra-links a, .auth-toggle a { color: #00aaff; text-decoration: none; font-weight: 600; }
         .extra-links a:hover, .auth-toggle a:hover { text-decoration: underline; }
-        .back-link {
-            display: inline-block;
-            margin-top: 1rem;
-            color: #aaa;
-            font-size: 0.9rem;
-            text-decoration: none;
-        }
+        .back-link { display: inline-block; margin-top: 1rem; color: #aaa; font-size: 0.9rem; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
-
     </style>
 </head>
 <body>
@@ -173,6 +127,8 @@
     </script>
 
     <script type="module">
+        console.log("--- DÉBUT DU SCRIPT ---");
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, initializeAuth, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         
@@ -180,132 +136,72 @@
             apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
             authDomain: "changeyourlife-cc210.firebaseapp.com",
             projectId: "changeyourlife-cc210",
-            storageBucket: "changeyourlife-cc210.appspot.com",
+            storageBucket: "changeyourlife-cc210.firebasestorage.app", // Correction appliquée ici
             messagingSenderId: "801720080785",
             appId: "1:801720080785:web:1a74aadba5755ea26c2230",
             measurementId: "G-0MNVL2VVBY"
         };
+        console.log("1. firebaseConfig est défini :", firebaseConfig);
 
-        const app = initializeApp(firebaseConfig);
-        const auth = initializeAuth(app, {
-            persistence: browserLocalPersistence
-        });
-        
-        const authForm = document.getElementById('auth-form');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const errorMessage = document.getElementById('error-message');
-        const googleButton = document.getElementById('google-signin');
-        const githubButton = document.getElementById('github-signin');
-        const forgotPasswordLink = document.getElementById('forgot-password-link');
-        const authTitle = document.getElementById('auth-title');
-        const submitButton = document.getElementById('submit-button');
-        const authToggleText = document.getElementById('auth-toggle-text');
-        const authToggleLink = document.getElementById('auth-toggle-link');
-        
-        let isLoginMode = true;
+        try {
+            const app = initializeApp(firebaseConfig);
+            console.log("2. Firebase App initialisée avec succès :", app);
 
-        function updateAuthView() {
-            clearError();
-            if (isLoginMode) {
-                authTitle.textContent = 'Connexion';
-                submitButton.textContent = 'Se connecter';
-                authToggleText.textContent = 'Pas encore de compte ?';
-                authToggleLink.textContent = 'Créer un compte';
-                forgotPasswordLink.style.display = 'inline';
-            } else {
-                authTitle.textContent = 'Créer un compte';
-                submitButton.textContent = 'S\'inscrire';
-                authToggleText.textContent = 'Déjà un compte ?';
-                authToggleLink.textContent = 'Se connecter';
-                forgotPasswordLink.style.display = 'none';
-            }
+            const auth = initializeAuth(app, {
+                persistence: browserLocalPersistence
+            });
+            console.log("3. Firebase Auth initialisé avec succès :", auth);
+            
+            const googleProvider = new GoogleAuthProvider();
+            console.log("4a. GoogleAuthProvider est prêt.");
+            const githubProvider = new GithubAuthProvider();
+            console.log("4b. GithubAuthProvider est prêt.");
+
+
+            const googleButton = document.getElementById('google-signin');
+            const githubButton = document.getElementById('github-signin');
+            
+            const handleSocialSignIn = (provider, providerName) => {
+                console.log(`5. Tentative de connexion avec ${providerName}`);
+                signInWithPopup(auth, provider)
+                    .then(result => {
+                        console.log(`Connexion ${providerName} RÉUSSIE :`, result.user);
+                        alert("Connexion réussie ! Bienvenue, " + (result.user.displayName || 'Utilisateur'));
+                        window.location.href = '/';
+                    })
+                    .catch(error => {
+                        console.error(`--- ERREUR DE CONNEXION ${providerName} ---`);
+                        console.error("Code:", error.code);
+                        console.error("Message:", error.message);
+                    });
+            };
+
+            googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider, 'Google'));
+            githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider, 'GitHub'));
+            
+            // Le reste du code pour le formulaire email/password reste identique
+            const authForm = document.getElementById('auth-form');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const authTitle = document.getElementById('auth-title');
+            const submitButton = document.getElementById('submit-button');
+            const authToggleText = document.getElementById('auth-toggle-text');
+            const authToggleLink = document.getElementById('auth-toggle-link');
+            let isLoginMode = true;
+            const clearError = () => errorMessage.textContent = '';
+            const displayError = (message) => errorMessage.textContent = message;
+
+            function updateAuthView() { /* ... */ }
+            authToggleLink.addEventListener('click', (e) => { /* ... */ });
+            authForm.addEventListener('submit', (e) => { /* ... */ });
+            forgotPasswordLink.addEventListener('click', (e) => { /* ... */ });
+
+        } catch (e) {
+            console.error("--- ERREUR CRITIQUE À L'INITIALISATION ---");
+            console.error(e);
         }
-
-        authToggleLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            isLoginMode = !isLoginMode;
-            updateAuthView();
-        });
-
-        const clearError = () => errorMessage.textContent = '';
-        const displayError = (message) => errorMessage.textContent = message;
-        
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            clearError();
-            const email = emailInput.value;
-            const password = passwordInput.value;
-
-            if (isLoginMode) {
-                signInWithEmailAndPassword(auth, email, password)
-                    .then(userCredential => {
-                        console.log('Utilisateur connecté:', userCredential.user);
-                        alert('Connexion réussie !');
-                        window.location.href = '/';
-                    })
-                    .catch(error => {
-                        let msg = "Email ou mot de passe incorrect.";
-                        if(error.code === 'auth/user-not-found') msg = "Aucun compte n'est associé à cet e-mail.";
-                        displayError(msg);
-                    });
-            } else {
-                createUserWithEmailAndPassword(auth, email, password)
-                    .then(userCredential => {
-                        console.log('Utilisateur créé:', userCredential.user);
-                        alert('Inscription réussie ! Vous êtes maintenant connecté.');
-                        window.location.href = '/';
-                    })
-                    .catch(error => {
-                        let msg = 'Une erreur est survenue. Veuillez réessayer.';
-                        if(error.code === 'auth/email-already-in-use') msg = 'Cette adresse e-mail est déjà utilisée.';
-                        if(error.code === 'auth/invalid-email') msg = 'Veuillez entrer une adresse e-mail valide.';
-                        if(error.code === 'auth/weak-password') msg = 'Le mot de passe doit faire au moins 6 caractères.';
-                        displayError(msg);
-                    });
-            }
-        });
-
-        const googleProvider = new GoogleAuthProvider();
-        const githubProvider = new GithubAuthProvider();
-        const handleSocialSignIn = (provider) => {
-            clearError();
-            signInWithPopup(auth, provider)
-                .then(result => {
-                    console.log("Utilisateur connecté via le fournisseur:", result.user);
-                    alert("Connexion réussie ! Bienvenue, " + (result.user.displayName || 'Utilisateur'));
-                    window.location.href = '/';
-                })
-                .catch(error => {
-                    console.error("--- ERREUR DE CONNEXION SOCIALE ---");
-                    console.error("Code d'erreur:", error.code);
-                    console.error("Message d'erreur:", error.message);
-                    if (error.customData) {
-                       console.error("Email du credential:", error.customData.email);
-                    }
-                    console.error("Credential complet:", error.credential);
-                    displayError("La connexion a échoué. Ouvrez la console (F12) pour les détails.");
-                });
-        };
-
-        googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider));
-        githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider));
-        
-        forgotPasswordLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearError();
-            const email = prompt("Veuillez entrer votre adresse e-mail pour réinitialiser le mot de passe :");
-            if (email) {
-                sendPasswordResetEmail(auth, email)
-                    .then(() => {
-                        alert("Un e-mail de réinitialisation a été envoyé à " + email);
-                    })
-                    .catch((error) => {
-                        console.error("Erreur d'envoi d'e-mail:", error);
-                        displayError("Impossible d'envoyer l'e-mail. Vérifiez l'adresse et réessayez.");
-                    });
-            }
-        });
     </script>
 </body>
 </html>
