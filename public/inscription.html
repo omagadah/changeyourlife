@@ -3,169 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Change Your Life</title>
-
+    <title>Connexion - Change Your Life</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
-            width: 100%; height: 100%;
+            width: 100%; height: 100%; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #fff;
-            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         #vanta-birds-bg { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            padding: 2rem;
-            text-align: center;
-        }
-        .auth-card {
-            background-color: rgba(20, 20, 20, 0.85);
-            padding: 2rem 3rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .auth-container {
+            background: rgba(25, 25, 25, 0.75);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
-            max-width: 400px;
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             width: 100%;
+            max-width: 420px;
+            text-align: center;
+            z-index: 1;
         }
-        .auth-card h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+        .auth-container h1 {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
         }
-        .auth-card p {
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
             color: #ccc;
-            margin-bottom: 2rem;
         }
-        .social-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .input-group input {
             width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
             border-radius: 8px;
             border: 1px solid #555;
-            background-color: #222;
+            background-color: #333;
             color: #fff;
             font-size: 1rem;
-            font-weight: 500;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #0070f3;
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4);
+        }
+        .submit-button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #0070f3;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
+            margin-top: 0.5rem;
         }
-        .social-btn:hover {
-            background-color: #333;
+        .submit-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.02);
         }
-        .social-btn svg {
-            width: 24px;
-            height: 24px;
-            margin-right: 12px;
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
         }
-        .back-link {
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #555;
+        }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            border-radius: 8px; border: 1px solid #555; background-color: #222;
+            color: #fff; font-size: 1rem; font-weight: 500;
+            cursor: pointer; transition: background-color 0.2s;
+        }
+        .social-btn:hover { background-color: #333; }
+        .social-btn svg { width: 24px; height: 24px; margin-right: 12px; }
+        #error-message {
+            color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem;
+            min-height: 1.2em;
+        }
+        .extra-links, .auth-toggle {
             margin-top: 1.5rem;
-            color: #0070f3;
+            font-size: 0.9rem;
+        }
+        .extra-links {
+             display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+         .extra-links a, .auth-toggle a {
+            color: #00aaff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .extra-links a:hover, .auth-toggle a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #aaa;
+            font-size: 0.9rem;
             text-decoration: none;
         }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        #error-message {
-            color: #d90429;
-            margin-top: 1rem;
-            display: none; /* Caché par défaut */
-        }
+        .back-link:hover { text-decoration: underline; }
+
     </style>
 </head>
 <body>
     <div id="vanta-birds-bg"></div>
-    <div class="container">
-        <div class="auth-card">
-            <h1>Bienvenue</h1>
-            <p>Connectez-vous pour commencer l'aventure.</p>
-            
-            <button id="google-signin" class="social-btn">
-                <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg>
-                Continuer avec Google
-            </button>
-            <button id="github-signin" class="social-btn">
-                <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-                Continuer avec GitHub
-            </button>
-            <p id="error-message"></p>
-
-            <a href="index.html" class="back-link">Retour à l'accueil</a>
+    <div class="auth-container">
+        <h1 id="auth-title">Connexion</h1>
+        <form id="auth-form">
+            <div class="input-group">
+                <label for="email">Adresse e-mail</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button id="submit-button" type="submit" class="submit-button">Se connecter</button>
+        </form>
+        <div class="extra-links">
+            <a href="#" id="forgot-password-link">Mot de passe oublié ?</a>
         </div>
+        <div class="divider">OU</div>
+        <button id="google-signin" class="social-btn">
+            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg>
+            Continuer avec Google
+        </button>
+        <button id="github-signin" class="social-btn">
+            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            Continuer avec GitHub
+        </button>
+        <p id="error-message"></p>
+        <p class="auth-toggle" id="auth-toggle-p">
+            <span id="auth-toggle-text">Pas encore de compte ?</span>
+            <a href="#" id="auth-toggle-link">Créer un compte</a>
+        </p>
+        <a href="index.html" class="back-link">Retour à l'accueil</a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
-        // J'ai ajouté la configuration de Vanta ici aussi pour que l'arrière-plan fonctionne
-        VANTA.BIRDS({
-          el: "#vanta-birds-bg",
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.00,
-          minWidth: 200.00,
-          scale: 1.00,
-          scaleMobile: 1.00,
-          backgroundColor: 0x0,
-          color1: 0x7192ff,
-          color2: 0xd1ff,
-          colorMode: "varianceGradient",
-          quantity: 5.00
-        });
+        VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00, backgroundColor: 0x0, color1: 0x7192ff, color2: 0xd1ff, colorMode: "varianceGradient", quantity: 5.00 });
     </script>
-    
-    <!-- Scripts Firebase -->
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-        // Ta configuration Firebase personnelle
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        
         const firebaseConfig = {
-            apiKey: "AIzaSyDLboKBcwkvDLsyH_QgOSZOuqly76Dfzuc",
-            authDomain: "changeyourlife-74c0e.firebaseapp.com",
-            projectId: "changeyourlife-74c0e",
-            storageBucket: "changeyourlife-74c0e.appspot.com",
-            messagingSenderId: "1084994807691",
-            appId: "1:1084994807691:web:c66dd457b317b4f9d9718e",
-            measurementId: "G-H38E1P3PSW"
+            apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
+            authDomain: "changeyourlife-cc210.firebaseapp.com",
+            projectId: "changeyourlife-cc210",
+            storageBucket: "changeyourlife-cc210.appspot.com",
+            messagingSenderId: "801720080785",
+            appId: "1:801720080785:web:1a74aadba5755ea26c2230",
+            measurementId: "G-0MNVL2VVBY"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-        const githubProvider = new GithubAuthProvider();
-
+        
+        // --- DOM Elements ---
+        const authForm = document.getElementById('auth-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('error-message');
         const googleButton = document.getElementById('google-signin');
         const githubButton = document.getElementById('github-signin');
-        const errorMessage = document.getElementById('error-message');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const authTitle = document.getElementById('auth-title');
+        const submitButton = document.getElementById('submit-button');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const authToggleLink = document.getElementById('auth-toggle-link');
+        
+        let isLoginMode = true;
 
-        const handleSignIn = (provider) => {
-            errorMessage.style.display = 'none';
+        // --- UI Update Function ---
+        function updateAuthView() {
+            clearError();
+            if (isLoginMode) {
+                authTitle.textContent = 'Connexion';
+                submitButton.textContent = 'Se connecter';
+                authToggleText.textContent = 'Pas encore de compte ?';
+                authToggleLink.textContent = 'Créer un compte';
+                forgotPasswordLink.style.display = 'inline';
+            } else {
+                authTitle.textContent = 'Créer un compte';
+                submitButton.textContent = 'S\'inscrire';
+                authToggleText.textContent = 'Déjà un compte ?';
+                authToggleLink.textContent = 'Se connecter';
+                forgotPasswordLink.style.display = 'none';
+            }
+        }
+
+        // --- Event Listeners ---
+        authToggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            updateAuthView();
+        });
+
+        const clearError = () => errorMessage.textContent = '';
+        const displayError = (message) => errorMessage.textContent = message;
+        
+        // --- Email/Password Auth ---
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearError();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (isLoginMode) {
+                // --- Login Logic ---
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(userCredential => {
+                        console.log('Utilisateur connecté:', userCredential.user);
+                        alert('Connexion réussie !');
+                        // window.location.href = '/dashboard.html';
+                    })
+                    .catch(error => {
+                        let msg = "Email ou mot de passe incorrect.";
+                        if(error.code === 'auth/user-not-found') msg = "Aucun compte n'est associé à cet e-mail.";
+                        displayError(msg);
+                    });
+            } else {
+                // --- Signup Logic ---
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(userCredential => {
+                        console.log('Utilisateur créé:', userCredential.user);
+                        alert('Inscription réussie ! Vous êtes maintenant connecté.');
+                        // window.location.href = '/dashboard.html';
+                    })
+                    .catch(error => {
+                        let msg = 'Une erreur est survenue. Veuillez réessayer.';
+                        if(error.code === 'auth/email-already-in-use') msg = 'Cette adresse e-mail est déjà utilisée.';
+                        if(error.code === 'auth/invalid-email') msg = 'Veuillez entrer une adresse e-mail valide.';
+                        if(error.code === 'auth/weak-password') msg = 'Le mot de passe doit faire au moins 6 caractères.';
+                        displayError(msg);
+                    });
+            }
+        });
+
+        // --- Social Sign-in (Providers) ---
+        const googleProvider = new GoogleAuthProvider();
+        const githubProvider = new GithubAuthProvider();
+        const handleSocialSignIn = (provider) => {
+            clearError();
             signInWithPopup(auth, provider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log("Utilisateur connecté : ", user);
-                    // On redirigera plus tard vers une page de profil
-                    window.alert("Connexion réussie ! Bienvenue, " + user.displayName);
+                .then(result => {
+                    console.log("Utilisateur connecté via le fournisseur:", result.user);
+                    alert("Connexion réussie ! Bienvenue, " + (result.user.displayName || 'Utilisateur'));
+                    // window.location.href = '/dashboard.html';
                 })
-                .catch((error) => {
-                    console.error("Erreur d'authentification : ", error);
-                    errorMessage.textContent = "Une erreur est survenue. Assurez-vous d'avoir activé ce mode de connexion dans votre console Firebase.";
-                    errorMessage.style.display = 'block';
+                .catch(error => {
+                    console.error("Erreur de connexion sociale:", error);
+                    displayError("La connexion a échoué. Veuillez réessayer.");
                 });
         };
 
-        googleButton.addEventListener('click', () => handleSignIn(googleProvider));
-        githubButton.addEventListener('click', () => handleSignIn(githubProvider));
+        googleButton.addEventListener('click', () => handleSocialSignIn(googleProvider));
+        githubButton.addEventListener('click', () => handleSocialSignIn(githubProvider));
+        
+        // --- Forgot Password ---
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearError();
+            const email = prompt("Veuillez entrer votre adresse e-mail pour réinitialiser le mot de passe :");
+            if (email) {
+                sendPasswordResetEmail(auth, email)
+                    .then(() => {
+                        alert("Un e-mail de réinitialisation a été envoyé à " + email);
+                    })
+                    .catch((error) => {
+                        console.error("Erreur d'envoi d'e-mail:", error);
+                        displayError("Impossible d'envoyer l'e-mail. Vérifiez l'adresse et réessayez.");
+                    });
+            }
+        });
     </script>
 </body>
 </html>
