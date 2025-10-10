@@ -70,7 +70,7 @@
 <body>
     <div id="vanta-birds-bg"></div>
 
-    <a href="/public/inscription.html" id="logo-link" class="top-right-logo">
+    <a href="/inscription.html" id="logo-link" class="top-right-logo">
         <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
             <g stroke-width="3">
                 <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
@@ -98,7 +98,7 @@
         </header>
         <main>
             <p>Prochaines étapes : formulaire d'inscription, un forum, des outils performant ia gratuits</p>
-            <a href="/public/inscription.html" id="cta-button" class="cta-button">Commencer l'aventure</a>
+            <a href="/inscription.html" id="cta-button" class="cta-button">Commencer l'aventure</a>
         </main>
     </div>
 
@@ -134,22 +134,21 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // On cible les DEUX liens à rendre dynamiques
         const logoLink = document.getElementById('logo-link');
         const ctaButton = document.getElementById('cta-button');
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Utilisateur connecté : on pointe tout vers le dashboard
+                // Utilisateur connecté : on pointe tout vers le dashboard SANS /public/
                 console.log("Utilisateur connecté. Mise à jour des liens vers le dashboard.");
-                logoLink.href = '/public/dashboard.html';
-                ctaButton.href = '/public/dashboard.html';
+                logoLink.href = '/dashboard.html';
+                ctaButton.href = '/dashboard.html';
                 ctaButton.textContent = "Accéder à mon espace";
             } else {
-                // Utilisateur déconnecté : on pointe tout vers l'inscription
+                // Utilisateur déconnecté : on pointe tout vers l'inscription SANS /public/
                 console.log("Utilisateur déconnecté. Liens pointent vers l'inscription.");
-                logoLink.href = '/public/inscription.html';
-                ctaButton.href = '/public/inscription.html';
+                logoLink.href = '/inscription.html';
+                ctaButton.href = '/inscription.html';
                 ctaButton.textContent = "Commencer l'aventure";
             }
         });
