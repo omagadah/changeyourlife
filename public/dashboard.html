@@ -9,12 +9,9 @@
         html, body {
             width: 100%; height: 100%; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            /* Pas besoin de couleur de fond ici, Vanta va s'en charger */
-            color: #e0e0e0;
+            background-color: #1b1c1d; /* Fond de secours */
+            color: #e0e0e-0;
         }
-        
-        /* On a plus besoin du style pour #vanta-background */
-
         .header {
             position: absolute;
             top: 20px;
@@ -34,7 +31,6 @@
             transform: scale(1.1);
             box-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
         }
-
         .user-panel {
             position: absolute;
             top: 130%; right: 0;
@@ -62,7 +58,6 @@
         .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
         .user-panel-separator { height: 1px; background-color: rgba(255, 255, 255, 0.1); margin: 8px 0; }
         .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        
         .container {
             display: flex;
             flex-direction: column;
@@ -91,7 +86,6 @@
             <li class="user-panel-item"><a href="#" id="panel-logout-button"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg><span>Se déconnecter</span></a></li>
         </ul>
     </header>
-    
     <div class="container">
         <h1>Bienvenue sur votre espace personnel</h1>
         <p>Connecté en tant que : <span id="user-email">Chargement...</span></p>
@@ -99,10 +93,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+    
     <script>
     window.addEventListener('DOMContentLoaded', () => {
         VANTA.BIRDS({
-            el: "body", // On cible directement le BODY
+            el: "body",
             mouseControls: true,
             touchControls: true,
             gyroControls: false,
@@ -111,25 +106,32 @@
             scale: 1.00,
             scaleMobile: 1.00,
             backgroundColor: 0x1b1c1d,
-            color1: 0x4a3a3a, // Ta couleur originale, maintenant visible
+            color1: 0x4a3a3a,
             color2: 0xcccccc,
             birdSize: 0.80,
             separation: 51.00,
-            quantity: 5.00
+            
+            // --- MODIFICATIONS POUR UNE AMBIANCE PLUS CALME ---
+            quantity: 3.00,      // Moins d'oiseaux
+            speedLimit: 3.00,    // Vitesse maximale réduite
+            alignment: 40.00,      // Volent plus groupés
+            cohesion: 40.00        // Restent plus proches
         })
     })
     </script>
 
     <script type="module">
-        // ... TOUT LE SCRIPT FIREBASE EST IDENTIQUE ET FONCTIONNEL ...
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
         const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+
         const userPanelTrigger = document.querySelector('.user-panel-trigger');
         const userPanel = document.getElementById('user-panel');
         const panelLogoutButton = document.getElementById('panel-logout-button');
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('user-email').textContent = user.email || "Utilisateur Anonyme";
@@ -139,6 +141,7 @@
                  // window.location.href = '/login'; // Décommenter avant la mise en prod !
             }
         });
+        
         userPanelTrigger.addEventListener('click', (event) => { event.stopPropagation(); userPanel.classList.toggle('active'); });
         window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); });
