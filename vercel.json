@@ -1,12 +1,24 @@
 {
-  "rewrites": [
-    {
-      "source": "/app",
-      "destination": "/dashboard.html"
+  "redirects": [
+    { 
+      "source": "/dashboard.html", 
+      "destination": "/app", 
+      "permanent": true 
     },
-    {
-      "source": "/login",
-      "destination": "/inscription.html"
+    { 
+      "source": "/inscription.html", 
+      "destination": "/login", 
+      "permanent": true 
+    }
+  ],
+  "rewrites": [
+    { 
+      "source": "/app", 
+      "destination": "/dashboard.html" 
+    },
+    { 
+      "source": "/login", 
+      "destination": "/inscription.html" 
     }
   ]
 }
