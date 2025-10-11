@@ -11,9 +11,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #e0e0e0;
         }
-        .header {
-            position: fixed; top: 20px; right: 30px; z-index: 10;
-        }
+        .header { position: fixed; top: 20px; right: 30px; z-index: 10; }
         .user-panel-trigger {
             width: 40px; height: 40px;
             background-color: #00aaff; border-radius: 50%;
@@ -24,16 +22,11 @@
             user-select: none;
         }
         .user-panel-trigger:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(0, 170, 255, 0.5); }
-        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
+        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.7); backdrop-filter: blur(15px); border-radius: 12px; padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
         .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        .user-panel-item, .user-panel-separator { margin: 0 8px; }
-        .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: #f0f0f0; text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
-        .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
-        .user-panel-separator { height: 1px; background-color: rgba(255, 255, 255, 0.1); margin: 8px 0; }
-        .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
         .app-container {
             position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px;
-            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px);
             border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             padding: 30px;
@@ -41,12 +34,7 @@
             overflow-y: auto;
         }
         .page-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 40px; text-align: left; }
-        .settings-section {
-            margin-bottom: 30px;
-            padding: 25px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-        }
+        .settings-section { margin-bottom: 30px; padding: 25px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); }
         .settings-section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 10px; }
         .settings-section p { font-size: 0.9rem; color: #bbb; margin-bottom: 20px; }
         .danger-zone { border: 1px solid rgba(255, 74, 74, 0.4); }
@@ -89,6 +77,33 @@
 
     <main class="app-container">
         <h1 class="page-title">Paramètres</h1>
+
+        <!-- Nouvelle section : Notifications -->
+        <div class="settings-section">
+            <h2>Notifications</h2>
+            <p>Choisissez vos préférences de notifications par email, SMS ou notification push.</p>
+            <label><input type="checkbox"> Recevoir des notifications par email</label><br>
+            <label><input type="checkbox"> Recevoir des notifications par SMS</label><br>
+            <label><input type="checkbox"> Recevoir des notifications push</label>
+        </div>
+
+        <!-- Nouvelle section : Langue et Thème -->
+        <div class="settings-section">
+            <h2>Langue et Thème</h2>
+            <p>Changez la langue et le thème du site.</p>
+            <label for="language">Langue :</label>
+            <select id="language">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+            </select><br>
+            <label for="theme">Thème :</label>
+            <select id="theme">
+                <option value="light">Clair</option>
+                <option value="dark">Sombre</option>
+            </select>
+        </div>
+
+        <!-- Zone de Danger -->
         <div class="settings-section danger-zone">
             <h2>Zone de Danger</h2>
             <p>La suppression de votre compte est une action définitive. Toutes vos données, quêtes et progrès seront définitivement perdus.</p>
@@ -126,7 +141,7 @@
         window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth); });
 
-        // --- NOUVEAU : Logique du bouton de suppression ---
+        // Logique du bouton de suppression
         deleteAccountButton.addEventListener('click', async () => {
             if (!currentUser) return;
 
@@ -134,21 +149,16 @@
             
             if (confirmation === "SUPPRIMER") {
                 try {
-                    // Étape 1 : Supprimer les données de Firestore
                     const userDocRef = doc(db, "users", currentUser.uid);
                     await deleteDoc(userDocRef);
                     console.log("Profil Firestore supprimé.");
-
-                    // Étape 2 : Supprimer le compte d'authentification
                     await deleteUser(currentUser);
                     console.log("Compte d'authentification supprimé.");
-                    
                     alert("Votre compte a été supprimé avec succès.");
-                    // La redirection se fera automatiquement grâce au onAuthStateChanged
                 } catch (error) {
                     console.error("Erreur lors de la suppression du compte:", error.code);
                     if (error.code === 'auth/requires-recent-login') {
-                        alert("Cette opération est sensible et nécessite une reconnexion récente. Veuillez vous déconnecter et vous reconnecter avant de réessayer.");
+                        alert("Cette opération nécessite une reconnexion récente. Veuillez vous déconnecter et vous reconnecter.");
                     } else {
                         alert("Une erreur est survenue. Impossible de supprimer le compte.");
                     }
