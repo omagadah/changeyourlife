@@ -46,7 +46,7 @@
         .welcome-message p { font-size: 0.8rem; margin: 0; color: #bbb; }
         #user-email { font-weight: bold; color: #00aaff; }
 
-        /* Styles pour Shepherd.js */
+        /* Styles pour Shepherd.js (CORRIGÉ ET COMPLET) */
         .shepherd-element {
             background: rgba(35, 35, 35, 0.8) !important;
             backdrop-filter: blur(15px) !important;
@@ -61,12 +61,12 @@
         .shepherd-button { background: #0070f3; border-radius: 8px; }
         .shepherd-button:not(:disabled):hover { background: #0056b3; }
         .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.8) !important; }
-        
-        /* Classe pour la surbrillance rouge */
+
+        /* NOUVEAU : Classe pour la surbrillance rouge clignotante */
         .shepherd-highlight-user {
-            z-index: 10001; /* Doit être au-dessus de l'overlay */
+            z-index: 10001; /* Doit être au-dessus de l'overlay (z-index 9999) */
             box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5);
-            border-radius: 50%;
+            border-radius: 50%; /* Force la forme ronde */
             animation: pulse-red 2s infinite;
         }
         @keyframes pulse-red {
