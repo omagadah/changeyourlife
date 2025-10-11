@@ -47,13 +47,46 @@
         #user-email { font-weight: bold; color: #00aaff; }
 
         /* Styles pour Shepherd.js */
-        .shepherd-element { background: rgba(35, 35, 35, 0.8) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
-        .shepherd-header { padding-bottom: 0; }
-        .shepherd-title { color: #fff !important; font-weight: 600; }
-        .shepherd-text { color: #ddd !important; }
-        .shepherd-button { background: #0070f3; border-radius: 8px; }
-        .shepherd-button:not(:disabled):hover { background: #0056b3; }
-        .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.8) !important; }
+        .shepherd-element {
+            background: rgba(35, 35, 35, 0.9) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+        .shepherd-header {
+            background-color: transparent !important;
+            padding-bottom: 0;
+        }
+        .shepherd-title {
+            color: #f0f0f0 !important;
+            font-weight: 600;
+        }
+        .shepherd-text {
+            color: #cccccc !important;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .shepherd-button {
+            background: #0070f3 !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 0.6rem 1.2rem !important;
+            transition: background-color 0.2s ease;
+        }
+        .shepherd-button.shepherd-button-secondary {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        .shepherd-button:not(:disabled):hover {
+            background: #0056b3 !important;
+        }
+        .shepherd-button.shepherd-button-secondary:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        .shepherd-arrow::before {
+            background-color: rgba(35, 35, 35, 0.9) !important;
+        }
         
         /* Classe pour la surbrillance rouge */
         .shepherd-highlight-user {
@@ -121,7 +154,8 @@
                 userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists() && userDoc.data().hasSeenTutorial === false) {
+                // La condition a été changée de `=== false` à `!== true` pour inclure les nouveaux utilisateurs pour qui le champ n'existe pas encore.
+                if (!userDoc.exists() || userDoc.data().hasSeenTutorial !== true) {
                     startTutorial(userDocRef);
                 }
             } else {
@@ -144,10 +178,11 @@
                 text: 'Votre menu personnel se trouve ici. Vous pouvez l\'utiliser pour accéder à vos paramètres ou vous déconnecter.', 
                 attachTo: { element: '.user-panel-trigger', on: 'bottom' },
                 highlightClass: 'shepherd-highlight-user',
-                buttons: [{ action: tour.back, secondary: true, text: '&larr; Retour' }, { action: tour.next, text: 'Compris !' }] 
+                buttons: [{ action: tour.back, classes: 'shepherd-button-secondary', text: '&larr; Retour' }, { action: tour.next, text: 'Compris !' }] 
             });
             tour.addStep({ title: 'Prêt à commencer ?', text: 'Change Your Life est conçu pour vous aider à voir la vie comme un jeu, avec des quêtes et des succès à débloquer. Explorez, apprenez et grandissez. Votre aventure commence maintenant !', buttons: [{ action: tour.complete, text: 'C\'est parti !' }] });
             tour.on('complete', () => { setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true }).catch(e => console.error("Erreur de mise à jour du tutoriel:", e)); });
+            tour.on('cancel', () => { setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true }).catch(e => console.error("Erreur de mise à jour du tutoriel:", e)); }); // Marque aussi comme vu si l'utilisateur quitte
             tour.start();
         }
     </script>

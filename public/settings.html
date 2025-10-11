@@ -135,11 +135,35 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- GESTION DU PANEL UTILISATEUR ---
+        const userPanelTrigger = document.querySelector('.user-panel-trigger');
+        const userPanel = document.getElementById('user-panel');
+        const panelLogoutButton = document.getElementById('panel-logout-button');
+
+        userPanelTrigger.addEventListener('click', (event) => { 
+            event.stopPropagation(); 
+            userPanel.classList.toggle('active'); 
+        });
+
+        window.addEventListener('click', () => { 
+            if (userPanel.classList.contains('active')) { 
+                userPanel.classList.remove('active'); 
+            } 
+        });
+
+        panelLogoutButton.addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); 
+        });
+        // --- FIN DE LA GESTION ---
+
         let currentUser = null;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                // Met à jour la lettre dans le panel
+                userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
             } else {
                 window.location.href = '/login';
             }
