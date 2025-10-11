@@ -1,23 +1,9 @@
 {
-  "redirects": [
-    { 
-      "source": "/dashboard.html", 
-      "destination": "/app", 
-      "permanent": true 
-    },
-    { 
-      "source": "/inscription.html", 
-      "destination": "/signup", 
-      "permanent": true 
-    }
-  ],
   "rewrites": [
-    { "source": "/", "destination": "/public/index.html" },
-    { "source": "/app", "destination": "/public/dashboard.html" },
-    { "source": "/settings", "destination": "/public/settings.html" },
-    { "source": "/profile", "destination": "/public/profile.html" },
-    { "source": "/login", "destination": "/public/inscription.html" },
-    { "source": "/signup", "destination": "/public/inscription.html" },
-    { "source": "/app/tool-1", "destination": "/public/tools/tool-1.html" }
+    { "source": "/app", "destination": "/dashboard.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/profile", "destination": "/profile.html" },
+    { "source": "/login", "destination": "/inscription.html" },
+    { "source": "/signup", "destination": "/inscription.html" }
   ]
 }
