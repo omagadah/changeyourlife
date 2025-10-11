@@ -38,7 +38,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             padding: 30px;
             z-index: 1;
-            overflow-y: auto; /* Permet de scroller si le contenu devient grand */
+            overflow-y: auto;
         }
         .page-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 40px; text-align: left; }
         .settings-section {
@@ -49,11 +49,7 @@
         }
         .settings-section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 10px; }
         .settings-section p { font-size: 0.9rem; color: #bbb; margin-bottom: 20px; }
-        
-        /* Style de la "Zone de Danger" */
-        .danger-zone {
-            border: 1px solid rgba(255, 74, 74, 0.4);
-        }
+        .danger-zone { border: 1px solid rgba(255, 74, 74, 0.4); }
         .danger-zone h2 { color: #ff4a4a; }
         .delete-button {
             background-color: #d90429;
@@ -93,7 +89,6 @@
 
     <main class="app-container">
         <h1 class="page-title">Paramètres</h1>
-
         <div class="settings-section danger-zone">
             <h2>Zone de Danger</h2>
             <p>La suppression de votre compte est une action définitive. Toutes vos données, quêtes et progrès seront définitivement perdus.</p>
@@ -113,7 +108,6 @@
         const userPanel = document.getElementById('user-panel');
         const panelLogoutButton = document.getElementById('panel-logout-button');
 
-        // Gardien de la page : si personne n'est connecté, on dégage !
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
@@ -126,8 +120,7 @@
         window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth); });
 
-        // On ajoutera la logique du bouton de suppression ici à la prochaine étape
-
+        // Logique du bouton de suppression à venir
     </script>
 </body>
 </html>

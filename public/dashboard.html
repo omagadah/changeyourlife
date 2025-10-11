@@ -46,27 +46,20 @@
         .welcome-message p { font-size: 0.8rem; margin: 0; color: #bbb; }
         #user-email { font-weight: bold; color: #00aaff; }
 
-        /* Styles pour Shepherd.js (CORRIGÉ ET COMPLET) */
-        .shepherd-element {
-            background: rgba(35, 35, 35, 0.8) !important;
-            backdrop-filter: blur(15px) !important;
-            -webkit-backdrop-filter: blur(15px) !important;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
+        /* Styles pour Shepherd.js */
+        .shepherd-element { background: rgba(35, 35, 35, 0.8) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
         .shepherd-header { padding-bottom: 0; }
         .shepherd-title { color: #fff !important; font-weight: 600; }
         .shepherd-text { color: #ddd !important; }
         .shepherd-button { background: #0070f3; border-radius: 8px; }
         .shepherd-button:not(:disabled):hover { background: #0056b3; }
         .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.8) !important; }
-
-        /* NOUVEAU : Classe pour la surbrillance rouge clignotante */
+        
+        /* Classe pour la surbrillance rouge */
         .shepherd-highlight-user {
-            z-index: 10001; /* Doit être au-dessus de l'overlay (z-index 9999) */
+            z-index: 10001;
             box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5);
-            border-radius: 50%; /* Force la forme ronde */
+            border-radius: 50%;
             animation: pulse-red 2s infinite;
         }
         @keyframes pulse-red {
@@ -95,7 +88,7 @@
         <ul class="user-panel" id="user-panel">
             <li class="user-panel-item"><a href="#"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.095a1.23 1.23 0 00.41-1.412A9.99 9.99 0 0010 12c-2.31 0-4.438.784-6.131 2.095z"></path></svg><span>Changer de compte</span></a></li>
             <li class="user-panel-separator"></li>
-            <li class="user-panel-item"><a href="#"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg><span>Paramètres</span></a></li>
+            <li class="user-panel-item"><a href="/settings"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg><span>Paramètres</span></a></li>
             <li class="user-panel-item"><a href="#"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg><span>Support</span></a></li>
             <li class="user-panel-separator"></li>
             <li class="user-panel-item"><a href="#" id="panel-logout-button"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg><span>Se déconnecter</span></a></li>
