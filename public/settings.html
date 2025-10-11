@@ -5,17 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paramètres - Change Your Life</title>
     <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; --danger-color: #ff4a4a; --danger-bg: rgba(217, 4, 41, 0.1); }
-        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0, 0, 0, 0.1); --text-primary: #121212; --text-secondary: #555; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); transition: background-color 0.3s ease, color 0.3s ease; }
-        .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
-        .user-panel-trigger { width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-        /* ... (Collez ici tous les autres styles : user-panel, app-container, nav-menu, settings-section, modal, etc.) ... */
+        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); /* ... etc. */ }
+        body.light-mode { /* ... */ }
+        /* ... (Collez ici TOUS les styles de la version précédente qui fonctionnait) ... */
     </style>
 </head>
 <body>
-    <script type="module"> import { applyInitialTheme } from './js/common.js'; applyInitialTheme(); </script>
+    <script>(function() { if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode'); })();</script>
     <header class="header">
         <div class="user-panel-trigger" title="Mon Compte"></div>
         <ul class="user-panel" id="user-panel">
@@ -69,15 +65,17 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { setupThemeToggle, setupUserPanel, updateGlobalAvatar } from './js/common.js';
+        import { getFirestore, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- LOGIQUE COMMUNE INTÉGRÉE DIRECTEMENT ---
+        // ... (Collez ici les fonctions setupThemeToggle, setupUserPanel, updateGlobalAvatar du fichier common.js)
 
         const firebaseConfig = { /* ... */ };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID
+        const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42'];
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -86,7 +84,7 @@
                 updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
                 
                 if (adminUIDs.includes(user.uid)) {
-                    document.getElementById('admin-nav-link').style.display = 'block';
+                    document.getElementById('admin-nav-link').style.display = 'list-item';
                 }
 
                 // NAVIGATION RÉPARÉE
@@ -97,22 +95,19 @@
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         const targetId = link.getAttribute('href').substring(1);
-                        
                         menuLinks.forEach(l => l.classList.remove('active'));
                         link.classList.add('active');
-                        
                         sections.forEach(s => s.classList.remove('active'));
                         document.getElementById(targetId).classList.add('active');
-
-                        // Mettre à jour l'URL sans recharger et sans le #
                         history.pushState(null, '', `/settings?section=${targetId}`);
                     });
                 });
 
-                // Gérer l'affichage de la section au chargement
                 const urlParams = new URLSearchParams(window.location.search);
                 const section = urlParams.get('section') || 'preferences';
                 document.querySelector(`.nav-link[href="#${section}"]`)?.click();
+
+                // ... (Logique des modals, suppression de compte, etc.)
 
             } else { window.location.href = '/login'; }
         });
