@@ -12,17 +12,11 @@
     }
   ],
   "rewrites": [
-    { 
-      "source": "/app", 
-      "destination": "/dashboard.html" 
-    },
-    { 
-      "source": "/login", 
-      "destination": "/inscription.html" 
-    },
-    { 
-      "source": "/settings", 
-      "destination": "/settings.html" 
-    }
+    { "source": "/app", "destination": "/public/dashboard.html" },
+    { "source": "/settings", "destination": "/public/settings.html" },
+    { "source": "/profile", "destination": "/public/profile.html" },
+    { "source": "/login", "destination": "/public/login.html" },
+    { "source": "/signup", "destination": "/public/inscription.html" },
+    { "source": "/app/tool-1", "destination": "/public/tools/tool-1.html" }
   ]
 }
