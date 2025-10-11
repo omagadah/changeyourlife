@@ -46,7 +46,7 @@
         .welcome-message p { font-size: 0.8rem; margin: 0; color: #bbb; }
         #user-email { font-weight: bold; color: #00aaff; }
 
-        /* Style pour customiser la visite guidée */
+        /* Styles pour Shepherd.js */
         .shepherd-element {
             background: rgba(35, 35, 35, 0.8) !important;
             backdrop-filter: blur(15px) !important;
@@ -56,11 +56,24 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         .shepherd-header { padding-bottom: 0; }
-        .shepherd-title { font-weight: 600; color: white; }
-        .shepherd-text { color: #ccc; }
+        .shepherd-title { color: #fff !important; font-weight: 600; }
+        .shepherd-text { color: #ddd !important; }
         .shepherd-button { background: #0070f3; border-radius: 8px; }
         .shepherd-button:not(:disabled):hover { background: #0056b3; }
-        .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.8); }
+        .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.8) !important; }
+        
+        /* Classe pour la surbrillance rouge */
+        .shepherd-highlight-user {
+            z-index: 10001; /* Doit être au-dessus de l'overlay */
+            box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5);
+            border-radius: 50%;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(255, 74, 74, 0.8), 0 0 35px rgba(255, 74, 74, 0.8); }
+            100% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); }
+        }
     </style>
 </head>
 <body>
@@ -133,7 +146,13 @@
                 attachTo: { element: '.app-container', on: 'top' },
                 buttons: [{ action: tour.next, text: 'Suivant &rarr;' }]
             });
-            tour.addStep({ title: 'Votre Menu', text: 'Votre menu personnel se trouve ici. Vous pouvez l\'utiliser pour accéder à vos paramètres ou vous déconnecter.', attachTo: { element: '.user-panel-trigger', on: 'bottom' }, buttons: [{ action: tour.back, secondary: true, text: '&larr; Retour' }, { action: tour.next, text: 'Compris !' }] });
+            tour.addStep({ 
+                title: 'Votre Menu', 
+                text: 'Votre menu personnel se trouve ici. Vous pouvez l\'utiliser pour accéder à vos paramètres ou vous déconnecter.', 
+                attachTo: { element: '.user-panel-trigger', on: 'bottom' },
+                highlightClass: 'shepherd-highlight-user',
+                buttons: [{ action: tour.back, secondary: true, text: '&larr; Retour' }, { action: tour.next, text: 'Compris !' }] 
+            });
             tour.addStep({ title: 'Prêt à commencer ?', text: 'Change Your Life est conçu pour vous aider à voir la vie comme un jeu, avec des quêtes et des succès à débloquer. Explorez, apprenez et grandissez. Votre aventure commence maintenant !', buttons: [{ action: tour.complete, text: 'C\'est parti !' }] });
             tour.on('complete', () => { setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true }).catch(e => console.error("Erreur de mise à jour du tutoriel:", e)); });
             tour.start();

@@ -14,11 +14,15 @@
   "rewrites": [
     { 
       "source": "/app", 
-      "destination": "/dashboard.html" 
+      "destination": "/public/dashboard.html" 
     },
     { 
       "source": "/login", 
-      "destination": "/inscription.html" 
+      "destination": "/public/inscription.html" 
+    },
+    { 
+      "source": "/settings", 
+      "destination": "/public/settings.html" 
     }
   ]
 }
