@@ -1,31 +1,44 @@
-// Ce fichier gère la logique partagée par toutes les pages connectées.
+// Fichier : public/js/common.js
 
-// --- GESTION DU THÈME ---
+/**
+ * Initialise le sélecteur de thème et applique le thème sauvegardé.
+ */
 export function setupTheme() {
     const darkBtn = document.getElementById('theme-dark-btn');
     const lightBtn = document.getElementById('theme-light-btn');
 
     if (!darkBtn || !lightBtn) return;
 
-    function setTheme(theme) {
+    function applyTheme(theme) {
         if (theme === 'light') {
             document.body.classList.add('light-mode');
-            localStorage.setItem('theme', 'light');
             lightBtn.classList.add('active');
             darkBtn.classList.remove('active');
         } else {
             document.body.classList.remove('light-mode');
-            localStorage.setItem('theme', 'dark');
             darkBtn.classList.add('active');
             lightBtn.classList.remove('active');
         }
     }
-    darkBtn.addEventListener('click', () => setTheme('dark'));
-    lightBtn.addEventListener('click', () => setTheme('light'));
-    setTheme(localStorage.getItem('theme') || 'dark');
+
+    darkBtn.addEventListener('click', () => {
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
+    });
+
+    lightBtn.addEventListener('click', () => {
+        localStorage.setItem('theme', 'light');
+        applyTheme('light');
+    });
+
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(currentTheme);
 }
 
-// --- GESTION DU PANEL UTILISATEUR ---
+/**
+ * Gère l'ouverture/fermeture du panel utilisateur et la déconnexion.
+ * @param {object} auth - L'instance d'authentification Firebase.
+ */
 export function setupUserPanel(auth) {
     const userPanelTrigger = document.querySelector('.user-panel-trigger');
     const userPanel = document.getElementById('user-panel');
@@ -47,13 +60,16 @@ export function setupUserPanel(auth) {
     panelLogoutButton.addEventListener('click', (e) => {
         e.preventDefault();
         auth.signOut().then(() => {
-            localStorage.removeItem('userAvatarUrl'); // Nettoyer l'avatar au logout
+            localStorage.removeItem('userAvatarUrl');
             window.location.href = "/login";
         }).catch(error => console.error("Erreur de déconnexion:", error));
     });
 }
 
-// --- MISE À JOUR DE L'AVATAR GLOBAL ---
+/**
+ * Met à jour l'icône globale de l'utilisateur avec l'avatar sauvegardé ou une initiale.
+ * @param {string} initial - La lettre initiale de l'email de l'utilisateur.
+ */
 export function updateGlobalAvatar(initial) {
     const userPanelTrigger = document.querySelector('.user-panel-trigger');
     if (!userPanelTrigger) return;
