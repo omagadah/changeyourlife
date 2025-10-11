@@ -5,26 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paramètres - Change Your Life</title>
     <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; --danger-color: #ff4a4a; --danger-bg: rgba(217, 4, 41, 0.1); --success-color: #28a745; }
+        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; --danger-color: #ff4a4a; --danger-bg: rgba(217, 4, 41, 0.1); }
+        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0, 0, 0, 0.1); --text-primary: #121212; --text-secondary: #555; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); transition: background-color 0.3s ease, color 0.3s ease; }
         .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
         .user-panel-trigger { width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
         .user-panel-trigger:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(0, 170, 255, 0.5); }
         .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
+        body.light-mode .user-panel { background: rgba(255, 255, 255, 0.8); }
         .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
         .user-panel-item, .user-panel-separator { margin: 0 8px; }
         .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
         .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
+        body.light-mode .user-panel-item a:hover { background-color: rgba(0, 0, 0, 0.05); }
         .user-panel-separator { height: 1px; background-color: var(--glass-border); margin: 8px 0; }
         .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 30px; z-index: 1; display: flex; gap: 40px; }
+        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 30px; z-index: 1; display: flex; gap: 40px; transition: background-color 0.3s ease; }
         .settings-nav { flex: 0 0 200px; border-right: 1px solid var(--glass-border); padding-right: 30px; }
         .settings-nav h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 40px; }
         .nav-menu { list-style: none; }
         .nav-menu a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; text-decoration: none; color: var(--text-secondary); border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .nav-menu a svg { width: 20px; height: 20px; opacity: 0.7; transition: opacity 0.2s ease; }
         .nav-menu a:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+        body.light-mode .nav-menu a:hover { background-color: rgba(0, 0, 0, 0.05); }
         .nav-menu a:hover svg { opacity: 1; }
         .nav-menu a.active { background-color: rgba(0, 170, 255, 0.15); color: var(--accent-color); font-weight: 500; }
         .nav-menu a.active svg { opacity: 1; color: var(--accent-color); }
@@ -37,6 +41,10 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-secondary); }
         .form-input, .form-select { width: 100%; max-width: 400px; padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 1rem; }
+        body.light-mode .form-input, body.light-mode .form-select { background: rgba(255,255,255,0.5); border-color: #ccc; }
+        .theme-selector { display: flex; gap: 10px; }
+        .theme-btn { padding: 8px 16px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
+        .theme-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0, 170, 255, 0.15); }
         .action-button { padding: 10px 20px; background: rgba(255,255,255,0.1); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
         .action-button:hover { background-color: rgba(255,255,255,0.2); }
         .danger-zone { border: 1px solid var(--danger-color); background: var(--danger-bg); padding: 20px; border-radius: 12px; }
@@ -45,6 +53,7 @@
         .danger-button:hover { background-color: #b80020; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
         .modal-content { background: rgba(40, 40, 40, 0.9); margin: 15% auto; padding: 30px; border: 1px solid var(--glass-border); width: 80%; max-width: 500px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); position: relative; animation: modal-appear 0.3s ease-out; }
+        body.light-mode .modal-content { background: rgba(250, 250, 250, 0.9); }
         @keyframes modal-appear { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .close-button { color: #aaa; position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
         .save-button { padding: 12px 24px; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
@@ -52,94 +61,96 @@
     </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script>
-        window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el: "body", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); });
+        (function() { if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); } })();
     </script>
-    <header class="header">
-        <div class="user-panel-trigger" title="Mon Compte">C</div>
-        <ul class="user-panel" id="user-panel">
-            <li class="user-panel-item"><a href="/profile"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg><span>Mon Profil</span></a></li>
-            <li class="user-panel-item"><a href="/app"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg><span>Mon Espace</span></a></li>
-            <li class="user-panel-separator"></li>
-            <li class="user-panel-item"><a href="#" id="panel-logout-button"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg><span>Se déconnecter</span></a></li>
-        </ul>
-    </header>
-    <div id="password-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-modal-button">&times;</span>
-            <h2>Changer le mot de passe</h2>
-            <p>Pour votre sécurité, veuillez entrer votre mot de passe actuel.</p>
-            <div class="form-group"><input type="password" id="current-password" class="form-input" placeholder="Mot de passe actuel"></div>
-            <div class="form-group"><input type="password" id="new-password" class="form-input" placeholder="Nouveau mot de passe"></div>
-            <button id="update-password-button" class="save-button">Mettre à jour</button>
-        </div>
-    </div>
     <div class="app-container">
         <nav class="settings-nav">
             <h1>Paramètres</h1>
             <ul class="nav-menu" id="settings-menu">
-                <li><a href="#preferences" class="active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 16v-2m8-8h-2M4 12H2m16.938-5.938l-1.414 1.414M5.48 18.52l-1.414 1.414M20 12a8 8 0 11-16 0 8 8 0 0116 0z"></path></svg><span>Préférences</span></a></li>
-                <li><a href="#security"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6.364-3.636l-1.414 1.414M21 12h-2M3 12H1m18-3l-1.414-1.414M5.636 5.636L4.222 4.222M12 3V1m0 20v-2m-3.636-6.364l-1.414 1.414M18.364 16.05l-1.414-1.414"></path></svg><span>Sécurité</span></a></li>
-                <li><a href="#privacy"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.417l4.5-4.5M12 14a4 4 0 100-8 4 4 0 000 8z"></path></svg><span>Données</span></a></li>
-                <li><a href="#danger"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Zone de Danger</span></a></li>
+                <li><a href="#preferences" class="active"><span>Préférences</span></a></li>
+                <li><a href="#security"><span>Sécurité</span></a></li>
+                <li id="admin-nav-link" style="display: none;"><a href="#admin"><span>Admin</span></a></li>
+                <li><a href="#danger"><span>Zone de Danger</span></a></li>
             </ul>
         </nav>
         <main class="settings-content">
             <section id="preferences" class="settings-section active">
-                <h2>Préférences du compte</h2>
-                <p>Personnalisez l'apparence et la langue de l'application.</p>
-                <div class="form-group"><label for="language">Langue</label><select id="language" class="form-select"><option value="fr">Français</option><option value="en">English</option></select></div>
-                <div class="form-group"><label for="theme">Thème</label><select id="theme" class="form-select"><option value="dark">Sombre (Défaut)</option><option value="light" disabled>Clair (Bientôt disponible)</option></select></div>
-            </section>
-            <section id="security" class="settings-section">
-                <h2>Sécurité</h2>
-                <p>Gérez les informations de votre compte et les sessions actives.</p>
-                <button id="change-password-btn" class="action-button">Changer le mot de passe</button>
-            </section>
-            <section id="privacy" class="settings-section">
-                <h2>Données et vie privée</h2>
-                <p>Gérez les informations que vous partagez avec nous.</p>
-                <button id="download-data-btn" class="action-button">Télécharger mes données</button>
-            </section>
-            <section id="danger" class="settings-section">
-                <div class="danger-zone">
-                    <h2>Zone de Danger</h2>
-                    <p>La suppression de votre compte est une action définitive. Toutes vos données seront définitivement perdues.</p>
-                    <button class="danger-button" id="delete-account-button">Supprimer mon compte</button>
+                <h2>Préférences</h2>
+                <div class="form-group">
+                    <label>Thème</label>
+                    <div class="theme-selector">
+                        <button id="theme-dark-btn" class="theme-btn">Sombre</button>
+                        <button id="theme-light-btn" class="theme-btn">Clair</button>
+                    </div>
                 </div>
             </section>
+            <section id="security" class="settings-section"></section>
+            <section id="admin" class="settings-section" style="display: none;">
+                <h2>Panel Admin</h2>
+                <p>Outils réservés aux administrateurs.</p>
+                <div class="form-group">
+                    <label for="user-uid-input">UID de l'utilisateur</label>
+                    <input type="text" id="user-uid-input" class="form-input" placeholder="Entrez l'UID à télécharger...">
+                </div>
+                <button id="download-data-btn" class="action-button">Télécharger les données</button>
+            </section>
+            <section id="danger" class="settings-section"></section>
         </main>
     </div>
+    
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const userPanelTrigger = document.querySelector('.user-panel-trigger');
-        const userPanel = document.getElementById('user-panel');
-        const panelLogoutButton = document.getElementById('panel-logout-button');
-        userPanelTrigger.addEventListener('click', (event) => { event.stopPropagation(); userPanel.classList.toggle('active'); });
-        window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
-        panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); });
-        const menuLinks = document.querySelectorAll('#settings-menu a');
-        const sections = document.querySelectorAll('.settings-section');
-        menuLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const targetId = link.getAttribute('href').substring(1); sections.forEach(section => section.classList.remove('active')); document.getElementById(targetId).classList.add('active'); menuLinks.forEach(l => l.classList.remove('active')); link.classList.add('active'); }); });
-        const modal = document.getElementById('password-modal');
-        const changePassBtn = document.getElementById('change-password-btn');
-        const closeModalBtn = document.getElementById('close-modal-button');
-        changePassBtn.onclick = () => { modal.style.display = "block"; };
-        closeModalBtn.onclick = () => { modal.style.display = "none"; };
-        window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; } };
-        let currentUser = null;
-        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase(); } else { window.location.href = '/login'; } });
-        document.getElementById('update-password-button').addEventListener('click', async () => { const currentPassword = document.getElementById('current-password').value; const newPassword = document.getElementById('new-password').value; if (!currentPassword || !newPassword) return alert("Veuillez remplir tous les champs."); if (!currentUser) return alert("Utilisateur non connecté."); if (currentUser.providerData.some(provider => provider.providerId === 'google.com')) { return alert("Vous êtes connecté via Google. La modification de mot de passe n'est pas applicable."); } const credential = EmailAuthProvider.credential(currentUser.email, currentPassword); try { await reauthenticateWithCredential(currentUser, credential); await updatePassword(currentUser, newPassword); alert("Mot de passe mis à jour avec succès !"); modal.style.display = "none"; } catch (error) { alert("Erreur: Le mot de passe actuel est incorrect ou le nouveau mot de passe est trop faible."); } });
-        document.getElementById("delete-account-button").addEventListener("click", async () => { if (!currentUser) return alert("Utilisateur non connecté."); const confirmation = prompt("Pour confirmer la suppression DÉFINITIVE de votre compte, veuillez taper 'SUPPRIMER'."); if (confirmation === "SUPPRIMER") { try { const userDocRef = doc(db, "users", currentUser.uid); await deleteDoc(userDocRef); await deleteUser(currentUser); alert("Votre compte a été supprimé avec succès."); window.location.href = "/login"; } catch (error) { alert("Une erreur est survenue. Vous devrez peut-être vous reconnecter pour effectuer cette action."); } } else { alert("Suppression annulée."); } });
-        document.getElementById('download-data-btn').addEventListener('click', async () => { if (!currentUser) return alert("Utilisateur non connecté."); const userDocRef = doc(db, "users", currentUser.uid); const userDoc = await getDoc(userDocRef); if (userDoc.exists()) { const data = userDoc.data(); const jsonData = JSON.stringify(data, null, 2); const blob = new Blob([jsonData], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'changeyourlife_data.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); } else { alert("Aucune donnée à télécharger."); } });
+        // ... Imports Firebase ...
+        const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID EST ICI
+        
+        // ... Logique du panel, navigation, modal ...
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
+
+                // AFFICHER LE PANEL ADMIN SI L'UID CORRESPOND
+                if (adminUIDs.includes(user.uid)) {
+                    document.getElementById('admin-nav-link').style.display = 'block';
+                    document.getElementById('admin').style.display = 'block'; // S'assure que la section peut être naviguée
+                }
+            } else { window.location.href = '/login'; }
+        });
+        
+        // --- LOGIQUE DU THÈME ---
+        const darkBtn = document.getElementById('theme-dark-btn');
+        const lightBtn = document.getElementById('theme-light-btn');
+        
+        function setTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+                lightBtn.classList.add('active');
+                darkBtn.classList.remove('active');
+            } else {
+                document.body.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark');
+                darkBtn.classList.add('active');
+                lightBtn.classList.remove('active');
+            }
+        }
+
+        darkBtn.addEventListener('click', () => setTheme('dark'));
+        lightBtn.addEventListener('click', () => setTheme('light'));
+        
+        // Initialiser l'état des boutons au chargement
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(currentTheme);
+
+        // --- LOGIQUE TÉLÉCHARGEMENT ADMIN ---
+        document.getElementById('download-data-btn').addEventListener('click', async () => {
+            const uidToDownload = document.getElementById('user-uid-input').value;
+            if (!uidToDownload) return alert("Veuillez entrer un UID.");
+            // ... (logique de téléchargement comme avant, mais avec uidToDownload) ...
+        });
+        
+        // ... Reste du script (mot de passe, suppression de compte) ...
     </script>
 </body>
 </html>
