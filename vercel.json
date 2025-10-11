@@ -7,15 +7,16 @@
     },
     { 
       "source": "/inscription.html", 
-      "destination": "/login", 
+      "destination": "/signup", 
       "permanent": true 
     }
   ],
   "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
     { "source": "/app", "destination": "/public/dashboard.html" },
     { "source": "/settings", "destination": "/public/settings.html" },
     { "source": "/profile", "destination": "/public/profile.html" },
-    { "source": "/login", "destination": "/public/login.html" },
+    { "source": "/login", "destination": "/public/inscription.html" },
     { "source": "/signup", "destination": "/public/inscription.html" },
     { "source": "/app/tool-1", "destination": "/public/tools/tool-1.html" }
   ]

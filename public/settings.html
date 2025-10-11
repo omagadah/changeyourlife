@@ -83,30 +83,18 @@
         <nav class="settings-nav">
             <h1>Paramètres</h1>
             <ul class="nav-menu" id="settings-menu">
-                <li><a href="#preferences" class="active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 16v-2m8-8h2M4 12H2m15.364 6.364l1.414 1.414M4.222 5.636l1.414 1.414m12.728 0l-1.414 1.414M5.636 18.364l-1.414 1.414M12 16a4 4 0 110-8 4 4 0 010 8z"></path></svg><span>Préférences</span></a></li>
-                <li><a href="#security"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6.364-3.636L4.222 15M4 9h.01M4 12h.01M12 4h.01M4.222 9L5.636 7.586M19.778 9l-1.414-1.414M12 9v.01M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span>Sécurité</span></a></li>
-                <li><a href="#privacy"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.417l4.5-4.5M12 14a4 4 0 100-8 4 4 0 000 8z"></path></svg><span>Données</span></a></li>
-                <li><a href="#danger"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Zone de Danger</span></a></li>
+                 <li><a href="#preferences" class="active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span>Préférences</span></a></li>
+                <li><a href="#security"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6.364-3.636l-1.414 1.414M21 12h-2M3 12H1m18-3l-1.414-1.414M5.636 5.636L4.222 4.222M12 3V1m0 20v-2m-3.636-6.364L7 16.05M20.364 16.05l-1.414-1.414"></path></svg><span>Sécurité</span></a></li>
+                <li><a href="#privacy"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.417l4.5-4.5M12 14a4 4 0 100-8 4 4 0 000 8z"></path></svg><span>Données</span></a></li>
+                <li><a href="#danger"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Zone de Danger</span></a></li>
             </ul>
         </nav>
         <main class="settings-content">
             <section id="preferences" class="settings-section active">
                 <h2>Préférences du compte</h2>
                 <p>Personnalisez l'apparence et la langue de l'application.</p>
-                <div class="form-group">
-                    <label for="language">Langue</label>
-                    <select id="language" class="form-select">
-                        <option value="fr">Français</option>
-                        <option value="en">English</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="theme">Thème</label>
-                    <select id="theme" class="form-select">
-                        <option value="dark">Sombre (Défaut)</option>
-                        <option value="light">Clair (Bientôt disponible)</option>
-                    </select>
-                </div>
+                <div class="form-group"><label for="language">Langue</label><select id="language" class="form-select"><option value="fr">Français</option><option value="en">English</option></select></div>
+                <div class="form-group"><label for="theme">Thème</label><select id="theme" class="form-select"><option value="dark">Sombre (Défaut)</option><option value="light" disabled>Clair (Bientôt disponible)</option></select></div>
             </section>
             <section id="security" class="settings-section">
                 <h2>Sécurité</h2>
@@ -131,90 +119,31 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+        import { getFirestore, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // --- GESTION DU PANEL ---
         const userPanelTrigger = document.querySelector('.user-panel-trigger');
         const userPanel = document.getElementById('user-panel');
         const panelLogoutButton = document.getElementById('panel-logout-button');
         userPanelTrigger.addEventListener('click', (event) => { event.stopPropagation(); userPanel.classList.toggle('active'); });
         window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); });
-
-        // --- NAVIGATION INTERNE ---
         const menuLinks = document.querySelectorAll('#settings-menu a');
         const sections = document.querySelectorAll('.settings-section');
-        menuLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1);
-                sections.forEach(section => section.classList.remove('active'));
-                document.getElementById(targetId).classList.add('active');
-                menuLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-            });
-        });
-
-        // --- MODAL MOT DE PASSE ---
+        menuLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const targetId = link.getAttribute('href').substring(1); sections.forEach(section => section.classList.remove('active')); document.getElementById(targetId).classList.add('active'); menuLinks.forEach(l => l.classList.remove('active')); link.classList.add('active'); }); });
         const modal = document.getElementById('password-modal');
         const changePassBtn = document.getElementById('change-password-btn');
         const closeModalBtn = document.getElementById('close-modal-button');
         changePassBtn.onclick = () => { modal.style.display = "block"; };
         closeModalBtn.onclick = () => { modal.style.display = "none"; };
         window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; } };
-
-        // --- LOGIQUE PRINCIPALE ---
         let currentUser = null;
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
-            } else {
-                window.location.href = '/login';
-            }
-        });
-
-        document.getElementById('update-password-button').addEventListener('click', async () => {
-            const currentPassword = document.getElementById('current-password').value;
-            const newPassword = document.getElementById('new-password').value;
-            if (!currentPassword || !newPassword) return alert("Veuillez remplir tous les champs.");
-            if (!currentUser) return alert("Utilisateur non connecté.");
-            if (currentUser.providerData.some(provider => provider.providerId === 'google.com')) {
-                return alert("Vous êtes connecté via Google. La modification de mot de passe n'est pas applicable.");
-            }
-            const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-            try {
-                await reauthenticateWithCredential(currentUser, credential);
-                await updatePassword(currentUser, newPassword);
-                alert("Mot de passe mis à jour avec succès !");
-                modal.style.display = "none";
-            } catch (error) {
-                alert("Erreur: Le mot de passe actuel est incorrect ou le nouveau mot de passe est trop faible.");
-            }
-        });
-        
-        document.getElementById("delete-account-button").addEventListener("click", async () => {
-            if (!currentUser) return alert("Utilisateur non connecté.");
-            const confirmation = prompt("Pour confirmer la suppression DÉFINITIVE de votre compte, veuillez taper 'SUPPRIMER'.");
-            if (confirmation === "SUPPRIMER") {
-                try {
-                    const userDocRef = doc(db, "users", currentUser.uid);
-                    await deleteDoc(userDocRef);
-                    await deleteUser(currentUser);
-                    alert("Votre compte a été supprimé avec succès.");
-                    window.location.href = "/login";
-                } catch (error) {
-                    alert("Une erreur est survenue. Vous devrez peut-être vous reconnecter pour effectuer cette action.");
-                }
-            } else {
-                alert("Suppression annulée.");
-            }
-        });
+        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase(); } else { window.location.href = '/login'; } });
+        document.getElementById('update-password-button').addEventListener('click', async () => { const currentPassword = document.getElementById('current-password').value; const newPassword = document.getElementById('new-password').value; if (!currentPassword || !newPassword) return alert("Veuillez remplir tous les champs."); if (!currentUser) return alert("Utilisateur non connecté."); if (currentUser.providerData.some(provider => provider.providerId === 'google.com')) { return alert("Vous êtes connecté via Google. La modification de mot de passe n'est pas applicable."); } const credential = EmailAuthProvider.credential(currentUser.email, currentPassword); try { await reauthenticateWithCredential(currentUser, credential); await updatePassword(currentUser, newPassword); alert("Mot de passe mis à jour avec succès !"); modal.style.display = "none"; } catch (error) { alert("Erreur: Le mot de passe actuel est incorrect ou le nouveau mot de passe est trop faible."); } });
+        document.getElementById("delete-account-button").addEventListener("click", async () => { if (!currentUser) return alert("Utilisateur non connecté."); const confirmation = prompt("Pour confirmer la suppression DÉFINITIVE de votre compte, veuillez taper 'SUPPRIMER'."); if (confirmation === "SUPPRIMER") { try { const userDocRef = doc(db, "users", currentUser.uid); await deleteDoc(userDocRef); await deleteUser(currentUser); alert("Votre compte a été supprimé avec succès."); window.location.href = "/login"; } catch (error) { alert("Une erreur est survenue. Vous devrez peut-être vous reconnecter pour effectuer cette action."); } } else { alert("Suppression annulée."); } });
+        document.getElementById('download-data-btn').addEventListener('click', async () => { if (!currentUser) return alert("Utilisateur non connecté."); const userDocRef = doc(db, "users", currentUser.uid); const userDoc = await getDoc(userDocRef); if (userDoc.exists()) { const data = userDoc.data(); const jsonData = JSON.stringify(data, null, 2); const blob = new Blob([jsonData], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'changeyourlife_data.json'; a.click(); URL.revokeObjectURL(url); } else { alert("Aucune donnée à télécharger."); } });
     </script>
 </body>
 </html>
