@@ -1,65 +1,149 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Profil - Change Your Life</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <style>
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 40px; z-index: 1; display: flex; gap: 40px; overflow: hidden; }
-        h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 30px; }
-        .avatar-creator { flex: 0 0 300px; text-align: center; display: flex; flex-direction: column; }
-        .avatar-preview { width: 200px; height: 200px; margin: 0 auto 30px auto; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); }
-        .avatar-controls { display: flex; flex-direction: column; gap: 15px; text-align: left; overflow-y: auto; padding-right: 15px; }
-        .control-group { display: flex; flex-direction: column; }
-        .control-group label { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: capitalize; }
-        .control-group select { padding: 8px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); }
-        .profile-info { flex-grow: 1; overflow-y: auto; }
-        .form-group { margin-bottom: 25px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-        .form-input { width: 100%; max-width: 500px; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 1rem; }
-        .form-input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-color); }
-        .save-button { padding: 12px 24px; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
-        .save-button:hover { background-color: #007fcc; }
-    </style>
-</head>
-<body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <script>
-        window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el: "body", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); });
-    </script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    <header class="header">
-        <div class="user-panel-trigger" title="Mon Compte">C</div>
-        <ul class="user-panel" id="user-panel">
-            <li class="user-panel-item"><a href="/app"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg><span>Mon Espace</span></a></li>
-            <li class="user-panel-item"><a href="/settings"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg><span>Paramètres</span></a></li>
-            <li class="user-panel-separator"></li>
-            <li class="user-panel-item"><a href="#" id="panel-logout-button"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg><span>Se déconnecter</span></a></li>
-        </ul>
-    </header>
+// --- CONFIGURATION FIREBASE (doit correspondre à vos autres pages) ---
+const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    <div class="app-container">
-        <section class="avatar-creator">
-            <h1>Votre Avatar</h1>
-            <div class="avatar-preview" id="avatar-preview-container"></div>
-            <div class="avatar-controls" id="avatar-controls-container"></div>
-        </section>
-        <section class="profile-info">
-            <h1>Informations du Profil</h1>
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur</label>
-                <input type="text" id="username" class="form-input" placeholder="Choisissez un nom public">
-            </div>
-            <div class="form-group">
-                <label for="bio">Biographie</label>
-                <textarea id="bio" class="form-input" rows="4" placeholder="Parlez un peu de vous..."></textarea>
-            </div>
-            <button id="save-profile-button" class="save-button">Enregistrer les modifications</button>
-        </section>
-    </div>
+// --- ÉLÉMENTS DU DOM ---
+const avatarPreviewContainer = document.getElementById('avatar-preview-container');
+const avatarControlsContainer = document.getElementById('avatar-controls-container');
+const usernameInput = document.getElementById('username');
+const bioInput = document.getElementById('bio');
+const saveProfileButton = document.getElementById('save-profile-button');
 
-    <script type="module" src="/js/profile.js"></script>
-</body>
-</html>
+// --- OPTIONS DU CRÉATEUR D'AVATAR (Extensible à l'infini) ---
+const avatarOptionsConfig = {
+    topType: ['NoHair', 'Eyepatch', 'Hat', 'Hijab', 'Turban', 'WinterHat1', 'LongHairBigHair', 'LongHairBob', 'LongHairCurly', 'LongHairCurvy', 'LongHairDreads', 'LongHairFrida', 'LongHairFro', 'LongHairFroBand', 'LongHairNotTooLong', 'LongHairShavedSides', 'LongHairMiaWallace', 'LongHairStraight', 'LongHairStraight2', 'LongHairStraightStrand', 'ShortHairDreads01', 'ShortHairDreads02', 'ShortHairFrizzle', 'ShortHairShaggyMullet', 'ShortHairShortCurly', 'ShortHairShortFlat', 'ShortHairShortRound', 'ShortHairShortWaved', 'ShortHairSides', 'ShortHairTheCaesar', 'ShortHairTheCaesarSidePart'],
+    accessoriesType: ['Blank', 'Kurt', 'Prescription01', 'Prescription02', 'Round', 'Sunglasses', 'Wayfarers'],
+    hairColor: ['Auburn', 'Black', 'Blonde', 'BlondeGolden', 'Brown', 'BrownDark', 'PastelPink', 'Platinum', 'Red', 'SilverGray'],
+    facialHairType: ['Blank', 'BeardMedium', 'BeardLight', 'BeardMajestic', 'MoustacheFancy', 'MoustacheMagnum'],
+    clotheType: ['BlazerShirt', 'BlazerSweater', 'CollarSweater', 'GraphicShirt', 'Hoodie', 'Overall', 'ShirtCrewNeck', 'ShirtScoopNeck', 'ShirtVNeck'],
+    eyeType: ['Close', 'Cry', 'Default', 'Dizzy', 'EyeRoll', 'Happy', 'Hearts', 'Side', 'Squint', 'Surprised', 'Wink', 'WinkWacky'],
+    eyebrowType: ['Angry', 'AngryNatural', 'Default', 'DefaultNatural', 'FlatNatural', 'RaisedExcited', 'RaisedExcitedNatural', 'SadConcerned', 'SadConcernedNatural', 'UnibrowNatural', 'UpDown', 'UpDownNatural'],
+    mouthType: ['Concerned', 'Default', 'Disbelief', 'Eating', 'Grimace', 'Sad', 'ScreamOpen', 'Serious', 'Smile', 'Tongue', 'Twinkle', 'Vomit'],
+    skinColor: ['Tanned', 'Yellow', 'Pale', 'Light', 'Brown', 'DarkBrown', 'Black']
+};
+
+let currentUserData = {
+    username: '',
+    bio: '',
+    avatar: {}
+};
+
+// --- FONCTIONS ---
+
+/** Génère l'URL de l'avatar à partir des options sélectionnées */
+function generateAvatarUrl(options) {
+    const params = new URLSearchParams(options);
+    return `https://avataaars.io/?${params.toString()}`;
+}
+
+/** Met à jour le SVG de l'avatar dans la prévisualisation */
+function updateAvatarPreview() {
+    const url = generateAvatarUrl(currentUserData.avatar);
+    avatarPreviewContainer.innerHTML = `<img src="${url}" alt="Avatar preview" style="width:100%; height:100%;">`;
+}
+
+/** Crée les menus déroulants pour personnaliser l'avatar */
+function populateAvatarControls() {
+    for (const [key, values] of Object.entries(avatarOptionsConfig)) {
+        const group = document.createElement('div');
+        group.className = 'control-group';
+        
+        const label = document.createElement('label');
+        label.textContent = key.replace(/([A-Z])/g, ' $1').trim(); // 'topType' -> 'top Type'
+        label.htmlFor = `select-${key}`;
+        
+        const select = document.createElement('select');
+        select.id = `select-${key}`;
+        select.dataset.option = key;
+
+        values.forEach(value => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        });
+
+        // Met à jour l'avatar à chaque changement
+        select.addEventListener('change', (e) => {
+            currentUserData.avatar[key] = e.target.value;
+            updateAvatarPreview();
+        });
+
+        group.appendChild(label);
+        group.appendChild(select);
+        avatarControlsContainer.appendChild(group);
+    }
+}
+
+/** Charge les données utilisateur depuis Firestore */
+async function loadUserData(userId) {
+    const userDocRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+        const data = userDoc.data();
+        currentUserData.username = data.username || '';
+        currentUserData.bio = data.bio || '';
+        currentUserData.avatar = data.avatar || { // Valeurs par défaut si pas d'avatar
+            topType: 'ShortHairShortFlat',
+            accessoriesType: 'Blank',
+            hairColor: 'BrownDark',
+            facialHairType: 'Blank',
+            clotheType: 'Hoodie',
+            eyeType: 'Default',
+            eyebrowType: 'Default',
+            mouthType: 'Smile',
+            skinColor: 'Light'
+        };
+    }
+    // Affiche les données chargées
+    usernameInput.value = currentUserData.username;
+    bioInput.value = currentUserData.bio;
+    
+    // Sélectionne les bonnes options dans les menus
+    for (const [key, value] of Object.entries(currentUserData.avatar)) {
+        const select = document.getElementById(`select-${key}`);
+        if (select) select.value = value;
+    }
+    
+    updateAvatarPreview();
+}
+
+/** Sauvegarde les données utilisateur dans Firestore */
+async function saveUserData(userId) {
+    currentUserData.username = usernameInput.value;
+    currentUserData.bio = bioInput.value;
+    
+    const userDocRef = doc(db, "users", userId);
+    try {
+        await setDoc(userDocRef, {
+            username: currentUserData.username,
+            bio: currentUserData.bio,
+            avatar: currentUserData.avatar
+        }, { merge: true }); // merge: true pour ne pas écraser les autres champs (comme hasSeenTutorial)
+        
+        alert('Profil mis à jour avec succès !');
+
+    } catch (error) {
+        console.error("Erreur lors de la sauvegarde du profil:", error);
+        alert('Une erreur est survenue.');
+    }
+}
+
+
+// --- INITIALISATION DE LA PAGE ---
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        populateAvatarControls();
+        loadUserData(user.uid);
+        saveProfileButton.addEventListener('click', () => saveUserData(user.uid));
+    } else {
+        window.location.href = '/login';
+    }
+});
