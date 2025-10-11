@@ -1,15 +1,25 @@
 // Fichier : public/js/common.js
 
 /**
- * Initialise le sélecteur de thème et applique le thème sauvegardé.
+ * Applique le thème sauvegardé au chargement initial de la page.
+ * À appeler dans une balise <script> dans le <head> pour éviter le "flash".
  */
-export function setupTheme() {
+export function applyInitialTheme() {
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+    }
+}
+
+/**
+ * Initialise les boutons du sélecteur de thème.
+ */
+export function setupThemeToggle() {
     const darkBtn = document.getElementById('theme-dark-btn');
     const lightBtn = document.getElementById('theme-light-btn');
 
     if (!darkBtn || !lightBtn) return;
 
-    function applyTheme(theme) {
+    function setTheme(theme) {
         if (theme === 'light') {
             document.body.classList.add('light-mode');
             lightBtn.classList.add('active');
@@ -21,18 +31,11 @@ export function setupTheme() {
         }
     }
 
-    darkBtn.addEventListener('click', () => {
-        localStorage.setItem('theme', 'dark');
-        applyTheme('dark');
-    });
+    darkBtn.addEventListener('click', () => { localStorage.setItem('theme', 'dark'); setTheme('dark'); });
+    lightBtn.addEventListener('click', () => { localStorage.setItem('theme', 'light'); setTheme('light'); });
 
-    lightBtn.addEventListener('click', () => {
-        localStorage.setItem('theme', 'light');
-        applyTheme('light');
-    });
-
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(currentTheme);
+    // Initialise l'état des boutons
+    setTheme(localStorage.getItem('theme') || 'dark');
 }
 
 /**

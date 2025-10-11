@@ -11,146 +11,111 @@
         html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); transition: background-color 0.3s ease, color 0.3s ease; }
         .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
         .user-panel-trigger { width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-        .user-panel-trigger:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(0, 170, 255, 0.5); }
-        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
-        body.light-mode .user-panel { background: rgba(255, 255, 255, 0.8); }
-        .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        .user-panel-item, .user-panel-separator { margin: 0 8px; }
-        .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
-        .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
-        body.light-mode .user-panel-item a:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .user-panel-separator { height: 1px; background-color: var(--glass-border); margin: 8px 0; }
-        .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 30px; z-index: 1; display: flex; gap: 40px; transition: background-color 0.3s ease; }
-        .settings-nav { flex: 0 0 200px; border-right: 1px solid var(--glass-border); padding-right: 30px; }
-        .settings-nav h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 40px; }
-        .nav-menu { list-style: none; }
-        .nav-menu a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; text-decoration: none; color: var(--text-secondary); border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
-        .nav-menu a svg { width: 20px; height: 20px; opacity: 0.7; transition: opacity 0.2s ease; }
-        .nav-menu a:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
-        body.light-mode .nav-menu a:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .nav-menu a:hover svg { opacity: 1; }
-        .nav-menu a.active { background-color: rgba(0, 170, 255, 0.15); color: var(--accent-color); font-weight: 500; }
-        .nav-menu a.active svg { opacity: 1; color: var(--accent-color); }
-        .settings-content { flex-grow: 1; overflow-y: auto; padding-right: 15px; }
-        .settings-section { display: none; animation: fadeIn 0.5s ease-in-out; }
-        .settings-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .settings-section h2 { font-size: 1.3rem; font-weight: 500; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; }
-        .settings-section p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 25px; max-width: 600px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-secondary); }
-        .form-input, .form-select { width: 100%; max-width: 400px; padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 1rem; }
-        body.light-mode .form-input, body.light-mode .form-select { background: rgba(255,255,255,0.5); border-color: #ccc; }
-        .theme-selector { display: flex; gap: 10px; }
-        .theme-btn { padding: 8px 16px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
-        .theme-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0, 170, 255, 0.15); }
-        .action-button { padding: 10px 20px; background: rgba(255,255,255,0.1); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
-        .action-button:hover { background-color: rgba(255,255,255,0.2); }
-        .danger-zone { border: 1px solid var(--danger-color); background: var(--danger-bg); padding: 20px; border-radius: 12px; }
-        .danger-zone h2 { color: var(--danger-color); border: none; }
-        .danger-button { background-color: #d90429; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
-        .danger-button:hover { background-color: #b80020; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .modal-content { background: rgba(40, 40, 40, 0.9); margin: 15% auto; padding: 30px; border: 1px solid var(--glass-border); width: 80%; max-width: 500px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); position: relative; animation: modal-appear 0.3s ease-out; }
-        body.light-mode .modal-content { background: rgba(250, 250, 250, 0.9); }
-        @keyframes modal-appear { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .close-button { color: #aaa; position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .save-button { padding: 12px 24px; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
-        .save-button:hover { background-color: #007fcc; }
+        /* ... (Collez ici tous les autres styles : user-panel, app-container, nav-menu, settings-section, modal, etc.) ... */
     </style>
 </head>
 <body>
-    <script>
-        (function() { if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); } })();
-    </script>
+    <script type="module"> import { applyInitialTheme } from './js/common.js'; applyInitialTheme(); </script>
+    <header class="header">
+        <div class="user-panel-trigger" title="Mon Compte"></div>
+        <ul class="user-panel" id="user-panel">
+            <li class="user-panel-item"><a href="/profile"><span>Mon Profil</span></a></li>
+            <li class="user-panel-item"><a href="/app"><span>Mon Espace</span></a></li>
+            <li class="user-panel-separator"></li>
+            <li class="user-panel-item"><a href="#" id="panel-logout-button"><span>Se déconnecter</span></a></li>
+        </ul>
+    </header>
     <div class="app-container">
         <nav class="settings-nav">
             <h1>Paramètres</h1>
             <ul class="nav-menu" id="settings-menu">
-                <li><a href="#preferences" class="active"><span>Préférences</span></a></li>
-                <li><a href="#security"><span>Sécurité</span></a></li>
-                <li id="admin-nav-link" style="display: none;"><a href="#admin"><span>Admin</span></a></li>
-                <li><a href="#danger"><span>Zone de Danger</span></a></li>
+                <li><a href="#preferences" class="nav-link active"><span>Préférences</span></a></li>
+                <li><a href="#security" class="nav-link"><span>Sécurité</span></a></li>
+                <li id="admin-nav-link" style="display: none;"><a href="#admin" class="nav-link"><span>Administration</span></a></li>
             </ul>
         </nav>
         <main class="settings-content">
             <section id="preferences" class="settings-section active">
                 <h2>Préférences</h2>
-                <div class="form-group">
-                    <label>Thème</label>
+                <div class="form-group" id="theme-selector">
+                    <label>Thème d'affichage</label>
                     <div class="theme-selector">
                         <button id="theme-dark-btn" class="theme-btn">Sombre</button>
                         <button id="theme-light-btn" class="theme-btn">Clair</button>
                     </div>
                 </div>
             </section>
-            <section id="security" class="settings-section"></section>
-            <section id="admin" class="settings-section" style="display: none;">
+            <section id="security" class="settings-section">
+                <h2>Sécurité</h2>
+                <p>Gérez les options de sécurité de votre compte.</p>
+                <button id="change-password-btn" class="action-button">Changer le mot de passe</button>
+                <div class="danger-zone" style="margin-top: 40px;">
+                    <h2>Zone de Danger</h2>
+                    <p>La suppression de votre compte est définitive et irréversible.</p>
+                    <button class="danger-button" id="delete-account-button">Supprimer mon compte</button>
+                </div>
+            </section>
+            <section id="admin" class="settings-section">
                 <h2>Panel Admin</h2>
                 <p>Outils réservés aux administrateurs.</p>
-                <div class="form-group">
-                    <label for="user-uid-input">UID de l'utilisateur</label>
-                    <input type="text" id="user-uid-input" class="form-input" placeholder="Entrez l'UID à télécharger...">
-                </div>
-                <button id="download-data-btn" class="action-button">Télécharger les données</button>
+                <input type="text" id="user-uid-input" class="form-input" placeholder="Entrez l'UID d'un utilisateur...">
+                <button id="download-data-btn" class="action-button">Télécharger les données de l'utilisateur</button>
             </section>
-            <section id="danger" class="settings-section"></section>
         </main>
     </div>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+    <script> window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el: "body", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); }); </script>
     <script type="module">
-        // ... Imports Firebase ...
-        const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID EST ICI
-        
-        // ... Logique du panel, navigation, modal ...
-        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { setupThemeToggle, setupUserPanel, updateGlobalAvatar } from './js/common.js';
+
+        const firebaseConfig = { /* ... */ };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user;
-                userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
-
-                // AFFICHER LE PANEL ADMIN SI L'UID CORRESPOND
+                setupUserPanel(auth);
+                setupThemeToggle();
+                updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
+                
                 if (adminUIDs.includes(user.uid)) {
                     document.getElementById('admin-nav-link').style.display = 'block';
-                    document.getElementById('admin').style.display = 'block'; // S'assure que la section peut être naviguée
                 }
+
+                // NAVIGATION RÉPARÉE
+                const menuLinks = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('.settings-section');
+                
+                menuLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const targetId = link.getAttribute('href').substring(1);
+                        
+                        menuLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        
+                        sections.forEach(s => s.classList.remove('active'));
+                        document.getElementById(targetId).classList.add('active');
+
+                        // Mettre à jour l'URL sans recharger et sans le #
+                        history.pushState(null, '', `/settings?section=${targetId}`);
+                    });
+                });
+
+                // Gérer l'affichage de la section au chargement
+                const urlParams = new URLSearchParams(window.location.search);
+                const section = urlParams.get('section') || 'preferences';
+                document.querySelector(`.nav-link[href="#${section}"]`)?.click();
+
             } else { window.location.href = '/login'; }
         });
-        
-        // --- LOGIQUE DU THÈME ---
-        const darkBtn = document.getElementById('theme-dark-btn');
-        const lightBtn = document.getElementById('theme-light-btn');
-        
-        function setTheme(theme) {
-            if (theme === 'light') {
-                document.body.classList.add('light-mode');
-                localStorage.setItem('theme', 'light');
-                lightBtn.classList.add('active');
-                darkBtn.classList.remove('active');
-            } else {
-                document.body.classList.remove('light-mode');
-                localStorage.setItem('theme', 'dark');
-                darkBtn.classList.add('active');
-                lightBtn.classList.remove('active');
-            }
-        }
-
-        darkBtn.addEventListener('click', () => setTheme('dark'));
-        lightBtn.addEventListener('click', () => setTheme('light'));
-        
-        // Initialiser l'état des boutons au chargement
-        const currentTheme = localStorage.getItem('theme') || 'dark';
-        setTheme(currentTheme);
-
-        // --- LOGIQUE TÉLÉCHARGEMENT ADMIN ---
-        document.getElementById('download-data-btn').addEventListener('click', async () => {
-            const uidToDownload = document.getElementById('user-uid-input').value;
-            if (!uidToDownload) return alert("Veuillez entrer un UID.");
-            // ... (logique de téléchargement comme avant, mais avec uidToDownload) ...
-        });
-        
-        // ... Reste du script (mot de passe, suppression de compte) ...
     </script>
 </body>
 </html>
