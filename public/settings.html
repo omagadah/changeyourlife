@@ -98,18 +98,24 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
         const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
         const userPanelTrigger = document.querySelector('.user-panel-trigger');
         const userPanel = document.getElementById('user-panel');
         const panelLogoutButton = document.getElementById('panel-logout-button');
+        const deleteAccountButton = document.getElementById('delete-account-button');
+
+        let currentUser = null;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                currentUser = user;
                 userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
             } else {
                 window.location.href = '/login';
@@ -120,7 +126,37 @@
         window.addEventListener('click', () => { if (userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth); });
 
-        // Logique du bouton de suppression à venir
+        // --- NOUVEAU : Logique du bouton de suppression ---
+        deleteAccountButton.addEventListener('click', async () => {
+            if (!currentUser) return;
+
+            const confirmation = prompt("Pour confirmer la suppression DÉFINITIVE de votre compte, veuillez taper 'SUPPRIMER' dans le champ ci-dessous.");
+            
+            if (confirmation === "SUPPRIMER") {
+                try {
+                    // Étape 1 : Supprimer les données de Firestore
+                    const userDocRef = doc(db, "users", currentUser.uid);
+                    await deleteDoc(userDocRef);
+                    console.log("Profil Firestore supprimé.");
+
+                    // Étape 2 : Supprimer le compte d'authentification
+                    await deleteUser(currentUser);
+                    console.log("Compte d'authentification supprimé.");
+                    
+                    alert("Votre compte a été supprimé avec succès.");
+                    // La redirection se fera automatiquement grâce au onAuthStateChanged
+                } catch (error) {
+                    console.error("Erreur lors de la suppression du compte:", error.code);
+                    if (error.code === 'auth/requires-recent-login') {
+                        alert("Cette opération est sensible et nécessite une reconnexion récente. Veuillez vous déconnecter et vous reconnecter avant de réessayer.");
+                    } else {
+                        alert("Une erreur est survenue. Impossible de supprimer le compte.");
+                    }
+                }
+            } else {
+                alert("Suppression annulée.");
+            }
+        });
     </script>
 </body>
 </html>
