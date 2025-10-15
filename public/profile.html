@@ -5,54 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Profil - Change Your Life</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
-    <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; }
-        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0, 0, 0, 0.1); --text-primary: #121212; --text-secondary: #555; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); transition: background-color 0.3s ease, color 0.3s ease; }
-        .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
-        .user-panel-trigger { width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-        .user-panel-trigger:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(0, 170, 255, 0.5); }
-        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
-        body.light-mode .user-panel { background: rgba(255, 255, 255, 0.8); }
-        .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        .user-panel-item, .user-panel-separator { margin: 0 8px; }
-        .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
-        .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
-        body.light-mode .user-panel-item a:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .user-panel-separator { height: 1px; background-color: var(--glass-border); margin: 8px 0; }
-        .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 40px; z-index: 1; display: flex; gap: 40px; overflow: hidden; }
-        h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; }
-        .avatar-creator { flex: 0 0 300px; text-align: center; display: flex; flex-direction: column; }
-        .avatar-preview-wrapper { margin-bottom: 20px; }
-        .avatar-preview { width: 150px; height: 150px; margin: 0 auto 15px auto; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); }
-        #username-display { font-size: 1.2rem; font-weight: 600; color: var(--accent-color); min-height: 1.4em; }
-        #title-display { font-size: 0.9rem; color: var(--text-secondary); font-style: italic; min-height: 1.2em; }
-        .avatar-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; text-align: left; overflow-y: auto; padding-right: 15px; margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
-        .control-group { display: flex; flex-direction: column; }
-        .control-group label { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: capitalize; }
-        .control-group select { padding: 8px; border-radius: 6px; border: 1px solid var(--glass-border); background: #2a2a2a; color: var(--text-primary); }
-        .control-group option { background: #3a3a3a; color: var(--text-primary); }
-        body.light-mode .control-group select { background: #f0f0f0; border-color: #ccc; color: var(--text-primary); }
-        body.light-mode .control-group option { background: #fff; color: var(--text-primary); }
-        .profile-info { flex-grow: 1; overflow-y: auto; }
-        .form-group { margin-bottom: 25px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-        .form-input { width: 100%; max-width: 500px; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 1rem; }
-        .form-input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-color); }
-        body.light-mode .form-input { background: rgba(255,255,255,0.6); }
-        .save-button, .random-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
-        .save-button { background: var(--accent-color); color: white; }
-        .random-btn { background: rgba(255,255,255,0.1); color: var(--text-primary); }
-        body.light-mode .random-btn { background: rgba(0,0,0,0.05); }
-        .button-group { display: flex; gap: 10px; margin-top: 20px; }
-        .theme-selector { display: flex; gap: 10px; }
-        .theme-btn { padding: 8px 16px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
-        .theme-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0, 170, 255, 0.15); }
-        .shepherd-highlight-red { z-index: 10001; box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); border-radius: 8px; animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8); } 50% { box-shadow: 0 0 0 6px rgba(255, 74, 74, 1); } 100% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8); } }
-    </style>
+        <link rel="stylesheet" href="/css/main.css">
+        <style>
+            html, body {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+        </style>
 </head>
 <body>
     <script>(function() { if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode'); })();</script>
@@ -107,12 +66,14 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // --- TOUTE LA LOGIQUE EST MAINTENANT INTÉGRÉE ICI ---
+        
         const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ... Le code complet et fonctionnel est maintenant ici ...
+        // ... (collez ici le code complet de `profile.js` de ma réponse précédente, SANS la ligne "import ... from './common.js'")
     </script>
 </body>
 </html>

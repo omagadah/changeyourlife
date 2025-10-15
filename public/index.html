@@ -18,60 +18,29 @@
     <meta name="msapplication-TileColor" content="#262626">
     <meta name="theme-color" content="#ffffff">
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100%; height: 100%; overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #fff;
-        }
-        #vanta-birds-bg { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-        }
-        .top-right-logo {
-            position: fixed; top: 20px; right: 20px;
-            width: 75px; z-index: 100;
-            transition: transform 0.3s ease; cursor: pointer;
-        }
-        .top-right-logo:hover { transform: scale(1.1); }
-        .content {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100%; text-align: center; padding: 2rem; z-index: 1;
-        }
-        header h1 { font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 700; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
-        header p { font-size: 1.2rem; color: #ddd; margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
-        main p { margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
-        .cta-button {
-            background-color: #0070f3; color: white; padding: 1rem 2rem; border-radius: 8px;
-            text-decoration: none; font-weight: bold; transition: transform 0.2s ease, background-color 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
-        }
-        .cta-button:hover { background-color: #0056b3; transform: scale(1.05); }
-        #urgence-btn {
-            position: fixed; bottom: 30px; left: 30px; z-index: 1000;
-            padding: 12px 24px;
-            background-color: rgba(255, 255, 255, 0.9); color: #d90429; border: 2px solid #d90429;
-            border-radius: 50px; font-size: 1rem; font-weight: bold; text-transform: uppercase; text-decoration: none;
-            box-shadow: 0 0 15px rgba(217, 4, 41, 0.5); transition: all 0.3s ease; animation: pulse 2.5s infinite;
-            cursor: pointer;
-        }
-        #urgence-btn:hover {
-            background-color: #d90429; color: white; transform: scale(1.1);
-            box-shadow: 0 0 25px rgba(217, 4, 41, 0.8); animation-play-state: paused;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 15px rgba(217, 4, 41, 0.5); }
-            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(217, 4, 41, 0.8); }
-            100% { transform: scale(1); box-shadow: 0 0 15px rgba(217, 4, 41, 0.5); }
-        }
-        @media (max-width: 768px) {
-            .top-right-logo { width: 60px; top: 15px; right: 15px; }
-            header h1 { font-size: 2.5rem; }
-            header p, main p { font-size: 1rem; }
-            .cta-button { padding: 0.8rem 1.5rem; font-size: 0.9rem; }
-            #urgence-btn { font-size: 0.8rem; padding: 8px 16px; bottom: 20px; left: 20px; }
-        }
-    </style>
+        <link rel="stylesheet" href="/css/main.css">
+        <style>
+            html, body {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            #vanta-birds-bg {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            }
+            .top-right-logo {
+                position: fixed; top: 20px; right: 20px;
+                width: 75px; z-index: 100;
+                transition: transform 0.3s ease; cursor: pointer;
+            }
+            .top-right-logo:hover { transform: scale(1.1); }
+            .content {
+                display: flex; flex-direction: column; justify-content: center; align-items: center;
+                min-height: 100vh; text-align: center; padding: 2rem; z-index: 1;
+            }
+            @media (max-width: 768px) {
+                .top-right-logo { width: 60px; top: 15px; right: 15px; }
+            }
+        </style>
 </head>
 <body>
     <div id="vanta-birds-bg"></div>
