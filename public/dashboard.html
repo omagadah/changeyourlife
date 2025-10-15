@@ -72,13 +72,26 @@
 </head>
 <body>
         <header class="dashboard-header">
-                <div class="dashboard-title">Mon espace</div>
-                <nav class="dashboard-nav">
-                        <a href="/profile">Profil</a>
-                        <a href="/settings">Paramètres</a>
-                        <a href="/">Accueil</a>
-                        <a href="#" id="logout-link">Déconnexion</a>
-                </nav>
+            <div class="dashboard-title">Mon espace</div>
+            <nav class="dashboard-nav">
+                <a href="/profile">Profil</a>
+                <a href="/settings">Paramètres</a>
+                <a href="/">Accueil</a>
+            </nav>
+            <div class="header">
+                <div class="user-panel-trigger" tabindex="0"></div>
+                <ul class="user-panel" id="user-panel">
+                    <li class="user-panel-item" style="padding: 12px 15px; font-weight: bold; color: var(--accent-color);">
+                        <span id="user-email">Utilisateur</span>
+                    </li>
+                    <li class="user-panel-separator"></li>
+                    <li class="user-panel-item"><a href="/profile">Profil</a></li>
+                    <li class="user-panel-item"><a href="/settings">Paramètres</a></li>
+                    <li class="user-panel-item"><a href="/" >Accueil</a></li>
+                    <li class="user-panel-separator"></li>
+                    <li class="user-panel-item"><a href="#" id="panel-logout-button">Déconnexion</a></li>
+                </ul>
+            </div>
         </header>
         <main class="dashboard-main">
                 <section class="dashboard-section" id="competences-section">
@@ -120,11 +133,7 @@
                 </section>
         </main>
         <script>
-        // Placeholder pour la déconnexion (à relier à Firebase plus tard)
-        document.getElementById('logout-link').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Déconnexion à venir (Firebase)');
-        });
+        // Suppression du faux handler logout-link, la déconnexion se fait via le panneau utilisateur (panel-logout-button)
         // Placeholder pour le chat IA
         document.getElementById('open-ia-chat').addEventListener('click', function() {
             alert('Chat IA à venir !');
