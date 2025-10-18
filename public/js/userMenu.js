@@ -15,7 +15,7 @@ export function initUserMenu() {
                 <div class="cyf-menu-item"><a href="/profile">Mon Profil</a></div>
                 <div class="cyf-menu-item"><a href="/settings">Paramètres</a></div>
                 <div class="cyf-menu-sep"></div>
-                <div class="cyf-menu-item"><a href="#" id="cyf-signout" class="cyf-signout">Se déconnecter <span class="cyf-arrow">›</span></a></div>
+                <div class="cyf-menu-item"><a href="#" id="cyf-signout" class="cyf-signout">Se déconnecter <span class="cyf-door"> </span></a></div>
             </div>
         `;
         document.body.appendChild(menu);
@@ -34,7 +34,7 @@ export function initUserMenu() {
             .cyf-menu-item a:hover { text-decoration: underline; }
             .cyf-menu-sep { height: 1px; background: rgba(255,255,255,0.03); margin: 8px 0; }
             .cyf-signout { color: #ffdddd; }
-            .cyf-arrow { opacity: 0.9; margin-left: 8px; }
+            .cyf-door { display:inline-block; width:20px; height:20px; vertical-align:middle; margin-left:8px; }
         `;
         document.head.appendChild(s);
     }
@@ -47,9 +47,16 @@ export function initUserMenu() {
     window.addEventListener('click', () => { if (menu.style.display === 'block') hideMenu(); });
 
     // Sign out
-    const signout = document.getElementById('cyf-signout');
-    if (signout) {
-        signout.addEventListener('click', async (e) => {
+    // bind sign-out after menu insertion (menu may be created earlier or later)
+    function bindSignOut() {
+        const signoutEl = document.getElementById('cyf-signout');
+        if (!signoutEl) return;
+        // inject a small door+arrow SVG into the .cyf-door span for clarity
+        const doorSpan = signoutEl.querySelector('.cyf-door');
+        if (doorSpan && doorSpan.innerHTML.trim() === '') {
+            doorSpan.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 12v6a2 2 0 0 0 2 2h10"></path><path d="M10 12V8a2 2 0 0 1 2-2h4"></path><path d="M16 16l4-4"></path><path d="M20 12l-4-4"></path></svg>`;
+        }
+        signoutEl.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
                 const auth = window._cyfFirebase && window._cyfFirebase.auth;
@@ -58,6 +65,7 @@ export function initUserMenu() {
             } catch (err) { console.error('Sign out failed', err); }
         });
     }
+    bindSignOut();
 
     // Hide current page's menu item for clarity
     try {
