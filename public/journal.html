@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Thérapeutique - Change Your Life</title>
+    <link rel="stylesheet" href="/css/main.min.css">
+    <style>
+        .journal-container {
+            position: fixed;
+            inset: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .entry-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        .entry-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .entry-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .entry-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .mood-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .mood-emoji {
+            font-size: 1.2rem;
+        }
+
+        .entry-content {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .ai-insight {
+            background: rgba(0,170,255,0.1);
+            border-left: 3px solid var(--accent-color);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .new-entry {
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .new-entry:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--accent-color);
+        }
+
+        .emotions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .emotion-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .emotion-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .emotion-btn.selected {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .emotion-emoji {
+            font-size: 1.5rem;
+        }
+
+        .emotion-label {
+            font-size: 0.8rem;
+        }
+
+        #entry-editor {
+            display: none;
+            position: fixed;
+            inset: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            z-index: 1000;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-editor {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-editor:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: none;
+            margin-bottom: 20px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="vanta-birds-bg"></div>
+    
+    <header class="header">
+        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
+            <!-- SVG Logo -->
+            <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
+                <g stroke-width="3">
+                    <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+                    <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+                    <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+                    <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+                    <circle cx="140" cy="30" r="10" fill="none" stroke="white"/>
+                    <circle cx="140" cy="60" r="10" fill="none" stroke="white"/>
+                    <circle cx="140" cy="90" r="10" fill="none" stroke="white"/>
+                </g>
+            </svg>
+        </button>
+    </header>
+
+    <div class="journal-container">
+        <h1>Journal Thérapeutique</h1>
+        
+        <div class="new-entry" id="start-entry">
+            <h3>✨ Nouvelle entrée</h3>
+            <p>Cliquez ici pour commencer à écrire</p>
+        </div>
+        
+        <div class="entry-list" id="entries">
+            <!-- Les entrées seront injectées ici -->
+        </div>
+    </div>
+
+    <div id="entry-editor">
+        <div class="editor-header">
+            <h2>Nouvelle entrée</h2>
+            <button class="close-editor" id="close-editor">✕</button>
+        </div>
+
+        <div class="emotions-grid">
+            <button class="emotion-btn" data-emotion="joy">
+                <span class="emotion-emoji">😊</span>
+                <span class="emotion-label">Joie</span>
+            </button>
+            <button class="emotion-btn" data-emotion="calm">
+                <span class="emotion-emoji">😌</span>
+                <span class="emotion-label">Calme</span>
+            </button>
+            <button class="emotion-btn" data-emotion="grateful">
+                <span class="emotion-emoji">🙏</span>
+                <span class="emotion-label">Gratitude</span>
+            </button>
+            <button class="emotion-btn" data-emotion="worried">
+                <span class="emotion-emoji">😟</span>
+                <span class="emotion-label">Inquiet</span>
+            </button>
+            <button class="emotion-btn" data-emotion="sad">
+                <span class="emotion-emoji">😢</span>
+                <span class="emotion-label">Triste</span>
+            </button>
+            <button class="emotion-btn" data-emotion="angry">
+                <span class="emotion-emoji">😠</span>
+                <span class="emotion-label">Colère</span>
+            </button>
+        </div>
+
+        <textarea id="entry-content" placeholder="Comment vous sentez-vous aujourd'hui ? Partagez vos pensées..."></textarea>
+
+        <div class="action-row">
+            <button class="btn btn-secondary" id="cancel-entry">Annuler</button>
+            <button class="btn btn-primary" id="save-entry">Enregistrer</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script type="module" src="/js/journal.js"></script>
+    <script type="module">
+        import { updateGlobalAvatar } from '/js/common.min.js';
+        import { initUserMenu } from '/js/userMenu.js';
+        
+        // Init Vanta.js background
+        window.addEventListener('DOMContentLoaded', () => {
+            const vantaBg = VANTA.BIRDS({
+                el: "#vanta-birds-bg",
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                scale: 1.00,
+                scaleMobile: 1.00,
+                backgroundColor: 0x07192f,
+                color1: 0x4a3a3a,
+                color2: 0xcccccc,
+                quantity: 4.00
+            });
+
+            // Ensure the canvas doesn't capture pointer events
+            setTimeout(() => {
+                const canvas = document.querySelector('#vanta-birds-bg canvas');
+                if (canvas) {
+                    canvas.style.pointerEvents = 'none';
+                    canvas.style.zIndex = '0';
+                    document.getElementById('vanta-birds-bg').style.zIndex = '0';
+                }
+            }, 100);
+        });
+
+        // Initialize UI components
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                updateGlobalAvatar();
+            } catch (e) { /* ignore */ }
+        });
+
+        // Handle menu clicks
+        document.querySelectorAll('.user-panel-trigger').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                initUserMenu();
+                const menu = document.getElementById('cyf-user-menu');
+                if (menu) {
+                    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

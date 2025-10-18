@@ -33,7 +33,10 @@
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .tool-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-decoration: none; color: #e0e0e0; transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; position: relative; overflow: hidden; }
         .tool-card:hover { transform: translateY(-5px) scale(1.02); background-color: rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
-        .tool-card-image { height: 150px; background-color: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; background-image: url('https://images.unsplash.com/photo-1550537685-6917cb7b7b25?q=80&w=2070'); background-size: cover; background-position: center; }
+        .tool-card.coming-soon { opacity: 0.6; cursor: default; pointer-events: none; }
+        .tool-card.coming-soon:hover { transform: none; background-color: rgba(255, 255, 255, 0.05); box-shadow: none; }
+        .tool-card.coming-soon::after { content: 'Prochainement'; position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; letter-spacing: 0.5px; }
+        .tool-card-image { height: 150px; background-color: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
         .tool-card h3 { font-size: 1.1rem; margin-bottom: 5px; font-weight: 500; }
         .tool-card p { font-size: 0.9rem; color: #bbb; line-height: 1.5; }
         .shepherd-element { background: rgba(35, 35, 35, 0.9) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; }
@@ -72,20 +75,55 @@
             }, 60);
         });
     </script>
-    <header class="header">
-        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu"></button>
-    </header>
+        <header class="header">
+                <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
+                            <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
+                                <g stroke-width="3">
+                                    <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+                                    <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+                                    <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+                                    <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+                                    <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+                                    <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+                                    <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
+                                    <g fill="none" stroke="white" stroke-linecap="round">
+                                        <circle cx="145" cy="30" r="3"/>
+                                        <circle cx="155" cy="30" r="3"/>
+                                        <line x1="145" y1="30" x2="155" y2="30"/>
+                                        <path d="M 150 52 l 6 10 h -12 z" />
+                                        <circle cx="150" cy="85" r="3"/>
+                                        <circle cx="144" cy="95" r="3"/>
+                                        <circle cx="156" cy="95" r="3"/>
+                                        <line x1="150" y1="85" x2="144" y2="95"/>
+                                        <line x1="150" y1="85" x2="156" y2="95"/>
+                                    </g>
+                                </g>
+                            </svg>
+                </button>
+        </header>
     <main class="app-container">
         <div class="welcome-message">
             <h1>Bienvenue</h1>
             <p>Connecté en tant que : <span id="user-email">Chargement...</span></p>
         </div>
         <div class="tools-grid">
-            <a href="/app/tool-1" class="tool-card" id="tool-card-1">
-                <div class="tool-card-image"></div>
-                <h3>Journal Intuitif IA</h3>
+            <a href="/journal" class="tool-card" id="tool-card-1">
+                <div class="tool-card-image">📔</div>
+                <h3>Journal Thérapeutique IA</h3>
                 <p>Exprimez vos pensées et recevez des analyses et des conseils personnalisés de notre IA.</p>
             </a>
+            
+            <div class="tool-card coming-soon">
+                <div class="tool-card-image">🧘</div>
+                <h3>Méditation Guidée</h3>
+                <p>Prochainement - Des séances de méditation personnalisées avec guidage vocal IA.</p>
+            </div>
+            
+            <div class="tool-card coming-soon">
+                <div class="tool-card-image">🎯</div>
+                <h3>Objectifs & Progrès</h3>
+                <p>Prochainement - Définissez et suivez vos objectifs avec l'aide de l'IA.</p>
+            </div>
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
