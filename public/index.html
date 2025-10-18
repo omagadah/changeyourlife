@@ -111,7 +111,7 @@
         </header>
         <main>
             <p>Prochaine étape : Mise en ligne d'outils gratuits, performants et optimisés par l'ia > pour la santé mentale</p>
-            <a href="/login" id="cta-button" class="cta-button">Commencer l'aventure</a>
+            <a href="inscription.html" id="cta-button" class="cta-button">Commencer l'aventure</a>
         </main>
     </div>
 
@@ -149,12 +149,12 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                     // store a navigation target on the logo button (do not navigate automatically)
-                    logoLink.dataset.target = '/app';
-                    ctaButton.href = '/app';
+                    logoLink.dataset.target = 'app.html';
+                    ctaButton.href = 'app.html';
                     ctaButton.textContent = "Accéder à mon espace";
                 } else {
-                    logoLink.dataset.target = '/login';
-                    ctaButton.href = '/login';
+                    logoLink.dataset.target = 'inscription.html';
+                    ctaButton.href = 'inscription.html';
                     ctaButton.textContent = "Commencer l'aventure";
                 }
         });
