@@ -100,7 +100,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <script> window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el: "body", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); }); </script>
+    <div id="vanta-birds-bg"></div>
+    <script> window.addEventListener('DOMContentLoaded', () => { const v = VANTA.BIRDS({ el: "#vanta-birds-bg", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if(c){c.style.pointerEvents='none'; c.style.zIndex='0'; document.getElementById('vanta-birds-bg').style.zIndex='0'; } },60); }); </script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module" src="/js/profile.js"></script>
 </body>

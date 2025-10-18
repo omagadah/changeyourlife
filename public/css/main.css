@@ -75,3 +75,18 @@ html, body {
     from { width: 100%; }
     to { width: 0%; }
 }
+/* Vanta background container should be behind UI and not capture pointer events */
+/* Vanta background container should be behind UI and not capture pointer events */
+#vanta-birds-bg {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 0 !important;
+    pointer-events: none !important; /* allow clicks to pass through */
+}
+#vanta-birds-bg canvas {
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+/* Ensure header and panels are above Vanta */
+.header, .user-panel, .toast-notification { z-index: 10000 !important; }

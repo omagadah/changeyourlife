@@ -65,7 +65,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <script> window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el: "body", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); }); </script>
+    <div id="vanta-birds-bg"></div>
+    <script> window.addEventListener('DOMContentLoaded', () => { const v = VANTA.BIRDS({ el: "#vanta-birds-bg", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if(c){c.style.pointerEvents='none'; c.style.zIndex='0'; document.getElementById('vanta-birds-bg').style.zIndex='0'; } },60); }); </script>
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -115,15 +116,15 @@
                             sections.forEach(s => s.classList.remove('active'));
                             document.getElementById(targetId).classList.add('active');
 
-                            // Mettre à jour l'URL sans recharger et sans le #
-                            history.pushState(null, '', `/settings?section=${targetId}`);
+                            // Mettre à jour l'URL sans recharger (clean URL) and store section in state
+                            history.pushState({ section: targetId }, '', `/settings`);
                         });
                     });
 
                     // Gérer l'affichage de la section au chargement
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const section = urlParams.get('section') || 'preferences';
-                    document.querySelector(`.nav-link[href="#${section}"]`)?.click();
+                    // Prefer history.state.section (clean URL), otherwise fallback to query param
+                    const initialSection = (history.state && history.state.section) || (new URLSearchParams(window.location.search).get('section')) || 'preferences';
+                    document.querySelector(`.nav-link[href="#${initialSection}"]`)?.click();
 
                 } else { window.location.href = '/login'; }
             });
