@@ -1,7 +1,7 @@
 // public/js/inscription.js
 // Gestion de l'authentification sur la page d'inscription / connexion
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 // Singleton Firebase init (évite les redéclarations)
 let app, auth;
@@ -120,3 +120,21 @@ if (forgotLink) {
 }
 
 export default {};
+
+// Handle redirect results (used when falling back to redirect sign-in)
+(async function handleRedirectResult(){
+  try {
+    const result = await getRedirectResult(auth);
+    if (result && result.user) {
+      console.log('Redirect sign-in result:', result.user);
+      showNotification('Connexion réussie — redirection...');
+      setTimeout(() => { window.location.href = '/app'; }, 800);
+    }
+  } catch (err) {
+    console.warn('No redirect result or error:', err);
+    // show non-blocking message
+    if (err && err.code === 'auth/unauthorized-domain') {
+      showError('Domaine non autorisé pour OAuth — vérifie Firebase Console');
+    }
+  }
+})();
