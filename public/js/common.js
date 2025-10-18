@@ -47,9 +47,14 @@ export function setupUserPanel(auth) {
     const userPanel = document.getElementById('user-panel');
     const panelLogoutButton = document.getElementById('panel-logout-button');
 
-    if (!userPanelTrigger || !userPanel || !panelLogoutButton) return;
+    if (!userPanelTrigger || !userPanel || !panelLogoutButton) {
+        console.debug('setupUserPanel: missing elements', { userPanelTrigger: !!userPanelTrigger, userPanel: !!userPanel, panelLogoutButton: !!panelLogoutButton });
+        return;
+    }
 
+    console.debug('setupUserPanel: wiring user panel handlers');
     userPanelTrigger.addEventListener('click', (event) => {
+        console.debug('user-panel-trigger clicked (common.setupUserPanel)');
         event.stopPropagation();
         userPanel.classList.toggle('active');
     });

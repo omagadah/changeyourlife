@@ -129,7 +129,9 @@
         });
 
         // Local UI handlers that don't rely on auth state
-        if (userPanelTrigger) userPanelTrigger.addEventListener('click', (event) => { event.stopPropagation(); userPanel.classList.toggle('active'); });
+        if (userPanelTrigger) {
+            userPanelTrigger.addEventListener('click', (event) => { console.debug('dashboard: userPanelTrigger click handler'); event.stopPropagation(); userPanel.classList.toggle('active'); });
+        }
         window.addEventListener('click', () => { if (userPanel && userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
         if (panelLogoutButton) panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); });
         function startTutorial(userDocRef) {
