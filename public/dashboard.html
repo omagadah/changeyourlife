@@ -83,11 +83,13 @@
             <p>Connecté en tant que : <span id="user-email">Chargement...</span></p>
         </div>
         <div class="tools-grid">
-            <a href="/app/tool-1" class="tool-card" id="tool-card-1">
-                <div class="tool-card-image"></div>
+            <div class="tool-card" id="tool-card-1">
+                <div class="tool-card-image" style="padding:0;overflow:hidden;">
+                    <iframe src="/app.html" title="Journal Intuitif IA" style="width:100%;height:100%;border:0;min-height:150px;border-radius:10px;background:#07192f;" sandbox="allow-scripts allow-forms allow-same-origin allow-modals"></iframe>
+                </div>
                 <h3>Journal Intuitif IA</h3>
                 <p>Exprimez vos pensées et recevez des analyses et des conseils personnalisés de notre IA.</p>
-            </a>
+            </div>
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
