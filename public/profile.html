@@ -57,9 +57,7 @@
 <body>
     <script>(function() { if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode'); })();</script>
     <header class="header">
-        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-            <img src="/logo.svg" alt="ChangeYourLife" style="width:40px;height:40px;display:block;border-radius:6px;" />
-        </button>
+        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu"></button>
     </header>
     <div class="app-container">
         <section class="avatar-creator">
@@ -108,5 +106,9 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module" src="/js/profile.js"></script>
+    <script type="module">
+        import { updateGlobalAvatar } from '/js/common.js';
+        window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
+    </script>
 </body>
 </html>

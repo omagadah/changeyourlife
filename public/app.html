@@ -24,7 +24,7 @@
 </head>
 <body>
   <header class="header">
-    <button class="user-panel-trigger" aria-label="Ouvrir le menu"><img src="/logo.svg" alt="logo" style="width:40px;height:40px;display:block;border-radius:6px;"/></button>
+    <button class="user-panel-trigger" aria-label="Ouvrir le menu"></button>
   </header>
 
   <main class="app-wrap">
@@ -48,8 +48,12 @@
 
   <script type="module">
     import { initUserMenu } from '/js/userMenu.js';
+    import { updateGlobalAvatar } from '/js/common.js';
     // show menu on header trigger click
     document.querySelectorAll('.user-panel-trigger').forEach(btn => btn.addEventListener('click', (e)=>{ e.stopPropagation(); initUserMenu(); const menu=document.getElementById('cyf-user-menu'); if(menu){ menu.style.display = (menu.style.display==='block')? 'none':'block'; }}));
+
+  // Ensure the global logo is injected once DOM is ready
+  window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) { /* ignore */ } });
 
     // Auth guard - reuse singleton
     (async function initAuth(){
