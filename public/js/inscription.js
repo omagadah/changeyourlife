@@ -1,7 +1,7 @@
 // public/js/inscription.js
 // Gestion de l'authentification sur la page d'inscription / connexion
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // Singleton Firebase init (évite les redéclarations)
@@ -21,6 +21,9 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const errorMessage = document.getElementById('error-message');
 const notification = document.getElementById('notification');
+const authToggleLink = document.getElementById('auth-toggle-link');
+const authToggleText = document.getElementById('auth-toggle-text');
+let isRegister = false;
 
 function showError(msg) { if (!errorMessage) return; errorMessage.textContent = msg; }
 function showNotification(msg) { if (!notification) return; notification.textContent = msg; notification.classList.add('show'); setTimeout(() => notification.classList.remove('show'), 3500); }
@@ -33,10 +36,16 @@ if (form) {
     const password = passwordInput.value;
     if (!email || !password) { showError('Veuillez renseigner vos identifiants'); return; }
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      showNotification('Connexion réussie — redirection...');
-      // Redirige vers l'app
-      setTimeout(() => { window.location.href = '/app'; }, 900);
+      if (!isRegister) {
+        await signInWithEmailAndPassword(auth, email, password);
+        showNotification('Connexion réussie — redirection...');
+        setTimeout(() => { window.location.href = '/app'; }, 900);
+      } else {
+        // Register
+        await createUserWithEmailAndPassword(auth, email, password);
+        showNotification('Compte créé — redirection...');
+        setTimeout(() => { window.location.href = '/app'; }, 900);
+      }
     } catch (err) {
       console.error('Auth error', err);
       showError(err.message || 'Erreur lors de la connexion');
@@ -119,6 +128,25 @@ if (githubBtn) {
 const forgotLink = document.getElementById('forgot-password-link');
 if (forgotLink) {
   forgotLink.addEventListener('click', (e) => { e.preventDefault(); showNotification('Fonction mot de passe oublié — à implémenter'); });
+}
+
+// Toggle login/register
+if (authToggleLink) {
+  authToggleLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    isRegister = !isRegister;
+    if (isRegister) {
+      authToggleText.textContent = 'Vous avez déjà un compte ?';
+      authToggleLink.textContent = 'Se connecter';
+      document.getElementById('auth-title').textContent = 'Créer un compte';
+      document.getElementById('submit-button').textContent = 'Créer un compte';
+    } else {
+      authToggleText.textContent = 'Pas encore de compte ?';
+      authToggleLink.textContent = 'Créer un compte';
+      document.getElementById('auth-title').textContent = 'Connexion';
+      document.getElementById('submit-button').textContent = 'Se connecter';
+    }
+  });
 }
 
 export default {};
