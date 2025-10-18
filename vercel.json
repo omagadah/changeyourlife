@@ -1,12 +1,10 @@
 {
-  "routes": [
-    { "src": "^/$", "dest": "public/index.html" },
-    { "src": "^/app$", "dest": "public/dashboard.html" },
-    { "src": "^/settings$", "dest": "public/settings.html" },
-    { "src": "^/profile$", "dest": "public/profile.html" },
-    { "src": "^/login$", "dest": "public/inscription.html" },
-    { "src": "^/signup$", "dest": "public/inscription.html" },
-    { "src": "^/journal$", "dest": "public/journal.html" },
-    { "src": "^/(.*)$", "dest": "public/$1" }
+  "rewrites": [
+    { "source": "/app", "destination": "/dashboard.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/profile", "destination": "/profile.html" },
+    { "source": "/login", "destination": "/inscription.html" },
+    { "source": "/signup", "destination": "/inscription.html" },
+    { "source": "/journal", "destination": "/journal.html" }
   ]
 }
