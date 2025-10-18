@@ -103,12 +103,20 @@
     <script src="//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js" async></script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        let auth;
+        if (window._cyfFirebase) {
+            ({ auth } = window._cyfFirebase);
+        } else {
+            // If auth is not available yet, import and initialize quickly (rare)
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+            const { getAuth: _getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+            const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+            const app = initializeApp(firebaseConfig);
+            auth = _getAuth(app);
+            window._cyfFirebase = { app, auth };
+        }
 
         const logoLink = document.getElementById('logo-link');
         const ctaButton = document.getElementById('cta-button');

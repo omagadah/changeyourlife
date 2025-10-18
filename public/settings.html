@@ -67,55 +67,69 @@
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <script> window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el: "body", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); }); </script>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { setupThemeToggle, setupUserPanel, updateGlobalAvatar } from './js/common.js';
 
-        const firebaseConfig = { /* ... */ };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Reuse global singleton created by inscription.js/profile.js
+        let auth, db;
+        if (window._cyfFirebase) {
+            ({ auth, db } = window._cyfFirebase);
+        } else {
+            // Fallback - initialize with the same config (shouldn't normally run if pages load in proper order)
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(({ initializeApp }) => {
+                const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                window._cyfFirebase = { app, auth, db };
+                attachListeners();
+            });
+        }
 
-        const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID
+        function attachListeners() {
+            const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setupUserPanel(auth);
-                setupThemeToggle();
-                updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
-                
-                if (adminUIDs.includes(user.uid)) {
-                    document.getElementById('admin-nav-link').style.display = 'block';
-                }
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    setupUserPanel(auth);
+                    setupThemeToggle();
+                    updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
+                    
+                    if (adminUIDs.includes(user.uid)) {
+                        document.getElementById('admin-nav-link').style.display = 'block';
+                    }
 
-                // NAVIGATION RÉPARÉE
-                const menuLinks = document.querySelectorAll('.nav-link');
-                const sections = document.querySelectorAll('.settings-section');
-                
-                menuLinks.forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const targetId = link.getAttribute('href').substring(1);
-                        
-                        menuLinks.forEach(l => l.classList.remove('active'));
-                        link.classList.add('active');
-                        
-                        sections.forEach(s => s.classList.remove('active'));
-                        document.getElementById(targetId).classList.add('active');
+                    // NAVIGATION RÉPARÉE
+                    const menuLinks = document.querySelectorAll('.nav-link');
+                    const sections = document.querySelectorAll('.settings-section');
+                    
+                    menuLinks.forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const targetId = link.getAttribute('href').substring(1);
+                            
+                            menuLinks.forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                            
+                            sections.forEach(s => s.classList.remove('active'));
+                            document.getElementById(targetId).classList.add('active');
 
-                        // Mettre à jour l'URL sans recharger et sans le #
-                        history.pushState(null, '', `/settings?section=${targetId}`);
+                            // Mettre à jour l'URL sans recharger et sans le #
+                            history.pushState(null, '', `/settings?section=${targetId}`);
+                        });
                     });
-                });
 
-                // Gérer l'affichage de la section au chargement
-                const urlParams = new URLSearchParams(window.location.search);
-                const section = urlParams.get('section') || 'preferences';
-                document.querySelector(`.nav-link[href="#${section}"]`)?.click();
+                    // Gérer l'affichage de la section au chargement
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const section = urlParams.get('section') || 'preferences';
+                    document.querySelector(`.nav-link[href="#${section}"]`)?.click();
 
-            } else { window.location.href = '/login'; }
-        });
+                } else { window.location.href = '/login'; }
+            });
+        }
+
+        if (window._cyfFirebase) attachListeners();
     </script>
 </body>
 </html>
