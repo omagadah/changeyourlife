@@ -53,9 +53,16 @@ export function updateGlobalAvatar(initial) {
     if (!userPanelTrigger) return;
     const avatarUrl = localStorage.getItem('userAvatarUrl');
 
-    if (avatarUrl) {
-        userPanelTrigger.innerHTML = `<img src="${avatarUrl}" alt="User Avatar" style="width:100%; height:100%; border-radius: 50%;">`;
-    } else {
-        userPanelTrigger.textContent = initial || 'U';
+    // Keep the site logo as the single source of truth for the trigger.
+    // If the logo is already present, remove other children and exit.
+    const logoSrc = '/logo.svg';
+    const existingLogo = userPanelTrigger.querySelector(`img[src="${logoSrc}"]`);
+    if (existingLogo) {
+        // remove any other children (old avatars) to avoid duplicates
+        Array.from(userPanelTrigger.children).forEach(ch => { if (ch !== existingLogo) ch.remove(); });
+        return;
     }
+
+    // Otherwise, ensure the logo is present (this will standardize the trigger across pages)
+    userPanelTrigger.innerHTML = `<img src="${logoSrc}" alt="ChangeYourLife" style="width:100%; height:100%; border-radius: 6px; display:block;">`;
 }

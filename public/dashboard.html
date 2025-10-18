@@ -116,7 +116,8 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('user-email').textContent = user.email || "Utilisateur Anonyme";
-                if (userPanelTrigger) userPanelTrigger.textContent = (user.email || 'U').charAt(0).toUpperCase();
+                // keep trigger logo intact; use updateGlobalAvatar to refresh any avatar state
+                // if you want personal avatar, set localStorage 'userAvatarUrl' and call updateGlobalAvatar()
                 if (document.referrer.includes("/login") || document.referrer.includes("/inscription")) {
                     const toast = document.getElementById('login-toast');
                     if(toast) { toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 4000); }
