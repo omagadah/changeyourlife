@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup:shadcn": "npx shadcn@latest add \"https://v0.app/chat/b/Vr8CSYqsECC?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..0WCOsfnkW8cWAFG3.IwN3fN6yIIOpow5-0ZmNnoW3dziraVvGXbh10FXJL4udyQPr5a76KIcM.ZbjjjNEbYeM22mIGiw3Jag\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
