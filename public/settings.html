@@ -39,7 +39,7 @@
         .stat-trend.down { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
         .stat-value { font-size: 2.5rem; font-weight: 700; margin-bottom: 4px; }
         .stat-label { color: #9ca3af; font-size: 0.875rem; }
-        .chart-card { background: rgba(31, 41, 55, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
+    .chart-card { background: rgba(31, 41, 55, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 32px; max-width: 700px; height: 350px; }
         .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
         .chart-title { font-size: 1.25rem; font-weight: 600; }
         .chart-filters { display: flex; gap: 8px; }
@@ -141,7 +141,43 @@
 <button class="filter-btn">3M</button>
 </div>
 </div>
-<canvas id="monkyChart" height="300"></canvas>
+<canvas id="monkyChart" width="650" height="300" style="display:block;max-width:100%;height:300px;"></canvas>
+function s(){
+    const e=document.getElementById("monkyChart");
+    if(!e||!window.Chart)return;
+    new Chart(e.getContext("2d"),{
+        type:"line",
+        data:{
+            labels:["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"],
+            datasets:[{
+                label:"Score M.O.N.K.Y",
+                data:[7.2,7.8,7.5,8.2,8.5,8.1,8.4],
+                borderColor:"#3b82f6",
+                backgroundColor:"rgba(59, 130, 246, 0.1)",
+                borderWidth:3,
+                tension:.4,
+                fill:false,
+                pointRadius:5,
+                pointHoverRadius:7,
+                pointBackgroundColor:"#3b82f6",
+                pointBorderColor:"#fff",
+                pointBorderWidth:2
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:true,
+            plugins:{
+                legend:{display:false},
+                tooltip:{backgroundColor:"rgba(31, 41, 55, 0.9)",padding:12,borderColor:"rgba(255, 255, 255, 0.1)",borderWidth:1}
+            },
+            scales:{
+                y:{beginAtZero:false,min:6,max:10,ticks:{color:"#9ca3af"},grid:{color:"rgba(255, 255, 255, 0.05)"}},
+                x:{ticks:{color:"#9ca3af"},grid:{color:"rgba(255, 255, 255, 0.05)"}}
+            }
+        }
+    });
+}
 </div>
 </section>
 <section id="profile" class="settings-section">
