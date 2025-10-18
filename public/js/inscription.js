@@ -1,3 +1,88 @@
+// public/js/inscription.js
+// Gestion de l'authentification sur la page d'inscription / connexion
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+// Singleton Firebase init (évite les redéclarations)
+let app, auth;
+if (!window._cyfFirebase) {
+  const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  window._cyfFirebase = { app, auth };
+} else {
+  ({ app, auth } = window._cyfFirebase);
+}
+
+const form = document.getElementById('auth-form');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const errorMessage = document.getElementById('error-message');
+const notification = document.getElementById('notification');
+
+function showError(msg) { if (!errorMessage) return; errorMessage.textContent = msg; }
+function showNotification(msg) { if (!notification) return; notification.textContent = msg; notification.classList.add('show'); setTimeout(() => notification.classList.remove('show'), 3500); }
+
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showError('');
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    if (!email || !password) { showError('Veuillez renseigner vos identifiants'); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showNotification('Connexion réussie — redirection...');
+      // Redirige vers l'app
+      setTimeout(() => { window.location.href = '/app'; }, 900);
+    } catch (err) {
+      console.error('Auth error', err);
+      showError(err.message || 'Erreur lors de la connexion');
+    }
+  });
+}
+
+// Google
+const googleBtn = document.getElementById('google-signin');
+if (googleBtn) {
+  googleBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      showNotification('Connexion Google réussie — redirection...');
+      setTimeout(() => { window.location.href = '/app'; }, 900);
+    } catch (err) {
+      console.error('Google sign-in error', err);
+      showError(err.message || 'Erreur lors de la connexion Google');
+    }
+  });
+}
+
+// GitHub
+const githubBtn = document.getElementById('github-signin');
+if (githubBtn) {
+  githubBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const provider = new GithubAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      showNotification('Connexion GitHub réussie — redirection...');
+      setTimeout(() => { window.location.href = '/app'; }, 900);
+    } catch (err) {
+      console.error('GitHub sign-in error', err);
+      showError(err.message || 'Erreur lors de la connexion GitHub');
+    }
+  });
+}
+
+// forgot-password link (simple flow)
+const forgotLink = document.getElementById('forgot-password-link');
+if (forgotLink) {
+  forgotLink.addEventListener('click', (e) => { e.preventDefault(); showNotification('Fonction mot de passe oublié — à implémenter'); });
+}
+
+export default {};
 <!DOCTYPE html>
 <html lang="fr">
 <head>
