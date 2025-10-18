@@ -18,12 +18,6 @@
     <script type="module"> import { applyInitialTheme } from './js/common.js'; applyInitialTheme(); </script>
     <header class="header">
         <div class="user-panel-trigger" title="Mon Compte"></div>
-        <ul class="user-panel" id="user-panel">
-            <li class="user-panel-item"><a href="/profile"><span>Mon Profil</span></a></li>
-            <li class="user-panel-item"><a href="/app"><span>Mon Espace</span></a></li>
-            <li class="user-panel-separator"></li>
-            <li class="user-panel-item"><a href="#" id="panel-logout-button"><span>Se déconnecter</span></a></li>
-        </ul>
     </header>
     <div class="app-container">
         <nav class="settings-nav">
@@ -70,7 +64,8 @@
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { setupThemeToggle, setupUserPanel, updateGlobalAvatar } from './js/common.js';
+    import { setupThemeToggle, updateGlobalAvatar } from './js/common.js';
+    import { initUserMenu } from './js/userMenu.js';
 
         // Reuse global singleton created by inscription.js/profile.js
         let auth, db;
@@ -93,7 +88,7 @@
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    setupUserPanel(auth);
+                    initUserMenu();
                     setupThemeToggle();
                     updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
                     

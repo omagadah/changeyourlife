@@ -74,12 +74,6 @@
     </script>
     <header class="header">
         <div class="user-panel-trigger" title="Mon Compte">C</div>
-        <ul class="user-panel" id="user-panel">
-            <li class="user-panel-item"><a href="/profile"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg><span>Mon Profil</span></a></li>
-            <li class="user-panel-item"><a href="/settings"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg><span>Paramètres</span></a></li>
-            <li class="user-panel-separator"></li>
-            <li class="user-panel-item"><a href="#" id="panel-logout-button"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg><span>Se déconnecter</span></a></li>
-        </ul>
     </header>
     <main class="app-container">
         <div class="welcome-message">
@@ -98,7 +92,8 @@
     <script type="module">
         import { onAuthStateChanged, signOut, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { setupUserPanel, updateGlobalAvatar } from './js/common.js';
+    import { updateGlobalAvatar } from './js/common.js';
+    import { initUserMenu } from './js/userMenu.js';
 
         // Reuse singleton firebase init if available
         let auth, db;
@@ -114,9 +109,7 @@
             window._cyfFirebase = { app, auth, db };
         }
 
-        const userPanelTrigger = document.querySelector('.user-panel-trigger');
-        const userPanel = document.getElementById('user-panel');
-        const panelLogoutButton = document.getElementById('panel-logout-button');
+    const userPanelTrigger = document.querySelector('.user-panel-trigger');
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -130,18 +123,13 @@
                 const userDoc = await getDoc(userDocRef);
                 if (!userDoc.exists() || userDoc.data().hasSeenTutorial !== true) { startTutorial(userDocRef); }
 
-                // Wire common panel functions
-                setupUserPanel(auth);
+                // Initialize new lightweight user menu
+                initUserMenu();
                 updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
             } else { window.location.href = '/login'; }
         });
 
-        // Local UI handlers that don't rely on auth state
-        if (userPanelTrigger) {
-            userPanelTrigger.addEventListener('click', (event) => { console.debug('dashboard: userPanelTrigger click handler'); event.stopPropagation(); userPanel.classList.toggle('active'); });
-        }
-        window.addEventListener('click', () => { if (userPanel && userPanel.classList.contains('active')) { userPanel.classList.remove('active'); } });
-        if (panelLogoutButton) panelLogoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth).catch(error => console.error("Erreur de déconnexion:", error)); });
+        // no legacy panel DOM — new menu handles toggle & sign-out
         function startTutorial(userDocRef) {
             const tour = new Shepherd.Tour({ useModalOverlay: true, defaultStepOptions: { classes: 'shepherd-element', scrollTo: { behavior: 'smooth', block: 'center' } } });
             tour.addStep({ title: 'Bienvenue sur votre Espace !', text: "Ceci est votre tableau de bord personnel. C'est ici que vous trouverez tous vos outils pour progresser avec l'ia.", attachTo: { element: '.app-container', on: 'top' }, buttons: [{ action: tour.next, text: 'Suivant &rarr;' }] });

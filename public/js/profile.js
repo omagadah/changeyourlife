@@ -3,7 +3,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { setupThemeToggle, setupUserPanel, updateGlobalAvatar } from './common.js';
+import { setupThemeToggle, updateGlobalAvatar } from './common.js';
+import { initUserMenu } from './userMenu.js';
 
 // Reuse singleton firebase init if present (inscription.js already creates window._cyfFirebase)
 let app, auth, db;
@@ -162,7 +163,7 @@ if (randomAvatarBtn) {
 // Auth guard and wiring
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        setupUserPanel(auth);
+    initUserMenu();
         setupThemeToggle();
         updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
 

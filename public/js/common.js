@@ -42,37 +42,7 @@ export function setupThemeToggle() {
  * Gère l'ouverture/fermeture du panel utilisateur et la déconnexion.
  * @param {object} auth - L'instance d'authentification Firebase.
  */
-export function setupUserPanel(auth) {
-    const userPanelTrigger = document.querySelector('.user-panel-trigger');
-    const userPanel = document.getElementById('user-panel');
-    const panelLogoutButton = document.getElementById('panel-logout-button');
-
-    if (!userPanelTrigger || !userPanel || !panelLogoutButton) {
-        console.debug('setupUserPanel: missing elements', { userPanelTrigger: !!userPanelTrigger, userPanel: !!userPanel, panelLogoutButton: !!panelLogoutButton });
-        return;
-    }
-
-    console.debug('setupUserPanel: wiring user panel handlers');
-    userPanelTrigger.addEventListener('click', (event) => {
-        console.debug('user-panel-trigger clicked (common.setupUserPanel)');
-        event.stopPropagation();
-        userPanel.classList.toggle('active');
-    });
-
-    window.addEventListener('click', () => {
-        if (userPanel.classList.contains('active')) {
-            userPanel.classList.remove('active');
-        }
-    });
-
-    panelLogoutButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.signOut().then(() => {
-            localStorage.removeItem('userAvatarUrl');
-            window.location.href = "/login";
-        }).catch(error => console.error("Erreur de déconnexion:", error));
-    });
-}
+// setupUserPanel removed — replaced by public/js/userMenu.js which provides a fresh modern menu.
 
 /**
  * Met à jour l'icône globale de l'utilisateur avec l'avatar sauvegardé ou une initiale.
