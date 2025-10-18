@@ -1,7 +1,7 @@
 // public/js/inscription.js
 // Gestion de l'authentification sur la page d'inscription / connexion
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 // Singleton Firebase init (évite les redéclarations)
 let app, auth;
@@ -54,6 +54,26 @@ if (googleBtn) {
       setTimeout(() => { window.location.href = '/app'; }, 900);
     } catch (err) {
       console.error('Google sign-in error', err);
+      // UX: show immediate alert to user and fallback to redirect when popup blocked or environment doesn't support popups
+      const code = err && err.code ? err.code : '';
+      if (code === 'auth/unauthorized-domain') {
+        alert('Domaine non autorisé pour OAuth. Ajoute ton domaine dans la console Firebase (Authorized domains).');
+        showError('Domaine non autorisé pour OAuth — vérifie Firebase Console');
+        return;
+      }
+      if (code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // essayer sign-in redirect en fallback
+        try {
+          await signInWithRedirect(auth, provider);
+          // redirect will navigate away; no further UI
+        } catch (err2) {
+          console.error('Google redirect fallback failed', err2);
+          alert('Connexion via popup bloquée, et fallback redirect a échoué. Voir la console pour plus d\'informations.');
+          showError(err2.message || 'Erreur lors du fallback Google');
+        }
+        return;
+      }
+      alert(err.message || 'Erreur lors de la connexion Google');
       showError(err.message || 'Erreur lors de la connexion Google');
     }
   });
@@ -71,6 +91,23 @@ if (githubBtn) {
       setTimeout(() => { window.location.href = '/app'; }, 900);
     } catch (err) {
       console.error('GitHub sign-in error', err);
+      const code = err && err.code ? err.code : '';
+      if (code === 'auth/unauthorized-domain') {
+        alert('Domaine non autorisé pour OAuth. Ajoute ton domaine dans la console Firebase (Authorized domains).');
+        showError('Domaine non autorisé pour OAuth — vérifie Firebase Console');
+        return;
+      }
+      if (code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (err2) {
+          console.error('GitHub redirect fallback failed', err2);
+          alert('Connexion via popup bloquée, et fallback redirect a échoué. Voir la console pour plus d\'informations.');
+          showError(err2.message || 'Erreur lors du fallback GitHub');
+        }
+        return;
+      }
+      alert(err.message || 'Erreur lors de la connexion GitHub');
       showError(err.message || 'Erreur lors de la connexion GitHub');
     }
   });
@@ -83,79 +120,3 @@ if (forgotLink) {
 }
 
 export default {};
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Change Your Life</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #fff; display: flex; justify-content: center; align-items: center; }
-        #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .notification { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100px); background-color: #28a745; color: white; padding: 16px 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-size: 1.1rem; font-weight: bold; z-index: 1000; opacity: 0; visibility: hidden; transition: transform 0.4s ease-out, opacity 0.4s ease-out, visibility 0.4s; }
-        .notification.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
-        .auth-container { background: rgba(25, 25, 25, 0.75); padding: 2.5rem; border-radius: 16px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); width: 100%; max-width: 420px; text-align: center; z-index: 1; }
-        .auth-container h1 { margin-bottom: 1.5rem; font-weight: 600; }
-        .input-group { margin-bottom: 1.2rem; text-align: left; }
-        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #ccc; }
-        .input-group input { width: 100%; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid #555; background-color: #333; color: #fff; font-size: 1rem; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
-        .input-group input:focus { outline: none; border-color: #0070f3; box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.4); }
-        .submit-button { width: 100%; padding: 1rem; border: none; border-radius: 8px; background-color: #0070f3; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease; box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4); margin-top: 0.5rem; }
-        .submit-button:hover { background-color: #0056b3; transform: scale(1.02); }
-        .divider { display: flex; align-items: center; text-align: center; color: #888; margin: 1.5rem 0; font-size: 0.9rem; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #555; }
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
-        .social-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid #555; background-color: #222; color: #fff; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s; }
-        .social-btn:hover { background-color: #333; }
-        .social-btn svg { width: 24px; height: 24px; margin-right: 12px; }
-        #error-message { color: #ff4d4d; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; }
-        .auth-toggle { margin-top: 1.5rem; font-size: 0.9rem; }
-        .auth-toggle a { color: #00aaff; text-decoration: none; font-weight: 600; }
-        .auth-toggle a:hover { text-decoration: underline; }
-        .back-link { display: inline-block; margin-top: 1rem; color: #aaa; font-size: 0.9rem; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
-        
-        /* EFFET FUTURISTE POUR LE LIEN D'INSCRIPTION */
-        .highlight-link {
-            position: relative;
-            color: #FFD700;
-            text-decoration: none;
-            text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700;
-            animation: futuristic-glow 2.5s infinite alternate;
-        }
-
-        @keyframes futuristic-glow {
-            from { text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700; }
-            to { text-shadow: 0 0 10px #FFD700, 0 0 20px #FF8C00, 0 0 25px #FF8C00; }
-        }
-    </style>
-</head>
-<body>
-    <div id="notification" class="notification"></div>
-    <div id="vanta-birds-bg"></div>
-    <div class="auth-container">
-        <h1 id="auth-title">Connexion</h1>
-        <form id="auth-form">
-            <div class="input-group"><label for="email">Adresse e-mail</label><input type="email" id="email" name="email" required autocomplete="email"></div>
-            <div class="input-group"><label for="password">Mot de passe</label><input type="password" id="password" name="password" required autocomplete="current-password"></div>
-            <button id="submit-button" type="submit" class="submit-button">Se connecter</button>
-        </form>
-        <div class="extra-links" style="justify-content: center; margin-top: 1rem;"><a href="#" id="forgot-password-link">Mot de passe oublié ?</a></div>
-        <div class="divider">OU</div>
-        <button id="google-signin" class="social-btn"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.32 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.62 2.72l2.5-2.5C19.22 1.45 16.02 0 12.48 0 5.6 0 0 5.6 0 12.48s5.6 12.48 12.48 12.48c7.2 0 12.04-4.82 12.04-12.04 0-.82-.07-1.62-.2-2.4H12.48z"/></svg> Continuer avec Google</button>
-        <button id="github-signin" class="social-btn"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg> Continuer avec GitHub</button>
-        <p id="error-message"></p>
-        <p class="auth-toggle" id="auth-toggle-p">
-            <span id="auth-toggle-text">Pas encore de compte ?</span> 
-            <a href="#" id="auth-toggle-link" class="highlight-link">Créer un compte</a>
-        </p>
-        <a href="/" class="back-link">Retour à l'accueil</a>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <script> VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00, backgroundColor: 0x0, color1: 0x7192ff, color2: 0xd1ff, colorMode: "varianceGradient", quantity: 5.00 }); </script>
-    <script type="module" src="/js/inscription.js"></script>
-</body>
-</html>
