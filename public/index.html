@@ -78,9 +78,9 @@
 <body>
     <div id="vanta-birds-bg"></div>
 
-    <a href="/app" id="logo-link" class="top-right-logo">
+    <button id="logo-link" class="top-right-logo user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu" style="background:none;border:none;padding:0;">
         <img src="/logo.svg" alt="ChangeYourLife" style="width:75px;height:auto;display:block;" />
-    </a>
+    </button>
 
     <div class="content">
         <header>
@@ -123,14 +123,15 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                logoLink.href = '/app';
-                ctaButton.href = '/app';
-                ctaButton.textContent = "Accéder à mon espace";
-            } else {
-                logoLink.href = '/login';
-                ctaButton.href = '/login';
-                ctaButton.textContent = "Commencer l'aventure";
-            }
+                    // store a navigation target on the logo button (do not navigate automatically)
+                    logoLink.dataset.target = '/app';
+                    ctaButton.href = '/app';
+                    ctaButton.textContent = "Accéder à mon espace";
+                } else {
+                    logoLink.dataset.target = '/login';
+                    ctaButton.href = '/login';
+                    ctaButton.textContent = "Commencer l'aventure";
+                }
         });
     </script>
 </body>
