@@ -2,5 +2,21 @@
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      { "source": "/app", "destination": "/dashboard.html" },
+      { "source": "/settings", "destination": "/settings.html" },
+      { "source": "/profile", "destination": "/profile.html" },
+      { "source": "/login", "destination": "/inscription.html" },
+      { "source": "/signup", "destination": "/inscription.html" },
+      { "source": "/journal", "destination": "/journal.html" }
+    ]
   }
 }
