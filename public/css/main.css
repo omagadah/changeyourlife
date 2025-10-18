@@ -77,15 +77,24 @@ html, body {
 }
 /* Vanta background container should be behind UI and not capture pointer events */
 /* Vanta background container should be behind UI and not capture pointer events */
+/* Vanta background container should be fullscreen, behind the UI, and not capture pointer events */
 #vanta-birds-bg {
     position: fixed !important;
-    inset: 0 !important;
-    z-index: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    z-index: -1 !important; /* behind everything */
     pointer-events: none !important; /* allow clicks to pass through */
 }
 #vanta-birds-bg canvas {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     pointer-events: none !important;
-    z-index: 0 !important;
+    z-index: -1 !important;
 }
 
 /* Ensure header and panels are above Vanta */
