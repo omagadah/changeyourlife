@@ -1,8 +1,16 @@
 // public/js/userMenu.js
 // Lightweight modern user menu. Uses window._cyfFirebase.auth if available.
+import { updateGlobalAvatar, normalizeVantaAndHeader } from './common.js';
+
 export function initUserMenu() {
     const trigger = document.querySelector('.user-panel-trigger');
     if (!trigger) return;
+
+    // Ensure the global logo is present in the trigger so the menu anchor looks identical everywhere
+    try { updateGlobalAvatar(); } catch (e) { /* ignore */ }
+
+    // also normalize Vanta/header stacking to avoid z-index issues
+    try { normalizeVantaAndHeader(); } catch (e) { /* ignore */ }
 
     // Build a minimal menu DOM (inserted once)
     let menu = document.getElementById('cyf-user-menu');

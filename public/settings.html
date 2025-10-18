@@ -17,14 +17,12 @@
 <body>
     <script type="module"> import { applyInitialTheme } from './js/common.js'; applyInitialTheme(); </script>
     <header class="header">
-        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-            <img src="/logo.svg" alt="ChangeYourLife" style="width:40px;height:40px;display:block;border-radius:6px;" />
-        </button>
+        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu"></button>
     </header>
     <div class="app-container">
         <nav class="settings-nav">
             <h1>Paramètres</h1>
-            <ul class="nav-menu" id="settings-menu">
+                </button>
                 <li><a href="#preferences" class="nav-link active"><span>Préférences</span></a></li>
                 <li><a href="#security" class="nav-link"><span>Sécurité</span></a></li>
                 <li id="admin-nav-link" style="display: none;"><a href="#admin" class="nav-link"><span>Administration</span></a></li>
@@ -65,69 +63,67 @@
     <script> window.addEventListener('DOMContentLoaded', () => { const v = VANTA.BIRDS({ el: "#vanta-birds-bg", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 }); setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if(c){c.style.pointerEvents='none'; c.style.zIndex='0'; document.getElementById('vanta-birds-bg').style.zIndex='0'; } },60); }); </script>
     <script type="module">
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { setupThemeToggle, updateGlobalAvatar } from './js/common.js';
     import { initUserMenu } from './js/userMenu.js';
 
-        // Reuse global singleton created by inscription.js/profile.js
-        let auth, db;
-        if (window._cyfFirebase) {
-            ({ auth, db } = window._cyfFirebase);
-        } else {
-            // Fallback - initialize with the same config (shouldn't normally run if pages load in proper order)
-            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(({ initializeApp }) => {
-                const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                window._cyfFirebase = { app, auth, db };
+            // Ensure inline logo is injected on load
+            window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
+
+            const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+
+            // Reuse global singleton created by other pages
+            let auth, db;
+            if (window._cyfFirebase) {
+                ({ auth, db } = window._cyfFirebase);
                 attachListeners();
-            });
-        }
+            } else {
+                // Fallback - initialize with the same config (shouldn't normally run if pages load in proper order)
+                import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(({ initializeApp }) => {
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    window._cyfFirebase = { app, auth, db };
+                    attachListeners();
+                }).catch(e => console.error('firebase init failed', e));
+            }
 
-        function attachListeners() {
-            const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID
+            function attachListeners() {
+                const adminUIDs = ['PvDinfGc2hRribdPE4JW9Bv5Ip42']; // VOTRE UID
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    initUserMenu();
-                    setupThemeToggle();
-                    updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
-                    
-                    if (adminUIDs.includes(user.uid)) {
-                        document.getElementById('admin-nav-link').style.display = 'block';
-                    }
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        initUserMenu();
+                        setupThemeToggle();
+                        updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
 
-                    // NAVIGATION RÉPARÉE
-                    const menuLinks = document.querySelectorAll('.nav-link');
-                    const sections = document.querySelectorAll('.settings-section');
-                    
-                    menuLinks.forEach(link => {
-                        link.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const targetId = link.getAttribute('href').substring(1);
-                            
-                            menuLinks.forEach(l => l.classList.remove('active'));
-                            link.classList.add('active');
-                            
-                            sections.forEach(s => s.classList.remove('active'));
-                            document.getElementById(targetId).classList.add('active');
+                        if (adminUIDs.includes(user.uid)) {
+                            const el = document.getElementById('admin-nav-link'); if (el) el.style.display = 'block';
+                        }
 
-                            // Mettre à jour l'URL sans recharger (clean URL) and store section in state
-                            history.pushState({ section: targetId }, '', `/settings`);
+                        // NAVIGATION
+                        const menuLinks = document.querySelectorAll('.nav-link');
+                        const sections = document.querySelectorAll('.settings-section');
+
+                        menuLinks.forEach(link => {
+                            link.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                const targetId = link.getAttribute('href').substring(1);
+                                menuLinks.forEach(l => l.classList.remove('active'));
+                                link.classList.add('active');
+                                sections.forEach(s => s.classList.remove('active'));
+                                const target = document.getElementById(targetId); if (target) target.classList.add('active');
+                                history.pushState({ section: targetId }, '', `/settings`);
+                            });
                         });
-                    });
 
-                    // Gérer l'affichage de la section au chargement
-                    // Prefer history.state.section (clean URL), otherwise fallback to query param
-                    const initialSection = (history.state && history.state.section) || (new URLSearchParams(window.location.search).get('section')) || 'preferences';
-                    document.querySelector(`.nav-link[href="#${initialSection}"]`)?.click();
+                        const initialSection = (history.state && history.state.section) || (new URLSearchParams(window.location.search).get('section')) || 'preferences';
+                        const initialLink = document.querySelector(`.nav-link[href="#${initialSection}"]`);
+                        if (initialLink) initialLink.click();
 
-                } else { window.location.href = '/login'; }
-            });
-        }
+                    } else { window.location.href = '/login'; }
+                });
+            }
 
-        if (window._cyfFirebase) attachListeners();
-    </script>
-</body>
-</html>
+            if (window._cyfFirebase) attachListeners();
+        </script>

@@ -73,9 +73,7 @@
         });
     </script>
     <header class="header">
-        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-            <img src="/logo.svg" alt="ChangeYourLife" style="width:40px;height:40px;display:block;border-radius:6px;" />
-        </button>
+        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu"></button>
     </header>
     <main class="app-container">
         <div class="welcome-message">
@@ -151,6 +149,10 @@
             });
             card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)'; });
         }
+    </script>
+    <script type="module">
+        import { updateGlobalAvatar } from '/js/common.js';
+        window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
     </script>
 </body>
 </html>
