@@ -74,20 +74,42 @@
 
     embedBtn.addEventListener('click', async ()=>{
       container.innerHTML = '';
+      const info = document.createElement('div');
+      info.className = 'hint';
+      info.textContent = 'Tentative d\u2019intégration via proxy...';
+      container.appendChild(info);
+
+      // Use our serverless proxy to fetch and rehost the remote page so it can be framed
+      const proxyUrl = `/api/proxy?target=${encodeURIComponent(v0Url)}`;
       const iframe = document.createElement('iframe');
       iframe.className = 'appframe';
-      iframe.src = v0Url;
+      iframe.src = proxyUrl;
       iframe.sandbox = 'allow-scripts allow-forms allow-same-origin allow-modals';
       container.appendChild(iframe);
 
-      // If the iframe failed to load due to CSP, show fallback link
-      setTimeout(()=>{
+      // After a short delay, check whether the iframe seems to have content
+      const checkTimeout = setTimeout(()=>{
         try{
-          // try access same-origin property as a simple probe
-          const accessible = (iframe.contentWindow && iframe.contentDocument);
-          // if not accessible (cross-origin) we still allow it, but if CSP prevented framing it may be blank
-        }catch(e){ /* cross origin - expected */ }
-      },1200);
+          const doc = iframe.contentDocument || iframe.contentWindow && iframe.contentWindow.document;
+          const blank = !doc || doc.body.children.length === 0 || /about:blank/.test(iframe.src);
+          if(blank){
+            info.textContent = 'L\u2019intégration a peut-\u00EAtre \'\u00E9chou\u00E9e\' (CSP ou protection du site). Utilisez "Ouvrir" pour ouvrir dans un nouvel onglet.';
+            const link = document.createElement('a');
+            link.href = v0Url; link.target = '_blank'; link.textContent = 'Ouvrir v0.app';
+            link.className = 'btn';
+            container.appendChild(link);
+          } else {
+            info.style.display = 'none';
+          }
+        }catch(e){
+          // cross-origin or access denied: still likely loaded, but if CSP blocked framing it will be blank
+          info.textContent = 'L\u2019intégration a pu \u00EAtre bloqu\u00E9e par le site distant (CSP). Si l\u2019iframe reste vide, utilisez "Ouvrir".';
+          const link = document.createElement('a');
+          link.href = v0Url; link.target = '_blank'; link.textContent = 'Ouvrir v0.app';
+          link.className = 'btn';
+          container.appendChild(link);
+        }
+      }, 1200);
     });
   </script>
 </body>
