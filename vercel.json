@@ -1,4 +1,12 @@
 {
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [ { "type": "host", "value": "www.changeyourlife.ai" } ],
+      "destination": "https://changeyourlife.ai/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/app", "destination": "/dashboard.html" },
     { "source": "/settings", "destination": "/settings.html" },
