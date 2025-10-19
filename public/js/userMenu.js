@@ -6,6 +6,12 @@ export function initUserMenu() {
     const trigger = document.querySelector('.user-panel-trigger');
     if (!trigger) return;
 
+    // Prevent double-initialization (avoid multiple click handlers and flicker)
+    if (trigger.getAttribute('data-cyf-menu-ready') === '1' && document.getElementById('cyf-user-menu')) {
+        try { normalizeVantaAndHeader(); } catch (e) { /* ignore */ }
+        return;
+    }
+
     // Ensure the global logo is present in the trigger so the menu anchor looks identical everywhere
     try { updateGlobalAvatar(); } catch (e) { /* ignore */ }
 
@@ -53,6 +59,9 @@ export function initUserMenu() {
     trigger.addEventListener('click', (e) => { e.stopPropagation(); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; });
     // click outside to close
     window.addEventListener('click', () => { if (menu.style.display === 'block') hideMenu(); });
+
+    // Mark as initialized
+    trigger.setAttribute('data-cyf-menu-ready', '1');
 
     // Sign out
     // bind sign-out after menu insertion (menu may be created earlier or later)
