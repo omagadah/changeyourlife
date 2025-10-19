@@ -561,20 +561,8 @@ if (window._cyfFirebase) {
     });
 }
 
-// Gestion du menu utilisateur
-window.addEventListener("DOMContentLoaded", () => {
-    updateGlobalAvatar();
-    document.querySelectorAll(".user-panel-trigger").forEach(trigger => {
-        trigger.addEventListener("click", (e) => {
-            e.stopPropagation();
-            initUserMenu();
-            const menu = document.getElementById("cyf-user-menu");
-            if (menu) {
-                menu.style.display = menu.style.display === "block" ? "none" : "block";
-            }
-        });
-    });
-});
+// Gestion du menu utilisateur (idempotent)
+window.addEventListener("DOMContentLoaded", () => { try { updateGlobalAvatar(); } catch (e) {} try { initUserMenu(); } catch (e) {} });
 </script>
 </body>
 </html>
