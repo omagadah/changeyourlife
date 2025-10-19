@@ -1,0 +1,1 @@
+Legacy .html files (dashboard.html, app.html, inscription.html, login.html, profile.html, journal.html, settings.html) are now superseded by clean routes with folders and index.html. If they still appear in your workspace list, your editor's file index may be stale. They will be removed on the next commit or you can delete them manually.
