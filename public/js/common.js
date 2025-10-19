@@ -84,8 +84,8 @@ export function updateGlobalAvatar(initial) {
         const s = document.createElement('style');
         s.id = styleId;
         s.textContent = `
-            .user-panel-trigger { width: 40px; height: 40px; background-color: #00aaff; border-radius: 50%; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-            .user-panel-trigger:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.6); }
+            .user-panel-trigger { width: 40px; height: 40px; background-color: transparent !important; border: none !important; border-radius: 8px; padding: 0 !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+            .user-panel-trigger:hover { transform: scale(1.06); box-shadow: 0 0 14px rgba(255,255,255,0.55) !important; }
             .user-panel-trigger .cyf-logo-wrapper svg { width: 100%; height: 100%; display: block; border-radius: 6px; }
         `;
         document.head.appendChild(s);
