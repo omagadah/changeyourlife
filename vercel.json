@@ -1,13 +1,13 @@
 {
   "redirects": [
     { "source": "/dashboard.html", "destination": "/app", "permanent": false },
+    { "source": "/app", "destination": "/app.html", "permanent": false },
     { "source": "/inscription.html", "destination": "/login", "permanent": false },
     { "source": "/settings.html", "destination": "/settings", "permanent": false },
     { "source": "/profile.html", "destination": "/profile", "permanent": false },
     { "source": "/journal.html", "destination": "/journal", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/app", "destination": "/dashboard.html" },
     { "source": "/settings", "destination": "/settings.html" },
     { "source": "/profile", "destination": "/profile.html" },
     { "source": "/login", "destination": "/inscription.html" },
