@@ -250,8 +250,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script type="module">
 import { getAuth, onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { setupThemeToggle, updateGlobalAvatar } from "/js/common.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { updateGlobalAvatar } from "/js/common.js";
 import { initUserMenu } from "/js/userMenu.js";
 
 const firebaseConfig = {
@@ -303,7 +303,6 @@ function initAuth() {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             initUserMenu();
-            setupThemeToggle();
             updateGlobalAvatar((user.email || "U").charAt(0).toUpperCase());
             
             // Vérifie si l'utilisateur est admin
@@ -329,6 +328,9 @@ function initAuth() {
                 }
             } catch(e) { console.warn('Provider check failed', e); }
             
+            // Charger les préférences depuis Firestore et brancher les toggles
+            initSettingsToggles(user.uid);
+
             initChart();
             initNavigation();
         } else {
@@ -563,6 +565,64 @@ if (window._cyfFirebase) {
 
 // Gestion du menu utilisateur (idempotent)
 window.addEventListener("DOMContentLoaded", () => { try { updateGlobalAvatar(); } catch (e) {} try { initUserMenu(); } catch (e) {} });
+
+// ----- Préférences (thème/animations/notifications) -----
+async function initSettingsToggles(uid) {
+    try {
+        const ref = doc(db, 'users', uid);
+        const snap = await getDoc(ref);
+        const prefs = (snap.exists() && snap.data().prefs) || {};
+        // Defaults
+        const theme = (prefs.theme || localStorage.getItem('theme') || 'dark');
+        const animations = (prefs.animEnabled !== false); // default true
+        const weeklyEmails = (prefs.weeklyEmails === true); // default false
+        const dailyReminders = (prefs.dailyReminders === true); // default false
+
+        // Reflect UI
+        const themeCk = document.getElementById('dark-theme');
+        const animCk = document.getElementById('animations');
+        const dailyCk = document.getElementById('daily-reminders');
+        const emailCk = document.getElementById('email-notifications');
+        if (themeCk) themeCk.checked = (theme !== 'light'); // checked = dark
+        if (animCk) animCk.checked = animations;
+        if (dailyCk) dailyCk.checked = dailyReminders;
+        if (emailCk) emailCk.checked = weeklyEmails;
+
+        // Apply theme immediately
+        applyTheme(theme);
+        // Persist normalized theme into localStorage for consistency across pages
+        localStorage.setItem('theme', theme);
+
+        // Wire events
+        if (themeCk) themeCk.addEventListener('change', async () => {
+            const newTheme = themeCk.checked ? 'dark' : 'light';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+            try { await setDoc(ref, { prefs: { theme: newTheme } }, { merge: true }); } catch(e) { console.warn('save theme failed', e); }
+        });
+        if (animCk) animCk.addEventListener('change', async () => {
+            const val = !!animCk.checked;
+            try { await setDoc(ref, { prefs: { animEnabled: val } }, { merge: true }); } catch(e) {}
+        });
+        if (dailyCk) dailyCk.addEventListener('change', async () => {
+            const val = !!dailyCk.checked;
+            try { await setDoc(ref, { prefs: { dailyReminders: val } }, { merge: true }); } catch(e) {}
+        });
+        if (emailCk) emailCk.addEventListener('change', async () => {
+            const val = !!emailCk.checked;
+            try { await setDoc(ref, { prefs: { weeklyEmails: val } }, { merge: true }); } catch(e) {}
+        });
+    } catch (e) {
+        console.warn('initSettingsToggles failed', e);
+    }
+}
+
+function applyTheme(theme) {
+    try {
+        if (theme === 'light') document.body.classList.add('light-mode');
+        else document.body.classList.remove('light-mode');
+    } catch(e) { /* ignore */ }
+}
 </script>
 </body>
 </html>
