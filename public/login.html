@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connexion</title>
-  <meta http-equiv="refresh" content="0; url=inscription.html" />
-  <script> location.replace('inscription.html'); </script>
+  <meta http-equiv="refresh" content="0; url=/login" />
+  <script> location.replace('/login' + (location.search||'') + (location.hash||'')); </script>
 </head>
 <body>
   <noscript>
-    Redirection vers <a href="inscription.html">inscription.html</a>
+  Redirection vers <a href="/login">/login</a>
   </noscript>
 </body>
 </html>
