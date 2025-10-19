@@ -158,14 +158,31 @@
                 </div>
 
                 <!-- Levels -->
-                <div id="tab-levels" class="section">
-                    <div class="grid-2">
-                        <div class="card"><div class="kv"><strong>Corps</strong><span id="lvl-body-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-body" class="bar"></div></div></div>
-                        <div class="card"><div class="kv"><strong>Esprit</strong><span id="lvl-mind-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-mind" class="bar"></div></div></div>
-                        <div class="card"><div class="kv"><strong>Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-heart" class="bar"></div></div></div>
-                        <div class="card"><div class="kv"><strong>Ordre</strong><span id="lvl-order-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-order" class="bar"></div></div></div>
-                    </div>
-                </div>
+                        <div id="tab-levels" class="section">
+                            <div class="grid-2">
+                                <div class="card">
+                                    <div class="kv"><strong>Corps</strong><span id="lvl-body-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                                    <div class="progress"><div id="lvl-body" class="bar"></div></div>
+                                    <div class="row" id="dev-body" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="body">+10 XP (dev)</button></div>
+                                </div>
+                                <div class="card">
+                                    <div class="kv"><strong>Esprit</strong><span id="lvl-mind-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                                    <div class="progress"><div id="lvl-mind" class="bar"></div></div>
+                                    <div class="row" id="dev-mind" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="mind">+10 XP (dev)</button></div>
+                                </div>
+                                <div class="card">
+                                    <div class="kv"><strong>Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                                    <div class="progress"><div id="lvl-heart" class="bar"></div></div>
+                                    <div class="row" id="dev-heart" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="heart">+10 XP (dev)</button></div>
+                                </div>
+                                <div class="card">
+                                    <div class="kv"><strong>Ordre</strong><span id="lvl-order-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                                    <div class="progress"><div id="lvl-order" class="bar"></div></div>
+                                    <div class="row" id="dev-order" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="order">+10 XP (dev)</button></div>
+                                </div>
+                            </div>
+                            <div class="subtle" id="dev-note" style="margin-top:10px;display:none">Astuce dev: ces boutons appellent la fonction addXp (ou écrivent localement en localhost).</div>
+                        </div>
             </div>
         </section>
     </div>
