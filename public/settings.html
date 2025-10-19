@@ -1,4 +1,54 @@
-﻿<!DOCTYPE html>
+﻿function s(){
+    const e = document.getElementById("monkyChart");
+    if (!e || !window.Chart) return;
+    new Chart(e.getContext("2d"), {
+        type: "line",
+        data: {
+            labels: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+            datasets: [{
+                label: "Score ChangeYourLife.ai",
+                data: [7.2, 7.8, 7.5, 8.2, 8.5, 8.1, 8.4],
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                borderWidth: 3,
+                tension: .4,
+                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: "#3b82f6",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "rgba(31, 41, 55, 0.9)",
+                    padding: 12,
+                    borderColor: "rgba(255, 255, 255, 0.1)",
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 6,
+                    max: 10,
+                    ticks: { color: "#9ca3af" },
+                    grid: { color: "rgba(255, 255, 255, 0.05)" }
+                },
+                x: {
+                    ticks: { color: "#9ca3af" },
+                    grid: { color: "rgba(255, 255, 255, 0.05)" }
+                }
+            }
+        }
+    });
+}
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -86,7 +136,7 @@
 <aside class="sidebar">
 <div class="logo-section">
 <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/></svg>
-<h1>M.O.N.K.Y</h1>
+<h1>ChangeYourLife.ai</h1>
 </div>
 <nav class="nav-menu">
 <div class="nav-section">
@@ -123,8 +173,8 @@
 <main class="main-content">
 <section id="dashboard" class="settings-section active">
 <div class="content-header">
-<h2>Dashboard M.O.N.K.Y</h2>
-<p>Vue densemble de votre progression et bien-être</p>
+<h2>Dashboard ChangeYourLife.ai</h2>
+<p>Vue d'ensemble de votre progression et bien-être</p>
 </div>
 <div class="stats-grid">
 <div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div><div class="stat-trend up"> +12%</div></div><div class="stat-value">8.4</div><div class="stat-label">Humeur moyenne</div></div>
@@ -134,7 +184,7 @@
 </div>
 <div class="chart-card">
 <div class="chart-header">
-<h3 class="chart-title">Évolution M.O.N.K.Y (7 derniers jours)</h3>
+<h3 class="chart-title">Évolution ChangeYourLife.ai (7 derniers jours)</h3>
 <div class="chart-filters">
 <button class="filter-btn active">7J</button>
 <button class="filter-btn">30J</button>
@@ -142,42 +192,7 @@
 </div>
 </div>
 <canvas id="monkyChart" width="650" height="300" style="display:block;max-width:100%;height:300px;"></canvas>
-function s(){
-    const e=document.getElementById("monkyChart");
-    if(!e||!window.Chart)return;
-    new Chart(e.getContext("2d"),{
-        type:"line",
-        data:{
-            labels:["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"],
-            datasets:[{
-                label:"Score M.O.N.K.Y",
-                data:[7.2,7.8,7.5,8.2,8.5,8.1,8.4],
-                borderColor:"#3b82f6",
-                backgroundColor:"rgba(59, 130, 246, 0.1)",
-                borderWidth:3,
-                tension:.4,
-                fill:false,
-                pointRadius:5,
-                pointHoverRadius:7,
-                pointBackgroundColor:"#3b82f6",
-                pointBorderColor:"#fff",
-                pointBorderWidth:2
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:true,
-            plugins:{
-                legend:{display:false},
-                tooltip:{backgroundColor:"rgba(31, 41, 55, 0.9)",padding:12,borderColor:"rgba(255, 255, 255, 0.1)",borderWidth:1}
-            },
-            scales:{
-                y:{beginAtZero:false,min:6,max:10,ticks:{color:"#9ca3af"},grid:{color:"rgba(255, 255, 255, 0.05)"}},
-                x:{ticks:{color:"#9ca3af"},grid:{color:"rgba(255, 255, 255, 0.05)"}}
-            }
-        }
-    });
-}
+
 </div>
 </section>
 <section id="profile" class="settings-section">
