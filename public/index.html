@@ -149,8 +149,8 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                     // store a navigation target on the logo button (do not navigate automatically)
-                    logoLink.dataset.target = 'app.html';
-                    ctaButton.href = 'app.html';
+                    logoLink.dataset.target = 'app';
+                    ctaButton.href = 'app';
                     ctaButton.textContent = "Accéder à mon espace";
                 } else {
                     logoLink.dataset.target = 'inscription.html';
