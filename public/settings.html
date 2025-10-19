@@ -134,7 +134,7 @@
 </div>
 <div class="chart-card">
 <div class="chart-header">
-<h3 class="chart-title">Évolution ChangeYourLife.ai (7 derniers jours)</h3>
+<h3 class="chart-title" id="chart-title">Évolution ChangeYourLife.ai (7 derniers jours)</h3>
 <div class="chart-filters">
 <button class="filter-btn active">7J</button>
 <button class="filter-btn">30J</button>
@@ -377,6 +377,17 @@ function initChart() {
     if (!canvas || !window.Chart) return;
     const ctx = canvas.getContext("2d");
     const defaultPeriod = '7J';
+    const titleEl = document.getElementById('chart-title');
+    const titleByPeriod = {
+        '7J': '7 derniers jours',
+        '30J': '30 derniers jours',
+        '3M': '3 derniers mois'
+    };
+    function updateTitle(period) {
+        if (!titleEl) return;
+        const suffix = titleByPeriod[period] || '7 derniers jours';
+        titleEl.textContent = `Évolution ChangeYourLife.ai (${suffix})`;
+    }
     if (chartInstance) chartInstance.destroy();
     chartInstance = new Chart(ctx, {
         type: "line",
@@ -424,6 +435,8 @@ function initChart() {
             }
         }
     });
+    // Set correct initial title
+    updateTitle(defaultPeriod);
     // Chart period filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -435,6 +448,7 @@ function initChart() {
                 chartInstance.data.datasets[0].data = chartDataSets[period].data;
                 chartInstance.update();
             }
+            updateTitle(period);
         });
     });
 }
