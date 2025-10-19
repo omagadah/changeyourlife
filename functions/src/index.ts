@@ -31,17 +31,27 @@ setGlobalOptions({ maxInstances: 10 });
 
 // helloWorld example removed; using callable functions below
 
-type Domain = "body" | "mind" | "heart" | "order";
+type Domain = "body" | "etre" | "heart" | "order" | "mind"; // accept legacy 'mind' input too
 interface LevelState { level: number; xp: number; nextXp: number }
-interface Levels { body: LevelState; mind: LevelState; heart: LevelState; order: LevelState }
+interface Levels { body: LevelState; etre?: LevelState; mind?: LevelState; heart: LevelState; order: LevelState }
 
 function defaultLevels(): Levels {
 	return {
 		body: { level: 0, xp: 0, nextXp: 100 },
-		mind: { level: 0, xp: 0, nextXp: 100 },
+		etre: { level: 0, xp: 0, nextXp: 100 },
 		heart: { level: 0, xp: 0, nextXp: 100 },
 		order: { level: 0, xp: 0, nextXp: 100 },
 	};
+}
+
+function normalizeLevels(l: any): Levels {
+	const base = defaultLevels();
+	const levels = (l || {}) as Levels;
+	// Map legacy 'mind' -> 'etre' if needed
+	if (!levels.etre && levels.mind) {
+		levels.etre = levels.mind;
+	}
+	return { ...base, ...levels };
 }
 
 function nextThreshold(currentLevel: number): number {
@@ -56,7 +66,7 @@ export const addXp = onCall({ cors: true }, async (req) => {
 		throw new Error("unauthenticated");
 	}
 	const { domain, amount } = req.data || {};
-	const validDomains: Domain[] = ["body","mind","heart","order"];
+	const validDomains: Domain[] = ["body","etre","heart","order","mind"]; // accept 'mind' for backward compatibility
 	if (!validDomains.includes(domain)) {
 		throw new Error("invalid-domain");
 	}
@@ -69,9 +79,11 @@ export const addXp = onCall({ cors: true }, async (req) => {
 	const ref = db.collection("users").doc(uid);
 	await db.runTransaction(async (tx) => {
 		const snap = await tx.get(ref);
-		const data = snap.exists ? snap.data() as any : {};
-		const levels: Levels = data.levels || defaultLevels();
-		const cur = levels[domain as Domain] || { level: 0, xp: 0, nextXp: 100 };
+		const data = snap.exists ? (snap.data() as any) : {};
+		const levels: Levels = normalizeLevels(data.levels || defaultLevels());
+		// Map requested domain: if legacy 'mind' was sent, use 'etre'
+		const key: "body"|"etre"|"heart"|"order" = (domain === 'mind' ? 'etre' : domain);
+		const cur = (levels as any)[key] || { level: 0, xp: 0, nextXp: 100 };
 		let xp = cur.xp + inc;
 		let level = cur.level;
 		let nextXp = cur.nextXp || nextThreshold(level);
@@ -83,7 +95,7 @@ export const addXp = onCall({ cors: true }, async (req) => {
 			nextXp = nextThreshold(level);
 		}
 
-		levels[domain as Domain] = { level, xp, nextXp };
+		(levels as any)[key] = { level, xp, nextXp };
 		tx.set(ref, { levels }, { merge: true });
 	});
 

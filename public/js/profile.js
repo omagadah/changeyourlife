@@ -44,10 +44,15 @@ const emailReadOnly = document.getElementById('profile-email');
 const toastEl = document.getElementById('toast');
 const themeDarkBtn = document.getElementById('theme-dark-btn');
 const themeLightBtn = document.getElementById('theme-light-btn');
+// Badges/Titles UI
+const badgesGrid = document.getElementById('badges-grid');
+const badgesCountEl = document.getElementById('badges-count');
+const titlesGrid = document.getElementById('titles-grid');
 // Levels bars
 const lvlEls = {
     body: { bar: document.getElementById('lvl-body'), label: document.getElementById('lvl-body-label') },
-    mind: { bar: document.getElementById('lvl-mind'), label: document.getElementById('lvl-mind-label') },
+    // UI rename: mind -> etre (keep data backward compatibility elsewhere)
+    etre: { bar: document.getElementById('lvl-etre'), label: document.getElementById('lvl-etre-label') },
     heart: { bar: document.getElementById('lvl-heart'), label: document.getElementById('lvl-heart-label') },
     order: { bar: document.getElementById('lvl-order'), label: document.getElementById('lvl-order-label') },
 };
@@ -114,14 +119,26 @@ function wireAvatarInputs() {
 function defaultLevels() {
     return {
         body: { level: 0, xp: 0, nextXp: 100 },
-        mind: { level: 0, xp: 0, nextXp: 100 },
+        etre: { level: 0, xp: 0, nextXp: 100 },
         heart: { level: 0, xp: 0, nextXp: 100 },
         order: { level: 0, xp: 0, nextXp: 100 },
+        // legacy support (mind) is handled during normalization
     };
 }
 
+function normalizeLevels(levels) {
+    const l = levels || {};
+    // If new 'etre' missing but legacy 'mind' exists, map it
+    if (!l.etre && l.mind) {
+        l.etre = l.mind;
+    }
+    // Ensure all keys present
+    const base = defaultLevels();
+    return { ...base, ...l };
+}
+
 function renderLevels(levels) {
-    const l = levels || defaultLevels();
+    const l = normalizeLevels(levels);
     for (const key of Object.keys(lvlEls)) {
         const cfg = l[key] || { level: 0, xp: 0, nextXp: 100 };
         const pct = Math.max(0, Math.min(100, Math.round((cfg.xp / Math.max(1, cfg.nextXp)) * 100)));
@@ -133,10 +150,10 @@ function renderLevels(levels) {
 // Compute badges based on levels (client-side heuristic)
 function computeBadges(levels) {
     const badges = [];
-    const l = levels || defaultLevels();
+    const l = normalizeLevels(levels);
     const anyLevel5 = Object.values(l).some(x => (x?.level || 0) >= 5);
     const anyLevel10 = Object.values(l).some(x => (x?.level || 0) >= 10);
-    const allLevel3 = ['body','mind','heart','order'].every(k => (l[k]?.level || 0) >= 3);
+    const allLevel3 = ['body','etre','heart','order'].every(k => (l[k]?.level || 0) >= 3);
     if (anyLevel5) badges.push('Initié');
     if (anyLevel10) badges.push('Mentor');
     if (allLevel3) badges.push('Équilibré');
@@ -177,6 +194,11 @@ async function loadUserData(uid, userDocRef, user) {
             if (themeLabel) themeLabel.textContent = theme === 'light' ? 'Clair' : 'Sombre';
             // levels
             renderLevels(data.levels || defaultLevels());
+                // badges
+                renderBadges(Array.isArray(data.badges) ? data.badges : []);
+                // titles
+                const titles = Array.isArray(data.titles) ? data.titles : deriveTitlesFromLevels(data.levels || defaultLevels());
+                renderTitles(titles, data.selectedTitle || null, uid);
         } else {
             // fallback to localStorage
             const avatarUrl = localStorage.getItem('userAvatarUrl');
@@ -214,6 +236,76 @@ async function saveUserData(uid) {
     } catch (err) {
         console.error('saveUserData error', err);
     }
+}
+
+function renderBadges(badges) {
+    if (!badgesGrid) return;
+    badgesGrid.innerHTML = '';
+    const list = Array.isArray(badges) ? badges : [];
+    if (badgesCountEl) badgesCountEl.textContent = String(list.length);
+    if (!list.length) {
+        const d = document.createElement('div');
+        d.className = 'subtle';
+        d.textContent = "Aucun badge pour le moment. Continue ta progression !";
+        badgesGrid.appendChild(d);
+        return;
+    }
+    list.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'badge-item';
+        item.style.cssText = 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;';
+        const icon = document.createElement('div');
+        icon.style.cssText = 'width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;';
+        icon.textContent = name.substring(0,1).toUpperCase();
+        const text = document.createElement('div');
+        const title = document.createElement('div'); title.style.fontWeight = '700'; title.textContent = name;
+        const subtitle = document.createElement('div'); subtitle.className = 'subtle'; subtitle.textContent = badgeTooltip(name);
+        text.appendChild(title); text.appendChild(subtitle);
+        item.appendChild(icon); item.appendChild(text);
+        item.title = badgeTooltip(name);
+        badgesGrid.appendChild(item);
+    });
+}
+
+function badgeTooltip(name) {
+    switch(name){
+        case 'Initié': return "Atteindre le niveau 5 dans un domaine";
+        case 'Mentor': return "Atteindre le niveau 10 dans un domaine";
+        case 'Équilibré': return "Atteindre le niveau 3 dans les 4 domaines";
+        default: return "Badge débloqué";
+    }
+}
+
+function deriveTitlesFromLevels(levels) {
+    const t = new Set();
+    const l = normalizeLevels(levels);
+    if ((l.body?.level||0) >= 3) t.add('Corps discipliné');
+    if ((l.etre?.level||0) >= 3) t.add('Être centré');
+    if ((l.heart?.level||0) >= 3) t.add('Cœur ouvert');
+    if ((l.order?.level||0) >= 3) t.add('Esprit organisé');
+    if ((l.body?.level||0) >= 5 && (l.heart?.level||0) >= 5) t.add('Force & Bienveillance');
+    if (['body','etre','heart','order'].every(k => (l[k]?.level||0) >= 4)) t.add('Harmonie');
+    return Array.from(t);
+}
+
+function renderTitles(titles, selectedTitle, uid) {
+    if (!titlesGrid) return;
+    titlesGrid.innerHTML = '';
+    const list = Array.isArray(titles) ? titles : [];
+    if (!list.length) {
+        const d = document.createElement('div'); d.className='subtle'; d.textContent='Aucun titre débloqué pour le moment.'; titlesGrid.appendChild(d); return;
+    }
+    list.forEach(title => {
+        const pill = document.createElement('button');
+        pill.textContent = title;
+        pill.className = 'title-pill';
+        pill.style.cssText = 'border:1px solid rgba(255,255,255,0.15);padding:8px 12px;border-radius:999px;background:transparent;color:#e5eef8;cursor:pointer;';
+        if (selectedTitle === title) pill.style.background = 'rgba(59,130,246,0.18)';
+        pill.addEventListener('click', async () => {
+            try { await setDoc(doc(db,'users',uid), { selectedTitle: title, titles: list }, { merge: true }); showToast('Titre sélectionné'); renderTitles(list, title, uid); } catch(e){}
+        });
+        titlesGrid.appendChild(pill);
+    });
 }
 
 // Random avatar quick action
@@ -273,7 +365,7 @@ onAuthStateChanged(auth, (user) => {
         const isDev = ["127.0.0.1","localhost"].includes(location.hostname) || /[?&]dev=1(&|$)/.test(location.search);
         if (isDev) {
             const note = document.getElementById('dev-note'); if (note) note.style.display = 'block';
-            ['body','mind','heart','order'].forEach(domain => {
+            ['body','etre','heart','order'].forEach(domain => {
                 const row = document.getElementById('dev-' + domain);
                 if (row) {
                     row.style.display = 'flex';
@@ -289,7 +381,7 @@ onAuthStateChanged(auth, (user) => {
                                     const ref = doc(db, 'users', user.uid);
                                     const snap = await tx.get(ref);
                                     const data = snap.exists() ? snap.data() : {};
-                                    const levels = data.levels || defaultLevels();
+                                    let levels = normalizeLevels(data.levels || defaultLevels());
                                     const cur = levels[domain] || { level:0, xp:0, nextXp:100 };
                                     let xp = cur.xp + 10, level = cur.level, nextXp = cur.nextXp || 100;
                                     while (xp >= nextXp) { xp -= nextXp; level += 1; nextXp = 100 + 20 * level; }
@@ -311,7 +403,11 @@ onAuthStateChanged(auth, (user) => {
                                     if (merged.length !== existing.length) {
                                         await setDoc(userRef, { badges: merged }, { merge: true });
                                     }
+                                    renderBadges(merged);
                                 } catch(e) { /* non-blocking */ }
+                                // titles
+                                const titles = Array.isArray(data.titles) ? data.titles : deriveTitlesFromLevels(data.levels || defaultLevels());
+                                renderTitles(titles, data.selectedTitle || null, user.uid);
                             }
                             showToast('+10 XP ajouté à ' + domain);
                         } catch (e) {

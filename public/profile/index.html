@@ -166,9 +166,9 @@
                                     <div class="row" id="dev-body" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="body">+10 XP (dev)</button></div>
                                 </div>
                                 <div class="card">
-                                    <div class="kv"><strong>Être</strong><span id="lvl-mind-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                                    <div class="progress"><div id="lvl-mind" class="bar"></div></div>
-                                    <div class="row" id="dev-mind" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="mind">+10 XP (dev)</button></div>
+                                    <div class="kv"><strong>Être</strong><span id="lvl-etre-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                                    <div class="progress"><div id="lvl-etre" class="bar"></div></div>
+                                    <div class="row" id="dev-etre" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="etre">+10 XP (dev)</button></div>
                                 </div>
                                 <div class="card">
                                     <div class="kv"><strong>Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div>
@@ -182,6 +182,14 @@
                                 </div>
                             </div>
                             <div class="subtle" id="dev-note" style="margin-top:10px;display:none">Astuce dev: ces boutons appellent la fonction addXp (ou écrivent localement en localhost).</div>
+                            <div class="card" style="margin-top:16px;">
+                                <div class="kv"><strong>Badges débloqués</strong><span class="subtle" id="badges-count">0</span></div>
+                                <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:10px"></div>
+                            </div>
+                            <div class="card" style="margin-top:12px;">
+                                <div class="kv"><strong>Titres</strong><span class="subtle">Sélectionne ton titre affiché</span></div>
+                                <div id="titles-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+                            </div>
                         </div>
             </div>
         </section>
