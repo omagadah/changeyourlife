@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -127,10 +127,10 @@
 <p>Vue d'ensemble de votre progression et bien-être</p>
 </div>
 <div class="stats-grid">
-<div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div><div class="stat-trend up"> +12%</div></div><div class="stat-value">8.4</div><div class="stat-label">Humeur moyenne</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon purple"></div><div class="stat-trend up"> +5</div></div><div class="stat-value">24</div><div class="stat-label">Habitudes tenues</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div><div class="stat-trend down"> -8%</div></div><div class="stat-value">145</div><div class="stat-label">Minutes de focus</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon orange"></div><div class="stat-trend up"> +3</div></div><div class="stat-value">18</div><div class="stat-label">Entrées journal</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div><div class="stat-trend up"> 0%</div></div><div class="stat-value" id="stat-humeur">0</div><div class="stat-label">Humeur moyenne</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon purple"></div><div class="stat-trend up"> 0</div></div><div class="stat-value" id="stat-habitudes">0</div><div class="stat-label">Habitudes tenues</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div><div class="stat-trend down"> 0%</div></div><div class="stat-value" id="stat-focus">0</div><div class="stat-label">Minutes de focus</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon orange"></div><div class="stat-trend up"> 0</div></div><div class="stat-value" id="stat-journal">0</div><div class="stat-label">Entrées journal</div></div>
 </div>
 <div class="chart-card">
 <div class="chart-header">
@@ -209,8 +209,8 @@
 <div class="settings-group">
     <h3 class="settings-group-title">Statistiques Admin</h3>
     <div class="stats-grid" style="margin-top:16px;">
-        <div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div></div><div class="stat-value">247</div><div class="stat-label">Utilisateurs inscrits</div></div>
-        <div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div></div><div class="stat-value">156</div><div class="stat-label">Utilisateurs actifs</div></div>
+    <div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div></div><div class="stat-value" id="admin-users">0</div><div class="stat-label">Utilisateurs inscrits</div></div>
+    <div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div></div><div class="stat-value" id="admin-active">0</div><div class="stat-label">Utilisateurs actifs</div></div>
     </div>
 </div>
 </section>
@@ -314,17 +314,35 @@ function initNavigation() {
 }
 
 // Initialisation du graphique Chart.js
+// Chart period data (all zero for now, ready for future dynamic stats)
+const chartDataSets = {
+    '7J': {
+        labels: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+        data: [0, 0, 0, 0, 0, 0, 0]
+    },
+    '30J': {
+        labels: Array.from({length: 30}, (_, i) => `J${i+1}`),
+        data: Array(30).fill(0)
+    },
+    '3M': {
+        labels: ["Jan", "Fév", "Mar"],
+        data: [0, 0, 0]
+    }
+};
+let chartInstance = null;
 function initChart() {
     const canvas = document.getElementById("monkyChart");
     if (!canvas || !window.Chart) return;
-    
-    new Chart(canvas.getContext("2d"), {
+    const ctx = canvas.getContext("2d");
+    const defaultPeriod = '7J';
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
         type: "line",
         data: {
-            labels: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+            labels: chartDataSets[defaultPeriod].labels,
             datasets: [{
                 label: "Score ChangeYourLife.ai",
-                data: [7.2, 7.8, 7.5, 8.2, 8.5, 8.1, 8.4],
+                data: chartDataSets[defaultPeriod].data,
                 borderColor: "#3b82f6",
                 backgroundColor: "rgba(59, 130, 246, 0.1)",
                 borderWidth: 3,
@@ -351,8 +369,8 @@ function initChart() {
             },
             scales: {
                 y: {
-                    beginAtZero: false,
-                    min: 6,
+                    beginAtZero: true,
+                    min: 0,
                     max: 10,
                     ticks: { color: "#9ca3af" },
                     grid: { color: "rgba(255, 255, 255, 0.05)" }
@@ -363,6 +381,19 @@ function initChart() {
                 }
             }
         }
+    });
+    // Chart period filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const period = btn.textContent.trim();
+            if (chartInstance && chartDataSets[period]) {
+                chartInstance.data.labels = chartDataSets[period].labels;
+                chartInstance.data.datasets[0].data = chartDataSets[period].data;
+                chartInstance.update();
+            }
+        });
     });
 }
 
