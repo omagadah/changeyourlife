@@ -1,7 +1,7 @@
 // public/js/inscription.js
 // Gestion de l'authentification sur la page d'inscription / connexion
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // Singleton Firebase init (évite les redéclarations)
@@ -14,6 +14,18 @@ if (!window._cyfFirebase) {
   window._cyfFirebase = { app, auth, db };
 } else {
   ({ app, auth } = window._cyfFirebase);
+}
+
+// If already authenticated, bounce away from /login immediately
+try {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Use replace to avoid keeping /login in history
+      window.location.replace('/app');
+    }
+  });
+} catch (e) {
+  // non-blocking: auth might not be ready yet, main flow below initializes it
 }
 
 const form = document.getElementById('auth-form');
