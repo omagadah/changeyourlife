@@ -91,16 +91,11 @@ export function updateGlobalAvatar(initial) {
         document.head.appendChild(s);
     }
 
-    // If an inline logo already exists, remove other children and exit
+    // If an inline logo already exists, remove other children to avoid duplicates
     const existingInline = userPanelTrigger.querySelector('svg[data-cyf-logo]');
-    if (existingInline) {
-        Array.from(userPanelTrigger.children).forEach(ch => { if (ch !== existingInline) ch.remove(); });
-        // normalize Vanta & header on every call
-        normalizeVantaAndHeader();
-        return;
-    }
+    if (existingInline) { Array.from(userPanelTrigger.children).forEach(ch => { if (ch !== existingInline) ch.remove(); }); }
 
-    // Replace the trigger contents with the inline logo wrapped to preserve sizing
+    // Replace the trigger contents with our unified inline logo (idempotent)
     userPanelTrigger.innerHTML = `<span class="cyf-logo-wrapper" style="display:inline-block;width:100%;height:100%;">${CYF_INLINE_LOGO}</span>`;
 
     // Make sure the inserted SVG scales nicely inside the trigger
