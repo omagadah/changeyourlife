@@ -229,6 +229,29 @@
     <div id="admin-feedback" style="margin-top:16px;padding:12px;border-radius:8px;font-weight:500;display:none;"></div>
 </div>
 <div class="settings-group">
+    <h3 class="settings-group-title">Exports & Filtres</h3>
+    <div class="grid-2">
+        <div>
+            <div class="input-group">
+                <label class="input-label">Période d'activité</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" data-admin-range="7">7J</button>
+                    <button class="btn btn-secondary" data-admin-range="30">30J</button>
+                    <button class="btn btn-secondary" data-admin-range="90">90J</button>
+                </div>
+            </div>
+            <div class="note">La période affecte le calcul des utilisateurs actifs et l'export CSV ci-contre.</div>
+        </div>
+        <div>
+            <div class="input-group">
+                <label class="input-label">Export CSV (utilisateurs actifs sur la période)</label>
+                <button class="btn btn-primary" id="export-csv-btn">Exporter CSV</button>
+            </div>
+            <div class="note">Champs exportés: uid, email, displayName, lastActive, niveaux (body/etre/heart/order), nbBadges.</div>
+        </div>
+    </div>
+</div>
+<div class="settings-group">
     <h3 class="settings-group-title">Gestion des utilisateurs</h3>
     <div class="input-group">
         <label class="input-label">Rechercher un utilisateur</label>
@@ -704,15 +727,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ----- Admin helpers -----
+let ADMIN_FILTER_DAYS = 7;
 async function updateAdminStats() {
     try {
         const usersColl = collection(db, 'users');
         const total = await getCountFromServer(usersColl);
         const totalEl = document.getElementById('admin-users');
         if (totalEl) totalEl.textContent = String(total.data().count || 0);
-        // 7 derniers jours actifs
-        const seven = new Date(Date.now() - 7*24*60*60*1000);
-        const q = query(usersColl, where('lastActive', '>=', seven));
+        // actifs selon filtre
+        const start = new Date(Date.now() - ADMIN_FILTER_DAYS*24*60*60*1000);
+        const q = query(usersColl, where('lastActive', '>=', start));
         const active = await getCountFromServer(q);
         const activeEl = document.getElementById('admin-active');
         if (activeEl) activeEl.textContent = String(active.data().count || 0);
@@ -720,6 +744,17 @@ async function updateAdminStats() {
 }
 
 function bindAdminHandlers() {
+    // Filtres période
+    document.querySelectorAll('[data-admin-range]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const days = parseInt(btn.getAttribute('data-admin-range') || '7', 10);
+            ADMIN_FILTER_DAYS = days;
+            document.querySelectorAll('[data-admin-range]').forEach(b => b.classList.remove('btn-primary'));
+            btn.classList.add('btn-primary');
+            try { await updateAdminStats(); } catch(e) {}
+        });
+    });
+
     // Recherche
     const searchBtn = document.getElementById('search-user-btn');
     const searchInput = document.getElementById('search-user');
@@ -741,11 +776,118 @@ function bindAdminHandlers() {
                     docsRes = (await getDocs(q2)).docs;
                 }
                 if (!docsRes.length) { resultsEl.textContent = 'Aucun résultat.'; return; }
-                resultsEl.innerHTML = docsRes.map(d => { const u=d.data()||{}; const uid=d.id; return `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><strong>${u.displayName || '(sans nom)'} </strong><span style=\"color:#6b7280\">${u.email || ''}</span><br><small>UID: ${uid}</small></div>`; }).join('');
+                resultsEl.innerHTML = docsRes.map(d => { const u=d.data()||{}; const uid=d.id; return `<div data-user-uid="${uid}" class="admin-user-row" style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer"><strong>${u.displayName || '(sans nom)'} </strong><span style=\"color:#6b7280\">${u.email || ''}</span><br><small>UID: ${uid}</small></div>`; }).join('');
+                // open detail modal
+                resultsEl.querySelectorAll('.admin-user-row').forEach(row => {
+                    row.addEventListener('click', () => {
+                        const uid = row.getAttribute('data-user-uid');
+                        openUserDetailModal(uid);
+                    });
+                });
             } catch (e) { resultsEl.textContent = 'Erreur de recherche.'; }
         });
     }
+    // Export CSV
+    const exportBtn = document.getElementById('export-csv-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', async () => {
+            try {
+                const usersColl = collection(db, 'users');
+                const start = new Date(Date.now() - ADMIN_FILTER_DAYS*24*60*60*1000);
+                const q = query(usersColl, where('lastActive', '>=', start));
+                const snap = await getDocs(q);
+                const rows = [];
+                rows.push(['uid','email','displayName','lastActive','lvl_body','lvl_etre','lvl_heart','lvl_order','badgesCount']);
+                snap.forEach(d => {
+                    const u = d.data() || {};
+                    const lv = (u.levels || {});
+                    const lvn = { body: lv.body?.level || 0, etre: (lv.etre?.level || (lv.mind?.level || 0)), heart: lv.heart?.level || 0, order: lv.order?.level || 0 };
+                    const last = u.lastActive?.toDate ? u.lastActive.toDate() : (u.lastActive || null);
+                    const lastIso = last ? new Date(last).toISOString() : '';
+                    const badgesCount = Array.isArray(u.badges) ? u.badges.length : 0;
+                    rows.push([d.id, u.email||'', u.displayName||'', lastIso, lvn.body, lvn.etre, lvn.heart, lvn.order, badgesCount]);
+                });
+                const csv = rows.map(r => r.map(x => String(x).replaceAll('"','""')).map(x => `"${x}"`).join(',')).join('\r\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `users_${ADMIN_FILTER_DAYS}j.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+                showAdminFeedback('CSV exporté.');
+            } catch (e) { showAdminFeedback('Échec export CSV', false); }
+        });
+    }
     // Modération
+
+// Modal helpers
+function ensureModalRoot() {
+    let el = document.getElementById('admin-modal-root');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'admin-modal-root';
+        el.style.position = 'fixed'; el.style.inset = '0'; el.style.display = 'none'; el.style.alignItems = 'center'; el.style.justifyContent = 'center'; el.style.background = 'rgba(0,0,0,0.5)'; el.style.zIndex = '99999';
+        el.innerHTML = `<div id="admin-modal" style="max-width:640px;width:92%;background:rgba(31,41,55,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:18px;color:#e5eef8">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3>Détail utilisateur</h3><button id="admin-modal-close" class="btn btn-secondary">Fermer</button></div>
+            <div id="admin-modal-content" style="max-height:60vh;overflow:auto"></div>
+        </div>`;
+        document.body.appendChild(el);
+        el.addEventListener('click', (e) => { if (e.target === el) el.style.display='none'; });
+        el.querySelector('#admin-modal-close').addEventListener('click', ()=> { el.style.display='none'; });
+    }
+    return el;
+}
+
+async function openUserDetailModal(uid) {
+    const root = ensureModalRoot();
+    const content = root.querySelector('#admin-modal-content');
+    content.innerHTML = '<div class="note">Chargement...</div>';
+    root.style.display = 'flex';
+    try {
+        const uref = doc(db,'users',uid);
+        const rref = doc(db,'roles',uid);
+        const [usnap, rsnap] = await Promise.all([getDoc(uref), getDoc(rref)]);
+        const u = usnap.exists() ? usnap.data() : {};
+        const isMod = rsnap.exists() && rsnap.data().mod === true;
+        const lv = u.levels || {};
+        const lvn = { body: lv.body?.level || 0, etre: (lv.etre?.level || (lv.mind?.level || 0)), heart: lv.heart?.level || 0, order: lv.order?.level || 0 };
+        const badges = Array.isArray(u.badges) ? u.badges : [];
+        content.innerHTML = `
+            <div class="grid-2">
+                <div>
+                    <div class="input-group"><div class="input-label">Nom</div><div>${u.displayName||'(sans nom)'}</div></div>
+                    <div class="input-group"><div class="input-label">Email</div><div>${u.email||''}</div></div>
+                    <div class="input-group"><div class="input-label">UID</div><div><code>${uid}</code></div></div>
+                </div>
+                <div>
+                    <div class="input-group"><div class="input-label">Rôle Modérateur</div>
+                        <button id="toggle-mod" class="btn ${isMod? 'btn-secondary':'btn-primary'}">${isMod?'Retirer Modérateur':'Ajouter Modérateur'}</button>
+                    </div>
+                    <div class="note">Les admins restent gérés via la constante côté client pour le moment.</div>
+                </div>
+            </div>
+            <div class="settings-group" style="margin-top:12px">
+                <h3 class="settings-group-title">Niveaux</h3>
+                <div class="grid-2">
+                    <div>Corps: <strong>${lvn.body}</strong></div>
+                    <div>Être: <strong>${lvn.etre}</strong></div>
+                    <div>Cœur: <strong>${lvn.heart}</strong></div>
+                    <div>Ordre: <strong>${lvn.order}</strong></div>
+                </div>
+            </div>
+            <div class="settings-group">
+                <h3 class="settings-group-title">Badges (${badges.length})</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">${badges.map(b => `<span class="pill">${b}</span>`).join('') || '<span class="subtle">Aucun badge</span>'}</div>
+            </div>
+        `;
+        const btn = root.querySelector('#toggle-mod');
+        if (btn) {
+            btn.addEventListener('click', async () => {
+                try { await setDoc(doc(db,'roles',uid), { mod: !isMod }, { merge: true }); showAdminFeedback(!isMod? 'Mod ajouté' : 'Mod retiré'); root.style.display = 'none'; }
+                catch (e) { showAdminFeedback('Action rôle échouée', false); }
+            });
+        }
+    } catch (e) {
+        content.innerHTML = '<div class="note">Erreur de chargement.</div>';
+    }
+}
     const addBtn = document.getElementById('add-mod-btn');
     const remBtn = document.getElementById('remove-mod-btn');
     const uidInput = document.getElementById('mod-uid');
