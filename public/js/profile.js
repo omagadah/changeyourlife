@@ -130,6 +130,19 @@ function renderLevels(levels) {
     }
 }
 
+// Compute badges based on levels (client-side heuristic)
+function computeBadges(levels) {
+    const badges = [];
+    const l = levels || defaultLevels();
+    const anyLevel5 = Object.values(l).some(x => (x?.level || 0) >= 5);
+    const anyLevel10 = Object.values(l).some(x => (x?.level || 0) >= 10);
+    const allLevel3 = ['body','mind','heart','order'].every(k => (l[k]?.level || 0) >= 3);
+    if (anyLevel5) badges.push('Initié');
+    if (anyLevel10) badges.push('Mentor');
+    if (allLevel3) badges.push('Équilibré');
+    return badges;
+}
+
 function showToast(msg) {
     if (!toastEl) return;
     toastEl.textContent = msg;
@@ -285,8 +298,21 @@ onAuthStateChanged(auth, (user) => {
                                 });
                             }
                             // Reload view
-                            const updated = await getDoc(doc(db, 'users', user.uid));
-                            if (updated.exists()) renderLevels(updated.data().levels);
+                            const userRef = doc(db, 'users', user.uid);
+                            const updated = await getDoc(userRef);
+                            if (updated.exists()) {
+                                const data = updated.data();
+                                renderLevels(data.levels);
+                                // badges
+                                try {
+                                    const newBadges = computeBadges(data.levels);
+                                    const existing = Array.isArray(data.badges) ? data.badges : [];
+                                    const merged = Array.from(new Set([...(existing||[]), ...newBadges]));
+                                    if (merged.length !== existing.length) {
+                                        await setDoc(userRef, { badges: merged }, { merge: true });
+                                    }
+                                } catch(e) { /* non-blocking */ }
+                            }
                             showToast('+10 XP ajouté à ' + domain);
                         } catch (e) {
                             console.error('dev addXp failed', e);

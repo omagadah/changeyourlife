@@ -234,7 +234,8 @@
         <label class="input-label">Rechercher un utilisateur</label>
         <input type="text" class="input-field" placeholder="Email ou nom..." id="search-user">
     </div>
-    <button class="btn btn-secondary">Rechercher</button>
+    <button class="btn btn-secondary" id="search-user-btn">Rechercher</button>
+    <div id="admin-search-results" style="margin-top:12px;color:#9ca3af;font-size:0.9rem;"></div>
 </div>
 <div class="settings-group">
     <h3 class="settings-group-title">Statistiques Admin</h3>
@@ -243,14 +244,34 @@
     <div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div></div><div class="stat-value" id="admin-active">0</div><div class="stat-label">Utilisateurs actifs</div></div>
     </div>
 </div>
+<div class="settings-group">
+    <h3 class="settings-group-title">Rôles & Modération</h3>
+    <div class="note" style="margin-bottom:10px;">Ajoutez/retirez des modérateurs via leur UID.</div>
+    <div class="grid-2">
+        <div>
+            <div class="input-group">
+                <label class="input-label">UID Utilisateur</label>
+                <input type="text" class="input-field" placeholder="UID..." id="mod-uid">
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary" id="add-mod-btn">Ajouter Modérateur</button>
+                <button class="btn btn-secondary" id="remove-mod-btn">Retirer Modérateur</button>
+            </div>
+        </div>
+        <div>
+            <div class="note">Rôles stockés dans Firestore: <code>roles/{uid}</code> avec <code>mod: true</code>. Les admins sont gérés via la constante <code>ADMIN_UIDS</code> côté client pour l’instant.</div>
+        </div>
+    </div>
+    <div id="admin-roles-feedback" style="margin-top:12px;padding:10px;border-radius:8px;display:none;"></div>
+</div>
 </section>
 </main>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script type="module">
-import { getAuth, onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { updateGlobalAvatar } from "/js/common.js";
 import { initUserMenu } from "/js/userMenu.js";
 
@@ -300,13 +321,18 @@ function showAdminFeedback(message, success = true) {
 
 // Initialisation de l'authentification
 function initAuth() {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
             initUserMenu();
             updateGlobalAvatar((user.email || "U").charAt(0).toUpperCase());
             
             // Vérifie si l'utilisateur est admin
-            if (ADMIN_UIDS.includes(user.uid)) {
+            let isAdmin = ADMIN_UIDS.includes(user.uid);
+            let isMod = false;
+            if (!isAdmin) {
+                try { const r = await getDoc(doc(db, 'roles', user.uid)); isMod = !!(r.exists() && r.data().mod === true); } catch(e) {}
+            }
+            if (isAdmin || isMod) {
                 document.getElementById("admin-nav-section").style.display = "block";
                 showAdminInfo(user);
             }
@@ -327,12 +353,20 @@ function initAuth() {
                     if (provEl) provEl.textContent = `Fournisseur détecté: ${providers.join(', ') || 'inconnu'}`;
                 }
             } catch(e) { console.warn('Provider check failed', e); }
-            
+            // Stats: marquer l'activité
+            try { await setDoc(doc(db, 'users', user.uid), { lastActive: serverTimestamp(), email: user.email || null }, { merge: true }); } catch(e) {}
+
             // Charger les préférences depuis Firestore et brancher les toggles
             initSettingsToggles(user.uid);
 
             initChart();
             initNavigation();
+
+            // Initialiser les features admin
+            if (isAdmin || isMod) {
+                try { await updateAdminStats(); } catch(e) {}
+                bindAdminHandlers();
+            }
         } else {
             if (!["127.0.0.1", "localhost"].includes(location.hostname)) {
                 window.location.href = "/login";
@@ -622,6 +656,103 @@ function applyTheme(theme) {
         if (theme === 'light') document.body.classList.add('light-mode');
         else document.body.classList.remove('light-mode');
     } catch(e) { /* ignore */ }
+}
+
+// ----- Danger Zone: suppression du compte -----
+document.addEventListener('DOMContentLoaded', () => {
+    const delBtn = document.getElementById('delete-account-btn');
+    if (!delBtn) return;
+    delBtn.addEventListener('click', async () => {
+        const user = auth && auth.currentUser;
+        if (!user) return;
+        if (!window.confirm('Voulez-vous vraiment supprimer votre compte ? Cette action est irréversible.')) return;
+        const confirm2 = window.prompt('Tapez "SUPPRIMER" pour confirmer');
+        if ((confirm2 || '').toUpperCase() !== 'SUPPRIMER') return;
+        delBtn.disabled = true;
+        try {
+            try { await deleteDoc(doc(db, 'users', user.uid)); } catch(_) {}
+            try { await deleteDoc(doc(db, 'roles', user.uid)); } catch(_) {}
+            try {
+                await deleteUser(user);
+            } catch (e) {
+                if (e?.code === 'auth/requires-recent-login') {
+                    // reauth by provider
+                    const providers = (user.providerData || []).map(p => p.providerId);
+                    if (providers.includes('google.com')) {
+                        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+                    } else if (providers.includes('github.com')) {
+                        await reauthenticateWithPopup(user, new GithubAuthProvider());
+                    } else if (providers.includes('password')) {
+                        const pwd = window.prompt('Veuillez entrer votre mot de passe pour confirmer:');
+                        if (!pwd) throw new Error('cancelled');
+                        const cred = EmailAuthProvider.credential(user.email, pwd);
+                        await reauthenticateWithCredential(user, cred);
+                    } else {
+                        throw e;
+                    }
+                    await deleteUser(user);
+                } else { throw e; }
+            }
+            try { localStorage.removeItem('userAvatarUrl'); } catch(_) {}
+            window.location.href = '/signup';
+        } catch (err) {
+            console.error('delete account failed', err);
+            alert('Échec de la suppression du compte. Réessayez plus tard.');
+            delBtn.disabled = false;
+        }
+    });
+});
+
+// ----- Admin helpers -----
+async function updateAdminStats() {
+    try {
+        const usersColl = collection(db, 'users');
+        const total = await getCountFromServer(usersColl);
+        const totalEl = document.getElementById('admin-users');
+        if (totalEl) totalEl.textContent = String(total.data().count || 0);
+        // 7 derniers jours actifs
+        const seven = new Date(Date.now() - 7*24*60*60*1000);
+        const q = query(usersColl, where('lastActive', '>=', seven));
+        const active = await getCountFromServer(q);
+        const activeEl = document.getElementById('admin-active');
+        if (activeEl) activeEl.textContent = String(active.data().count || 0);
+    } catch (e) { console.warn('updateAdminStats failed', e); }
+}
+
+function bindAdminHandlers() {
+    // Recherche
+    const searchBtn = document.getElementById('search-user-btn');
+    const searchInput = document.getElementById('search-user');
+    const resultsEl = document.getElementById('admin-search-results');
+    if (searchBtn && searchInput && resultsEl) {
+        searchBtn.addEventListener('click', async () => {
+            const term = (searchInput.value || '').trim();
+            if (!term) return;
+            resultsEl.textContent = 'Recherche...';
+            try {
+                const usersColl = collection(db, 'users');
+                let docsRes = [];
+                if (term.includes('@')) {
+                    const q1 = query(usersColl, where('email', '==', term), limit(10));
+                    docsRes = (await getDocs(q1)).docs;
+                } else {
+                    const end = term + '\\uf8ff';
+                    const q2 = query(usersColl, where('displayName', '>=', term), where('displayName', '<=', end), limit(10));
+                    docsRes = (await getDocs(q2)).docs;
+                }
+                if (!docsRes.length) { resultsEl.textContent = 'Aucun résultat.'; return; }
+                resultsEl.innerHTML = docsRes.map(d => { const u=d.data()||{}; const uid=d.id; return `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><strong>${u.displayName || '(sans nom)'} </strong><span style=\"color:#6b7280\">${u.email || ''}</span><br><small>UID: ${uid}</small></div>`; }).join('');
+            } catch (e) { resultsEl.textContent = 'Erreur de recherche.'; }
+        });
+    }
+    // Modération
+    const addBtn = document.getElementById('add-mod-btn');
+    const remBtn = document.getElementById('remove-mod-btn');
+    const uidInput = document.getElementById('mod-uid');
+    const fb = document.getElementById('admin-roles-feedback');
+    function setFB(msg, ok=true){ if(!fb) return; fb.style.display='block'; fb.textContent=msg; fb.style.background= ok? 'rgba(16,185,129,0.12)':'rgba(239,68,68,0.12)'; fb.style.border= ok? '1px solid rgba(16,185,129,0.35)':'1px solid rgba(239,68,68,0.35)'; fb.style.color= ok? '#10b981':'#ef4444'; setTimeout(()=>{fb.style.display='none';},3500); }
+    if (addBtn && uidInput) addBtn.addEventListener('click', async () => { const target=(uidInput.value||'').trim(); if(!target) return; try { await setDoc(doc(db,'roles',target), { mod: true }, { merge: true }); setFB('Modérateur ajouté.'); } catch(e){ setFB('Échec ajout modérateur', false); } });
+    if (remBtn && uidInput) remBtn.addEventListener('click', async () => { const target=(uidInput.value||'').trim(); if(!target) return; try { await setDoc(doc(db,'roles',target), { mod: false }, { merge: true }); setFB('Modérateur retiré.'); } catch(e){ setFB('Échec retrait modérateur', false); } });
 }
 </script>
 </body>
