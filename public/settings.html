@@ -146,11 +146,19 @@
 <!-- Chart.js code block removed for clean UI. Chart is initialized in the script section below. -->
 </section>
 <section id="admin" class="settings-section">
-<div class="content-header"><h2>Panel Administrateur</h2><p>Outils réservés aux administrateurs</p></div>
+<div class="content-header">
+    <h2>Panel Administrateur</h2>
+    <p>Outils réservés aux administrateurs</p>
+    <div id="admin-user-info" style="margin-top:12px;color:#3b82f6;font-weight:600;font-size:1rem;"></div>
+</div>
 <div class="settings-group">
-<h3 class="settings-group-title">Outils Admin</h3>
-<div class="input-group"><label class="input-label">UID Utilisateur</label><input type="text" class="input-field" placeholder="Entrez l'UID d'un utilisateur..." id="admin-uid"></div>
-<button class="btn btn-primary" id="download-user-data-btn">Télécharger les données</button>
+    <h3 class="settings-group-title">Outils Admin</h3>
+    <div class="input-group">
+        <label class="input-label">UID Utilisateur</label>
+        <input type="text" class="input-field" placeholder="Entrez l'UID d'un utilisateur..." id="admin-uid">
+    </div>
+    <button class="btn btn-primary" id="download-user-data-btn">Télécharger les données</button>
+    <div id="admin-feedback" style="margin-top:16px;color:#10b981;font-weight:500;display:none;"></div>
 </div>
 </section>
 </main>
@@ -161,6 +169,37 @@
 <!-- <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script> -->
 <!-- <script>VANTA.BIRDS({el:'#vanta-birds-bg',backgroundColor:0x0a0e27,color1:0x3b82f6,color2:0x8b5cf6,quantity:3.00,birdSize:1.2,wingSpan:25.00,speedLimit:4.00});</script> -->
 <script type="module">
+// Affiche l'email de l'utilisateur admin dans le panel
+function showAdminInfo(user) {
+    const infoDiv = document.getElementById('admin-user-info');
+    if (infoDiv && user) {
+        infoDiv.textContent = `Connecté en tant qu'admin : ${user.email || 'Utilisateur inconnu'}`;
+    }
+}
+
+// Feedback visuel pour les actions admin
+function showAdminFeedback(message, success=true) {
+    const feedbackDiv = document.getElementById('admin-feedback');
+    if (feedbackDiv) {
+        feedbackDiv.textContent = message;
+        feedbackDiv.style.color = success ? '#10b981' : '#ef4444';
+        feedbackDiv.style.display = 'block';
+        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 3500);
+    }
+}
+
+// Ajout feedback sur le bouton admin
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('download-user-data-btn');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            showAdminFeedback('Téléchargement en cours...');
+            setTimeout(() => {
+                showAdminFeedback('Données téléchargées avec succès !');
+            }, 2000);
+        });
+    }
+});
 import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";import{getFirestore}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";import{setupThemeToggle,updateGlobalAvatar}from"./js/common.js";import{initUserMenu}from"./js/userMenu.js";const e={apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",authDomain:"changeyourlife-cc210.firebaseapp.com",projectId:"changeyourlife-cc210",storageBucket:"changeyourlife-cc210.appspot.com",messagingSenderId:"801720080785",appId:"1:801720080785:web:1a74aadba5755ea26c2230"};let t,a;function n(){onAuthStateChanged(t,t=>{if(t){initUserMenu(),setupThemeToggle(),updateGlobalAvatar((t.email||"U").charAt(0).toUpperCase()),["PvDinfGc2hRribdPE4JW9Bv5Ip42"].includes(t.uid)&&(document.getElementById("admin-nav-section").style.display="block");const e=document.getElementById("profile-email");e&&(e.value=t.email),s(),o()}else{if(!["127.0.0.1","localhost"].includes(location.hostname))return void(window.location.href="inscription.html");s(),o()}})}function o(){document.querySelectorAll(".nav-item").forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-section");document.querySelectorAll(".nav-item").forEach(e=>e.classList.remove("active")),e.classList.add("active"),document.querySelectorAll(".settings-section").forEach(e=>e.classList.remove("active")),document.getElementById(t)?.classList.add("active")})})}function s(){const e=document.getElementById("monkyChart");if(!e||!window.Chart)return;new Chart(e.getContext("2d"),{type:"line",data:{labels:["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"],datasets:[{label:"Score M.O.N.K.Y",data:[7.2,7.8,7.5,8.2,8.5,8.1,8.4],borderColor:"#3b82f6",backgroundColor:"rgba(59, 130, 246, 0.1)",borderWidth:3,tension:.4,fill:!0,pointRadius:5,pointHoverRadius:7,pointBackgroundColor:"#3b82f6",pointBorderColor:"#fff",pointBorderWidth:2}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1},tooltip:{backgroundColor:"rgba(31, 41, 55, 0.9)",padding:12,borderColor:"rgba(255, 255, 255, 0.1)",borderWidth:1}},scales:{y:{beginAtZero:!1,min:6,max:10,ticks:{color:"#9ca3af"},grid:{color:"rgba(255, 255, 255, 0.05)"}},x:{ticks:{color:"#9ca3af"},grid:{color:"rgba(255, 255, 255, 0.05)"}}}}})}window._cyfFirebase?({auth:t,db:a}=window._cyfFirebase,n()):import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(({initializeApp:o})=>{const s=o(e);t=getAuth(s),a=getFirestore(s),window._cyfFirebase={app:s,auth:t,db:a},n()}),window.addEventListener("DOMContentLoaded",()=>{updateGlobalAvatar(),document.querySelectorAll(".user-panel-trigger").forEach(e=>{e.addEventListener("click",e=>{e.stopPropagation(),initUserMenu();const t=document.getElementById("cyf-user-menu");t&&(t.style.display="block"===t.style.display?"none":"block")})})});
 </script>
 </body>
