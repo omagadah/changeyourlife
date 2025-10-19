@@ -2,21 +2,17 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>Redirection…</title>
+    <title>Application</title>
     <meta name="robots" content="noindex" />
-    <link rel="canonical" href="/dashboard.html" />
-    <meta http-equiv="refresh" content="0; url=/dashboard.html" />
     <script>
-      // Préserve les paramètres et l'ancre
-      (function () {
-        var target = "/dashboard.html" + (location.search || "") + (location.hash || "");
-        if (location.pathname !== "/dashboard.html") {
-          location.replace(target);
-        }
-      })();
+      // L’URL officielle est /app (réécrite vers /dashboard.html par Vercel)
+      // Cette page ne fait rien pour éviter un double-redirect.
+      if (location.pathname !== '/app') {
+        location.replace('/app' + (location.search || '') + (location.hash || ''));
+      }
     </script>
   </head>
   <body>
-    Redirection vers l'application… <a href="/dashboard.html">Continuer</a>
+    <p>Chargement… <a href="/app">Aller à l’app</a></p>
   </body>
   </html>
