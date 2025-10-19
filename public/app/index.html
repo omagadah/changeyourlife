@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirection…</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="/dashboard.html" />
+    <meta http-equiv="refresh" content="0; url=/dashboard.html" />
+    <script>
+      // Préserve les paramètres et l'ancre
+      (function () {
+        var target = "/dashboard.html" + (location.search || "") + (location.hash || "");
+        if (location.pathname !== "/dashboard.html") {
+          location.replace(target);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    Redirection vers l'application… <a href="/dashboard.html">Continuer</a>
+  </body>
+  </html>

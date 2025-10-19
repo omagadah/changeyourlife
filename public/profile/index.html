@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirection…</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="/profile.html" />
+    <meta http-equiv="refresh" content="0; url=/profile.html" />
+    <script>
+      (function () {
+        var target = "/profile.html" + (location.search || "") + (location.hash || "");
+        if (location.pathname !== "/profile.html") {
+          location.replace(target);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    Redirection… <a href="/profile.html">Continuer</a>
+  </body>
+  </html>
