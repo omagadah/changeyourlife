@@ -78,16 +78,7 @@ export function updateGlobalAvatar(initial) {
   </g>
 </svg>`;
 
-    // If an inline logo already exists, remove other children and exit
-    const existingInline = userPanelTrigger.querySelector('svg[data-cyf-logo]');
-    if (existingInline) {
-        Array.from(userPanelTrigger.children).forEach(ch => { if (ch !== existingInline) ch.remove(); });
-        // normalize Vanta & header on every call
-        normalizeVantaAndHeader();
-        return;
-    }
-
-    // Inject a tiny style once to unify look & hover halo across pages
+    // Inject a tiny style once to unify look & hover halo across pages (do this BEFORE any early return)
     const styleId = 'cyf-trigger-global-style';
     if (!document.getElementById(styleId)) {
         const s = document.createElement('style');
@@ -98,6 +89,15 @@ export function updateGlobalAvatar(initial) {
             .user-panel-trigger .cyf-logo-wrapper svg { width: 100%; height: 100%; display: block; border-radius: 6px; }
         `;
         document.head.appendChild(s);
+    }
+
+    // If an inline logo already exists, remove other children and exit
+    const existingInline = userPanelTrigger.querySelector('svg[data-cyf-logo]');
+    if (existingInline) {
+        Array.from(userPanelTrigger.children).forEach(ch => { if (ch !== existingInline) ch.remove(); });
+        // normalize Vanta & header on every call
+        normalizeVantaAndHeader();
+        return;
     }
 
     // Replace the trigger contents with the inline logo wrapped to preserve sizing
