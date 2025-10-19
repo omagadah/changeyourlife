@@ -20,13 +20,34 @@ if (window._cyfFirebase) {
 
 // DOM refs
 const avatarPreviewContainer = document.getElementById('avatar-preview-container');
-const avatarControlsContainer = document.getElementById('avatar-controls-container');
 const usernameDisplay = document.getElementById('username-display');
 const titleDisplay = document.getElementById('title-display');
 const usernameInput = document.getElementById('username');
 const profileTitleInput = document.getElementById('profile-title');
 const saveProfileButton = document.getElementById('save-profile-button');
 const randomAvatarBtn = document.getElementById('random-avatar-btn');
+const fileInputEl = document.getElementById('avatar-file-input');
+const initialInputEl = document.getElementById('avatar-initial-input');
+const generateInitialBtn = document.getElementById('generate-initial-avatar');
+const themeLabel = document.getElementById('theme-label');
+const animToggle = document.getElementById('anim-toggle');
+const animLabel = document.getElementById('anim-label');
+const emailNotToggle = document.getElementById('emailnot-toggle');
+const emailNotLabel = document.getElementById('emailnot-label');
+const playerIdEl = document.getElementById('player-id');
+const bioInput = document.getElementById('profile-bio');
+const websiteInput = document.getElementById('profile-website');
+const emailReadOnly = document.getElementById('profile-email');
+const toastEl = document.getElementById('toast');
+const themeDarkBtn = document.getElementById('theme-dark-btn');
+const themeLightBtn = document.getElementById('theme-light-btn');
+// Levels bars
+const lvlEls = {
+    body: { bar: document.getElementById('lvl-body'), label: document.getElementById('lvl-body-label') },
+    mind: { bar: document.getElementById('lvl-mind'), label: document.getElementById('lvl-mind-label') },
+    heart: { bar: document.getElementById('lvl-heart'), label: document.getElementById('lvl-heart-label') },
+    order: { bar: document.getElementById('lvl-order'), label: document.getElementById('lvl-order-label') },
+};
 
 // Utility: generate a simple initial-based avatar as data URL
 function generateInitialAvatar(initial = 'U', size = 256, bg = null, fg = '#ffffff') {
@@ -61,28 +82,9 @@ function showAvatar(dataUrl) {
     avatarPreviewContainer.appendChild(img);
 }
 
-function populateAvatarControls() {
-    if (!avatarControlsContainer) return;
-    avatarControlsContainer.innerHTML = `
-        <div class="control-group">
-            <label>Télécharger un avatar</label>
-            <input type="file" id="avatar-file-input" accept="image/*">
-        </div>
-        <div class="control-group">
-            <label>Générer à partir d'une initiale</label>
-            <div style="display:flex;gap:8px;align-items:center">
-                <input id="avatar-initial-input" placeholder="A" style="padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);width:60px;text-align:center">
-                <button id="generate-initial-avatar" class="random-btn">Générer</button>
-            </div>
-        </div>
-    `;
-
-    const fileInput = document.getElementById('avatar-file-input');
-    const generateBtn = document.getElementById('generate-initial-avatar');
-    const initialInput = document.getElementById('avatar-initial-input');
-
-    if (fileInput) {
-        fileInput.addEventListener('change', (e) => {
+function wireAvatarInputs() {
+    if (fileInputEl) {
+        fileInputEl.addEventListener('change', (e) => {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -95,10 +97,9 @@ function populateAvatarControls() {
             reader.readAsDataURL(file);
         });
     }
-
-    if (generateBtn) {
-        generateBtn.addEventListener('click', () => {
-            const initial = initialInput.value.trim() || (usernameInput.value.trim().charAt(0) || 'U');
+    if (generateInitialBtn) {
+        generateInitialBtn.addEventListener('click', () => {
+            const initial = (initialInputEl && initialInputEl.value.trim()) || (usernameInput.value.trim().charAt(0) || 'U');
             const dataUrl = generateInitialAvatar(initial, 256);
             localStorage.setItem('userAvatarUrl', dataUrl);
             showAvatar(dataUrl);
@@ -107,7 +108,33 @@ function populateAvatarControls() {
     }
 }
 
-async function loadUserData(uid, userDocRef) {
+function defaultLevels() {
+    return {
+        body: { level: 0, xp: 0, nextXp: 100 },
+        mind: { level: 0, xp: 0, nextXp: 100 },
+        heart: { level: 0, xp: 0, nextXp: 100 },
+        order: { level: 0, xp: 0, nextXp: 100 },
+    };
+}
+
+function renderLevels(levels) {
+    const l = levels || defaultLevels();
+    for (const key of Object.keys(lvlEls)) {
+        const cfg = l[key] || { level: 0, xp: 0, nextXp: 100 };
+        const pct = Math.max(0, Math.min(100, Math.round((cfg.xp / Math.max(1, cfg.nextXp)) * 100)));
+        if (lvlEls[key].bar) lvlEls[key].bar.style.width = pct + '%';
+        if (lvlEls[key].label) lvlEls[key].label.textContent = `Niv. ${cfg.level} · ${cfg.xp} XP`;
+    }
+}
+
+function showToast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(() => { toastEl.classList.remove('show'); }, 2000);
+}
+
+async function loadUserData(uid, userDocRef, user) {
     try {
         const snap = await getDoc(userDocRef);
         if (snap.exists()) {
@@ -116,16 +143,32 @@ async function loadUserData(uid, userDocRef) {
             profileTitleInput.value = data.profileTitle || '';
             usernameDisplay.textContent = data.displayName || '';
             titleDisplay.textContent = data.profileTitle || '';
+            if (bioInput) bioInput.value = data.bio || '';
+            if (websiteInput) websiteInput.value = data.website || '';
             const avatarUrl = data.avatarUrl || localStorage.getItem('userAvatarUrl');
             if (avatarUrl) {
                 showAvatar(avatarUrl);
                 updateGlobalAvatar((data.displayName || '').charAt(0).toUpperCase() || (data.email || 'U').charAt(0).toUpperCase());
             }
+            // preferences
+            const prefs = data.prefs || {};
+            const animOn = prefs.animEnabled !== false; // default true
+            const weekly = prefs.weeklyEmails === true; // default false
+            if (animLabel) animLabel.textContent = animOn ? 'Actives' : 'Coupées';
+            if (emailNotLabel) emailNotLabel.textContent = weekly ? 'Activés' : 'Désactivés';
+            // theme label (from storage or prefs)
+            const theme = localStorage.getItem('theme') || prefs.theme || 'dark';
+            if (themeLabel) themeLabel.textContent = theme === 'light' ? 'Clair' : 'Sombre';
+            // levels
+            renderLevels(data.levels || defaultLevels());
         } else {
             // fallback to localStorage
             const avatarUrl = localStorage.getItem('userAvatarUrl');
             if (avatarUrl) showAvatar(avatarUrl);
+            renderLevels(defaultLevels());
         }
+        if (emailReadOnly && user?.email) emailReadOnly.value = user.email;
+        if (playerIdEl && uid) playerIdEl.textContent = 'Player #' + uid.slice(-6).toUpperCase();
     } catch (err) {
         console.error('loadUserData error', err);
     }
@@ -136,14 +179,22 @@ async function saveUserData(uid) {
     const displayName = usernameInput.value.trim();
     const profileTitle = profileTitleInput.value.trim().substring(0, 12);
     const avatarUrl = localStorage.getItem('userAvatarUrl') || null;
+    const bio = (bioInput && bioInput.value.trim()) || '';
+    const website = (websiteInput && websiteInput.value.trim()) || '';
+    const prefs = {
+        theme: localStorage.getItem('theme') || 'dark',
+        animEnabled: (animLabel && animLabel.textContent === 'Actives') ? true : false,
+        weeklyEmails: (emailNotLabel && emailNotLabel.textContent === 'Activés') ? true : false,
+    };
     const userDocRef = doc(db, 'users', uid);
     try {
-        await setDoc(userDocRef, { displayName, profileTitle, avatarUrl }, { merge: true });
+        await setDoc(userDocRef, { displayName, profileTitle, avatarUrl, bio, website, prefs }, { merge: true });
         usernameDisplay.textContent = displayName;
         titleDisplay.textContent = profileTitle;
         showAvatar(avatarUrl || generateInitialAvatar(displayName.charAt(0) || 'U'));
         // update global avatar
         updateGlobalAvatar((displayName || 'U').charAt(0).toUpperCase());
+        showToast('Profil mis à jour');
     } catch (err) {
         console.error('saveUserData error', err);
     }
@@ -163,14 +214,54 @@ if (randomAvatarBtn) {
 // Auth guard and wiring
 onAuthStateChanged(auth, (user) => {
     if (user) {
-    initUserMenu();
+        initUserMenu();
         setupThemeToggle();
+        // reflect theme in label
+        const t = localStorage.getItem('theme') || 'dark';
+        if (themeLabel) themeLabel.textContent = t === 'light' ? 'Clair' : 'Sombre';
         updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
 
         const userDocRef = doc(db, 'users', user.uid);
-        populateAvatarControls();
-        loadUserData(user.uid, userDocRef);
+        wireAvatarInputs();
+        loadUserData(user.uid, userDocRef, user);
         if (saveProfileButton) saveProfileButton.addEventListener('click', () => saveUserData(user.uid));
+
+        // Tabs behavior
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-tab');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const section = document.getElementById('tab-' + target);
+            if (section) section.classList.add('active');
+        }));
+
+        // Preferences toggles
+        if (animToggle && animLabel) {
+            animToggle.addEventListener('click', async () => {
+                const nowActive = animLabel.textContent === 'Actives' ? false : true;
+                animLabel.textContent = nowActive ? 'Actives' : 'Coupées';
+                try { await setDoc(userDocRef, { prefs: { animEnabled: nowActive } }, { merge: true }); } catch(e) {}
+            });
+        }
+        if (emailNotToggle && emailNotLabel) {
+            emailNotToggle.addEventListener('click', async () => {
+                const nowActive = emailNotLabel.textContent === 'Activés' ? false : true;
+                emailNotLabel.textContent = nowActive ? 'Activés' : 'Désactivés';
+                try { await setDoc(userDocRef, { prefs: { weeklyEmails: nowActive } }, { merge: true }); } catch(e) {}
+            });
+        }
+
+        // Theme label + persist preference when toggling
+        if (themeDarkBtn) themeDarkBtn.addEventListener('click', async () => {
+            if (themeLabel) themeLabel.textContent = 'Sombre';
+            try { await setDoc(userDocRef, { prefs: { theme: 'dark' } }, { merge: true }); } catch(e) {}
+        });
+        if (themeLightBtn) themeLightBtn.addEventListener('click', async () => {
+            if (themeLabel) themeLabel.textContent = 'Clair';
+            try { await setDoc(userDocRef, { prefs: { theme: 'light' } }, { merge: true }); } catch(e) {}
+        });
     } else {
         window.location.href = '/login';
     }

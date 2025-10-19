@@ -6,269 +6,181 @@
     <title>Mon Profil - Change Your Life</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
     <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; }
-        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0, 0, 0, 0.1); --text-primary: #121212; --text-secondary: #555; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); transition: background-color 0.3s ease, color 0.3s ease; }
-        .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
-    .user-panel-trigger { width: 40px; height: 40px; background-color: transparent; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-    .user-panel-trigger:hover { transform: scale(1.06); box-shadow: 0 0 14px rgba(255,255,255,0.55); }
-        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
-        body.light-mode .user-panel { background: rgba(255, 255, 255, 0.8); }
-        .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        .user-panel-item, .user-panel-separator { margin: 0 8px; }
-        .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
-        .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
-        body.light-mode .user-panel-item a:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .user-panel-separator { height: 1px; background-color: var(--glass-border); margin: 8px 0; }
-        .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 40px; z-index: 1; display: flex; gap: 40px; overflow: hidden; }
-        h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; }
-        .avatar-creator { flex: 0 0 300px; text-align: center; display: flex; flex-direction: column; }
-        .avatar-preview-wrapper { margin-bottom: 20px; }
-        .avatar-preview { width: 150px; height: 150px; margin: 0 auto 15px auto; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); }
-        #username-display { font-size: 1.2rem; font-weight: 600; color: var(--accent-color); min-height: 1.4em; }
-        #title-display { font-size: 0.9rem; color: var(--text-secondary); font-style: italic; min-height: 1.2em; }
-        .avatar-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; text-align: left; overflow-y: auto; padding-right: 15px; margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
-        .control-group { display: flex; flex-direction: column; }
-        .control-group label { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: capitalize; }
-        .control-group select { padding: 8px; border-radius: 6px; border: 1px solid var(--glass-border); background: #2a2a2a; color: var(--text-primary); }
-        .control-group option { background: #3a3a3a; color: var(--text-primary); }
-        body.light-mode .control-group select { background: #f0f0f0; border-color: #ccc; color: var(--text-primary); }
-        body.light-mode .control-group option { background: #fff; color: var(--text-primary); }
-        .profile-info { flex-grow: 1; overflow-y: auto; }
-        .form-group { margin-bottom: 25px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-        .form-input { width: 100%; max-width: 500px; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 1rem; }
-        .form-input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-color); }
-        body.light-mode .form-input { background: rgba(255,255,255,0.6); }
-        .save-button, .random-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
-        .save-button { background: var(--accent-color); color: white; }
-        .random-btn { background: rgba(255,255,255,0.1); color: var(--text-primary); }
-        body.light-mode .random-btn { background: rgba(0,0,0,0.05); }
-        .button-group { display: flex; gap: 10px; margin-top: 20px; }
-        .theme-selector { display: flex; gap: 10px; }
-        .theme-btn { padding: 8px 16px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
-        .theme-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0, 170, 255, 0.15); }
-        .shepherd-highlight-red { z-index: 10001; box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); border-radius: 8px; animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8); } 50% { box-shadow: 0 0 0 6px rgba(255, 74, 74, 1); } 100% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8); } }
+        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; --ok:#10b981; --warn:#f59e0b; --danger:#ef4444; }
+        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0,0,0,0.1); --text-primary:#121212; --text-secondary:#555; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text-primary);background-color:var(--background-color);transition:background-color .3s ease,color .3s ease}
+        .header{position:fixed;top:20px;right:30px;z-index:100}
+        .user-panel-trigger{width:40px;height:40px;background-color:transparent;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;transition:transform .2s ease,box-shadow .2s ease;user-select:none}
+        .user-panel-trigger:hover{transform:scale(1.06);box-shadow:0 0 14px rgba(255,255,255,.55)}
+        .app-container{position:absolute;top:15px;bottom:15px;left:15px;right:15px;background:var(--glass-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;border:1px solid var(--glass-border);box-shadow:0 8px 32px rgba(0,0,0,.3);padding:24px;z-index:1;display:grid;grid-template-columns:320px 1fr;gap:24px;overflow:hidden}
+        .left-card{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:16px;overflow:auto}
+        .right-panel{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:16px;padding:18px;display:flex;flex-direction:column;overflow:hidden}
+        h1{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+        .subtle{color:var(--text-secondary);font-size:.9rem}
+        .avatar-preview{width:150px;height:150px;margin:8px auto;background:rgba(0,0,0,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--glass-border)}
+        .center{text-align:center}
+        .row{display:flex;gap:10px;align-items:center}
+        .stack{display:flex;flex-direction:column;gap:10px}
+        .input, .textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(0,0,0,.2);color:var(--text-primary)}
+        .textarea{min-height:90px;resize:vertical}
+        .btn{padding:10px 16px;border-radius:10px;border:none;background:var(--accent-color);color:#fff;font-weight:700;cursor:pointer}
+        .btn.secondary{background:rgba(255,255,255,.1);color:var(--text-primary)}
+        .btn.ghost{background:transparent;border:1px solid var(--glass-border);color:var(--text-secondary)}
+        .tabs{display:flex;gap:8px;border-bottom:1px solid var(--glass-border);padding-bottom:8px;margin-bottom:12px}
+        .tab{padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--text-secondary)}
+        .tab.active{background:rgba(0,170,255,.12);color:var(--accent-color);border:1px solid rgba(0,170,255,.35)}
+        .tab-content{flex:1;overflow:auto}
+        .section{display:none}
+        .section.active{display:block}
+        .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+        .card{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:12px}
+        .progress{height:10px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+        .bar{height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);width:0%}
+        .kv{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--glass-border);color:var(--text-secondary)}
+        .toast{position:fixed;top:20px;left:50%;transform:translate(-50%,-150%);background:rgba(30,30,30,.85);backdrop-filter:blur(10px);color:#fff;padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:9999;transition:transform .4s ease}
+        .toast.show{transform:translate(-50%,0)}
+        @media (max-width: 900px){ .app-container{grid-template-columns:1fr} }
     </style>
 </head>
 <body>
-    <script>(function() { if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode'); })();</script>
-        <header class="header">
-                <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-                        <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
-                            <g stroke-width="3">
-                                <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
-                                <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-                                <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-                                <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-                                <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-                                <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-                                <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
-                                <g fill="none" stroke="white" stroke-linecap="round">
-                                    <circle cx="145" cy="30" r="3"/>
-                                    <circle cx="155" cy="30" r="3"/>
-                                    <line x1="145" y1="30" x2="155" y2="30"/>
-                                    <path d="M 150 52 l 6 10 h -12 z" />
-                                    <circle cx="150" cy="85" r="3"/>
-                                    <circle cx="144" cy="95" r="3"/>
-                                    <circle cx="156" cy="95" r="3"/>
-                                    <line x1="150" y1="85" x2="144" y2="95"/>
-                                    <line x1="150" y1="85" x2="156" y2="95"/>
-                                </g>
-                            </g>
-                        </svg>
-                </button>
-        </header>
+    <script>(function(){ if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode'); })();</script>
+    <header class="header">
+        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
+            <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
+                <g stroke-width="3">
+                    <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+                    <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+                    <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+                    <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+                    <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+                    <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+                    <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
+                </g>
+            </svg>
+        </button>
+    </header>
+
     <div class="app-container">
-        <section class="avatar-creator">
+        <!-- Left Profile Card -->
+        <aside class="left-card">
             <h1>Votre Avatar</h1>
-            <div class="avatar-preview-wrapper">
-                <div class="avatar-preview" id="avatar-preview-container"></div>
-                <h2 id="username-display"></h2>
-                <p id="title-display"></p>
+            <div class="subtle">Personnalisez votre identité visuelle</div>
+            <div class="avatar-preview" id="avatar-preview-container"></div>
+            <div class="center">
+                <div id="username-display" style="font-weight:700;margin-top:8px;color:var(--accent-color)"></div>
+                <div id="title-display" class="subtle" style="font-style:italic"></div>
             </div>
-            <div class="avatar-controls" id="avatar-controls-container"></div>
-        </section>
-        <section class="profile-info">
-            <h1>Informations du Profil</h1>
-            <div class="form-group" id="theme-selector">
-                <label>Thème d'affichage</label>
-                <div class="theme-selector">
-                    <button id="theme-dark-btn" class="theme-btn">Sombre</button>
-                    <button id="theme-light-btn" class="theme-btn">Clair</button>
+            <div class="stack">
+                <div class="card">
+                    <div class="stack">
+                        <label style="font-size:.9rem;color:var(--text-secondary)">Télécharger un avatar</label>
+                        <input type="file" id="avatar-file-input" accept="image/*"/>
+                    </div>
                 </div>
+                <div class="card">
+                    <div class="row">
+                        <input id="avatar-initial-input" class="input" placeholder="A" style="max-width:80px;text-align:center"/>
+                        <button id="generate-initial-avatar" class="btn secondary" style="flex:1">Générer depuis initiale</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <button id="random-avatar-btn" class="btn secondary">Aléatoire</button>
+                    <button id="save-profile-button" class="btn" style="flex:1">Enregistrer</button>
+                </div>
+                <div class="pill" id="player-pill"><span id="player-id">Player #—</span></div>
             </div>
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur</label>
-                <input type="text" id="username" class="form-input" placeholder="Choisissez un nom public">
+        </aside>
+
+        <!-- Right Tabs Panel -->
+        <section class="right-panel">
+            <div class="tabs">
+                <div class="tab active" data-tab="identity">Identité</div>
+                <div class="tab" data-tab="preferences">Préférences</div>
+                <div class="tab" data-tab="levels">Niveaux</div>
             </div>
-            <div class="form-group">
-                <label for="profile-title">Titre du profil (12 caractères max)</label>
-                <input type="text" id="profile-title" class="form-input" placeholder="Ex: Explorateur de potentiels" maxlength="12">
-            </div>
-            <div class="button-group">
-                <button id="save-profile-button" class="save-button">Enregistrer</button>
-                <button id="random-avatar-btn" class="random-btn">Aléatoire</button>
+            <div class="tab-content">
+                <!-- Identity -->
+                <div id="tab-identity" class="section active">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="stack">
+                                <label>Nom d'utilisateur</label>
+                                <input type="text" id="username" class="input" placeholder="Choisissez un nom public"/>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="stack">
+                                <label>Titre du profil (12 caractères max)</label>
+                                <input type="text" id="profile-title" class="input" maxlength="12" placeholder="Ex: Explorateur de potentiels"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top:12px">
+                        <div class="stack">
+                            <label>Bio</label>
+                            <textarea id="profile-bio" class="textarea" placeholder="Présentez-vous en quelques lignes..."></textarea>
+                        </div>
+                    </div>
+                    <div class="grid-2" style="margin-top:12px">
+                        <div class="card">
+                            <div class="stack">
+                                <label>Site ou lien</label>
+                                <input type="url" id="profile-website" class="input" placeholder="https://..."/>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="stack">
+                                <label>Email (lecture seule)</label>
+                                <input type="text" id="profile-email" class="input" disabled/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div id="tab-preferences" class="section">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="kv"><strong>Thème</strong><span class="subtle" id="theme-label">Sombre</span></div>
+                            <div class="row"><button id="theme-dark-btn" class="btn ghost" style="flex:1">Sombre</button><button id="theme-light-btn" class="btn ghost" style="flex:1">Clair</button></div>
+                        </div>
+                        <div class="card">
+                            <div class="kv"><strong>Animations UI</strong><span class="subtle" id="anim-label">Actives</span></div>
+                            <div class="row"><button id="anim-toggle" class="btn secondary" style="flex:1">Basculer</button></div>
+                        </div>
+                        <div class="card">
+                            <div class="kv"><strong>Emails hebdo</strong><span class="subtle" id="emailnot-label">Désactivés</span></div>
+                            <div class="row"><button id="emailnot-toggle" class="btn secondary" style="flex:1">Basculer</button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Levels -->
+                <div id="tab-levels" class="section">
+                    <div class="grid-2">
+                        <div class="card"><div class="kv"><strong>Corps</strong><span id="lvl-body-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-body" class="bar"></div></div></div>
+                        <div class="card"><div class="kv"><strong>Esprit</strong><span id="lvl-mind-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-mind" class="bar"></div></div></div>
+                        <div class="card"><div class="kv"><strong>Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-heart" class="bar"></div></div></div>
+                        <div class="card"><div class="kv"><strong>Ordre</strong><span id="lvl-order-label" class="subtle">Niv. 0 · 0 XP</span></div><div class="progress"><div id="lvl-order" class="bar"></div></div></div>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
+
+    <div id="toast" class="toast">Profil mis à jour</div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <div id="vanta-birds-bg"></div>
     <script>
-        // Initialize Vanta behind the UI. Keep canvas non-interactive.
         VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: false, touchControls: true, gyroControls: false, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
-        // Ensure the canvas doesn't capture pointer events (some browsers need a tiny delay)
-        window.setTimeout(() => {
-            const c = document.querySelector('#vanta-birds-bg canvas');
-            if (c) c.style.pointerEvents = 'none';
-        }, 50);
+        setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if(c){ c.style.pointerEvents='none'; c.style.zIndex='0'; document.getElementById('vanta-birds-bg').style.zIndex='0';}},60);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module" src="/js/profile.js"></script>
-    <script type="module">
-        import { updateGlobalAvatar } from '/js/common.js';
-        window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Profil - Change Your Life</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
-    <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; }
-        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0, 0, 0, 0.1); --text-primary: #121212; --text-secondary: #555; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); transition: background-color 0.3s ease, color 0.3s ease; }
-        .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
-    .user-panel-trigger { width: 40px; height: 40px; background-color: transparent; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-    .user-panel-trigger:hover { transform: scale(1.06); box-shadow: 0 0 14px rgba(255,255,255,0.55); }
-        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
-        body.light-mode .user-panel { background: rgba(255, 255, 255, 0.8); }
-        .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        .user-panel-item, .user-panel-separator { margin: 0 8px; }
-        .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
-        .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
-        body.light-mode .user-panel-item a:hover { background-color: rgba(0, 0, 0, 0.05); }
-        .user-panel-separator { height: 1px; background-color: var(--glass-border); margin: 8px 0; }
-        .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 40px; z-index: 1; display: flex; gap: 40px; overflow: hidden; }
-        h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; }
-        .avatar-creator { flex: 0 0 300px; text-align: center; display: flex; flex-direction: column; }
-        .avatar-preview-wrapper { margin-bottom: 20px; }
-        .avatar-preview { width: 150px; height: 150px; margin: 0 auto 15px auto; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--glass-border); }
-        #username-display { font-size: 1.2rem; font-weight: 600; color: var(--accent-color); min-height: 1.4em; }
-        #title-display { font-size: 0.9rem; color: var(--text-secondary); font-style: italic; min-height: 1.2em; }
-        .avatar-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 15px; text-align: left; overflow-y: auto; padding-right: 15px; margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
-        .control-group { display: flex; flex-direction: column; }
-        .control-group label { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: capitalize; }
-        .control-group select { padding: 8px; border-radius: 6px; border: 1px solid var(--glass-border); background: #2a2a2a; color: var(--text-primary); }
-        .control-group option { background: #3a3a3a; color: var(--text-primary); }
-        body.light-mode .control-group select { background: #f0f0f0; border-color: #ccc; color: var(--text-primary); }
-        body.light-mode .control-group option { background: #fff; color: var(--text-primary); }
-        .profile-info { flex-grow: 1; overflow-y: auto; }
-        .form-group { margin-bottom: 25px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-        .form-input { width: 100%; max-width: 500px; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: var(--text-primary); font-size: 1rem; }
-        .form-input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-color); }
-        body.light-mode .form-input { background: rgba(255,255,255,0.6); }
-        .save-button, .random-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
-        .save-button { background: var(--accent-color); color: white; }
-        .random-btn { background: rgba(255,255,255,0.1); color: var(--text-primary); }
-        body.light-mode .random-btn { background: rgba(0,0,0,0.05); }
-        .button-group { display: flex; gap: 10px; margin-top: 20px; }
-        .theme-selector { display: flex; gap: 10px; }
-        .theme-btn { padding: 8px 16px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-secondary); border-radius: 6px; cursor: pointer; }
-        .theme-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0, 170, 255, 0.15); }
-        .shepherd-highlight-red { z-index: 10001; box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); border-radius: 8px; animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8); } 50% { box-shadow: 0 0 0 6px rgba(255, 74, 74, 1); } 100% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8); } }
-    </style>
-</head>
-<body>
-    <script>(function() { if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode'); })();</script>
-        <header class="header">
-                <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-                        <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
-                            <g stroke-width="3">
-                                <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
-                                <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-                                <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-                                <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-                                <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-                                <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-                                <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
-                                <g fill="none" stroke="white" stroke-linecap="round">
-                                    <circle cx="145" cy="30" r="3"/>
-                                    <circle cx="155" cy="30" r="3"/>
-                                    <line x1="145" y1="30" x2="155" y2="30"/>
-                                    <path d="M 150 52 l 6 10 h -12 z" />
-                                    <circle cx="150" cy="85" r="3"/>
-                                    <circle cx="144" cy="95" r="3"/>
-                                    <circle cx="156" cy="95" r="3"/>
-                                    <line x1="150" y1="85" x2="144" y2="95"/>
-                                    <line x1="150" y1="85" x2="156" y2="95"/>
-                                </g>
-                            </g>
-                        </svg>
-                </button>
-        </header>
-    <div class="app-container">
-        <section class="avatar-creator">
-            <h1>Votre Avatar</h1>
-            <div class="avatar-preview-wrapper">
-                <div class="avatar-preview" id="avatar-preview-container"></div>
-                <h2 id="username-display"></h2>
-                <p id="title-display"></p>
-            </div>
-            <div class="avatar-controls" id="avatar-controls-container"></div>
-        </section>
-        <section class="profile-info">
-            <h1>Informations du Profil</h1>
-            <div class="form-group" id="theme-selector">
-                <label>Thème d'affichage</label>
-                <div class="theme-selector">
-                    <button id="theme-dark-btn" class="theme-btn">Sombre</button>
-                    <button id="theme-light-btn" class="theme-btn">Clair</button>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur</label>
-                <input type="text" id="username" class="form-input" placeholder="Choisissez un nom public">
-            </div>
-            <div class="form-group">
-                <label for="profile-title">Titre du profil (12 caractères max)</label>
-                <input type="text" id="profile-title" class="form-input" placeholder="Ex: Explorateur de potentiels" maxlength="12">
-            </div>
-            <div class="button-group">
-                <button id="save-profile-button" class="save-button">Enregistrer</button>
-                <button id="random-avatar-btn" class="random-btn">Aléatoire</button>
-            </div>
-        </section>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <div id="vanta-birds-bg"></div>
-    <script>
-        // Initialize Vanta behind the UI. Keep canvas non-interactive.
-        VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: false, touchControls: true, gyroControls: false, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
-        // Ensure the canvas doesn't capture pointer events (some browsers need a tiny delay)
-        window.setTimeout(() => {
-            const c = document.querySelector('#vanta-birds-bg canvas');
-            if (c) c.style.pointerEvents = 'none';
-        }, 50);
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
-    <script type="module" src="/js/profile.js"></script>
-    <script type="module">
-        import { updateGlobalAvatar } from '/js/common.js';
-        window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
-    </script>
+    <script type="module">import { updateGlobalAvatar } from '/js/common.js'; window.addEventListener('DOMContentLoaded', ()=>{ try{ updateGlobalAvatar(); }catch(e){} });</script>
 </body>
 </html>
