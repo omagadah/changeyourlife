@@ -2,7 +2,8 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { setupThemeToggle, updateGlobalAvatar } from './common.js';
 import { initUserMenu } from './userMenu.js';
 
@@ -17,6 +18,8 @@ if (window._cyfFirebase) {
     db = getFirestore(app);
     window._cyfFirebase = { app, auth, db };
 }
+let functions;
+try { functions = getFunctions(app); } catch (e) { /* optional */ }
 
 // DOM refs
 const avatarPreviewContainer = document.getElementById('avatar-preview-container');
@@ -253,6 +256,46 @@ onAuthStateChanged(auth, (user) => {
             });
         }
 
+        // Dev XP buttons (only show on localhost or if ?dev=1)
+        const isDev = ["127.0.0.1","localhost"].includes(location.hostname) || /[?&]dev=1(&|$)/.test(location.search);
+        if (isDev) {
+            const note = document.getElementById('dev-note'); if (note) note.style.display = 'block';
+            ['body','mind','heart','order'].forEach(domain => {
+                const row = document.getElementById('dev-' + domain);
+                if (row) {
+                    row.style.display = 'flex';
+                    const btn = row.querySelector('button[data-xp-domain]');
+                    if (btn) btn.addEventListener('click', async () => {
+                        try {
+                            if (functions) {
+                                const addXp = httpsCallable(functions, 'addXp');
+                                await addXp({ domain, amount: 10 });
+                            } else {
+                                // fallback local transaction (dev only)
+                                await runTransaction(db, async (tx) => {
+                                    const ref = doc(db, 'users', user.uid);
+                                    const snap = await tx.get(ref);
+                                    const data = snap.exists() ? snap.data() : {};
+                                    const levels = data.levels || defaultLevels();
+                                    const cur = levels[domain] || { level:0, xp:0, nextXp:100 };
+                                    let xp = cur.xp + 10, level = cur.level, nextXp = cur.nextXp || 100;
+                                    while (xp >= nextXp) { xp -= nextXp; level += 1; nextXp = 100 + 20 * level; }
+                                    levels[domain] = { level, xp, nextXp };
+                                    tx.set(ref, { levels }, { merge: true });
+                                });
+                            }
+                            // Reload view
+                            const updated = await getDoc(doc(db, 'users', user.uid));
+                            if (updated.exists()) renderLevels(updated.data().levels);
+                            showToast('+10 XP ajouté à ' + domain);
+                        } catch (e) {
+                            console.error('dev addXp failed', e);
+                            showToast('Erreur addXp');
+                        }
+                    });
+                }
+            });
+        }
         // Theme label + persist preference when toggling
         if (themeDarkBtn) themeDarkBtn.addEventListener('click', async () => {
             if (themeLabel) themeLabel.textContent = 'Sombre';
