@@ -176,24 +176,41 @@ if (typeof window !== 'undefined') {
         // Register service worker once globally, if supported and not already registered
         if ('serviceWorker' in navigator) {
             const swUrl = '/service-worker.js?v=3';
+            const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
+                if (document.getElementById('cyf-sw-toast')) return;
+                const wrap = document.createElement('div');
+                wrap.id = 'cyf-sw-toast';
+                wrap.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:12003;background:rgba(30,30,30,0.9);backdrop-filter:blur(10px);color:#fff;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);display:flex;gap:10px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)';
+                const text = document.createElement('span'); text.textContent = msg;
+                const btn = document.createElement('button'); btn.textContent = action; btn.style.cssText = 'margin-left:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#3b82f6;color:#fff;cursor:pointer;font-weight:600';
+                btn.addEventListener('click', () => { try { onClick(); } catch(e) {} document.body.removeChild(wrap); });
+                const close = document.createElement('button'); close.textContent = '×'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
+                wrap.appendChild(text); wrap.appendChild(btn); wrap.appendChild(close);
+                document.body.appendChild(wrap);
+            };
+
             navigator.serviceWorker.getRegistration().then((reg) => {
                 if (!reg) {
                     navigator.serviceWorker.register(swUrl).then((registration) => {
-                        // Listen for updates
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
                             if (!newWorker) return;
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New content available, refresh once
-                                    try { window.location.reload(); } catch (e) {}
+                                    // Inform user a new version is available
+                                    showUpdateToast();
                                 }
                             });
                         });
                     }).catch(() => {/* silent */});
                 } else {
-                    // Check for update on load to pick latest cache version
+                    // Proactively check for an update
                     reg.update().catch(() => {/* ignore */});
+                    // If a new worker takes control, prompt the user
+                    let prompted = false;
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        if (prompted) return; prompted = true; showUpdateToast('Le site a été mis à jour', 'Recharger');
+                    });
                 }
             }).catch(() => {/* ignore */});
         }
