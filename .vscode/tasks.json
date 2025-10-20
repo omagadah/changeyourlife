@@ -31,6 +31,17 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Build Firebase Functions (tsc)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }
