@@ -1,12 +1,12 @@
 // service-worker.js
-const CACHE_NAME = 'changeyourlife-v4';
+const CACHE_NAME = 'changeyourlife-v5';
 const urlsToCache = [
   '/',
   '/app/',
   '/login/',
   '/settings/',
   '/profile/',
-  '/journal/',
+  '/yourlife/',
   '/css/main.min.css',
   '/js/common.min.js',
   '/js/common.js',

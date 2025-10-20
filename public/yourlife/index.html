@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Life - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css">
+  <style>
+    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: grid; grid-template-rows: auto 1fr; gap: 12px; }
+    .iframe-wrap { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.06); }
+    .iframe-wrap iframe { width: 100%; height: 100%; min-height: 520px; border: 0; }
+  </style>
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  <header class="header">
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
+  </header>
+  <main class="page-shell">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h1 style="margin:0">Your Life</h1>
+      <a id="open-ext" href="#" target="_blank" rel="noopener" class="btn btn-secondary" style="display:none">Ouvrir dans un onglet</a>
+    </div>
+    <div class="iframe-wrap">
+      <iframe id="yourlife-frame" title="Your Life App" loading="lazy" referrerpolicy="no-referrer"></iframe>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script type="module">
+    import { updateGlobalAvatar } from '/js/common.js';
+    import { initUserMenu } from '/js/userMenu.js';
+
+    // Init background
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el: '#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor: 0x07192f, quantity: 4.0 });
+      setTimeout(() => { const c = document.querySelector('#vanta-birds-bg canvas'); if (c) { c.style.pointerEvents = 'none'; c.style.zIndex = '0'; } }, 100);
+      try { updateGlobalAvatar(); } catch(e){}
+    });
+
+    // Menu
+    document.querySelector('.user-panel-trigger').addEventListener('click', (e) => { e.stopPropagation(); initUserMenu(); const menu = document.getElementById('cyf-user-menu'); if (menu) menu.style.display = (menu.style.display==='block'?'none':'block'); });
+
+    // Configure iframe URL from env or fallback
+    const defaultUrl = 'https://v0.app/chat/ai-agent-builder-roAX5JAUfYt';
+    const frame = document.getElementById('yourlife-frame');
+    const open = document.getElementById('open-ext');
+    const extUrl = defaultUrl; // TODO: replace with deployed Next app URL when ready
+    frame.src = extUrl; open.href = extUrl; open.style.display = 'inline-block';
+  </script>
+</body>
+</html>
