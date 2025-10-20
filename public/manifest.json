@@ -20,10 +20,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Journal",
-      "short_name": "Journal",
-      "description": "Ouvrir le journal thérapeutique",
-      "url": "/app?tool=journal",
+      "name": "Your Life",
+      "short_name": "YourLife",
+      "description": "Ouvrir Your Life",
+      "url": "/yourlife",
       "icons": [{ "src": "/icons/journal.png", "sizes": "192x192" }]
     },
     {
