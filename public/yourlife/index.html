@@ -6,9 +6,17 @@
   <title>Your Life - Change Your Life</title>
   <link rel="stylesheet" href="/css/main.min.css">
   <style>
-    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: grid; grid-template-rows: auto 1fr; gap: 12px; }
-    .iframe-wrap { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.06); }
-    .iframe-wrap iframe { width: 100%; height: 100%; min-height: 520px; border: 0; }
+    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 16px; display: grid; grid-template-rows: auto 1fr; gap: 12px; }
+    .editor-grid { display: grid; grid-template-columns: 1fr 300px; gap: 12px; height: 100%; }
+    .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(255,255,255,0.04); overflow: hidden; }
+    #cy-graph { width: 100%; height: 100%; }
+    .toolbar { display: flex; gap: 8px; align-items: center; }
+    .toolbar .btn { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; }
+    .toolbar .btn.primary { background: #3b82f6; border-color: #2c60b8; }
+    .sidebar { padding: 12px; display: grid; gap: 8px; }
+    .sidebar label { font-size: 12px; color: #cfe1ff; opacity: 0.9; }
+    .sidebar input, .sidebar select, .sidebar textarea { width: 100%; background: rgba(255,255,255,0.06); color: #e5eef8; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px; }
+    .muted { color: #aab7cf; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -17,17 +25,45 @@
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
   </header>
   <main class="page-shell">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <h1 style="margin:0">Your Life</h1>
-      <div class="subtle">Beta • Arbre de compétences et de vie (clique les nœuds pour marquer ton avancée)</div>
+    <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
+      <div>
+        <h1 style="margin:0">Your Life</h1>
+        <div class="muted">Éditeur BETA — Déplace, renomme, colore, dors des branches, ajoute/supprime des nœuds.</div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="btn-add">+ Nœud</button>
+        <button class="btn" id="btn-add-edge">Relier</button>
+        <button class="btn" id="btn-delete">Supprimer</button>
+        <button class="btn" id="btn-fit">Centrer</button>
+        <button class="btn primary" id="btn-save">Sauvegarder</button>
+      </div>
     </div>
-    <div class="iframe-wrap" style="min-height:620px;background:rgba(0,0,0,0.06)">
-      <svg id="yourlife-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="editor-grid">
+      <div class="panel"><div id="cy-graph"></div></div>
+      <aside class="panel sidebar">
+        <div style="font-weight:700">Propriétés du nœud</div>
+        <label for="node-label">Nom</label>
+        <input id="node-label" placeholder="Nom du nœud"/>
+        <label for="node-domain">Catégorie</label>
+        <select id="node-domain">
+          <option value="body">Body</option>
+          <option value="heart">Heart</option>
+          <option value="etre">Être</option>
+          <option value="order">Order</option>
+        </select>
+        <label for="node-color">Couleur</label>
+        <input id="node-color" type="color" value="#9ca3ff"/>
+        <div><label><input type="checkbox" id="node-completed"/> Marqué comme accompli</label></div>
+        <div><label><input type="checkbox" id="node-asleep"/> Mettre la branche en sommeil</label></div>
+        <button class="btn" id="btn-apply">Appliquer</button>
+        <div class="muted">Astuce: Double-clique pour basculer l'état accompli (accréditation XP).</div>
+      </aside>
     </div>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
   <script type="module">
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
@@ -42,6 +78,6 @@
     // Menu
     document.querySelector('.user-panel-trigger').addEventListener('click', (e) => { e.stopPropagation(); initUserMenu(); const menu = document.getElementById('cyf-user-menu'); if (menu) menu.style.display = (menu.style.display==='block'?'none':'block'); });
   </script>
-  <script type="module" src="/js/yourlife.js"></script>
+  <script type="module" src="/js/yourlife-editor.js"></script>
 </body>
 </html>
