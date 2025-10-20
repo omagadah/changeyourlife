@@ -7,8 +7,23 @@
 			"command": "npm",
 			"args": [
 				"run",
-				"-w",
-				"functions",
+				"build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/functions"
+			},
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build Firebase Functions (tsc)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
 				"build"
 			],
 			"isBackground": false,
