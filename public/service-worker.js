@@ -1,5 +1,5 @@
 // service-worker.js
-const CACHE_NAME = 'changeyourlife-v3';
+const CACHE_NAME = 'changeyourlife-v4';
 const urlsToCache = [
   '/',
   '/app/',
@@ -9,9 +9,11 @@ const urlsToCache = [
   '/journal/',
   '/css/main.min.css',
   '/js/common.min.js',
+  '/js/common.js',
   '/js/userMenu.js',
   '/js/profile.js',
   '/js/inscription.js',
+  '/js/agent-builder.js',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
   'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js',
   'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css'
