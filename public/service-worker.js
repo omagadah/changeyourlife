@@ -1,5 +1,5 @@
 // service-worker.js
-const CACHE_NAME = 'changeyourlife-v2';
+const CACHE_NAME = 'changeyourlife-v3';
 const urlsToCache = [
   '/',
   '/app/',
@@ -22,6 +22,8 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
+  // Activate this SW immediately (no waiting state)
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
@@ -67,6 +69,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });

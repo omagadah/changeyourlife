@@ -172,5 +172,30 @@ if (typeof window !== 'undefined') {
             }
         });
         observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+
+        // Register service worker once globally, if supported and not already registered
+        if ('serviceWorker' in navigator) {
+            const swUrl = '/service-worker.js?v=3';
+            navigator.serviceWorker.getRegistration().then((reg) => {
+                if (!reg) {
+                    navigator.serviceWorker.register(swUrl).then((registration) => {
+                        // Listen for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            if (!newWorker) return;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New content available, refresh once
+                                    try { window.location.reload(); } catch (e) {}
+                                }
+                            });
+                        });
+                    }).catch(() => {/* silent */});
+                } else {
+                    // Check for update on load to pick latest cache version
+                    reg.update().catch(() => {/* ignore */});
+                }
+            }).catch(() => {/* ignore */});
+        }
     } catch (e) { /* ignore in non-browser contexts */ }
 }
