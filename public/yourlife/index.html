@@ -19,10 +19,10 @@
   <main class="page-shell">
     <div class="row" style="justify-content:space-between;align-items:center">
       <h1 style="margin:0">Your Life</h1>
-      <a id="open-ext" href="#" target="_blank" rel="noopener" class="btn btn-secondary" style="display:none">Ouvrir dans un onglet</a>
+      <div class="subtle">Beta • Arbre de compétences et de vie (clique les nœuds pour marquer ton avancée)</div>
     </div>
-    <div class="iframe-wrap">
-      <iframe id="yourlife-frame" title="Your Life App" loading="lazy" referrerpolicy="no-referrer"></iframe>
+    <div class="iframe-wrap" style="min-height:620px;background:rgba(0,0,0,0.06)">
+      <svg id="yourlife-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
     </div>
   </main>
 
@@ -41,13 +41,7 @@
 
     // Menu
     document.querySelector('.user-panel-trigger').addEventListener('click', (e) => { e.stopPropagation(); initUserMenu(); const menu = document.getElementById('cyf-user-menu'); if (menu) menu.style.display = (menu.style.display==='block'?'none':'block'); });
-
-    // Configure iframe URL from env or fallback
-    const defaultUrl = 'https://v0.app/chat/ai-agent-builder-roAX5JAUfYt';
-    const frame = document.getElementById('yourlife-frame');
-    const open = document.getElementById('open-ext');
-    const extUrl = defaultUrl; // TODO: replace with deployed Next app URL when ready
-    frame.src = extUrl; open.href = extUrl; open.style.display = 'inline-block';
   </script>
+  <script type="module" src="/js/yourlife.js"></script>
 </body>
 </html>
