@@ -10,9 +10,11 @@
     .editor-grid { display: grid; grid-template-columns: 1fr 300px; gap: 12px; height: 100%; }
     .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(255,255,255,0.04); overflow: hidden; }
     #cy-graph { width: 100%; height: 100%; }
-    .toolbar { display: flex; gap: 8px; align-items: center; }
-    .toolbar .btn { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; }
-    .toolbar .btn.primary { background: #3b82f6; border-color: #2c60b8; }
+  .toolbar { display: flex; gap: 8px; align-items: center; }
+  .toolbar .btn { padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 700; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+  .toolbar .btn.primary { background: #3b82f6; border-color: #2c60b8; }
+  .toolbar .btn.active { outline: 2px solid #fff; outline-offset: 2px; }
+  .status-pill { padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #cfe1ff; font-size: 12px; }
     .sidebar { padding: 12px; display: grid; gap: 8px; }
     .sidebar label { font-size: 12px; color: #cfe1ff; opacity: 0.9; }
     .sidebar input, .sidebar select, .sidebar textarea { width: 100%; background: rgba(255,255,255,0.06); color: #e5eef8; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px; }
@@ -31,11 +33,12 @@
         <div class="muted">Éditeur BETA — Déplace, renomme, colore, dors des branches, ajoute/supprime des nœuds.</div>
       </div>
       <div class="toolbar">
+        <span id="link-hint" class="status-pill" style="display:none">Relier: cliquez une source puis une cible (Échap pour annuler)</span>
+        <span id="save-status" class="status-pill">Prêt</span>
         <button class="btn" id="btn-add">+ Nœud</button>
         <button class="btn" id="btn-add-edge">Relier</button>
         <button class="btn" id="btn-delete">Supprimer</button>
         <button class="btn" id="btn-fit">Centrer</button>
-        <button class="btn primary" id="btn-save">Sauvegarder</button>
       </div>
     </div>
     <div class="editor-grid">
@@ -51,12 +54,19 @@
           <option value="etre">Être</option>
           <option value="order">Order</option>
         </select>
+        <label for="node-priority">Priorité du nœud</label>
+        <select id="node-priority">
+          <option value="none">Aucune</option>
+          <option value="low">Basse</option>
+          <option value="medium">Moyenne</option>
+          <option value="high">Haute</option>
+          <option value="urgent">Urgente</option>
+        </select>
         <label for="node-color">Couleur</label>
         <input id="node-color" type="color" value="#9ca3ff"/>
-        <div><label><input type="checkbox" id="node-completed"/> Marqué comme accompli</label></div>
-        <div><label><input type="checkbox" id="node-asleep"/> Mettre la branche en sommeil</label></div>
-        <button class="btn" id="btn-apply">Appliquer</button>
-        <div class="muted">Astuce: Double-clique pour basculer l'état accompli (accréditation XP).</div>
+  <div><label><input type="checkbox" id="node-completed"/> Marqué comme accompli</label></div>
+  <div><label><input type="checkbox" id="node-asleep"/> Mettre la branche en sommeil</label></div>
+  <div class="muted">Astuce: Double-clique pour basculer l'état accompli (accréditation XP). Toutes les modifications sont sauvegardées automatiquement.</div>
       </aside>
     </div>
   </main>
