@@ -86,9 +86,14 @@ async function award(domain, amount=5) {
 async function save(uid, cy) {
   const g = fromCy(cy);
   const badge = document.getElementById('save-status');
-  if (badge) { badge.textContent = 'Sauvegarde…'; badge.style.color = '#ffd28c'; }
-  await setDoc(doc(db,'users',uid), { yourLifeGraph: g }, { merge: true });
-  if (badge) { badge.textContent = 'Sauvegardé ✔'; badge.style.color = '#9effc5'; setTimeout(()=>{ badge.textContent='Prêt'; badge.style.color = ''; }, 1200); }
+  try {
+    if (badge) { badge.textContent = 'Sauvegarde…'; badge.style.color = '#ffd28c'; }
+    await setDoc(doc(db,'users',uid), { yourLifeGraph: g, yourLifeUpdatedAt: Date.now() }, { merge: true });
+    if (badge) { badge.textContent = 'Sauvegardé ✔'; badge.style.color = '#9effc5'; setTimeout(()=>{ if (badge.textContent.includes('✔')) { badge.textContent='Prêt'; badge.style.color = ''; } }, 1200); }
+  } catch (e) {
+    console.error('YourLife save failed:', e);
+    if (badge) { badge.textContent = 'Erreur sauvegarde'; badge.style.color = '#ff9aa2'; }
+  }
 }
 
 async function load(uid) {
@@ -180,7 +185,8 @@ onAuthStateChanged(auth, async (user) => {
       const n = evt.target; const was = !!n.data('completed');
       n.data('completed', !was);
       if (!was) { await award(n.data('domain')||'etre', 5); }
-      await save(uid, cy);
+      // autosave
+      scheduleSave();
     }
     lastTap = now;
   });
