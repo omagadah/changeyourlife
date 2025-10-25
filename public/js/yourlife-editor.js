@@ -42,8 +42,8 @@ if (!window._cyfFirebase) {
   try { functions = getFunctions(app); } catch (e) {}
   window._cyfFirebase.db = db;
 }
-
-const $ = (id) => document.getElementById(id);
+    const code = (e && (e.code || e.message)) ? String(e.code || e.message) : 'unknown';
+    if (badge) { badge.textContent = `Erreur sauvegarde (${code})`; badge.style.color = '#ff9aa2'; }
 
 const colorByDomain = {
   body: '#2dd4bf',
@@ -285,6 +285,56 @@ onAuthStateChanged(auth, async (user) => {
     const sel = cy.$('.selected');
     if (sel.nonempty()) { sel.remove(); scheduleSave(); }
   });
+
+  // Diagnostics button: test Firestore write/read path and report status
+  const diagBtn = $('btn-diagnose');
+  if (diagBtn) {
+    diagBtn.addEventListener('click', async () => {
+      const badge = document.getElementById('save-status');
+      try {
+        const token = Math.random().toString(36).slice(2,8);
+        if (badge) { badge.textContent = 'Diag…'; badge.style.color = '#ffd28c'; }
+        console.debug('[YourLife] diag start');
+        await setDoc(doc(db,'users',uid), { diagLastToken: token, diagAt: Date.now() }, { merge: true });
+        const snap = await getDoc(doc(db,'users',uid));
+        const ok = snap.exists() && (snap.data()?.diagLastToken === token);
+        if (ok) {
+          if (badge) { badge.textContent = 'Diag OK ✔'; badge.style.color = '#9effc5'; setTimeout(()=>{ if (badge.textContent.includes('✔')) { badge.textContent='Prêt'; badge.style.color = ''; } }, 1200); }
+          console.debug('[YourLife] diag OK');
+        } else {
+          if (badge) { badge.textContent = 'Diag: lecture KO'; badge.style.color = '#ff9aa2'; }
+          console.error('[YourLife] diag read-back mismatch', { wrote: token, got: snap.data()?.diagLastToken });
+        }
+      } catch(e) {
+        const code = (e && (e.code || e.message)) ? String(e.code || e.message) : 'unknown';
+        if (badge) { badge.textContent = `Diag erreur (${code})`; badge.style.color = '#ff9aa2'; }
+        console.error('[YourLife] diag failed', e);
+      }
+    });
+  }
+
+  // Expose a tiny debug API in the console
+  window.__YourLifeDebug = {
+    version: 'v11',
+    get uid() { return uid; },
+    get online() { return navigator.onLine; },
+    getGraph: () => fromCy(cy),
+    saveNow: () => save(uid, cy),
+    async testWriteRead() {
+      const token = Math.random().toString(36).slice(2,8);
+      await setDoc(doc(db,'users',uid), { diagLastToken: token, diagAt: Date.now() }, { merge: true });
+      const snap = await getDoc(doc(db,'users',uid));
+      return { ok: snap.exists() && snap.data()?.diagLastToken === token, data: snap.data() };
+    }
+  };
+
+  // Offline/online indicator
+  const badge = document.getElementById('save-status');
+  const setOffline = () => { if (badge) { badge.textContent = 'Hors ligne (brouillon)'; badge.style.color = '#ffd28c'; } };
+  const setOnline = () => { if (badge) { badge.textContent = 'Prêt'; badge.style.color = ''; } };
+  window.addEventListener('offline', setOffline);
+  window.addEventListener('online', setOnline);
+  if (!navigator.onLine) setOffline();
 
   // Live-binding sidebar inputs to selected node with autosave
   const bind = (elId, evt, fn) => { const el = $(elId); if (el) el.addEventListener(evt, fn); };

@@ -39,6 +39,7 @@
         <button class="btn" id="btn-add-edge">Relier</button>
         <button class="btn" id="btn-delete">Supprimer</button>
         <button class="btn" id="btn-fit">Centrer</button>
+        <button class="btn" id="btn-diagnose" title="Diagnostiquer les sauvegardes">Diag</button>
       </div>
     </div>
     <div class="editor-grid">
@@ -88,6 +89,6 @@
     // Menu
     document.querySelector('.user-panel-trigger').addEventListener('click', (e) => { e.stopPropagation(); initUserMenu(); const menu = document.getElementById('cyf-user-menu'); if (menu) menu.style.display = (menu.style.display==='block'?'none':'block'); });
   </script>
-  <script type="module" src="/js/yourlife-editor.js?v=10"></script>
+  <script type="module" src="/js/yourlife-editor.js?v=11"></script>
 </body>
 </html>
