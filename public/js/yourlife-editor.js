@@ -83,13 +83,25 @@ async function award(domain, amount=5) {
   } catch(e) {}
 }
 
+function saveLocalDraft(uid, graph) {
+  try { localStorage.setItem(`yourLifeDraft:${uid}`, JSON.stringify({ ts: Date.now(), graph })); } catch(e) {}
+}
+
 async function save(uid, cy) {
   const g = fromCy(cy);
   const badge = document.getElementById('save-status');
+  // Always update local draft immediately
+  saveLocalDraft(uid, g);
   try {
     if (badge) { badge.textContent = 'Sauvegarde…'; badge.style.color = '#ffd28c'; }
-    await setDoc(doc(db,'users',uid), { yourLifeGraph: g, yourLifeUpdatedAt: Date.now() }, { merge: true });
+    // Add a 8s watchdog timeout so UI never hangs
+    const write = setDoc(doc(db,'users',uid), { yourLifeGraph: g, yourLifeUpdatedAt: Date.now() }, { merge: true });
+    const result = await Promise.race([
+      write,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+    ]);
     if (badge) { badge.textContent = 'Sauvegardé ✔'; badge.style.color = '#9effc5'; setTimeout(()=>{ if (badge.textContent.includes('✔')) { badge.textContent='Prêt'; badge.style.color = ''; } }, 1200); }
+    return result;
   } catch (e) {
     console.error('YourLife save failed:', e);
     if (badge) { badge.textContent = 'Erreur sauvegarde'; badge.style.color = '#ff9aa2'; }
@@ -97,9 +109,18 @@ async function save(uid, cy) {
 }
 
 async function load(uid) {
-  const snap = await getDoc(doc(db,'users',uid));
-  const data = snap.exists() ? (snap.data()||{}) : {};
-  return data.yourLifeGraph || defaultGraph();
+  // Load remote
+  let remote = null; let remoteTs = 0;
+  try {
+    const snap = await getDoc(doc(db,'users',uid));
+    if (snap.exists()) { const data = snap.data()||{}; remote = data.yourLifeGraph||null; remoteTs = data.yourLifeUpdatedAt||0; }
+  } catch(e) { /* ignore, rely on draft if any */ }
+  // Load local draft
+  let local = null; let localTs = 0;
+  try { const raw = localStorage.getItem(`yourLifeDraft:${uid}`); if (raw) { const obj = JSON.parse(raw); local = obj.graph; localTs = obj.ts||0; } } catch(e) {}
+  // Prefer the newest
+  if (local && localTs > (remoteTs||0)) { return local; }
+  return remote || defaultGraph();
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -151,6 +172,17 @@ onAuthStateChanged(auth, async (user) => {
     layout: { name: 'preset' },
     wheelSensitivity: 0.2
   });
+
+  // If we booted from a newer local draft (vs remote), push it to server once
+  try {
+    const raw = localStorage.getItem(`yourLifeDraft:${uid}`);
+    if (raw) {
+      const obj = JSON.parse(raw);
+      const remoteSnap = await getDoc(doc(db,'users',uid));
+      const remoteTs = remoteSnap.exists()? (remoteSnap.data().yourLifeUpdatedAt||0) : 0;
+      if ((obj.ts||0) > remoteTs) { await save(uid, cy); }
+    }
+  } catch(e) {}
 
   cy.on('tap', 'node', (evt) => {
     cy.elements().removeClass('selected');
