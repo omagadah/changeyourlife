@@ -175,7 +175,7 @@ if (typeof window !== 'undefined') {
 
         // Register service worker once globally, if supported and not already registered
         if ('serviceWorker' in navigator) {
-            const swUrl = '/service-worker.js?v=10';
+            const swUrl = '/service-worker.js?v=11';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
