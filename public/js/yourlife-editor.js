@@ -1,7 +1,7 @@
 // Your Life Editor: interactive graph with drag, edit, categories, sleep branches, XP on completion
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { httpsCallable, getFunctions } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
 
 let app, auth, db, functions;
@@ -16,12 +16,31 @@ if (!window._cyfFirebase) {
   };
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
-  db = getFirestore(app);
+  // Use long polling to avoid environments that block WebChannel; enable durable local cache
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+      experimentalForceLongPolling: true,
+      useFetchStreams: false
+    });
+  } catch(e) {
+    db = getFirestore(app);
+  }
   functions = getFunctions(app);
   window._cyfFirebase = { app, auth, db };
 } else {
-  ({ app, auth, db } = window._cyfFirebase);
+  ({ app, auth } = window._cyfFirebase);
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+      experimentalForceLongPolling: true,
+      useFetchStreams: false
+    });
+  } catch(e) {
+    db = getFirestore(app);
+  }
   try { functions = getFunctions(app); } catch (e) {}
+  window._cyfFirebase.db = db;
 }
 
 const $ = (id) => document.getElementById(id);
@@ -94,16 +113,18 @@ async function save(uid, cy) {
   saveLocalDraft(uid, g);
   try {
     if (badge) { badge.textContent = 'Sauvegarde…'; badge.style.color = '#ffd28c'; }
+    console.debug('[YourLife] save start', { nodes: g.nodes.length, edges: g.edges.length });
     // Add a 8s watchdog timeout so UI never hangs
     const write = setDoc(doc(db,'users',uid), { yourLifeGraph: g, yourLifeUpdatedAt: Date.now() }, { merge: true });
     const result = await Promise.race([
       write,
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
     ]);
+    console.debug('[YourLife] save OK');
     if (badge) { badge.textContent = 'Sauvegardé ✔'; badge.style.color = '#9effc5'; setTimeout(()=>{ if (badge.textContent.includes('✔')) { badge.textContent='Prêt'; badge.style.color = ''; } }, 1200); }
     return result;
   } catch (e) {
-    console.error('YourLife save failed:', e);
+    console.error('[YourLife] save failed:', e);
     if (badge) { badge.textContent = 'Erreur sauvegarde'; badge.style.color = '#ff9aa2'; }
   }
 }
