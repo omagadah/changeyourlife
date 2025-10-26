@@ -194,6 +194,9 @@ onAuthStateChanged(auth, async (user) => {
     wheelSensitivity: 0.2
   });
 
+  // Ensure the graph is visible on first load
+  try { setTimeout(() => { try { cy.fit(cy.elements(), 30); } catch(e){} }, 60); } catch(e){}
+
   // If we booted from a newer local draft (vs remote), push it to server once
   try {
     const raw = localStorage.getItem(`yourLifeDraft:${uid}`);

@@ -39,6 +39,7 @@
         .tool-card-image { height: 150px; background-color: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
         .tool-card h3 { font-size: 1.1rem; margin-bottom: 5px; font-weight: 500; }
         .tool-card p { font-size: 0.9rem; color: #bbb; line-height: 1.5; }
+    .badge-new { position: absolute; top: 12px; left: 12px; background: #22c55e; color: #08131f; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
         .shepherd-element { background: rgba(35, 35, 35, 0.9) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; }
         .shepherd-header { background-color: transparent !important; padding-bottom: 0; }
         .shepherd-title { color: #f0f0f0 !important; font-weight: 600; }
@@ -138,6 +139,18 @@
                 <h3>Objectifs & Progrès</h3>
                 <p>Prochainement - Définissez et suivez vos objectifs avec l'aide de l'IA.</p>
             </div>
+
+            <div class="tool-card coming-soon" id="card-codex">
+                <div class="tool-card-image">📚</div>
+                <h3>Codex de connaissance</h3>
+                <p>Prochainement — Une bibliothèque vivante de concepts, méthodes et checklists pour progresser plus vite.</p>
+            </div>
+
+            <div class="tool-card coming-soon" id="card-autoeval">
+                <div class="tool-card-image">🧭</div>
+                <h3>Autoévaluation</h3>
+                <p>Prochainement — Tests rapides et bilans réguliers pour mesurer vos niveaux et guider vos priorités.</p>
+            </div>
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
@@ -205,6 +218,19 @@
             card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)'; });
         }
     </script>
+        <script>
+            // Show a 'Nouveau' badge for 14 days from release date
+            (function(){
+                try {
+                    const RELEASE = new Date('2025-10-26T00:00:00Z').getTime();
+                    const DAYS = 14 * 24 * 60 * 60 * 1000;
+                    if (Date.now() - RELEASE < DAYS) {
+                        const mk = (id) => { const el = document.getElementById(id); if (!el) return; const b = document.createElement('span'); b.className='badge-new'; b.textContent='Nouveau'; el.appendChild(b); };
+                        mk('card-codex'); mk('card-autoeval');
+                    }
+                } catch(e) {}
+            })();
+        </script>
     <script type="module">
         import { updateGlobalAvatar } from '/js/common.js';
         window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
