@@ -1,76 +1,33 @@
 /* ============================================
-   VANTA BIRDS BACKGROUND - GLOBAL STYLES
+   VANTA BIRDS BACKGROUND - MINIMAL STYLES
    ============================================ */
 
 /* Conteneur Vanta - Doit être présent sur toutes les pages */
 #vanta-bg,
 #vanta-birds-bg {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Canvas Vanta - Assurer qu'il ne capture pas les événements */
 #vanta-bg canvas,
 #vanta-birds-bg canvas {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  pointer-events: none !important;
-  z-index: 0 !important;
-}
-
-/* Assurer que le contenu est au-dessus du background */
-body {
-  position: relative;
-}
-
-/* Conteneurs de contenu - Doivent être au-dessus de Vanta */
-.container,
-.app-container,
-.auth-container,
-.page-shell,
-.content,
-main {
-  position: relative;
-  z-index: 1;
-}
-
-/* Headers et éléments fixes - Au-dessus du contenu */
-.header,
-header,
-.navbar,
-nav {
-  position: relative;
-  z-index: 100;
-}
-
-/* Modales et overlays - Au-dessus de tout */
-.modal,
-.dialog,
-.overlay,
-.user-panel,
-.menu {
-  position: relative;
-  z-index: 1000;
-}
-
-/* Notifications et toasts - Au-dessus des modales */
-.toast-notification,
-.notification,
-.alert {
-  position: relative;
-  z-index: 10000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ============================================
-   DESIGN SYSTEM COHÉRENT
+   DESIGN SYSTEM COHÉRENT - MINIMAL
    ============================================ */
 
 :root {
@@ -80,8 +37,6 @@ nav {
   --text-primary: #e0e0e0;
   --text-secondary: #bbb;
   --accent-color: #00aaff;
-  --danger-color: #ff4a4a;
-  --success-color: #28a745;
   --primary-blue: #0070f3;
   --primary-blue-dark: #0056b3;
 }
@@ -91,145 +46,4 @@ html,
 body {
   background-color: var(--background-color);
   color: var(--text-primary);
-}
-
-/* Verre morphisme cohérent */
-.glass-panel,
-.panel,
-.card,
-.container {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-}
-
-/* Boutons cohérents */
-.btn,
-button:not(.social-btn) {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--text-primary);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.btn:hover,
-button:not(.social-btn):hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.btn.primary,
-button.primary {
-  background: var(--primary-blue);
-  border-color: var(--primary-blue-dark);
-  color: white;
-}
-
-.btn.primary:hover,
-button.primary:hover {
-  background: var(--primary-blue-dark);
-}
-
-/* Inputs cohérents */
-input,
-select,
-textarea {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text-primary);
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 0.9rem;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--primary-blue);
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
-}
-
-/* Texte cohérent */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-p, span, label {
-  color: var(--text-primary);
-}
-
-a {
-  color: var(--accent-color);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: #00d4ff;
-}
-
-/* ============================================
-   ANIMATIONS COHÉRENTES
-   ============================================ */
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { transform: translateX(-20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* ============================================
-   RESPONSIVE DESIGN COHÉRENT
-   ============================================ */
-
-@media (max-width: 768px) {
-  :root {
-    --text-primary: #d0d0d0;
-  }
-
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.2rem; }
-  h3 { font-size: 1rem; }
-
-  .container,
-  .app-container {
-    padding: 15px;
-  }
-
-  .btn,
-  button {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  h1 { font-size: 1.2rem; }
-  h2 { font-size: 1rem; }
-  h3 { font-size: 0.9rem; }
-
-  .container,
-  .app-container {
-    padding: 10px;
-  }
-
-  .btn,
-  button {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
 }

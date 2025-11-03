@@ -292,6 +292,7 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
 <script type="module">
 import { getAuth, onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -621,7 +622,26 @@ if (window._cyfFirebase) {
 }
 
 // Gestion du menu utilisateur (idempotent)
-window.addEventListener("DOMContentLoaded", () => { try { updateGlobalAvatar(); } catch (e) {} try { initUserMenu(); } catch (e) {} });
+window.addEventListener("DOMContentLoaded", () => { 
+  try { updateGlobalAvatar(); } catch (e) {} 
+  try { initUserMenu(); } catch (e) {} 
+  try {
+    if (window.VANTA && window.VANTA.BIRDS) {
+      window.VANTA.BIRDS({
+        el: '#vanta-birds-bg',
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        scale: 1.0,
+        scaleMobile: 1.0,
+        quantity: 4.0,
+        backgroundColor: 0x07192f
+      });
+    }
+  } catch (e) { console.log('Vanta init error:', e); }
+});
 
 // ----- Préférences (thème/animations/notifications) -----
 async function initSettingsToggles(uid) {

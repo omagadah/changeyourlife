@@ -108,7 +108,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ el:'#vanta-birds-bg', backgroundColor:0x07192f, quantity:4.0 });
+      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
       setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if (c){ c.style.pointerEvents='none'; c.style.zIndex='0'; }}, 100);
       try { updateGlobalAvatar(); } catch(e){}
     });
