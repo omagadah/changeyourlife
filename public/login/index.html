@@ -87,8 +87,31 @@
     <div class="auth-container">
         <h1 id="auth-title">Connexion</h1>
         <form id="auth-form">
-            <div class="input-group"><label for="email">Adresse e-mail</label><input type="email" id="email" name="email" required autocomplete="email"></div>
-            <div class="input-group"><label for="password">Mot de passe</label><input type="password" id="password" name="password" required autocomplete="current-password"></div>
+            <div class="input-group">
+                <label for="email">Adresse e-mail</label>
+                <input type="email" id="email" name="email" required autocomplete="email" aria-label="Adresse e-mail">
+                <small id="email-hint" style="color:#aaa;font-size:0.8rem;margin-top:4px;display:block;"></small>
+            </div>
+            <div class="input-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" aria-label="Mot de passe">
+                <small id="password-hint" style="color:#aaa;font-size:0.8rem;margin-top:4px;display:block;"></small>
+            </div>
+            <div id="password-requirements" style="display:none;margin:1rem 0;padding:1rem;background:rgba(255,255,255,0.05);border-radius:8px;border-left:3px solid #ffd28c;">
+                <small style="color:#ffd28c;font-weight:600;">Exigences du mot de passe:</small>
+                <ul style="margin:0.5rem 0 0 1.5rem;color:#bbb;font-size:0.85rem;">
+                    <li id="req-length">Au moins 8 caractères</li>
+                    <li id="req-upper">Au moins une majuscule</li>
+                    <li id="req-lower">Au moins une minuscule</li>
+                    <li id="req-digit">Au moins un chiffre</li>
+                    <li id="req-special">Au moins un caractère spécial (@$!%*?&)</li>
+                </ul>
+            </div>
+            <div class="input-group" id="password-confirm-group" style="display:none;">
+                <label for="password-confirm">Confirmer le mot de passe</label>
+                <input type="password" id="password-confirm" name="password-confirm" autocomplete="new-password" aria-label="Confirmer le mot de passe">
+                <small id="password-confirm-hint" style="color:#aaa;font-size:0.8rem;margin-top:4px;display:block;"></small>
+            </div>
             <button id="submit-button" type="submit" class="submit-button">Se connecter</button>
         </form>
         <div class="extra-links" style="justify-content: center; margin-top: 1rem;"><a href="#" id="forgot-password-link">Mot de passe oublié ?</a></div>
