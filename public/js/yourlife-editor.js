@@ -106,26 +106,47 @@ function saveLocalDraft(uid, graph) {
   try { localStorage.setItem(`yourLifeDraft:${uid}`, JSON.stringify({ ts: Date.now(), graph })); } catch(e) {}
 }
 
-async function save(uid, cy) {
+async function save(uid, cy, retries = 2) {
   const g = fromCy(cy);
   const badge = document.getElementById('save-status');
-  // Always update local draft immediately
+  // Always update local draft immediately (never lose work)
   saveLocalDraft(uid, g);
-  try {
-    if (badge) { badge.textContent = 'Sauvegarde…'; badge.style.color = '#ffd28c'; }
-    console.debug('[YourLife] save start', { nodes: g.nodes.length, edges: g.edges.length });
-    // Add a 8s watchdog timeout so UI never hangs
-    const write = setDoc(doc(db,'users',uid), { yourLifeGraph: g, yourLifeUpdatedAt: Date.now() }, { merge: true });
-    const result = await Promise.race([
-      write,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-    ]);
-    console.debug('[YourLife] save OK');
-    if (badge) { badge.textContent = 'Sauvegardé ✔'; badge.style.color = '#9effc5'; setTimeout(()=>{ if (badge.textContent.includes('✔')) { badge.textContent='Prêt'; badge.style.color = ''; } }, 1200); }
-    return result;
-  } catch (e) {
-    console.error('[YourLife] save failed:', e);
-    if (badge) { badge.textContent = 'Erreur sauvegarde'; badge.style.color = '#ff9aa2'; }
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (badge) { 
+        badge.textContent = attempt > 0 ? `Sauvegarde… (${attempt+1})` : 'Sauvegarde…'; 
+        badge.style.color = '#ffd28c'; 
+      }
+      console.debug('[YourLife] save start', { nodes: g.nodes.length, edges: g.edges.length, attempt });
+      
+      // 10s timeout with exponential backoff on retry
+      const timeout = 10000 + (attempt * 3000);
+      const write = setDoc(doc(db,'users',uid), { yourLifeGraph: g, yourLifeUpdatedAt: Date.now() }, { merge: true });
+      const result = await Promise.race([
+        write,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
+      ]);
+      
+      console.debug('[YourLife] save OK');
+      if (badge) { 
+        badge.textContent = 'Sauvegardé ✔'; 
+        badge.style.color = '#9effc5'; 
+        setTimeout(()=>{ if (badge && badge.textContent.includes('✔')) { badge.textContent='Prêt'; badge.style.color = ''; } }, 1200); 
+      }
+      return result;
+    } catch (e) {
+      console.error('[YourLife] save failed (attempt ' + (attempt+1) + '):', e);
+      
+      // If last attempt, show error
+      if (attempt === retries) {
+        const code = (e && (e.code || e.message)) ? String(e.code || e.message) : 'unknown';
+        if (badge) { badge.textContent = `Erreur (${code})`; badge.style.color = '#ff9aa2'; }
+      } else {
+        // Wait before retry (exponential backoff)
+        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+      }
+    }
   }
 }
 
@@ -197,6 +218,77 @@ onAuthStateChanged(auth, async (user) => {
   // Ensure the graph is visible on first load
   try { setTimeout(() => { try { cy.fit(cy.elements(), 30); } catch(e){} }, 60); } catch(e){}
 
+  // Initialize edgehandles for drag-to-link
+  if (cy.edgehandles && typeof cy.edgehandles === 'function') {
+    const eh = cy.edgehandles({
+      canConnect: (sourceNode, targetNode) => !sourceNode.same(targetNode),
+      edgeParams: (sourceNode, targetNode) => ({ data: { id: 'e' + Date.now(), source: sourceNode.id(), target: targetNode.id() } }),
+      hoverDelay: 150,
+      snap: true,
+      snapThreshold: 50,
+      snapFrequency: 15,
+      noEdgeEventsInDraw: true,
+      disableBrowserGestures: true
+    });
+    
+    // When edge is created via drag, save and add to history
+    cy.on('ehcomplete', (event, sourceNode, targetNode, addedEdge) => {
+      pushHistory();
+      scheduleSave();
+    });
+  }
+
+  // Undo/redo history
+  const history = { past: [], future: [], maxSize: 50 };
+  const takeSnapshot = () => fromCy(cy);
+  const pushHistory = (snap) => {
+    history.past.push(snap);
+    if (history.past.length > history.maxSize) history.past.shift();
+    history.future = []; // clear redo stack on new action
+  };
+  const undo = () => {
+    if (history.past.length === 0) return;
+    const current = takeSnapshot();
+    history.future.push(current);
+    const prev = history.past.pop();
+    cy.elements().remove();
+    cy.add(toElements(prev));
+    cy.fit(cy.elements(), 30);
+    scheduleSave();
+  };
+  const redo = () => {
+    if (history.future.length === 0) return;
+    const current = takeSnapshot();
+    history.past.push(current);
+    const next = history.future.pop();
+    cy.elements().remove();
+    cy.add(toElements(next));
+    cy.fit(cy.elements(), 30);
+    scheduleSave();
+  };
+  
+  // Push initial snapshot
+  pushHistory(takeSnapshot());
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Undo: Ctrl+Z
+    if (e.ctrlKey && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    // Redo: Ctrl+Y or Ctrl+Shift+Z
+    if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) { e.preventDefault(); redo(); }
+    // Delete selected: Del or Backspace
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.target.matches('input, textarea')) {
+      e.preventDefault();
+      const sel = cy.$('.selected');
+      if (sel.nonempty()) { pushHistory(takeSnapshot()); sel.remove(); scheduleSave(); }
+    }
+    // Fit view: Space
+    if (e.key === ' ' && !e.target.matches('input, textarea')) {
+      e.preventDefault();
+      cy.fit(cy.elements(), 30);
+    }
+  });
+
   // If we booted from a newer local draft (vs remote), push it to server once
   try {
     const raw = localStorage.getItem(`yourLifeDraft:${uid}`);
@@ -256,6 +348,7 @@ onAuthStateChanged(auth, async (user) => {
   // Removed explicit save button; everything is autosaved.
 
   $('btn-add').addEventListener('click', async () => {
+    pushHistory(takeSnapshot());
     const id = 'n'+Math.random().toString(36).slice(2,7);
     const ext = cy.extent();
     const pos = { x: (ext.x1 + ext.x2) / 2, y: (ext.y1 + ext.y2) / 2 };
@@ -278,6 +371,7 @@ onAuthStateChanged(auth, async (user) => {
     if (!linkSource) { linkSource = evt.target.id(); return; }
     const target = evt.target.id();
     if (linkSource !== target) {
+      pushHistory(takeSnapshot());
       cy.add({ data: { id: 'e'+Math.random().toString(36).slice(2,7), source: linkSource, target } });
       scheduleSave();
     }
@@ -286,7 +380,11 @@ onAuthStateChanged(auth, async (user) => {
 
   $('btn-delete').addEventListener('click', async () => {
     const sel = cy.$('.selected');
-    if (sel.nonempty()) { sel.remove(); scheduleSave(); }
+    if (sel.nonempty()) { 
+      pushHistory(takeSnapshot());
+      sel.remove(); 
+      scheduleSave(); 
+    }
   });
 
   // Diagnostics button: test Firestore write/read path and report status
@@ -318,17 +416,20 @@ onAuthStateChanged(auth, async (user) => {
 
   // Expose a tiny debug API in the console
   window.__YourLifeDebug = {
-    version: 'v11',
+    version: 'v13-keyboard-edgehandles',
     get uid() { return uid; },
     get online() { return navigator.onLine; },
     getGraph: () => fromCy(cy),
+    getCy: () => cy,
     saveNow: () => save(uid, cy),
+    forceSave: () => save(uid, cy, 0), // no retries
     async testWriteRead() {
       const token = Math.random().toString(36).slice(2,8);
       await setDoc(doc(db,'users',uid), { diagLastToken: token, diagAt: Date.now() }, { merge: true });
       const snap = await getDoc(doc(db,'users',uid));
       return { ok: snap.exists() && snap.data()?.diagLastToken === token, data: snap.data() };
-    }
+    },
+    clearDraft: () => { try { localStorage.removeItem(`yourLifeDraft:${uid}`); return 'OK'; } catch(e) { return e.message; } }
   };
 
   // Offline/online indicator
@@ -360,4 +461,38 @@ onAuthStateChanged(auth, async (user) => {
       if (colorPicker) colorPicker.value = colorByDomain[val] || '#9ca3ff';
     });
   }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+Z: Undo
+    if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      undo();
+    }
+    // Ctrl+Shift+Z or Ctrl+Y: Redo
+    if ((e.ctrlKey && e.key === 'z' && e.shiftKey) || (e.ctrlKey && e.key === 'y')) {
+      e.preventDefault();
+      redo();
+    }
+    // Delete: Remove selected node/edge
+    if (e.key === 'Delete') {
+      const sel = cy.$('.selected');
+      if (sel.nonempty()) {
+        e.preventDefault();
+        pushHistory();
+        cy.remove(sel);
+        scheduleSave();
+      }
+    }
+    // Space: Fit/center graph
+    if (e.key === ' ' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      cy.fit(cy.elements(), 30);
+    }
+    // Escape: Cancel link mode
+    if (e.key === 'Escape' && linkMode) {
+      const btn = $('btn-link');
+      if (btn) btn.click(); // toggle off
+    }
+  });
 });
