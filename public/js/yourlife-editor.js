@@ -45,6 +45,9 @@ if (!window._cyfFirebase) {
     const code = (e && (e.code || e.message)) ? String(e.code || e.message) : 'unknown';
     if (badge) { badge.textContent = `Erreur sauvegarde (${code})`; badge.style.color = '#ff9aa2'; }
 
+// Helper function for getElementById
+const $ = (id) => document.getElementById(id);
+
 const colorByDomain = {
   body: '#2dd4bf',
   heart: '#ef4444',
