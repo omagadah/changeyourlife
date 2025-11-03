@@ -201,7 +201,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <div id="vanta-birds-bg"></div>
     <script>
-        VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: false, touchControls: true, gyroControls: false, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
+        VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
         setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if(c){ c.style.pointerEvents='none'; c.style.zIndex='0'; document.getElementById('vanta-birds-bg').style.zIndex='0';}},60);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>

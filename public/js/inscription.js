@@ -51,16 +51,18 @@ if (form) {
       if (!isRegister) {
         await signInWithEmailAndPassword(auth, email, password);
         showNotification('Connexion réussie — redirection...');
-        setTimeout(() => { window.location.href = '/app'; }, 900);
+        // Let onAuthStateChanged handle redirect to /app
       } else {
         // Register
         await createUserWithEmailAndPassword(auth, email, password);
         showNotification('Compte créé — redirection...');
-        setTimeout(() => { window.location.href = '/app'; }, 900);
+        // Let onAuthStateChanged handle redirect to /app
       }
     } catch (err) {
       console.error('Auth error', err);
       showError(err.message || 'Erreur lors de la connexion');
+      submitButton.textContent = isRegister ? 'Créer un compte' : 'Se connecter';
+      submitButton.disabled = false;
     }
   });
 }
@@ -74,7 +76,7 @@ if (googleBtn) {
     try {
       await signInWithPopup(auth, provider);
       showNotification('Connexion Google réussie — redirection...');
-      setTimeout(() => { window.location.href = '/app'; }, 900);
+      // Let onAuthStateChanged handle redirect to /app
     } catch (err) {
       console.error('Google sign-in error', err);
       // UX: show immediate alert to user and fallback to redirect when popup blocked or environment doesn't support popups
@@ -146,17 +148,31 @@ if (forgotLink) {
 if (authToggleLink) {
   authToggleLink.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     isRegister = !isRegister;
+    const titleEl = document.getElementById('auth-title');
+    const submitEl = document.getElementById('submit-button');
+    const passwordReqEl = document.getElementById('password-requirements');
+    const passwordConfirmEl = document.getElementById('password-confirm-group');
+    
     if (isRegister) {
       authToggleText.textContent = 'Vous avez déjà un compte ?';
       authToggleLink.textContent = 'Se connecter';
-      document.getElementById('auth-title').textContent = 'Créer un compte';
-      document.getElementById('submit-button').textContent = 'Créer un compte';
+      if (titleEl) titleEl.textContent = 'Créer un compte';
+      if (submitEl) submitEl.textContent = 'Créer un compte';
+      if (passwordReqEl) passwordReqEl.style.display = 'block';
+      if (passwordConfirmEl) passwordConfirmEl.style.display = 'block';
+      if (emailInput) emailInput.placeholder = 'your.email@example.com';
+      if (passwordInput) passwordInput.placeholder = 'Mot de passe sécurisé';
     } else {
       authToggleText.textContent = 'Pas encore de compte ?';
       authToggleLink.textContent = 'Créer un compte';
-      document.getElementById('auth-title').textContent = 'Connexion';
-      document.getElementById('submit-button').textContent = 'Se connecter';
+      if (titleEl) titleEl.textContent = 'Connexion';
+      if (submitEl) submitEl.textContent = 'Se connecter';
+      if (passwordReqEl) passwordReqEl.style.display = 'none';
+      if (passwordConfirmEl) passwordConfirmEl.style.display = 'none';
+      if (emailInput) emailInput.placeholder = 'Adresse e-mail';
+      if (passwordInput) passwordInput.placeholder = 'Mot de passe';
     }
   });
 }

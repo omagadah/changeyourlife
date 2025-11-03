@@ -68,7 +68,7 @@
     <div id="vanta-birds-bg"></div>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const v = VANTA.BIRDS({ el: "#vanta-birds-bg", backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
+            const v = VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
             // ensure the generated canvas doesn't capture pointer events (clicks should go to UI)
             setTimeout(() => {
                 const c = document.querySelector('#vanta-birds-bg canvas');

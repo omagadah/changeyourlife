@@ -31,7 +31,7 @@
   <script type="module">
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
-    window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el:'#vanta-birds-bg', backgroundColor:0x07192f, quantity:4.0 }); setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if (c){ c.style.pointerEvents='none'; c.style.zIndex='0'; }}, 100); try { updateGlobalAvatar(); } catch(e){} });
+    window.addEventListener('DOMContentLoaded', () => { VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 }); setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if (c){ c.style.pointerEvents='none'; c.style.zIndex='0'; }}, 100); try { updateGlobalAvatar(); } catch(e){} });
     document.querySelector('.user-panel-trigger').addEventListener('click', (e)=>{ e.stopPropagation(); initUserMenu(); const m=document.getElementById('cyf-user-menu'); if(m) m.style.display=(m.style.display==='block'?'none':'block'); });
   </script>
 </body>
