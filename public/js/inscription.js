@@ -3,18 +3,15 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { firebaseConfig } from './config.js';
-import { logger } from './logger.js';
-import { validateLoginForm, validateSignupForm } from './validation.js';
 
 // Singleton Firebase init (évite les redéclarations)
 let app, auth;
 if (!window._cyfFirebase) {
+  const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   const db = getFirestore(app);
   window._cyfFirebase = { app, auth, db };
-  logger.info('Firebase initialized');
 } else {
   ({ app, auth } = window._cyfFirebase);
 }
