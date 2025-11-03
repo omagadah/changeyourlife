@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="/css/main.min.css">
   <style>
     .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 16px; display: grid; grid-template-rows: auto 1fr; gap: 12px; }
-    .editor-grid { display: grid; grid-template-columns: 1fr 300px; gap: 12px; height: 100%; }
-    .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(255,255,255,0.04); overflow: hidden; }
-    #cy-graph { width: 100%; height: 100%; }
+    .editor-grid { display: grid; grid-template-columns: 1fr 300px; gap: 12px; height: 100%; min-height: 0; }
+    .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(255,255,255,0.04); overflow: hidden; position: relative; }
+    #cy-graph { width: 100%; height: 100%; position: absolute; inset: 0; }
   .toolbar { display: flex; gap: 8px; align-items: center; }
   .toolbar .btn { padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 700; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
   .toolbar .btn.primary { background: #3b82f6; border-color: #2c60b8; }
@@ -30,7 +30,7 @@
     <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
       <div>
         <h1 style="margin:0">Arbre de compétences (Skill Tree)</h1>
-        <div class="muted">Éditeur BETA — Déplace, renomme, colore, dors des branches, ajoute/supprime des nœuds.</div>
+        <div class="muted">Éditeur BETA — Déplace, renomme, colore, dors des branches, ajoute/supprime des nœuds. 🎹 Raccourcis: Ctrl+Z (Undo), Ctrl+Y (Redo), Suppr (Effacer), Espace (Centrer), Échap (Annuler mode lien). Drag-to-link activé! 🔗</div>
       </div>
       <div class="toolbar">
         <span id="link-hint" class="status-pill" style="display:none">Relier: cliquez une source puis une cible (Échap pour annuler)</span>
@@ -75,6 +75,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
   <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+  <script src="https://unpkg.com/cytoscape-edgehandles@3.6.0/cytoscape-edgehandles.js"></script>
   <script type="module">
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
@@ -89,6 +90,6 @@
     // Menu
     document.querySelector('.user-panel-trigger').addEventListener('click', (e) => { e.stopPropagation(); initUserMenu(); const menu = document.getElementById('cyf-user-menu'); if (menu) menu.style.display = (menu.style.display==='block'?'none':'block'); });
   </script>
-  <script type="module" src="/js/yourlife-editor.js?v=12"></script>
+  <script type="module" src="/js/yourlife-editor.js?v=13"></script>
 </body>
 </html>
