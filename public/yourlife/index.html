@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
   <title>Arbre de compétences - Change Your Life</title>
-  <link rel="stylesheet" href="/css/main.min.css">
+  <link rel="stylesheet" href="/css/main.min.css?v=15">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #07192f; color: #e0e0e0; }
     
-    #vanta-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
     
     .container { position: fixed; inset: 0; display: flex; flex-direction: column; z-index: 1; }
     
@@ -44,7 +47,7 @@
   </style>
 </head>
 <body>
-  <div id="vanta-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
+  <div id="vanta-birds-bg"></div>
   
   <div class="container">
     <div class="header">
@@ -53,9 +56,10 @@
         <div class="header-info">Construisez votre chemin vers l'auto-réalisation • Cliquez sur un nœud pour le modifier</div>
       </div>
       <div class="toolbar">
-        <span class="status" id="save-status">Prêt</span>
+        <span class="status" id="save-status">Chargement...</span>
         <button class="btn" id="btn-fit">📍 Centrer</button>
         <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
+        <button class="btn" id="user-btn" style="width: 40px; padding: 8px;">👤</button>
       </div>
     </div>
     
@@ -112,38 +116,41 @@
   <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
   
   <script type="module">
-    import { updateGlobalAvatar } from '/js/common.js';
-    import { initUserMenu } from '/js/userMenu.js';
+    import { updateGlobalAvatar } from '/js/common.js?v=15';
+    import { initUserMenu } from '/js/userMenu.js?v=15';
 
-    // Initialiser Vanta
-    window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ 
-        el: '#vanta-bg', 
-        mouseControls: true, 
-        touchControls: true, 
-        backgroundColor: 0x07192f, 
-        quantity: 4.0 
-      });
-      try { updateGlobalAvatar(); } catch(e){}
-    });
+    // Init Vanta et user menu uniquement quand le DOM est prêt
+    document.addEventListener('DOMContentLoaded', () => {
+      // Vanta
+      try {
+        if (window.VANTA && window.VANTA.BIRDS) {
+          window.VANTA.BIRDS({
+            el: '#vanta-birds-bg',
+            mouseControls: true,
+            touchControls: true,
+            backgroundColor: 0x07192f,
+            quantity: 4.0
+          });
+        }
+      } catch (e) {
+        console.error('Vanta init error:', e);
+      }
 
-    // Menu utilisateur
-    const header = document.querySelector('.header');
-    const userBtn = document.createElement('button');
-    userBtn.className = 'btn';
-    userBtn.innerHTML = '👤';
-    userBtn.style.width = '40px';
-    userBtn.style.padding = '8px';
-    header.querySelector('.toolbar').insertBefore(userBtn, header.querySelector('.toolbar').firstChild);
-    
-    userBtn.addEventListener('click', (e) => { 
-      e.stopPropagation(); 
-      initUserMenu(); 
-      const menu = document.getElementById('cyf-user-menu'); 
-      if (menu) menu.style.display = (menu.style.display==='block'?'none':'block'); 
+      // User menu
+      try { updateGlobalAvatar(); } catch(e) { console.error('Avatar update error:', e); }
+      
+      const userBtn = document.getElementById('user-btn');
+      if (userBtn) {
+        userBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          initUserMenu();
+          const menu = document.getElementById('cyf-user-menu');
+          if (menu) menu.style.display = (menu.style.display === 'block' ? 'none' : 'block');
+        });
+      }
     });
   </script>
   
-  <script type="module" src="/js/yourlife-skill-tree.js"></script>
+  <script type="module" src="/js/yourlife-skill-tree.js?v=15"></script>
 </body>
 </html>
