@@ -1,5 +1,5 @@
-// service-worker.js
-const CACHE_NAME = 'changeyourlife-v14';
+// service-worker.js - v15
+const CACHE_NAME = 'changeyourlife-v15';
 const urlsToCache = [
   '/',
   '/app/',
@@ -10,71 +10,95 @@ const urlsToCache = [
   '/meditation/',
   '/objectifs/',
   '/js/yourlife-editor.js',
-  '/js/yourlife-editor.js?v=13',
+  '/js/yourlife-skill-tree.js',
   '/css/main.min.css',
-  '/js/common.min.js',
   '/js/common.js',
   '/js/userMenu.js',
-  '/js/profile.js',
   '/js/inscription.js',
-  '/js/agent-builder.js',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
   'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js',
-  'https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css'
+  'https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js'
 ];
 
 self.addEventListener('install', event => {
+  console.log('[SW] Installing v15...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+      .then(cache => {
+        console.log('[SW] Cache opened');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('[SW] All URLs cached');
+        return caches.keys();
+      })
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('[SW] Removing old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
   );
-  // Activate this SW immediately (no waiting state)
   self.skipWaiting();
 });
 
+self.addEventListener('activate', event => {
+  console.log('[SW] Activating v15...');
+  event.waitUntil(clients.claim());
+});
+
 self.addEventListener('fetch', event => {
+  const { request } = event;
+  
+  // Network first for navigation (HTML pages)
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then(response => {
+            return response || new Response('Offline', { status: 503 });
+          });
+        })
+    );
+    return;
+  }
+
+  // Cache first for other requests
   event.respondWith(
-    caches.match(event.request)
+    caches.match(request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
 
-        return fetch(event.request).then(
-          response => {
-            // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response as it's a stream and can only be consumed once
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
+        return fetch(request).then(response => {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-        );
-      })
-  );
-});
 
-// Clean up old caches
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, responseToCache);
+          });
+
+          return response;
+        });
+      })
+      .catch(() => {
+        return caches.match('/');
+      })
   );
 });
