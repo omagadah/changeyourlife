@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Objectifs & Progrès - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: grid; grid-template-rows: auto 1fr; gap: 16px; overflow: hidden; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .header-bar h1 { margin: 0; font-size: 1.4rem; }
+    .content-area { overflow-y: auto; display: grid; gap: 20px; }
+    .goals-grid { display: grid; gap: 16px; }
+    .goal-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 18px; transition: all 0.3s ease; position: relative; }
+    .goal-card:hover { background: rgba(255,255,255,0.08); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .goal-card.completed { opacity: 0.6; }
+    .goal-card.completed .goal-title { text-decoration: line-through; }
+    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .goal-title { font-weight: 600; font-size: 1.1rem; flex: 1; }
+    .goal-domain { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .goal-domain.body { background: rgba(45,212,191,0.2); color: #2dd4bf; border: 1px solid #2dd4bf; }
+    .goal-domain.heart { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; }
+    .goal-domain.etre { background: rgba(156,163,255,0.2); color: #9ca3ff; border: 1px solid #9ca3ff; }
+    .goal-domain.order { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+    .goal-desc { font-size: 0.9rem; color: #aab7cf; line-height: 1.5; margin-bottom: 12px; }
+    .progress-bar { background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 8px; }
+    .progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%; transition: width 0.4s ease; }
+    .progress-text { font-size: 0.8rem; color: #9fb5ff; }
+    .goal-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-icon { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .btn-icon:hover { background: rgba(255,255,255,0.12); transform: scale(1.05); }
+    .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn.primary { background: #3b82f6; border-color: #2c60b8; }
+    .btn.primary:hover { background: #2563eb; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal.active { display: flex; }
+    .modal-content { background: rgba(30,30,30,0.95); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; }
+    .modal-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.9rem; color: #aab7cf; margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 10px; color: #e5eef8; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
+    .template-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .template-card:hover { background: rgba(255,255,255,0.1); transform: scale(1.03); }
+    .template-icon { font-size: 2rem; margin-bottom: 6px; }
+    .template-name { font-size: 0.85rem; font-weight: 600; }
+  </style>
+  <meta name="robots" content="index,follow" />
+  <meta name="description" content="Définissez et suivez vos objectifs avec l'aide de l'IA. Progression en temps réel et récompenses XP." />
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  <header class="header">
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
+  </header>
+  <main class="page-shell">
+    <div class="header-bar">
+      <div>
+        <h1>🎯 Objectifs & Progrès</h1>
+        <div style="font-size:0.85rem;color:#aab7cf">Transforme tes intentions en actions</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn primary" id="btn-new-goal">+ Nouvel objectif</button>
+        <a href="/app/" class="btn">← Mon Espace</a>
+      </div>
+    </div>
+    <div class="content-area">
+      <div class="goals-grid" id="goals-grid"></div>
+      <div id="empty-state" style="text-align:center;padding:60px 20px;color:#aab7cf;display:none">
+        <div style="font-size:3rem;margin-bottom:12px">🎯</div>
+        <div style="font-size:1.1rem;margin-bottom:8px">Aucun objectif défini</div>
+        <div style="font-size:0.9rem">Clique sur "+ Nouvel objectif" pour commencer</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="modal-goal">
+    <div class="modal-content">
+      <div class="modal-title" id="modal-title">Nouvel objectif</div>
+      <div class="form-group">
+        <label>Titre</label>
+        <input type="text" id="input-title" placeholder="Ex: Courir 5km sans m'arrêter" />
+      </div>
+      <div class="form-group">
+        <label>Description (optionnel)</label>
+        <textarea id="input-desc" placeholder="Détails, motivation, étapes..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Domaine</label>
+        <select id="input-domain">
+          <option value="body">Body (Corps)</option>
+          <option value="heart">Heart (Relations)</option>
+          <option value="etre">Être (Identité)</option>
+          <option value="order">Order (Organisation)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date cible (optionnel)</label>
+        <input type="date" id="input-deadline" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="btn-cancel-modal">Annuler</button>
+        <button class="btn primary" id="btn-save-goal">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script type="module">
+    import { updateGlobalAvatar } from '/js/common.js';
+    import { initUserMenu } from '/js/userMenu.js';
+    import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    let auth, db, uid, goals = [], editingId = null;
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const config = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(config);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
+      setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if (c){ c.style.pointerEvents='none'; c.style.zIndex='0'; }}, 100);
+      try { updateGlobalAvatar(); } catch(e){}
+    });
+    document.querySelector('.user-panel-trigger').addEventListener('click', (e)=>{ e.stopPropagation(); initUserMenu(); const m=document.getElementById('cyf-user-menu'); if(m) m.style.display=(m.style.display==='block'?'none':'block'); });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = '/login'; return; }
+      uid = user.uid;
+      await loadGoals();
+    });
+
+    async function loadGoals() {
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snap.exists()) {
+          goals = snap.data().goals || [];
+        }
+        renderGoals();
+      } catch(e) { renderGoals(); }
+    }
+
+    function renderGoals() {
+      const grid = document.getElementById('goals-grid');
+      const empty = document.getElementById('empty-state');
+      if (goals.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      grid.innerHTML = goals.map((g, idx) => `
+        <div class="goal-card ${g.completed?'completed':''}" data-idx="${idx}">
+          <div class="goal-header">
+            <div class="goal-title">${g.title}</div>
+            <div class="goal-domain ${g.domain}">${g.domain}</div>
+          </div>
+          ${g.desc ? `<div class="goal-desc">${g.desc}</div>` : ''}
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${g.progress||0}%"></div>
+          </div>
+          <div class="progress-text">${g.progress||0}% complété${g.deadline ? ` · Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : ''}</div>
+          <div class="goal-actions">
+            <button class="btn-icon" onclick="window.updateProgress(${idx})">+ 10%</button>
+            <button class="btn-icon" onclick="window.toggleComplete(${idx})">${g.completed ? '↻ Réactiver' : '✓ Compléter'}</button>
+            <button class="btn-icon" onclick="window.deleteGoal(${idx})">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('btn-new-goal').addEventListener('click', () => openModal());
+    document.getElementById('btn-cancel-modal').addEventListener('click', closeModal);
+    document.getElementById('btn-save-goal').addEventListener('click', saveGoal);
+    document.getElementById('modal-goal').addEventListener('click', (e) => { if (e.target.id === 'modal-goal') closeModal(); });
+
+    function openModal(idx = null) {
+      editingId = idx;
+      const modal = document.getElementById('modal-goal');
+      if (idx !== null) {
+        const g = goals[idx];
+        document.getElementById('modal-title').textContent = 'Modifier l\'objectif';
+        document.getElementById('input-title').value = g.title;
+        document.getElementById('input-desc').value = g.desc || '';
+        document.getElementById('input-domain').value = g.domain;
+        document.getElementById('input-deadline').value = g.deadline || '';
+      } else {
+        document.getElementById('modal-title').textContent = 'Nouvel objectif';
+        document.getElementById('input-title').value = '';
+        document.getElementById('input-desc').value = '';
+        document.getElementById('input-domain').value = 'body';
+        document.getElementById('input-deadline').value = '';
+      }
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-goal').classList.remove('active');
+      editingId = null;
+    }
+
+    async function saveGoal() {
+      const title = document.getElementById('input-title').value.trim();
+      if (!title) return;
+      const goal = {
+        id: editingId !== null ? goals[editingId].id : Date.now(),
+        title,
+        desc: document.getElementById('input-desc').value.trim(),
+        domain: document.getElementById('input-domain').value,
+        deadline: document.getElementById('input-deadline').value || null,
+        progress: editingId !== null ? goals[editingId].progress : 0,
+        completed: editingId !== null ? goals[editingId].completed : false,
+        createdAt: editingId !== null ? goals[editingId].createdAt : Date.now()
+      };
+      if (editingId !== null) {
+        goals[editingId] = goal;
+      } else {
+        goals.push(goal);
+      }
+      try {
+        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
+        renderGoals();
+        closeModal();
+      } catch(e) { console.error(e); }
+    }
+
+    window.updateProgress = async (idx) => {
+      const g = goals[idx];
+      g.progress = Math.min(100, (g.progress || 0) + 10);
+      if (g.progress >= 100) g.completed = true;
+      try {
+        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
+        renderGoals();
+      } catch(e) {}
+    };
+
+    window.toggleComplete = async (idx) => {
+      goals[idx].completed = !goals[idx].completed;
+      if (goals[idx].completed) goals[idx].progress = 100;
+      try {
+        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
+        renderGoals();
+      } catch(e) {}
+    };
+
+    window.deleteGoal = async (idx) => {
+      if (!confirm('Supprimer cet objectif ?')) return;
+      goals.splice(idx, 1);
+      try {
+        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
+        renderGoals();
+      } catch(e) {}
+    };
+  </script>
+</body>
+</html>

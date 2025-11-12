@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Méditation guidée - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: grid; grid-template-rows: auto 1fr; gap: 16px; overflow: hidden; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; }
+    .header-bar h1 { margin: 0; font-size: 1.4rem; }
+    .content-area { overflow-y: auto; display: grid; gap: 20px; }
+    .sessions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+    .session-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 18px; cursor: pointer; transition: all 0.3s ease; position: relative; }
+    .session-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .session-card.active { border-color: #3b82f6; background: rgba(59,130,246,0.15); }
+    .session-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .session-title { font-weight: 600; font-size: 1.05rem; margin-bottom: 6px; }
+    .session-desc { font-size: 0.88rem; color: #aab7cf; line-height: 1.4; }
+    .session-duration { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; }
+    .player-panel { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 24px; display: none; }
+    .player-panel.active { display: block; }
+    .player-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
+    .player-subtitle { color: #aab7cf; font-size: 0.9rem; margin-bottom: 20px; }
+    .timer-display { text-align: center; font-size: 3.5rem; font-weight: 300; margin: 30px 0; color: #9fb5ff; }
+    .controls { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+    .btn { padding: 12px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .btn:hover { background: rgba(255,255,255,0.12); transform: scale(1.03); }
+    .btn.primary { background: #3b82f6; border-color: #2c60b8; }
+    .btn.primary:hover { background: #2563eb; }
+    .breathing-guide { text-align: center; margin: 30px 0; display: none; }
+    .breathing-guide.active { display: block; }
+    .breathing-circle { width: 150px; height: 150px; margin: 0 auto 20px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.4), rgba(59,130,246,0.1)); border: 2px solid #3b82f6; animation: breathe 8s infinite; }
+    @keyframes breathe { 0%, 100% { transform: scale(0.8); opacity: 0.6; } 50% { transform: scale(1.2); opacity: 1; } }
+    .breathing-text { font-size: 1.3rem; color: #9fb5ff; }
+    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 20px; }
+    .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 600; color: #3b82f6; }
+    .stat-label { font-size: 0.8rem; color: #aab7cf; margin-top: 4px; }
+  </style>
+  <meta name="robots" content="index,follow" />
+  <meta name="description" content="Méditation guidée avec sessions personnalisées, exercices de respiration et sons d'ambiance pour progresser dans votre bien-être." />
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  <header class="header">
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
+  </header>
+  <main class="page-shell">
+    <div class="header-bar">
+      <div>
+        <h1>🧘 Méditation guidée</h1>
+        <div style="font-size:0.85rem;color:#aab7cf">Trouve ta sérénité, respire, progresse</div>
+      </div>
+      <a href="/app/" class="btn">← Mon Espace</a>
+    </div>
+    <div class="content-area">
+      <div id="player" class="player-panel">
+        <div class="player-title" id="player-title">Session</div>
+        <div class="player-subtitle" id="player-subtitle"></div>
+        <div class="timer-display" id="timer">00:00</div>
+        <div class="breathing-guide" id="breathing-guide">
+          <div class="breathing-circle"></div>
+          <div class="breathing-text" id="breathing-text">Inspire...</div>
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="btn-start">Démarrer</button>
+          <button class="btn" id="btn-pause" style="display:none">Pause</button>
+          <button class="btn" id="btn-stop">Arrêter</button>
+        </div>
+      </div>
+      <div class="sessions-grid" id="sessions-grid"></div>
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Sessions complétées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-time">0 min</div>
+          <div class="stat-label">Temps total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-streak">0</div>
+          <div class="stat-label">Série actuelle (jours)</div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script type="module">
+    import { updateGlobalAvatar } from '/js/common.js';
+    import { initUserMenu } from '/js/userMenu.js';
+    import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    let auth, db;
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const config = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(config);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
+      setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if (c){ c.style.pointerEvents='none'; c.style.zIndex='0'; }}, 100);
+      try { updateGlobalAvatar(); } catch(e){}
+    });
+    document.querySelector('.user-panel-trigger').addEventListener('click', (e)=>{ e.stopPropagation(); initUserMenu(); const m=document.getElementById('cyf-user-menu'); if(m) m.style.display=(m.style.display==='block'?'none':'block'); });
+
+    const sessions = [
+      { id:'calm', title:'Calme & Sérénité', desc:'Apaise ton esprit, relâche les tensions', duration:5, icon:'🌊', type:'guided' },
+      { id:'focus', title:'Focus & Concentration', desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', type:'guided' },
+      { id:'sleep', title:'Sommeil profond', desc:'Prépare-toi à une nuit réparatrice', duration:15, icon:'🌙', type:'guided' },
+      { id:'gratitude', title:'Gratitude & Positivité', desc:'Cultive la reconnaissance et la joie', duration:7, icon:'✨', type:'guided' },
+      { id:'breathing', title:'Respiration 4-7-8', desc:'Technique rapide pour réduire le stress', duration:5, icon:'💨', type:'breathing' },
+      { id:'body-scan', title:'Body Scan', desc:'Relaxe chaque partie de ton corps', duration:12, icon:'🧘', type:'guided' }
+    ];
+
+    let currentSession = null;
+    let timer = null;
+    let elapsed = 0;
+    let paused = false;
+    let uid = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = '/login'; return; }
+      uid = user.uid;
+      renderSessions();
+      await loadStats();
+    });
+
+    function renderSessions() {
+      const grid = document.getElementById('sessions-grid');
+      grid.innerHTML = sessions.map(s => `
+        <div class="session-card" data-id="${s.id}">
+          <div class="session-duration">${s.duration} min</div>
+          <div class="session-icon">${s.icon}</div>
+          <div class="session-title">${s.title}</div>
+          <div class="session-desc">${s.desc}</div>
+        </div>
+      `).join('');
+      grid.querySelectorAll('.session-card').forEach(card => {
+        card.addEventListener('click', () => selectSession(sessions.find(s => s.id === card.dataset.id)));
+      });
+    }
+
+    function selectSession(session) {
+      currentSession = session;
+      document.querySelectorAll('.session-card').forEach(c => c.classList.remove('active'));
+      document.querySelector(`[data-id="${session.id}"]`)?.classList.add('active');
+      document.getElementById('player-title').textContent = session.title;
+      document.getElementById('player-subtitle').textContent = session.desc;
+      document.getElementById('timer').textContent = `${session.duration}:00`;
+      document.getElementById('player').classList.add('active');
+      elapsed = 0;
+      clearInterval(timer);
+      document.getElementById('btn-start').style.display = 'inline-block';
+      document.getElementById('btn-pause').style.display = 'none';
+      document.getElementById('breathing-guide').classList.remove('active');
+    }
+
+    document.getElementById('btn-start').addEventListener('click', startSession);
+    document.getElementById('btn-pause').addEventListener('click', togglePause);
+    document.getElementById('btn-stop').addEventListener('click', stopSession);
+
+    function startSession() {
+      if (!currentSession) return;
+      paused = false;
+      document.getElementById('btn-start').style.display = 'none';
+      document.getElementById('btn-pause').style.display = 'inline-block';
+      if (currentSession.type === 'breathing') {
+        document.getElementById('breathing-guide').classList.add('active');
+        startBreathingCycle();
+      }
+      timer = setInterval(() => {
+        if (paused) return;
+        elapsed++;
+        const remaining = (currentSession.duration * 60) - elapsed;
+        if (remaining <= 0) { completeSession(); return; }
+        const min = Math.floor(remaining / 60);
+        const sec = remaining % 60;
+        document.getElementById('timer').textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+      }, 1000);
+    }
+
+    function togglePause() {
+      paused = !paused;
+      document.getElementById('btn-pause').textContent = paused ? 'Reprendre' : 'Pause';
+    }
+
+    function stopSession() {
+      clearInterval(timer);
+      elapsed = 0;
+      document.getElementById('btn-start').style.display = 'inline-block';
+      document.getElementById('btn-pause').style.display = 'none';
+      document.getElementById('breathing-guide').classList.remove('active');
+      if (currentSession) {
+        document.getElementById('timer').textContent = `${currentSession.duration}:00`;
+      }
+    }
+
+    async function completeSession() {
+      clearInterval(timer);
+      document.getElementById('timer').textContent = '✓ Terminé';
+      document.getElementById('btn-start').style.display = 'inline-block';
+      document.getElementById('btn-pause').style.display = 'none';
+      document.getElementById('breathing-guide').classList.remove('active');
+      try {
+        const userRef = doc(db, 'users', uid);
+        await updateDoc(userRef, {
+          'meditation.totalSessions': increment(1),
+          'meditation.totalMinutes': increment(currentSession.duration),
+          'meditation.lastSessionAt': Date.now()
+        });
+        await loadStats();
+      } catch(e) {
+        try {
+          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now() }}, {merge:true});
+          await loadStats();
+        } catch(e2) {}
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          const med = data.meditation || {};
+          document.getElementById('stat-total').textContent = med.totalSessions || 0;
+          document.getElementById('stat-time').textContent = `${med.totalMinutes || 0} min`;
+          const streak = calculateStreak(med.lastSessionAt);
+          document.getElementById('stat-streak').textContent = streak;
+        }
+      } catch(e) {}
+    }
+
+    function calculateStreak(lastSessionAt) {
+      if (!lastSessionAt) return 0;
+      const now = Date.now();
+      const diff = now - lastSessionAt;
+      const days = Math.floor(diff / (1000*60*60*24));
+      return days <= 1 ? 1 : 0;
+    }
+
+    function startBreathingCycle() {
+      const phases = [
+        { text: 'Inspire profondément...', duration: 4000 },
+        { text: 'Retiens ta respiration...', duration: 7000 },
+        { text: 'Expire lentement...', duration: 8000 }
+      ];
+      let idx = 0;
+      const cycle = () => {
+        if (paused || !timer) return;
+        document.getElementById('breathing-text').textContent = phases[idx].text;
+        idx = (idx + 1) % phases.length;
+        setTimeout(cycle, phases[(idx-1+phases.length)%phases.length].duration);
+      };
+      cycle();
+    }
+  </script>
+</body>
+</html>

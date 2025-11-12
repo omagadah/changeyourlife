@@ -1,0 +1,52 @@
+{
+  "name": "Change Your Life",
+  "short_name": "ChangeYourLife",
+  "description": "Une base saine pour construire de grandes choses - Outils de santé mentale optimisés par l'IA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07192f",
+  "theme_color": "#00aaff",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Your Life",
+      "short_name": "YourLife",
+      "description": "Ouvrir Your Life",
+      "url": "/yourlife",
+      "icons": [{ "src": "/icons/journal.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Méditation",
+      "short_name": "Méditer",
+      "description": "Commencer une méditation",
+      "url": "/app?tool=meditation",
+      "icons": [{ "src": "/icons/meditation.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "categories": ["health", "lifestyle", "education"],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    },
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ]
+}
