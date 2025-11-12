@@ -1,0 +1,13 @@
+{
+  "redirects": [
+    { "source": "/journal", "destination": "/yourlife", "permanent": true },
+    { "source": "/dashboard.html", "destination": "/app", "permanent": true },
+    { "source": "/app.html", "destination": "/app", "permanent": true },
+    { "source": "/inscription.html", "destination": "/login", "permanent": true },
+    { "source": "/login.html", "destination": "/login", "permanent": true },
+    { "source": "/settings.html", "destination": "/settings", "permanent": true },
+    { "source": "/profile.html", "destination": "/profile", "permanent": true },
+    { "source": "/journal.html", "destination": "/yourlife", "permanent": true },
+    { "source": "/signup", "destination": "/login", "permanent": true }
+  ]
+}

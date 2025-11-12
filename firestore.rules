@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Fonctions d'aide
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isValidJournalEntry() {
+      let data = request.resource.data;
+      return data.content is string 
+        && data.content.size() <= 50000
+        && data.emotion in ['joy', 'calm', 'grateful', 'worried', 'sad', 'angry', 'neutral']
+        && data.timestamp is timestamp
+        && data.userId == request.auth.uid;
+    }
+
+    // Collection utilisateurs
+    match /users/{userId} {
+      allow read: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      
+      // Sous-collection journal
+      match /journal/{entryId} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow create: if isSignedIn() && isOwner(userId) && isValidJournalEntry();
+        allow update: if isSignedIn() && isOwner(userId) && isValidJournalEntry();
+        allow delete: if isSignedIn() && isOwner(userId);
+      }
+    }
+  }
+}

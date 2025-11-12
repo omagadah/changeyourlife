@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <title>Arbre de compétences - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css?v=15">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #07192f; color: #e0e0e0; }
+    
+    #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    
+    .container { position: fixed; inset: 0; display: flex; flex-direction: column; z-index: 1; }
+    
+    .header { padding: 20px 30px; background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 1.5rem; font-weight: 600; }
+    .header-info { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
+    
+    .toolbar { display: flex; gap: 10px; align-items: center; }
+    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: #e0e0e0; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn.primary { background: #0070f3; border-color: #0056b3; }
+    .btn.primary:hover { background: #0056b3; }
+    
+    .status { padding: 6px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.85rem; }
+    
+    .content { flex: 1; display: flex; gap: 15px; padding: 15px; overflow: hidden; }
+    
+    #cy-container { flex: 1; background: rgba(20, 20, 20, 0.6); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; position: relative; }
+    
+    .sidebar { width: 320px; background: rgba(20, 20, 20, 0.6); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+    
+    .sidebar-section { display: flex; flex-direction: column; gap: 10px; }
+    .sidebar-label { font-size: 0.85rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .sidebar-input { width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; color: #e0e0e0; font-size: 0.9rem; }
+    .sidebar-input:focus { outline: none; border-color: #0070f3; box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2); }
+    
+    .checkbox-group { display: flex; align-items: center; gap: 8px; }
+    .checkbox-group input { cursor: pointer; }
+    .checkbox-group label { cursor: pointer; font-size: 0.9rem; }
+    
+    .sidebar-hint { font-size: 0.8rem; color: #888; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>🌳 Arbre de Compétences (Pyramide de Maslow)</h1>
+        <div class="header-info">Construisez votre chemin vers l'auto-réalisation • Cliquez sur un nœud pour le modifier</div>
+      </div>
+      <div class="toolbar">
+        <span class="status" id="save-status">Chargement...</span>
+        <button class="btn" id="btn-fit">📍 Centrer</button>
+        <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
+        <button class="btn" id="user-btn" style="width: 40px; padding: 8px;">👤</button>
+      </div>
+    </div>
+    
+    <div class="content">
+      <div id="cy-container"></div>
+      
+      <div class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-label">Propriétés du Nœud</div>
+          <div>
+            <div class="sidebar-label" style="font-size: 0.75rem; margin-bottom: 4px;">Nom</div>
+            <input type="text" id="node-label" class="sidebar-input" placeholder="Nom du nœud" />
+          </div>
+          <div>
+            <div class="sidebar-label" style="font-size: 0.75rem; margin-bottom: 4px;">Catégorie</div>
+            <select id="node-category" class="sidebar-input">
+              <option value="physiological">Besoins Physiologiques</option>
+              <option value="safety">Sécurité</option>
+              <option value="love">Amour & Appartenance</option>
+              <option value="esteem">Estime de Soi</option>
+              <option value="self-actualization">Réalisation de Soi</option>
+            </select>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="node-completed" />
+            <label for="node-completed">Marqué comme accompli</label>
+          </div>
+        </div>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-label">Statistiques</div>
+          <div style="font-size: 0.9rem; display: grid; gap: 8px;">
+            <div>Nœuds: <span id="stat-nodes">0</span></div>
+            <div>Accomplis: <span id="stat-completed">0</span></div>
+            <div>Progression: <span id="stat-progress">0%</span></div>
+          </div>
+        </div>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-label">Aide</div>
+          <div class="sidebar-hint">
+            • Double-cliquez sur un nœud pour le marquer comme accompli<br/>
+            • Glissez les nœuds pour les repositionner<br/>
+            • Utilisez la molette pour zoomer<br/>
+            • Cliquez sur "Centrer" pour réinitialiser la vue
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+  
+  <script type="module">
+    import { updateGlobalAvatar } from '/js/common.js?v=15';
+    import { initUserMenu } from '/js/userMenu.js?v=15';
+
+    // Init Vanta et user menu uniquement quand le DOM est prêt
+    document.addEventListener('DOMContentLoaded', () => {
+      // Vanta
+      try {
+        if (window.VANTA && window.VANTA.BIRDS) {
+          window.VANTA.BIRDS({
+            el: '#vanta-birds-bg',
+            mouseControls: true,
+            touchControls: true,
+            backgroundColor: 0x07192f,
+            quantity: 4.0
+          });
+        }
+      } catch (e) {
+        console.error('Vanta init error:', e);
+      }
+
+      // User menu
+      try { updateGlobalAvatar(); } catch(e) { console.error('Avatar update error:', e); }
+      
+      const userBtn = document.getElementById('user-btn');
+      if (userBtn) {
+        userBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          initUserMenu();
+          const menu = document.getElementById('cyf-user-menu');
+          if (menu) menu.style.display = (menu.style.display === 'block' ? 'none' : 'block');
+        });
+      }
+    });
+  </script>
+  
+  <script type="module" src="/js/yourlife-skill-tree.js?v=15"></script>
+</body>
+</html>
