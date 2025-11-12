@@ -157,8 +157,11 @@
     <script type="module">
         import { onAuthStateChanged, signOut, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { updateGlobalAvatar } from '/js/common.js';
-    import { initUserMenu } from '/js/userMenu.js';
+        import { updateGlobalAvatar } from '/js/common.js';
+        import { initUserMenu } from '/js/userMenu.js';
+
+        // Early initialization of the user menu so the button responds immediately even before auth state fires.
+        try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }
 
         // Reuse singleton firebase init if available
         let auth, db;
@@ -177,7 +180,7 @@
     const userPanelTrigger = document.querySelector('.user-panel-trigger');
 
     onAuthStateChanged(auth, async (user) => {
-            if (user) {
+        if (user) {
         document.getElementById('user-email').textContent = user.email || "Utilisateur Anonyme";
                 // keep trigger logo intact; use updateGlobalAvatar to refresh any avatar state
                 // if you want personal avatar, set localStorage 'userAvatarUrl' and call updateGlobalAvatar()
@@ -192,9 +195,9 @@
                 try { const tEl = document.getElementById('user-title'); const t = userDoc.exists() ? (userDoc.data().selectedTitle || '') : ''; if (tEl && t) tEl.textContent = `· ${t}`; } catch(e) {}
                 if (!userDoc.exists() || userDoc.data().hasSeenTutorial !== true) { startTutorial(userDocRef); }
 
-                // Initialize new lightweight user menu
-                initUserMenu();
-                updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
+                // Re-run init to ensure avatar + current path highlighting once auth is known
+                try { initUserMenu(); } catch(e) {}
+                try { updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase()); } catch(e) {}
             } else { window.location.href = '/login'; }
         });
 
