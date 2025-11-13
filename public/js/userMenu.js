@@ -41,7 +41,8 @@ export function initUserMenu() {
         const s = document.createElement('style');
         s.id = styleId;
         s.textContent = `
-            #cyf-user-menu { position: fixed; top: 70px; right: 30px; z-index: 12000; display: none; }
+            /* Ensure the menu always renders above headers, canvases, toasts, etc. */
+            #cyf-user-menu { position: fixed; top: 70px; right: 30px; z-index: 20000; display: none; }
             .cyf-menu-card { background: rgba(20,20,20,0.95); padding: 12px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); min-width: 200px; border: 1px solid rgba(255,255,255,0.04); }
             .cyf-menu-item { padding: 8px 10px; }
             .cyf-menu-item a { color: #e5eef8; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
@@ -57,6 +58,13 @@ export function initUserMenu() {
     function hideMenu() { menu.style.display = 'none'; }
 
     trigger.addEventListener('click', (e) => { e.stopPropagation(); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; });
+    // Keyboard accessibility: toggle with Enter/Space when trigger is focused
+    trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+    });
     // click outside to close
     window.addEventListener('click', () => { if (menu.style.display === 'block') hideMenu(); });
 
