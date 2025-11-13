@@ -65,8 +65,20 @@ export function initUserMenu() {
             menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
         }
     });
-    // click outside to close
-    window.addEventListener('click', () => { if (menu.style.display === 'block') hideMenu(); });
+    // Click outside to close (ignore clicks inside trigger or menu)
+    window.addEventListener('click', (e) => {
+        try {
+            const t = e.target;
+            if (!menu) return;
+            if (trigger.contains(t) || menu.contains(t)) return;
+            if (menu.style.display === 'block') hideMenu();
+        } catch(_) { if (menu.style.display === 'block') hideMenu(); }
+    });
+
+    // Close on Escape for convenience
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.style.display === 'block') hideMenu();
+    });
 
     // Mark as initialized
     trigger.setAttribute('data-cyf-menu-ready', '1');
