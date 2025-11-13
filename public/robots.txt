@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://changeyourlife.app/sitemap.xml
+Sitemap: https://changeyourlife.ai/sitemap.xml

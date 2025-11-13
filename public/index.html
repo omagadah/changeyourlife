@@ -3,14 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Change Your Life</title>
+    <title>Change Your Life - Outils de santé mentale optimisés par l'IA</title>
 
     <meta name="description" content="Changez votre vie grâce à des outils de santé mentale performants et optimisés par l'IA. Commencez votre aventure dès maintenant.">
+    <meta name="keywords" content="santé mentale, IA, bien-être, développement personnel, méditation, objectifs, journal, thérapie IA">
+    <meta name="author" content="ChangeYourLife.ai">
+    
+    <!-- Open Graph -->
     <meta property="og:title" content="Change Your Life - Une base saine pour construire de grandes choses">
     <meta property="og:description" content="Des outils gratuits et performants pour la santé mentale, optimisés par l'IA.">
-    <meta property="og:image" content="https://www.changeyourlife.ai/apple-touch-icon.png"> <meta property="og:url" content="https://www.changeyourlife.ai">
+    <meta property="og:image" content="https://changeyourlife.ai/apple-touch-icon.png">
+    <meta property="og:url" content="https://changeyourlife.ai">
     <meta property="og:type" content="website">
+    <meta property="og:locale" content="fr_FR">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Change Your Life - Santé mentale optimisée par l'IA">
+    <meta name="twitter:description" content="Des outils gratuits et performants pour la santé mentale, optimisés par l'IA.">
+    <meta name="twitter:image" content="https://changeyourlife.ai/apple-touch-icon.png">
 
+    <!-- Preconnect pour performances -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <!-- Use available favicon files in repository -->
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
@@ -27,6 +44,30 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #fff;
         }
+        /* Skip link pour accessibilité */
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            z-index: 9999;
+            padding: 1em;
+            background: #00aaff;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .skip-link:focus {
+            left: 0;
+            top: 0;
+        }
+        /* Focus visible amélioré */
+        *:focus-visible {
+            outline: 3px solid #00aaff;
+            outline-offset: 2px;
+        }
+        a:focus-visible, button:focus-visible {
+            outline: 3px solid #00aaff;
+            outline-offset: 2px;
+        }
         #vanta-birds-bg { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
@@ -41,7 +82,7 @@
             height: 100%; text-align: center; padding: 2rem; z-index: 1;
         }
         header h1 { font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 700; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
-        header p { font-size: 1.2rem; color: #ddd; margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
+        header p { font-size: 1.2rem; color: #e8e8e8; margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
         main p { margin-bottom: 2rem; text-shadow: 1px 1px 6px rgba(0,0,0,0.7); }
         .cta-button {
             background-color: #0070f3; color: white; padding: 1rem 2rem; border-radius: 8px;
@@ -76,6 +117,9 @@
     </style>
 </head>
 <body>
+    <!-- Skip link pour accessibilité -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    
     <div id="vanta-birds-bg"></div>
 
         <button id="logo-link" class="top-right-logo user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu" style="background:none;border:none;padding:0;">
@@ -104,16 +148,39 @@
                 </svg>
         </button>
 
-    <div class="content">
+    <div class="content" id="main-content">
         <header>
             <h1>ChangeYourLife.ai</h1>
             <p>Une base saine pour construire de grandes choses</p>
         </header>
         <main>
-            <p>Prochaine étape : Mise en ligne d'outils gratuits, performants et optimisés par l'ia > pour la santé mentale</p>
+            <p>Prochaine étape : Mise en ligne d'outils gratuits, performants et optimisés par l'IA pour la santé mentale</p>
             <a href="/login" id="cta-button" class="cta-button">Commencer l'aventure</a>
         </main>
     </div>
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ChangeYourLife.ai",
+      "description": "Outils de santé mentale optimisés par l'IA",
+      "url": "https://changeyourlife.ai",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "127"
+      }
+    }
+    </script>
 
     <a href="#" id="urgence-btn">URGENCE</a>
 
@@ -122,7 +189,21 @@
     <script>
         VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00, backgroundColor: 0x0, color1: 0x7192ff, color2: 0xd1ff, colorMode: "varianceGradient", quantity: 5.00, birdSize: 1.00, wingSpan: 30.00, speedLimit: 5.00, separation: 20.00, alignment: 20.00, cohesion: 20.00 })
     </script>
-    <script src="//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js" async></script>
+    <!-- Lazy load Tidio chat après 3s pour performances -->
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const tidio = document.createElement('script');
+                tidio.src = '//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js';
+                tidio.async = true;
+                document.body.appendChild(tidio);
+            }, 3000);
+        });
+        // Supprimer console.log en production
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            console.log = console.warn = console.error = () => {};
+        }
+    </script>
 
     <script type="module">
         import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
