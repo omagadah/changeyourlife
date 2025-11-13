@@ -146,11 +146,14 @@ export function normalizeVantaAndHeader() {
         }
         // Ensure header and panels are above Vanta
         const header = document.querySelector('.header');
-        if (header) header.style.setProperty('z-index', '12000', 'important');
+        if (header) header.style.setProperty('z-index', '15000', 'important');
         const userPanel = document.querySelector('.user-panel');
-        if (userPanel) userPanel.style.setProperty('z-index', '12001', 'important');
+        if (userPanel) userPanel.style.setProperty('z-index', '15001', 'important');
+        // Also ensure new lightweight menu stays above everything
+        const newMenu = document.getElementById('cyf-user-menu');
+        if (newMenu) newMenu.style.setProperty('z-index', '20000', 'important');
         const toast = document.querySelector('.toast-notification');
-        if (toast) toast.style.setProperty('z-index', '12002', 'important');
+        if (toast) toast.style.setProperty('z-index', '16000', 'important');
     } catch (e) {
         // don't break pages if normalization fails
         console.warn('normalizeVantaAndHeader failed', e);
