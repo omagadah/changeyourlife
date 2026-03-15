@@ -1,143 +1,473 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="pragma" content="no-cache">
-  <meta http-equiv="expires" content="0">
-  <title>Arbre de compétences - Change Your Life</title>
-  <link rel="stylesheet" href="/css/main.min.css?v=16">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ma Vie — Change Your Life</title>
+  <meta name="description" content="Visualise et coche ta progression sur la Pyramide de Maslow — tes compétences de vie organisées en 5 niveaux." />
+  <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #07192f; color: #e0e0e0; }
-    
-    #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-    
-    .container { position: fixed; inset: 60px 0 0 0; display: flex; flex-direction: column; z-index: 1; }
-    
-    .header { padding: 0 24px; height: 60px; background: rgba(7,25,47,.85); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.08); display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; }
-    .header h1 { font-size: 1.5rem; font-weight: 600; }
-    .header-info { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
-    
-    .toolbar { display: flex; gap: 10px; align-items: center; }
-    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: #e0e0e0; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-    .btn:hover { background: rgba(255, 255, 255, 0.15); }
-    .btn.primary { background: #0070f3; border-color: #0056b3; }
-    .btn.primary:hover { background: #0056b3; }
-    
-    .status { padding: 6px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.85rem; }
-    
-    .content { flex: 1; display: flex; gap: 15px; padding: 15px; overflow: hidden; }
-    
-    #cy-container { flex: 1; background: rgba(20, 20, 20, 0.6); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); overflow: hidden; position: relative; }
-    
-    .sidebar { width: 320px; background: rgba(20, 20, 20, 0.6); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-    
-    .sidebar-section { display: flex; flex-direction: column; gap: 10px; }
-    .sidebar-label { font-size: 0.85rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-    .sidebar-input { width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; color: #e0e0e0; font-size: 0.9rem; }
-    .sidebar-input:focus { outline: none; border-color: #0070f3; box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2); }
-    
-    .checkbox-group { display: flex; align-items: center; gap: 8px; }
-    .checkbox-group input { cursor: pointer; }
-    .checkbox-group label { cursor: pointer; font-size: 0.9rem; }
-    
-    .sidebar-hint { font-size: 0.8rem; color: #888; line-height: 1.4; }
+    body { color: #e5eef8; }
+
+    .page-wrap {
+      min-height: 100vh;
+      padding: 74px 24px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .page-title { font-size: 1.7rem; font-weight: 800; margin-bottom: 4px; }
+    .page-sub { color: #7e9ab5; font-size: 0.88rem; margin-bottom: 32px; }
+
+    /* ── Pyramid ── */
+    .pyramid { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+
+    .level-row { width: 100%; border-radius: 16px; overflow: hidden; transition: transform .2s; }
+    .level-row:hover { transform: scale(1.005); }
+
+    .level-row[data-level="self-actualization"] { max-width: 400px; }
+    .level-row[data-level="esteem"]             { max-width: 580px; }
+    .level-row[data-level="love"]               { max-width: 750px; }
+    .level-row[data-level="safety"]             { max-width: 920px; }
+    .level-row[data-level="physiological"]      { max-width: 1100px; }
+
+    .level-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px; color: #fff; font-weight: 700;
+      font-size: 0.82rem; text-transform: uppercase; letter-spacing: .7px;
+    }
+    .level-header-left { display: flex; align-items: center; gap: 8px; }
+    .level-pct-badge { font-size: 0.75rem; background: rgba(0,0,0,0.25); padding: 2px 8px; border-radius: 999px; font-weight: 600; opacity: .9; }
+
+    .level-skills {
+      background: rgba(10,18,30,0.55);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-top: none;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      padding: 12px 14px;
+      display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+      min-height: 54px;
+    }
+
+    .skill-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 13px; border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.05);
+      color: #c8d9ec; cursor: pointer;
+      font-size: 0.81rem; font-weight: 500;
+      transition: all 0.18s; user-select: none; position: relative;
+    }
+    .skill-pill:hover { background: rgba(255,255,255,0.11); transform: scale(1.05); }
+    .skill-pill.done { font-weight: 700; color: #fff; }
+    .skill-check { font-size: 0.68rem; transition: opacity .2s; opacity: 0.5; }
+    .skill-pill.done .skill-check { opacity: 1; }
+
+    .skill-del {
+      opacity: 0; font-size: 0.65rem; color: rgba(255,255,255,0.35);
+      cursor: pointer; background: none; border: none;
+      padding: 0 0 0 3px; line-height: 1; transition: opacity .15s;
+    }
+    .skill-pill:hover .skill-del { opacity: 1; }
+    .skill-del:hover { color: #ef4444 !important; }
+
+    .btn-add-skill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px 11px; border-radius: 999px;
+      border: 1.5px dashed rgba(255,255,255,0.18);
+      background: transparent; color: rgba(255,255,255,0.35);
+      cursor: pointer; font-size: 0.75rem; transition: all .2s;
+    }
+    .btn-add-skill:hover { border-color: rgba(255,255,255,0.45); color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.04); }
+
+    .add-inline-form { display: inline-flex; align-items: center; gap: 4px; }
+    .add-skill-input {
+      padding: 4px 11px; border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      color: #e5eef8; font-size: 0.8rem; outline: none; width: 140px;
+    }
+    .add-skill-input:focus { border-color: #3b82f6; }
+    .add-confirm-btn {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #3b82f6; border: none; color: #fff;
+      cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
+    }
+    .add-cancel-btn {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); border: none; color: #e5eef8;
+      cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-top: 28px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px; padding: 16px;
+    }
+    .stat-card-icon { font-size: 1.3rem; margin-bottom: 6px; }
+    .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #e5eef8; }
+    .stat-card-label { font-size: 0.72rem; color: #7e9ab5; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+    .mini-bar { height: 4px; background: rgba(255,255,255,0.09); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+    .mini-bar-fill { height: 100%; border-radius: 10px; transition: width .7s ease; }
+
+    /* ── Level progress list ── */
+    .level-prog-list { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+    .level-prog-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+    }
+    .level-prog-emoji { font-size: 1rem; width: 22px; text-align: center; }
+    .level-prog-label { font-size: 0.81rem; color: #9fb5ff; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .level-prog-pct { font-size: 0.79rem; font-weight: 700; min-width: 36px; text-align: right; }
+    .level-prog-bar { width: 70px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .level-prog-bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; top: 22px; left: 50%;
+      transform: translate(-50%, -130px);
+      background: rgba(16,185,129,0.92); color: #fff;
+      padding: 10px 20px; border-radius: 10px;
+      font-weight: 600; z-index: 99999;
+      transition: transform .3s ease; font-size: 0.88rem;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translate(-50%, 0); }
+
+    @media (max-width: 720px) {
+      .level-row[data-level] { max-width: 100% !important; }
+      .page-wrap { padding: 68px 12px 48px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
   <div id="vanta-birds-bg"></div>
-  
-  <div class="header">
-    <div style="display:flex;align-items:center;gap:16px">
-      <a href="/app/" style="color:#9fb5ff;text-decoration:none;font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:all .2s">← Mon Espace</a>
-      <div>
-        <h1 style="font-size:1.2rem">🌳 Arbre de Compétences</h1>
-        <div class="header-info">Pyramide de Maslow · Cliquez sur un nœud pour modifier</div>
-      </div>
-    </div>
-    <div class="toolbar">
-      <span class="status" id="save-status">Chargement...</span>
-      <button class="btn" id="btn-fit">📍 Centrer</button>
-      <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
-      <button class="user-panel-trigger" id="user-btn" title="Mon Compte" aria-label="Ouvrir le menu">
-        <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-      </button>
-    </div>
-  </div>
+  <div id="toast" class="toast"></div>
 
-  <div class="container">
-    <div class="content">
-      <div id="cy-container"></div>
-      
-      <div class="sidebar">
-        <div class="sidebar-section">
-          <div class="sidebar-label">Propriétés du Nœud</div>
-          <div>
-            <div class="sidebar-label" style="font-size: 0.75rem; margin-bottom: 4px;">Nom</div>
-            <input type="text" id="node-label" class="sidebar-input" placeholder="Nom du nœud" />
-          </div>
-          <div>
-            <div class="sidebar-label" style="font-size: 0.75rem; margin-bottom: 4px;">Catégorie</div>
-            <select id="node-category" class="sidebar-input">
-              <option value="physiological">Besoins Physiologiques</option>
-              <option value="safety">Sécurité</option>
-              <option value="love">Amour & Appartenance</option>
-              <option value="esteem">Estime de Soi</option>
-              <option value="self-actualization">Réalisation de Soi</option>
-            </select>
-          </div>
-          <div class="checkbox-group">
-            <input type="checkbox" id="node-completed" />
-            <label for="node-completed">Marqué comme accompli</label>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-label">Statistiques</div>
-          <div style="font-size: 0.9rem; display: grid; gap: 8px;">
-            <div>Nœuds: <span id="stat-nodes">0</span></div>
-            <div>Accomplis: <span id="stat-completed">0</span></div>
-            <div>Progression: <span id="stat-progress">0%</span></div>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-label">Aide</div>
-          <div class="sidebar-hint">
-            • Double-cliquez sur un nœud pour le marquer comme accompli<br/>
-            • Glissez les nœuds pour les repositionner<br/>
-            • Utilisez la molette pour zoomer<br/>
-            • Cliquez sur "Centrer" pour réinitialiser la vue
-          </div>
-        </div>
-      </div>
-    </div>
+  <nav class="site-nav">
+    <a href="/app/" class="site-nav__back">← Mon Espace</a>
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;">
+        <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+        <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+        <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+        <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+        <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+        <circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g>
+      </svg>
+    </button>
+  </nav>
+
+  <div class="page-wrap">
+    <div class="page-title">🌳 Ma Vie</div>
+    <div class="page-sub">Pyramide de Maslow · Coche tes compétences au fil de ta progression</div>
+
+    <div class="pyramid" id="pyramid"></div>
+
+    <div class="stats-row" id="stats-row"></div>
+    <div class="level-prog-list" id="level-prog-list"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
-  
-  <script type="module">
-    import { updateGlobalAvatar } from '/js/common.js?v=16';
-    import { initUserMenu } from '/js/userMenu.js?v=16';
+  <script>try { VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:true, touchControls:true, backgroundColor:0x07192f, quantity:2.0 }); } catch(e){}</script>
 
-    // Init user menu immediately at module level (DOM is ready since modules are deferred)
+  <script type="module">
+    import { updateGlobalAvatar } from '/js/common.js';
+    import { initUserMenu } from '/js/userMenu.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
     try { updateGlobalAvatar(); } catch(e) {}
     try { initUserMenu(); } catch(e) {}
 
-    // Init Vanta after DOM is ready
-    window.addEventListener('DOMContentLoaded', () => {
-      try {
-        if (window.VANTA && window.VANTA.BIRDS) {
-          window.VANTA.BIRDS({ el: '#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor: 0x07192f, quantity: 4.0 });
-        }
-      } catch (e) {}
+    // ── Firebase ──────────────────────────────────────────────────────────────
+    let auth, db, uid;
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(cfg);
+      auth = getAuth(app); db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    // ── Pyramid definition ────────────────────────────────────────────────────
+    const LEVELS = [
+      { id:'self-actualization', label:'Réalisation de Soi',   emoji:'✨', color:'#6366f1',
+        defaults:['Créativité','Croissance personnelle','Spiritualité','Contribution','Vision de vie'] },
+      { id:'esteem',             label:'Estime de Soi',        emoji:'⭐', color:'#8b5cf6',
+        defaults:['Confiance en soi','Compétences','Réussite','Reconnaissance','Fierté'] },
+      { id:'love',               label:'Amour & Appartenance', emoji:'❤️', color:'#ec4899',
+        defaults:['Famille','Amis proches','Relations amoureuses','Communauté','Empathie'] },
+      { id:'safety',             label:'Sécurité',             emoji:'🛡️', color:'#f59e0b',
+        defaults:['Sécurité financière','Stabilité','Logement sûr','Santé préventive','Épargne'] },
+      { id:'physiological',      label:'Besoins Physiologiques',emoji:'🧬', color:'#ef4444',
+        defaults:['Sommeil 7-8h','Nutrition équilibrée','Exercice régulier','Hydratation','Repos'] },
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    // skillData: { levelId: [ { id, label, done } ] }
+    let skillData = {};
+    let saveTimer = null;
+
+    function defaultData() {
+      const d = {};
+      LEVELS.forEach(lvl => {
+        d[lvl.id] = lvl.defaults.map((label, i) => ({ id: `${lvl.id}_${i}`, label, done: false }));
+      });
+      return d;
+    }
+
+    // ── Auth ──────────────────────────────────────────────────────────────────
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = '/login'; return; }
+      uid = user.uid;
+      await loadData();
+      render();
     });
+
+    // ── Firestore ─────────────────────────────────────────────────────────────
+    async function loadData() {
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        const raw = snap.exists() ? snap.data().maVieSkills : null;
+        if (raw && typeof raw === 'object') {
+          // Validate: must have at least one known key
+          const hasKeys = LEVELS.some(l => Array.isArray(raw[l.id]));
+          skillData = hasKeys ? raw : defaultData();
+        } else {
+          skillData = defaultData();
+        }
+        // Ensure all levels exist
+        LEVELS.forEach(lvl => {
+          if (!Array.isArray(skillData[lvl.id])) skillData[lvl.id] = lvl.defaults.map((label, i) => ({ id: `${lvl.id}_${i}`, label, done: false }));
+        });
+      } catch(e) { skillData = defaultData(); }
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
+        try { await setDoc(doc(db, 'users', uid), { maVieSkills: skillData }, { merge: true }); } catch(e) {}
+      }, 600);
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    function render() {
+      renderPyramid();
+      renderStats();
+    }
+
+    function renderPyramid() {
+      const container = document.getElementById('pyramid');
+      container.innerHTML = '';
+      LEVELS.forEach(lvl => {
+        const skills = skillData[lvl.id] || [];
+        const done = skills.filter(s => s.done).length;
+        const pct = skills.length ? Math.round(done / skills.length * 100) : 0;
+
+        const row = document.createElement('div');
+        row.className = 'level-row';
+        row.dataset.level = lvl.id;
+
+        // Header
+        const hdr = document.createElement('div');
+        hdr.className = 'level-header';
+        hdr.style.background = lvl.color + 'cc';
+        hdr.innerHTML = `
+          <div class="level-header-left">
+            <span>${lvl.emoji}</span>
+            <span>${lvl.label}</span>
+          </div>
+          <span class="level-pct-badge">${done}/${skills.length} · ${pct}%</span>
+        `;
+        row.appendChild(hdr);
+
+        // Skills area
+        const area = document.createElement('div');
+        area.className = 'level-skills';
+        area.style.borderColor = lvl.color + '30';
+
+        skills.forEach(skill => {
+          area.appendChild(makeSkillPill(lvl, skill));
+        });
+
+        // Add button
+        area.appendChild(makeAddBtn(lvl, area, row));
+        row.appendChild(area);
+        container.appendChild(row);
+      });
+    }
+
+    function makeSkillPill(lvl, skill) {
+      const pill = document.createElement('div');
+      pill.className = `skill-pill${skill.done ? ' done' : ''}`;
+      if (skill.done) {
+        pill.style.borderColor = lvl.color;
+        pill.style.background = hexToRgba(lvl.color, 0.22);
+      }
+
+      const check = document.createElement('span');
+      check.className = 'skill-check';
+      check.textContent = skill.done ? '✓' : '○';
+
+      const lbl = document.createElement('span');
+      lbl.textContent = skill.label;
+
+      const del = document.createElement('button');
+      del.className = 'skill-del';
+      del.textContent = '×';
+      del.title = 'Supprimer';
+      del.addEventListener('click', e => {
+        e.stopPropagation();
+        skillData[lvl.id] = skillData[lvl.id].filter(s => s.id !== skill.id);
+        scheduleSave();
+        render();
+      });
+
+      pill.append(check, lbl, del);
+      pill.addEventListener('click', () => {
+        skill.done = !skill.done;
+        scheduleSave();
+        render();
+        if (skill.done) showToast(`✓ ${skill.label}`);
+      });
+      return pill;
+    }
+
+    function makeAddBtn(lvl, area, row) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-add-skill';
+      btn.innerHTML = '+ <span>Ajouter</span>';
+      btn.addEventListener('click', () => {
+        // Replace btn with inline form
+        btn.style.display = 'none';
+        const form = document.createElement('div');
+        form.className = 'add-inline-form';
+        const input = document.createElement('input');
+        input.className = 'add-skill-input';
+        input.placeholder = 'Nouvelle compétence…';
+        input.maxLength = 50;
+        const ok = document.createElement('button');
+        ok.className = 'add-confirm-btn';
+        ok.title = 'Confirmer'; ok.textContent = '✓';
+        const cancel = document.createElement('button');
+        cancel.className = 'add-cancel-btn';
+        cancel.title = 'Annuler'; cancel.textContent = '×';
+        form.append(input, ok, cancel);
+        area.insertBefore(form, btn);
+        input.focus();
+        const confirm = () => {
+          const val = input.value.trim();
+          if (val) {
+            const id = `${lvl.id}_${Date.now()}`;
+            skillData[lvl.id].push({ id, label: val, done: false });
+            scheduleSave();
+            render();
+          } else {
+            form.remove(); btn.style.display = '';
+          }
+        };
+        ok.addEventListener('click', confirm);
+        cancel.addEventListener('click', () => { form.remove(); btn.style.display = ''; });
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') confirm();
+          if (e.key === 'Escape') { form.remove(); btn.style.display = ''; }
+        });
+      });
+      return btn;
+    }
+
+    function renderStats() {
+      // Overall stats
+      let total = 0, totalDone = 0;
+      LEVELS.forEach(lvl => {
+        const skills = skillData[lvl.id] || [];
+        total += skills.length;
+        totalDone += skills.filter(s => s.done).length;
+      });
+      const pct = total ? Math.round(totalDone / total * 100) : 0;
+
+      const statsRow = document.getElementById('stats-row');
+      statsRow.innerHTML = '';
+      const cards = [
+        { icon:'🎯', value: `${pct}%`,      label:'Progression globale', fill:lvlColor(pct), pct },
+        { icon:'✅', value: totalDone,        label:'Compétences cochées',  fill:'#10b981', pct: total ? totalDone/total*100 : 0 },
+        { icon:'📋', value: total,            label:'Compétences totales',  fill:'#3b82f6', pct: 100 },
+        { icon:'🏆', value: countLevelsComplete(), label:'Niveaux complets', fill:'#f59e0b', pct: countLevelsComplete()/LEVELS.length*100 },
+      ];
+      cards.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+        card.innerHTML = `
+          <div class="stat-card-icon">${c.icon}</div>
+          <div class="stat-card-value">${c.value}</div>
+          <div class="stat-card-label">${c.label}</div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:${Math.min(100,c.pct)}%;background:${c.fill}"></div></div>
+        `;
+        statsRow.appendChild(card);
+      });
+
+      // Per-level progress
+      const progList = document.getElementById('level-prog-list');
+      progList.innerHTML = '';
+      LEVELS.forEach(lvl => {
+        const skills = skillData[lvl.id] || [];
+        const done = skills.filter(s => s.done).length;
+        const p = skills.length ? Math.round(done / skills.length * 100) : 0;
+        const item = document.createElement('div');
+        item.className = 'level-prog-item';
+        item.innerHTML = `
+          <span class="level-prog-emoji">${lvl.emoji}</span>
+          <span class="level-prog-label">${lvl.label}</span>
+          <div class="level-prog-bar"><div class="level-prog-bar-fill" style="width:${p}%;background:${lvl.color}"></div></div>
+          <span class="level-prog-pct" style="color:${lvl.color}">${p}%</span>
+        `;
+        progList.appendChild(item);
+      });
+    }
+
+    function countLevelsComplete() {
+      return LEVELS.filter(lvl => {
+        const skills = skillData[lvl.id] || [];
+        return skills.length > 0 && skills.every(s => s.done);
+      }).length;
+    }
+
+    function lvlColor(pct) {
+      if (pct >= 80) return '#10b981';
+      if (pct >= 50) return '#3b82f6';
+      if (pct >= 20) return '#f59e0b';
+      return '#ef4444';
+    }
+
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1,3),16);
+      const g = parseInt(hex.slice(3,5),16);
+      const b = parseInt(hex.slice(5,7),16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
   </script>
-  
-  <script type="module" src="/js/yourlife-skill-tree.js?v=15"></script>
 </body>
 </html>
