@@ -527,6 +527,14 @@
       } catch(e) { console.error(e); }
     });
 
+    // ── Keyboard shortcut: Ctrl+S to save while editor is open ─────────────────
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        const editorVisible = document.getElementById('view-editor').style.display !== 'none';
+        if (editorVisible) { e.preventDefault(); btnSave.click(); }
+      }
+    });
+
     // ── Search & filter wiring ─────────────────────────────────────────────────
     const searchInput = document.getElementById('journal-search');
     const searchClear = document.getElementById('search-clear');
