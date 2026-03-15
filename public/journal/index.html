@@ -130,7 +130,7 @@
     .btn.danger { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
     .btn.danger:hover { background: rgba(239,68,68,0.25); }
 
-    .toast { position: fixed; top: 22px; left: 50%; transform: translate(-50%, -130px); background: rgba(16,185,129,0.92); color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; z-index: 9999; transition: transform .3s ease; font-size: 0.9rem; }
+    .toast { position: fixed; top: 22px; left: 50%; transform: translate(-50%, -130px); background: rgba(16,185,129,0.92); color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; z-index: 99999; transition: transform .3s ease; font-size: 0.9rem; }
     .toast.show { transform: translate(-50%, 0); }
     .toast.error { background: rgba(239,68,68,0.92); }
   </style>
@@ -432,7 +432,7 @@
       if (!content && !title) { document.getElementById('editor-content').focus(); return; }
       const id = editingId || `e_${Date.now()}`;
       const existing = editingId ? entries.find(x => x.id===id) : null;
-      const data = { id, title, content, emotion: selEmotion, domain: selDomain, createdAt: existing?.createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
+      const data = { id, title, content, emotion: selEmotion, domain: selDomain, userId: uid, createdAt: existing?.createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
       try {
         await setDoc(doc(journalCol(), id), data, { merge: true });
         if (!editingId) {

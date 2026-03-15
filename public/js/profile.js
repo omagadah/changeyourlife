@@ -32,18 +32,11 @@ const randomAvatarBtn = document.getElementById('random-avatar-btn');
 const fileInputEl = document.getElementById('avatar-file-input');
 const initialInputEl = document.getElementById('avatar-initial-input');
 const generateInitialBtn = document.getElementById('generate-initial-avatar');
-const themeLabel = document.getElementById('theme-label');
-const animToggle = document.getElementById('anim-toggle');
-const animLabel = document.getElementById('anim-label');
-const emailNotToggle = document.getElementById('emailnot-toggle');
-const emailNotLabel = document.getElementById('emailnot-label');
 const playerIdEl = document.getElementById('player-id');
 const bioInput = document.getElementById('profile-bio');
 const websiteInput = document.getElementById('profile-website');
 const emailReadOnly = document.getElementById('profile-email');
 const toastEl = document.getElementById('toast');
-const themeDarkBtn = document.getElementById('theme-dark-btn');
-const themeLightBtn = document.getElementById('theme-light-btn');
 // Badges/Titles UI
 const badgesGrid = document.getElementById('badges-grid');
 const badgesCountEl = document.getElementById('badges-count');
@@ -183,15 +176,6 @@ async function loadUserData(uid, userDocRef, user) {
                 showAvatar(avatarUrl);
                 updateGlobalAvatar((data.displayName || '').charAt(0).toUpperCase() || (data.email || 'U').charAt(0).toUpperCase());
             }
-            // preferences
-            const prefs = data.prefs || {};
-            const animOn = prefs.animEnabled !== false; // default true
-            const weekly = prefs.weeklyEmails === true; // default false
-            if (animLabel) animLabel.textContent = animOn ? 'Actives' : 'Coupées';
-            if (emailNotLabel) emailNotLabel.textContent = weekly ? 'Activés' : 'Désactivés';
-            // theme label (from storage or prefs)
-            const theme = localStorage.getItem('theme') || prefs.theme || 'dark';
-            if (themeLabel) themeLabel.textContent = theme === 'light' ? 'Clair' : 'Sombre';
             // levels
             renderLevels(data.levels || defaultLevels());
                 // badges
@@ -221,8 +205,6 @@ async function saveUserData(uid) {
     const website = (websiteInput && websiteInput.value.trim()) || '';
     const prefs = {
         theme: localStorage.getItem('theme') || 'dark',
-        animEnabled: (animLabel && animLabel.textContent === 'Actives') ? true : false,
-        weeklyEmails: (emailNotLabel && emailNotLabel.textContent === 'Activés') ? true : false,
     };
     const userDocRef = doc(db, 'users', uid);
     try {
@@ -324,9 +306,6 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         initUserMenu();
         setupThemeToggle();
-        // reflect theme in label
-        const t = localStorage.getItem('theme') || 'dark';
-        if (themeLabel) themeLabel.textContent = t === 'light' ? 'Clair' : 'Sombre';
         updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase());
 
         const userDocRef = doc(db, 'users', user.uid);
@@ -344,22 +323,6 @@ onAuthStateChanged(auth, (user) => {
             const section = document.getElementById('tab-' + target);
             if (section) section.classList.add('active');
         }));
-
-        // Preferences toggles
-        if (animToggle && animLabel) {
-            animToggle.addEventListener('click', async () => {
-                const nowActive = animLabel.textContent === 'Actives' ? false : true;
-                animLabel.textContent = nowActive ? 'Actives' : 'Coupées';
-                try { await setDoc(userDocRef, { prefs: { animEnabled: nowActive } }, { merge: true }); } catch(e) {}
-            });
-        }
-        if (emailNotToggle && emailNotLabel) {
-            emailNotToggle.addEventListener('click', async () => {
-                const nowActive = emailNotLabel.textContent === 'Activés' ? false : true;
-                emailNotLabel.textContent = nowActive ? 'Activés' : 'Désactivés';
-                try { await setDoc(userDocRef, { prefs: { weeklyEmails: nowActive } }, { merge: true }); } catch(e) {}
-            });
-        }
 
         // Dev XP buttons (only show on localhost or if ?dev=1)
         const isDev = ["127.0.0.1","localhost"].includes(location.hostname) || /[?&]dev=1(&|$)/.test(location.search);
@@ -418,15 +381,6 @@ onAuthStateChanged(auth, (user) => {
                 }
             });
         }
-        // Theme label + persist preference when toggling
-        if (themeDarkBtn) themeDarkBtn.addEventListener('click', async () => {
-            if (themeLabel) themeLabel.textContent = 'Sombre';
-            try { await setDoc(userDocRef, { prefs: { theme: 'dark' } }, { merge: true }); } catch(e) {}
-        });
-        if (themeLightBtn) themeLightBtn.addEventListener('click', async () => {
-            if (themeLabel) themeLabel.textContent = 'Clair';
-            try { await setDoc(userDocRef, { prefs: { theme: 'light' } }, { merge: true }); } catch(e) {}
-        });
     } else {
         window.location.href = '/login';
     }
