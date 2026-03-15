@@ -13,13 +13,6 @@
         .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
     .user-panel-trigger { width: 40px; height: 40px; background-color: transparent; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
     .user-panel-trigger:hover { transform: scale(1.06); box-shadow: 0 0 14px rgba(255,255,255,0.55); }
-        .user-panel { position: absolute; top: 130%; right: 0; width: 280px; background: rgba(35, 35, 35, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 8px 0; list-style: none; opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
-        .user-panel.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        .user-panel-item, .user-panel-separator { margin: 0 8px; }
-        .user-panel-item a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: background-color 0.2s ease; }
-        .user-panel-item a:hover { background-color: rgba(255, 255, 255, 0.08); }
-        .user-panel-separator { height: 1px; background-color: var(--glass-border); margin: 8px 0; }
-        .user-panel-item a svg { width: 20px; height: 20px; opacity: 0.8; }
         .toast-notification { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px); color: white; padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 15px; z-index: 9999; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .toast-notification.show { transform: translate(-50%, 0); }
         .toast-icon .checkmark { stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
@@ -153,8 +146,8 @@
     <script type="module">
         import { onAuthStateChanged, signOut, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { updateGlobalAvatar } from '/js/common.js';
-        import { initUserMenu } from '/js/userMenu.js';
+        import { updateGlobalAvatar } from '/js/common.js?v=16';
+        import { initUserMenu } from '/js/userMenu.js?v=16';
 
         // Early initialization of the user menu so the button responds immediately even before auth state fires.
         try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }

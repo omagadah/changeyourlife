@@ -7,7 +7,7 @@
   <meta http-equiv="pragma" content="no-cache">
   <meta http-equiv="expires" content="0">
   <title>Arbre de compétences - Change Your Life</title>
-  <link rel="stylesheet" href="/css/main.min.css?v=15">
+  <link rel="stylesheet" href="/css/main.min.css?v=16">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #07192f; color: #e0e0e0; }
@@ -49,25 +49,25 @@
 <body>
   <div id="vanta-birds-bg"></div>
   
-  <div class="container">
-    <div class="header">
-      <div style="display:flex;align-items:center;gap:16px">
-        <a href="/app/" style="color:#9fb5ff;text-decoration:none;font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:all .2s">← Mon Espace</a>
-        <div>
-          <h1 style="font-size:1.2rem">🌳 Arbre de Compétences</h1>
-          <div class="header-info">Pyramide de Maslow · Cliquez sur un nœud pour modifier</div>
-        </div>
-      </div>
-      <div class="toolbar">
-        <span class="status" id="save-status">Chargement...</span>
-        <button class="btn" id="btn-fit">📍 Centrer</button>
-        <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
-        <button class="user-panel-trigger" id="user-btn" title="Mon Compte" aria-label="Ouvrir le menu">
-          <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-        </button>
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:16px">
+      <a href="/app/" style="color:#9fb5ff;text-decoration:none;font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:all .2s">← Mon Espace</a>
+      <div>
+        <h1 style="font-size:1.2rem">🌳 Arbre de Compétences</h1>
+        <div class="header-info">Pyramide de Maslow · Cliquez sur un nœud pour modifier</div>
       </div>
     </div>
-    
+    <div class="toolbar">
+      <span class="status" id="save-status">Chargement...</span>
+      <button class="btn" id="btn-fit">📍 Centrer</button>
+      <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
+      <button class="user-panel-trigger" id="user-btn" title="Mon Compte" aria-label="Ouvrir le menu">
+        <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
     <div class="content">
       <div id="cy-container"></div>
       
@@ -121,29 +121,20 @@
   <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
   
   <script type="module">
-    import { updateGlobalAvatar } from '/js/common.js?v=15';
-    import { initUserMenu } from '/js/userMenu.js?v=15';
+    import { updateGlobalAvatar } from '/js/common.js?v=16';
+    import { initUserMenu } from '/js/userMenu.js?v=16';
 
-    // Init Vanta et user menu uniquement quand le DOM est prêt
-    document.addEventListener('DOMContentLoaded', () => {
-      // Vanta
+    // Init user menu immediately at module level (DOM is ready since modules are deferred)
+    try { updateGlobalAvatar(); } catch(e) {}
+    try { initUserMenu(); } catch(e) {}
+
+    // Init Vanta after DOM is ready
+    window.addEventListener('DOMContentLoaded', () => {
       try {
         if (window.VANTA && window.VANTA.BIRDS) {
-          window.VANTA.BIRDS({
-            el: '#vanta-birds-bg',
-            mouseControls: true,
-            touchControls: true,
-            backgroundColor: 0x07192f,
-            quantity: 4.0
-          });
+          window.VANTA.BIRDS({ el: '#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor: 0x07192f, quantity: 4.0 });
         }
-      } catch (e) {
-        console.error('Vanta init error:', e);
-      }
-
-      // User menu
-      try { updateGlobalAvatar(); } catch(e) { console.error('Avatar update error:', e); }
-      try { initUserMenu(); } catch(e) { console.error('initUserMenu error:', e); }
+      } catch (e) {}
     });
   </script>
   
