@@ -164,24 +164,27 @@
       }
       grid.style.display = 'grid';
       empty.style.display = 'none';
-      grid.innerHTML = goals.map((g, idx) => `
-        <div class="goal-card ${g.completed?'completed':''}" data-idx="${idx}">
-          <div class="goal-header">
-            <div class="goal-title">${g.title}</div>
-            <div class="goal-domain ${g.domain}">${g.domain}</div>
-          </div>
-          ${g.desc ? `<div class="goal-desc">${g.desc}</div>` : ''}
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:${g.progress||0}%"></div>
-          </div>
-          <div class="progress-text">${g.progress||0}% complété${g.deadline ? ` · Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : ''}</div>
-          <div class="goal-actions">
-            <button class="btn-icon" onclick="window.updateProgress(${idx})">+ 10%</button>
-            <button class="btn-icon" onclick="window.toggleComplete(${idx})">${g.completed ? '↻ Réactiver' : '✓ Compléter'}</button>
-            <button class="btn-icon" onclick="window.deleteGoal(${idx})">🗑️</button>
-          </div>
-        </div>
-      `).join('');
+      grid.innerHTML = goals.map((_, idx) => `<div class="goal-card" data-idx="${idx}"></div>`).join('');
+      goals.forEach((g, idx) => {
+        const card = grid.children[idx];
+        card.className = `goal-card${g.completed ? ' completed' : ''}`;
+        const title = document.createElement('div'); title.className = 'goal-header';
+        const titleText = document.createElement('div'); titleText.className = 'goal-title'; titleText.textContent = g.title;
+        const domain = document.createElement('div'); domain.className = `goal-domain ${g.domain}`; domain.textContent = g.domain;
+        title.appendChild(titleText); title.appendChild(domain); card.appendChild(title);
+        if (g.desc) { const desc = document.createElement('div'); desc.className = 'goal-desc'; desc.textContent = g.desc; card.appendChild(desc); }
+        const bar = document.createElement('div'); bar.className = 'progress-bar';
+        const fill = document.createElement('div'); fill.className = 'progress-fill'; fill.style.width = `${g.progress||0}%`; bar.appendChild(fill); card.appendChild(bar);
+        const pct = document.createElement('div'); pct.className = 'progress-text';
+        pct.textContent = `${g.progress||0}% complété${g.deadline ? ` · Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : ''}`;
+        card.appendChild(pct);
+        const actions = document.createElement('div'); actions.className = 'goal-actions';
+        const btnP = document.createElement('button'); btnP.className = 'btn-icon'; btnP.textContent = '+ 10%'; btnP.addEventListener('click', () => window.updateProgress(idx));
+        const btnT = document.createElement('button'); btnT.className = 'btn-icon'; btnT.textContent = g.completed ? '↻ Réactiver' : '✓ Compléter'; btnT.addEventListener('click', () => window.toggleComplete(idx));
+        const btnE = document.createElement('button'); btnE.className = 'btn-icon'; btnE.textContent = '✏️'; btnE.addEventListener('click', () => openModal(idx));
+        const btnD = document.createElement('button'); btnD.className = 'btn-icon'; btnD.textContent = '🗑️'; btnD.addEventListener('click', () => window.deleteGoal(idx));
+        actions.append(btnP, btnT, btnE, btnD); card.appendChild(actions);
+      });
     }
 
     document.getElementById('btn-new-goal').addEventListener('click', () => openModal());
