@@ -54,6 +54,17 @@
     }
     .entry-item:hover { background: rgba(255,255,255,0.07); }
     .entry-item.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
+    .search-bar { margin-top: 8px; position: relative; }
+    .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#e5eef8; font-size:0.82rem; outline:none; transition:border-color .2s; }
+    .search-bar input:focus { border-color:rgba(59,130,246,.5); }
+    .search-bar input::placeholder { color:#4a6278; }
+    .search-clear { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#7e9ab5; cursor:pointer; font-size:1rem; padding:0; display:none; }
+    .filter-pills { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+    .filter-pill { padding:3px 8px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#7e9ab5; cursor:pointer; font-size:0.75rem; transition:all .15s; }
+    .filter-pill:hover { background:rgba(255,255,255,0.08); }
+    .filter-pill.active { background:rgba(59,130,246,0.2); border-color:#3b82f6; color:#9fb5ff; }
+    .filter-pill.clear-btn { border-color:rgba(239,68,68,.3); color:#ef4444; }
+    .edited-badge { font-size:0.72rem; color:#7e9ab5; font-style:italic; margin-left:6px; }
     .entry-item-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
     .entry-emoji { font-size: 1.1rem; }
     .entry-date { font-size: 0.72rem; color: #7e9ab5; flex: 1; }
@@ -153,6 +164,11 @@
         <div class="sidebar-title">📔 Journal</div>
         <div class="sidebar-sub" id="entry-count">Chargement…</div>
         <button class="btn-new" id="btn-new-entry">✦ Nouvelle entrée</button>
+        <div class="search-bar">
+          <input type="text" id="journal-search" placeholder="Rechercher…" autocomplete="off" />
+          <button class="search-clear" id="search-clear" aria-label="Effacer">×</button>
+        </div>
+        <div class="filter-pills" id="filter-pills"></div>
         <div class="mood-chart-wrap" id="mood-chart-wrap" style="display:none">
           <div style="font-size:0.7rem;color:#7e9ab5;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
           <div class="mood-chart" id="mood-chart"></div>
@@ -202,6 +218,7 @@
             <span>·</span>
             <span id="read-domain-badge"></span>
             <span id="read-word-count"></span>
+            <span id="read-edited-badge" class="edited-badge" style="display:none">(modifié)</span>
           </div>
         </div>
         <div class="panel-body" style="flex:1;overflow-y:auto">
@@ -268,6 +285,9 @@
     let selDomain = 'none';
     let editingId = null;
     let readId = null;
+    let filterEmotion = null;
+    let filterDomain  = null;
+    let searchQuery   = '';
 
     // ── Auth ───────────────────────────────────────────────────────────────────
     onAuthStateChanged(auth, async (user) => {
@@ -287,20 +307,49 @@
       } catch(e) { console.warn(e); entries = []; }
       renderList();
       renderMoodChart();
+      renderFilterPills();
+    }
+
+    // ── Render: filter pills ────────────────────────────────────────────────────
+    function renderFilterPills() {
+      const fp = document.getElementById('filter-pills'); fp.innerHTML = '';
+      const hasFilter = filterEmotion || filterDomain;
+      EMOTIONS.forEach(({ key, emoji }) => {
+        const p = document.createElement('button'); p.className = `filter-pill${filterEmotion===key?' active':''}`;
+        p.textContent = emoji; p.title = EMOTION_MAP[key].label;
+        p.addEventListener('click', () => { filterEmotion = filterEmotion===key ? null : key; renderFilterPills(); renderList(); });
+        fp.appendChild(p);
+      });
+      if (hasFilter) {
+        const c = document.createElement('button'); c.className = 'filter-pill clear-btn'; c.textContent = '× Tout';
+        c.addEventListener('click', () => { filterEmotion=null; filterDomain=null; renderFilterPills(); renderList(); });
+        fp.appendChild(c);
+      }
     }
 
     // ── Render: entry list ─────────────────────────────────────────────────────
     function renderList() {
       const list = document.getElementById('entry-list');
       const cnt  = document.getElementById('entry-count');
-      cnt.textContent = entries.length ? `${entries.length} entrée${entries.length > 1 ? 's' : ''}` : 'Aucune entrée';
+      const q = searchQuery.toLowerCase().trim();
+      const visible = entries.filter(e => {
+        if (filterEmotion && e.emotion !== filterEmotion) return false;
+        if (filterDomain  && (e.domain || 'none') !== filterDomain) return false;
+        if (q && !(e.title||'').toLowerCase().includes(q) && !(e.content||'').toLowerCase().includes(q)) return false;
+        return true;
+      });
+      cnt.textContent = visible.length !== entries.length
+        ? `${visible.length}/${entries.length} entrée${entries.length>1?'s':''}`
+        : entries.length ? `${entries.length} entrée${entries.length > 1 ? 's' : ''}` : 'Aucune entrée';
       list.innerHTML = '';
-      if (!entries.length) {
+      if (!visible.length) {
         const empty = document.createElement('div'); empty.className = 'empty-list';
-        empty.innerHTML = '<div class="empty-list-icon">📝</div><div>Aucune entrée</div><div style="font-size:.75rem;margin-top:4px">Commence par écrire aujourd\'hui</div>';
+        const noMsg = entries.length ? 'Aucun résultat pour ce filtre' : 'Aucune entrée';
+        const noSub = entries.length ? 'Modifie ou efface le filtre' : 'Commence par écrire aujourd\'hui';
+        empty.innerHTML = `<div class="empty-list-icon">📝</div><div>${noMsg}</div><div style="font-size:.75rem;margin-top:4px">${noSub}</div>`;
         list.appendChild(empty); return;
       }
-      entries.forEach(e => {
+      visible.forEach(e => {
         const item = document.createElement('div');
         item.className = `entry-item${e.id === readId ? ' active' : ''}`;
         item.dataset.id = e.id;
@@ -316,7 +365,8 @@
         row.append(emoSpan, dateSpan, dot); item.appendChild(row);
 
         const prev = document.createElement('div'); prev.className = 'entry-preview';
-        prev.textContent = e.title || (e.content || '').slice(0, 55) || '(vide)';
+        const raw = e.title || (e.content || '').slice(0, 55) || '(vide)';
+        prev.textContent = !e.title && (e.content||'').length > 55 ? raw + '…' : raw;
         item.appendChild(prev);
         item.addEventListener('click', () => openReadView(e.id));
         list.appendChild(item);
@@ -329,12 +379,13 @@
       const chart = document.getElementById('mood-chart');
       if (entries.length < 2) { wrap.style.display = 'none'; return; }
       wrap.style.display = 'block'; chart.innerHTML = '';
+      const localIso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       const days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(); d.setDate(d.getDate() - (6 - i));
-        return { iso: d.toISOString().slice(0,10), lbl: d.toLocaleDateString('fr-FR', { weekday:'narrow' }) };
+        return { iso: localIso(d), lbl: d.toLocaleDateString('fr-FR', { weekday:'narrow' }) };
       });
       days.forEach(({ iso, lbl }) => {
-        const dayE = entries.filter(e => tsToDate(e.createdAt).toISOString().slice(0,10) === iso);
+        const dayE = entries.filter(e => localIso(tsToDate(e.createdAt)) === iso);
         const avg = dayE.length ? dayE.reduce((s,e) => s + (MOOD_SCORE[e.emotion]||5), 0) / dayE.length : 0;
         const h = Math.round((avg / 10) * 28);
         const bwrap = document.createElement('div'); bwrap.className = 'mood-bar-wrap';
@@ -414,6 +465,11 @@
       document.getElementById('read-domain-badge').textContent = dm ? dm.label : 'Général';
       document.getElementById('read-word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
       document.getElementById('read-content').textContent = e.content || '';
+      // Show "modifié" badge if updatedAt differs meaningfully from createdAt
+      const badge = document.getElementById('read-edited-badge');
+      const createdTs = tsToDate(e.createdAt).getTime();
+      const updatedTs = e.updatedAt ? tsToDate(e.updatedAt).getTime() : createdTs;
+      badge.style.display = Math.abs(updatedTs - createdTs) > 5000 ? 'inline' : 'none';
       renderList();
       showView('read');
     }
@@ -426,10 +482,13 @@
     document.getElementById('editor-content').addEventListener('input', updateWC);
 
     // ── Save entry ─────────────────────────────────────────────────────────────
-    document.getElementById('btn-save-entry').addEventListener('click', async () => {
+    const btnSave = document.getElementById('btn-save-entry');
+    btnSave.addEventListener('click', async () => {
+      if (btnSave.disabled) return;
       const title   = document.getElementById('editor-title').value.trim();
       const content = document.getElementById('editor-content').value.trim();
       if (!content && !title) { document.getElementById('editor-content').focus(); return; }
+      btnSave.disabled = true; btnSave.textContent = 'Sauvegarde…';
       const id = editingId || `e_${Date.now()}`;
       const existing = editingId ? entries.find(x => x.id===id) : null;
       const data = { id, title, content, emotion: selEmotion, domain: selDomain, userId: uid, createdAt: existing?.createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
@@ -446,11 +505,20 @@
         showToast('Entrée sauvegardée ✓');
         openReadView(id);
       } catch(e) { console.error(e); showToast('Erreur lors de la sauvegarde', true); }
+      finally { btnSave.disabled = false; btnSave.textContent = 'Sauvegarder'; }
     });
 
-    // ── Delete entry ───────────────────────────────────────────────────────────
-    document.getElementById('btn-delete-entry').addEventListener('click', async () => {
-      if (!readId || !confirm('Supprimer cette entrée ?')) return;
+    // ── Delete entry (2-step confirm) ──────────────────────────────────────────
+    const btnDel = document.getElementById('btn-delete-entry');
+    btnDel.dataset.pending = '0';
+    btnDel.addEventListener('click', async () => {
+      if (!readId) return;
+      if (btnDel.dataset.pending !== '1') {
+        btnDel.dataset.pending = '1'; btnDel.textContent = 'Confirmer la suppression ?';
+        setTimeout(() => { if (btnDel.dataset.pending === '1') { btnDel.dataset.pending = '0'; btnDel.textContent = 'Supprimer'; } }, 3000);
+        return;
+      }
+      btnDel.dataset.pending = '0'; btnDel.textContent = 'Supprimer';
       try {
         await deleteDoc(doc(journalCol(), readId));
         entries = entries.filter(e => e.id !== readId);
@@ -458,6 +526,16 @@
         showToast('Entrée supprimée');
       } catch(e) { console.error(e); }
     });
+
+    // ── Search & filter wiring ─────────────────────────────────────────────────
+    const searchInput = document.getElementById('journal-search');
+    const searchClear = document.getElementById('search-clear');
+    searchInput.addEventListener('input', () => {
+      searchQuery = searchInput.value;
+      searchClear.style.display = searchQuery ? 'block' : 'none';
+      renderList();
+    });
+    searchClear.addEventListener('click', () => { searchQuery = ''; searchInput.value = ''; searchClear.style.display = 'none'; renderList(); });
 
     // ── Button wiring ──────────────────────────────────────────────────────────
     document.getElementById('btn-new-entry').addEventListener('click', () => { readId = null; openEditor(null); });
