@@ -5,7 +5,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth, onAuthStateChanged,
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendEmailVerification, sendPasswordResetEmail,
+  sendPasswordResetEmail,
   GoogleAuthProvider, GithubAuthProvider,
   signInWithPopup, signInWithRedirect, getRedirectResult
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -208,7 +208,7 @@ if (form) {
         // onAuthStateChanged handles redirect
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await sendEmailVerification(userCredential.user);
+        // OTP sent automatically by /verify-email page on first load (via /api/send-verification)
         showNotification('Compte créé ! Vérifiez votre boîte mail 📧', '#0070f3');
         setTimeout(() => window.location.replace('/verify-email'), 1800);
       }
