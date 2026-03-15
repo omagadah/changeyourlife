@@ -1,5 +1,5 @@
-// service-worker.js - v19
-const CACHE_NAME = 'changeyourlife-v19';
+// service-worker.js - v20
+const CACHE_NAME = 'changeyourlife-v20';
 const urlsToCache = [
   '/',
   '/app/',
@@ -18,12 +18,11 @@ const urlsToCache = [
   '/js/userMenu.js',
   '/js/inscription.js',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
-  'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js',
-  'https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js'
+  'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js'
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Installing v18...');
+  console.log('[SW] Installing v20...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -49,7 +48,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating v18...');
+  console.log('[SW] Activating v20...');
   event.waitUntil(clients.claim());
 });
 
