@@ -443,10 +443,19 @@
         setDomain(e.domain || 'none');
       } else {
         document.getElementById('editor-date').textContent = todayStr;
-        document.getElementById('editor-title').value = '';
-        document.getElementById('editor-content').value = '';
-        setEmotion('neutral'); setDomain('none');
-        selEmotion = 'neutral'; selDomain = 'none';
+        // Restore draft if exists for a new entry (not editing)
+        const draft = (() => { try { const d = localStorage.getItem(DRAFT_KEY); return d ? JSON.parse(d) : null; } catch(e) { return null; } })();
+        if (draft && !draft.editingId) {
+          document.getElementById('editor-title').value = draft.title || '';
+          document.getElementById('editor-content').value = draft.content || '';
+          setEmotion(draft.emotion || 'neutral'); setDomain(draft.domain || 'none');
+          selEmotion = draft.emotion || 'neutral'; selDomain = draft.domain || 'none';
+        } else {
+          document.getElementById('editor-title').value = '';
+          document.getElementById('editor-content').value = '';
+          setEmotion('neutral'); setDomain('none');
+          selEmotion = 'neutral'; selDomain = 'none';
+        }
       }
       updateWC(); showView('editor');
       setTimeout(() => document.getElementById('editor-content').focus(), 80);
@@ -474,12 +483,20 @@
       showView('read');
     }
 
-    // ── Word count ─────────────────────────────────────────────────────────────
+    // ── Word count + draft autosave ────────────────────────────────────────────
+    const DRAFT_KEY = 'cyf_journal_draft';
     function updateWC() {
       const wc = (document.getElementById('editor-content').value||'').trim().split(/\s+/).filter(Boolean).length;
       document.getElementById('word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
     }
-    document.getElementById('editor-content').addEventListener('input', updateWC);
+    function saveDraft() {
+      const title = document.getElementById('editor-title').value;
+      const content = document.getElementById('editor-content').value;
+      if (!title && !content) { localStorage.removeItem(DRAFT_KEY); return; }
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ title, content, editingId, emotion: selEmotion, domain: selDomain, ts: Date.now() }));
+    }
+    document.getElementById('editor-content').addEventListener('input', () => { updateWC(); saveDraft(); });
+    document.getElementById('editor-title').addEventListener('input', saveDraft);
 
     // ── Save entry ─────────────────────────────────────────────────────────────
     const btnSave = document.getElementById('btn-save-entry');
@@ -500,6 +517,7 @@
           const idx = entries.findIndex(x => x.id===id);
           if (idx !== -1) entries[idx] = { ...data, createdAt: entries[idx].createdAt };
         }
+        localStorage.removeItem(DRAFT_KEY);
         editingId = null; readId = id;
         renderList(); renderMoodChart();
         showToast('Entrée sauvegardée ✓');
@@ -547,7 +565,7 @@
 
     // ── Button wiring ──────────────────────────────────────────────────────────
     document.getElementById('btn-new-entry').addEventListener('click', () => { readId = null; openEditor(null); });
-    document.getElementById('btn-cancel-edit').addEventListener('click', () => { editingId = null; showView(readId ? 'read' : 'empty'); if (readId) openReadView(readId); });
+    document.getElementById('btn-cancel-edit').addEventListener('click', () => { localStorage.removeItem(DRAFT_KEY); editingId = null; showView(readId ? 'read' : 'empty'); if (readId) openReadView(readId); });
     document.getElementById('btn-edit-entry').addEventListener('click', () => { if (readId) openEditor(readId); });
 
     // ── Helpers ────────────────────────────────────────────────────────────────
