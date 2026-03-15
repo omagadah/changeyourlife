@@ -377,26 +377,39 @@ async function loadDashboardStats(uid) {
             el_humeur.textContent = avg.toFixed(1) + '/10';
         }
 
-        // Mise à jour du graphique avec les données réelles des 7 derniers jours
+        // Mise à jour du graphique avec les données réelles
         if (entries.length && chartInstance) {
-            const today = new Date();
-            const labels7 = Array.from({length: 7}, (_, i) => {
-                const d = new Date(); d.setDate(today.getDate() - (6-i));
-                return d.toLocaleDateString('fr-FR', { weekday: 'narrow' });
-            });
-            const data7 = Array.from({length: 7}, (_, i) => {
-                const d = new Date(); d.setDate(today.getDate() - (6-i));
-                const iso = d.toISOString().slice(0,10);
-                const dayE = entries.filter(e => {
-                    const ts = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt || 0);
-                    return ts.toISOString().slice(0,10) === iso;
-                });
-                if (!dayE.length) return null;
-                return Math.round(dayE.reduce((s, e) => s + (MOOD_SCORE_MAP[e.emotion]||5), 0) / dayE.length * 10) / 10;
-            });
+            const localIso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const entryTs = e => { const ts = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt || 0); return ts; };
+            const avgMood = list => list.length ? Math.round(list.reduce((s, e) => s + (MOOD_SCORE_MAP[e.emotion]||5), 0) / list.length * 10) / 10 : null;
+
+            // 7J — daily
+            const labels7 = [], data7 = [];
+            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); labels7.push(d.toLocaleDateString('fr-FR', {weekday:'narrow'})); data7.push(avgMood(entries.filter(e => localIso(entryTs(e)) === localIso(d)))); }
             chartDataSets['7J'] = { labels: labels7, data: data7 };
-            chartInstance.data.labels = labels7;
-            chartInstance.data.datasets[0].data = data7;
+
+            // 30J — daily
+            const labels30 = [], data30 = [];
+            for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); labels30.push(i % 5 === 0 ? d.toLocaleDateString('fr-FR', {day:'numeric',month:'short'}) : ''); data30.push(avgMood(entries.filter(e => localIso(entryTs(e)) === localIso(d)))); }
+            chartDataSets['30J'] = { labels: labels30, data: data30 };
+
+            // 3M — weekly average
+            const labels3M = [], data3M = [];
+            for (let w = 11; w >= 0; w--) {
+                const wEnd = new Date(); wEnd.setDate(wEnd.getDate() - w * 7);
+                const wStart = new Date(wEnd); wStart.setDate(wEnd.getDate() - 6);
+                const wIso = d => localIso(d);
+                const weekEntries = entries.filter(e => { const iso = localIso(entryTs(e)); return iso >= wIso(wStart) && iso <= wIso(wEnd); });
+                labels3M.push(w % 4 === 0 ? wEnd.toLocaleDateString('fr-FR', {day:'numeric',month:'short'}) : '');
+                data3M.push(avgMood(weekEntries));
+            }
+            chartDataSets['3M'] = { labels: labels3M, data: data3M };
+
+            // Update active period
+            const activePeriod = document.querySelector('.filter-btn.active')?.textContent?.trim() || '7J';
+            const active = chartDataSets[activePeriod] || chartDataSets['7J'];
+            chartInstance.data.labels = active.labels;
+            chartInstance.data.datasets[0].data = active.data;
             chartInstance.data.datasets[0].spanGaps = true;
             chartInstance.update();
         }
