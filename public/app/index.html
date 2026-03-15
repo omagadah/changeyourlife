@@ -69,12 +69,7 @@
     <div id="vanta-birds-bg"></div>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const v = VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
-            // ensure the generated canvas doesn't capture pointer events (clicks should go to UI)
-            setTimeout(() => {
-                const c = document.querySelector('#vanta-birds-bg canvas');
-                if (c) { c.style.pointerEvents = 'none'; c.style.zIndex = '0'; document.getElementById('vanta-birds-bg').style.zIndex = '0'; }
-            }, 60);
+            VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
         });
     </script>
         <header class="header">
@@ -235,9 +230,5 @@
                 } catch(e) {}
             })();
         </script>
-    <script type="module">
-        import { updateGlobalAvatar } from '/js/common.js';
-        window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
-    </script>
 </body>
 </html>

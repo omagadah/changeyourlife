@@ -202,10 +202,14 @@
     <div id="vanta-birds-bg"></div>
     <script>
         VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
-        setTimeout(()=>{ const c=document.querySelector('#vanta-birds-bg canvas'); if(c){ c.style.pointerEvents='none'; c.style.zIndex='0'; document.getElementById('vanta-birds-bg').style.zIndex='0';}},60);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module" src="/js/profile.js"></script>
-    <script type="module">import { updateGlobalAvatar } from '/js/common.js'; window.addEventListener('DOMContentLoaded', ()=>{ try{ updateGlobalAvatar(); }catch(e){} });</script>
+    <script type="module">
+        import { updateGlobalAvatar } from '/js/common.js';
+        import { initUserMenu } from '/js/userMenu.js';
+        try { initUserMenu(); } catch(e) {}
+        window.addEventListener('DOMContentLoaded', ()=>{ try{ updateGlobalAvatar(); }catch(e){} });
+    </script>
 </body>
 </html>

@@ -59,7 +59,7 @@
         <span class="status" id="save-status">Chargement...</span>
         <button class="btn" id="btn-fit">📍 Centrer</button>
         <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
-        <button class="btn" id="user-btn" style="width: 40px; padding: 8px;">👤</button>
+        <button class="btn user-panel-trigger" id="user-btn" style="width: 40px; padding: 8px; font-size: 1.2rem;">👤</button>
       </div>
     </div>
     
@@ -138,16 +138,7 @@
 
       // User menu
       try { updateGlobalAvatar(); } catch(e) { console.error('Avatar update error:', e); }
-      
-      const userBtn = document.getElementById('user-btn');
-      if (userBtn) {
-        userBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          initUserMenu();
-          const menu = document.getElementById('cyf-user-menu');
-          if (menu) menu.style.display = (menu.style.display === 'block' ? 'none' : 'block');
-        });
-      }
+      try { initUserMenu(); } catch(e) { console.error('initUserMenu error:', e); }
     });
   </script>
   
