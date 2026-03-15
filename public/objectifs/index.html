@@ -48,12 +48,22 @@
     .template-card:hover { background: rgba(255,255,255,0.1); transform: scale(1.03); }
     .template-icon { font-size: 2rem; margin-bottom: 6px; }
     .template-name { font-size: 0.85rem; font-weight: 600; }
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
+    .toast.show { transform:translate(-50%,0); }
+    .goal-card.overdue { border-color:rgba(239,68,68,0.4); }
+    .overdue-tag { font-size:0.72rem; color:#ef4444; font-weight:700; }
+    .btn-icon.danger { border-color:rgba(239,68,68,.4); color:#ef4444; }
+    .btn-icon.danger-confirm { background:rgba(239,68,68,.15); border-color:#ef4444; color:#ef4444; animation: pulse-red 0.4s ease; }
+    @keyframes pulse-red { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+    .templates-section { margin-bottom: 8px; }
+    .templates-section-title { font-size:0.78rem; color:#7e9ab5; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
   </style>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Définissez et suivez vos objectifs avec l'aide de l'IA. Progression en temps réel et récompenses XP." />
 </head>
 <body>
   <div id="vanta-birds-bg"></div>
+  <div id="toast" class="toast"></div>
   <nav class="site-nav">
     <a href="/app/" class="site-nav__back">← Mon Espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
@@ -71,6 +81,10 @@
       </div>
     </div>
     <div class="content-area">
+      <div class="templates-section" id="templates-section">
+        <div class="templates-section-title">⚡ Démarrage rapide</div>
+        <div class="templates-grid" id="templates-grid"></div>
+      </div>
       <div class="goals-grid" id="goals-grid"></div>
       <div id="empty-state" style="text-align:center;padding:60px 20px;color:#aab7cf;display:none">
         <div style="font-size:3rem;margin-bottom:12px">🎯</div>
@@ -120,6 +134,42 @@
     import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     let auth, db, uid, goals = [], editingId = null;
+
+    const TEMPLATES = [
+      { icon:'🏃', name:'Sport',       title:'Courir 5km',                    domain:'body',  desc:'Courir 5km sans s\'arrêter' },
+      { icon:'📚', name:'Lecture',     title:'Lire 12 livres cette année',     domain:'etre',  desc:'1 livre par mois' },
+      { icon:'💰', name:'Épargne',     title:'Épargner 10% de mes revenus',    domain:'order', desc:'Mettre de côté chaque mois' },
+      { icon:'🧘', name:'Méditation',  title:'Méditer tous les jours',         domain:'etre',  desc:'Session quotidienne de 10 min' },
+      { icon:'❤️', name:'Relations',   title:'Appeler un proche par semaine',  domain:'heart', desc:'Maintenir des liens forts' },
+      { icon:'💪', name:'Force',       title:'3 séances de sport/semaine',     domain:'body',  desc:'Musculation ou cardio' },
+    ];
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast show';
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    function renderTemplates() {
+      const tg = document.getElementById('templates-grid');
+      const ts = document.getElementById('templates-section');
+      if (!tg) return;
+      // Hide templates if user already has 3+ goals
+      if (goals.length >= 3) { ts.style.display = 'none'; return; }
+      ts.style.display = 'block';
+      tg.innerHTML = '';
+      TEMPLATES.forEach(tpl => {
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.innerHTML = `<div class="template-icon">${tpl.icon}</div><div class="template-name">${tpl.name}</div>`;
+        card.title = tpl.title;
+        card.addEventListener('click', async () => {
+          goals.push({ id: Date.now(), title: tpl.title, desc: tpl.desc, domain: tpl.domain, deadline: null, progress: 0, completed: false, createdAt: Date.now() });
+          try { await setDoc(doc(db, 'users', uid), { goals }, { merge: true }); renderGoals(); renderTemplates(); showToast(`✓ "${tpl.title}" ajouté`); } catch(e) {}
+        });
+        tg.appendChild(card);
+      });
+    }
     if (window._cyfFirebase) {
       ({ auth, db } = window._cyfFirebase);
     } else {
@@ -151,7 +201,8 @@
           goals = snap.data().goals || [];
         }
         renderGoals();
-      } catch(e) { renderGoals(); }
+        renderTemplates();
+      } catch(e) { renderGoals(); renderTemplates(); }
     }
 
     function renderGoals() {
@@ -175,14 +226,22 @@
         if (g.desc) { const desc = document.createElement('div'); desc.className = 'goal-desc'; desc.textContent = g.desc; card.appendChild(desc); }
         const bar = document.createElement('div'); bar.className = 'progress-bar';
         const fill = document.createElement('div'); fill.className = 'progress-fill'; fill.style.width = `${g.progress||0}%`; bar.appendChild(fill); card.appendChild(bar);
+        const isOverdue = g.deadline && !g.completed && new Date(g.deadline) < new Date();
+        if (isOverdue) card.classList.add('overdue');
         const pct = document.createElement('div'); pct.className = 'progress-text';
         pct.textContent = `${g.progress||0}% complété${g.deadline ? ` · Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : ''}`;
+        if (isOverdue) { const tag = document.createElement('span'); tag.className = 'overdue-tag'; tag.textContent = ' ⚠ En retard'; pct.appendChild(tag); }
         card.appendChild(pct);
         const actions = document.createElement('div'); actions.className = 'goal-actions';
         const btnP = document.createElement('button'); btnP.className = 'btn-icon'; btnP.textContent = '+ 10%'; btnP.addEventListener('click', () => window.updateProgress(idx));
         const btnT = document.createElement('button'); btnT.className = 'btn-icon'; btnT.textContent = g.completed ? '↻ Réactiver' : '✓ Compléter'; btnT.addEventListener('click', () => window.toggleComplete(idx));
         const btnE = document.createElement('button'); btnE.className = 'btn-icon'; btnE.textContent = '✏️'; btnE.addEventListener('click', () => openModal(idx));
-        const btnD = document.createElement('button'); btnD.className = 'btn-icon'; btnD.textContent = '🗑️'; btnD.addEventListener('click', () => window.deleteGoal(idx));
+        const btnD = document.createElement('button'); btnD.className = 'btn-icon'; btnD.dataset.confirmPending = '0'; btnD.textContent = '🗑️';
+        btnD.addEventListener('click', () => {
+          if (btnD.dataset.confirmPending === '1') { window.deleteGoal(idx); return; }
+          btnD.dataset.confirmPending = '1'; btnD.classList.add('danger-confirm'); btnD.textContent = '🗑️ Confirmer?';
+          setTimeout(() => { if (btnD.dataset.confirmPending === '1') { btnD.dataset.confirmPending = '0'; btnD.classList.remove('danger-confirm'); btnD.textContent = '🗑️'; } }, 3000);
+        });
         actions.append(btnP, btnT, btnE, btnD); card.appendChild(actions);
       });
     }
@@ -237,7 +296,8 @@
       }
       try {
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        renderGoals();
+        renderGoals(); renderTemplates();
+        showToast(editingId !== null ? '✏️ Objectif modifié' : '✅ Objectif ajouté');
         closeModal();
       } catch(e) { console.error(e); }
     }
@@ -245,28 +305,31 @@
     window.updateProgress = async (idx) => {
       const g = goals[idx];
       g.progress = Math.min(100, (g.progress || 0) + 10);
-      if (g.progress >= 100) g.completed = true;
+      if (g.progress >= 100) { g.completed = true; showToast('🏆 Objectif complété !'); }
+      else showToast(`+10% — ${g.progress}% complété`);
       try {
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        renderGoals();
+        renderGoals(); renderTemplates();
       } catch(e) {}
     };
 
     window.toggleComplete = async (idx) => {
       goals[idx].completed = !goals[idx].completed;
-      if (goals[idx].completed) goals[idx].progress = 100;
+      if (goals[idx].completed) { goals[idx].progress = 100; showToast('✅ Objectif marqué comme complété'); }
+      else showToast('↻ Objectif réactivé');
       try {
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        renderGoals();
+        renderGoals(); renderTemplates();
       } catch(e) {}
     };
 
     window.deleteGoal = async (idx) => {
-      if (!confirm('Supprimer cet objectif ?')) return;
+      const title = goals[idx].title;
       goals.splice(idx, 1);
       try {
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        renderGoals();
+        renderGoals(); renderTemplates();
+        showToast(`🗑️ "${title}" supprimé`);
       } catch(e) {}
     };
   </script>

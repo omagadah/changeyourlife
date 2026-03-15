@@ -38,12 +38,18 @@
     .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; text-align: center; }
     .stat-value { font-size: 1.5rem; font-weight: 600; color: #3b82f6; }
     .stat-label { font-size: 0.8rem; color: #aab7cf; margin-top: 4px; }
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
+    .toast.show { transform:translate(-50%,0); }
+    .toast.error { background:rgba(239,68,68,.92); }
+    .session-card.playing { border-color:#10b981; background:rgba(16,185,129,0.1); }
+    .btn.pause-active { background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#f59e0b; }
   </style>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Méditation guidée avec sessions personnalisées, exercices de respiration et sons d'ambiance pour progresser dans votre bien-être." />
 </head>
 <body>
   <div id="vanta-birds-bg"></div>
+  <div id="toast" class="toast"></div>
   <nav class="site-nav">
     <a href="/app/" class="site-nav__back">← Mon Espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
@@ -130,6 +136,13 @@
     let elapsed = 0;
     let paused = false;
     let uid = null;
+    let breathingActive = false;
+
+    function showToast(msg, err = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast${err?' error':''} show`;
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = '/login'; return; }
@@ -154,17 +167,23 @@
     }
 
     function selectSession(session) {
+      // Stop any running session first
+      if (timer) { clearInterval(timer); timer = null; }
+      breathingActive = false;
       currentSession = session;
-      document.querySelectorAll('.session-card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.session-card').forEach(c => c.classList.remove('active', 'playing'));
       document.querySelector(`[data-id="${session.id}"]`)?.classList.add('active');
       document.getElementById('player-title').textContent = session.title;
       document.getElementById('player-subtitle').textContent = session.desc;
-      document.getElementById('timer').textContent = `${session.duration}:00`;
+      const min = String(session.duration).padStart(2,'0');
+      document.getElementById('timer').textContent = `${min}:00`;
       document.getElementById('player').classList.add('active');
-      elapsed = 0;
-      clearInterval(timer);
-      document.getElementById('btn-start').style.display = 'inline-block';
-      document.getElementById('btn-pause').style.display = 'none';
+      elapsed = 0; paused = false;
+      const btnStart = document.getElementById('btn-start');
+      const btnPause = document.getElementById('btn-pause');
+      btnStart.style.display = 'inline-block'; btnStart.textContent = 'Démarrer';
+      btnPause.style.display = 'none'; btnPause.textContent = 'Pause';
+      btnPause.classList.remove('pause-active');
       document.getElementById('breathing-guide').classList.remove('active');
     }
 
@@ -175,10 +194,15 @@
     function startSession() {
       if (!currentSession) return;
       paused = false;
-      document.getElementById('btn-start').style.display = 'none';
-      document.getElementById('btn-pause').style.display = 'inline-block';
+      const btnStart = document.getElementById('btn-start');
+      const btnPause = document.getElementById('btn-pause');
+      btnStart.style.display = 'none';
+      btnPause.style.display = 'inline-block';
+      btnPause.classList.remove('pause-active');
+      document.querySelector(`[data-id="${currentSession.id}"]`)?.classList.add('playing');
       if (currentSession.type === 'breathing') {
         document.getElementById('breathing-guide').classList.add('active');
+        breathingActive = true;
         startBreathingCycle();
       }
       timer = setInterval(() => {
@@ -194,37 +218,61 @@
 
     function togglePause() {
       paused = !paused;
-      document.getElementById('btn-pause').textContent = paused ? 'Reprendre' : 'Pause';
+      const btn = document.getElementById('btn-pause');
+      btn.textContent = paused ? 'Reprendre' : 'Pause';
+      btn.classList.toggle('pause-active', paused);
     }
 
     function stopSession() {
-      clearInterval(timer);
-      elapsed = 0;
+      clearInterval(timer); timer = null;
+      breathingActive = false;
+      elapsed = 0; paused = false;
       document.getElementById('btn-start').style.display = 'inline-block';
       document.getElementById('btn-pause').style.display = 'none';
+      document.getElementById('btn-pause').classList.remove('pause-active');
       document.getElementById('breathing-guide').classList.remove('active');
+      document.querySelectorAll('.session-card').forEach(c => c.classList.remove('playing'));
       if (currentSession) {
-        document.getElementById('timer').textContent = `${currentSession.duration}:00`;
+        const min = String(currentSession.duration).padStart(2,'0');
+        document.getElementById('timer').textContent = `${min}:00`;
       }
     }
 
     async function completeSession() {
-      clearInterval(timer);
-      document.getElementById('timer').textContent = '✓ Terminé';
+      clearInterval(timer); timer = null;
+      breathingActive = false;
+      document.getElementById('timer').textContent = '✓ Terminé !';
       document.getElementById('btn-start').style.display = 'inline-block';
       document.getElementById('btn-pause').style.display = 'none';
+      document.getElementById('btn-pause').classList.remove('pause-active');
       document.getElementById('breathing-guide').classList.remove('active');
+      document.querySelectorAll('.session-card').forEach(c => c.classList.remove('playing'));
+      showToast(`🧘 Session terminée — ${currentSession.duration} min ✓`);
+
       try {
         const userRef = doc(db, 'users', uid);
+        // Calculate streak
+        const snap = await getDoc(doc(db, 'users', uid));
+        const med = snap.exists() ? (snap.data().meditation || {}) : {};
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const lastDay = med.lastSessionAt ? new Date(med.lastSessionAt).toDateString() : null;
+        let streak = med.streak || 0;
+        if (lastDay === today) { /* already practiced today — keep streak */ }
+        else if (lastDay === yesterday) { streak += 1; }
+        else { streak = 1; }
+
         await updateDoc(userRef, {
           'meditation.totalSessions': increment(1),
           'meditation.totalMinutes': increment(currentSession.duration),
-          'meditation.lastSessionAt': Date.now()
+          'meditation.lastSessionAt': Date.now(),
+          'meditation.streak': streak
         });
         await loadStats();
       } catch(e) {
         try {
-          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now() }}, {merge:true});
+          const userRef = doc(db, 'users', uid);
+          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1 }}, {merge:true});
           await loadStats();
         } catch(e2) {}
       }
@@ -234,22 +282,21 @@
       try {
         const snap = await getDoc(doc(db, 'users', uid));
         if (snap.exists()) {
-          const data = snap.data();
-          const med = data.meditation || {};
+          const med = snap.data().meditation || {};
           document.getElementById('stat-total').textContent = med.totalSessions || 0;
           document.getElementById('stat-time').textContent = `${med.totalMinutes || 0} min`;
-          const streak = calculateStreak(med.lastSessionAt);
-          document.getElementById('stat-streak').textContent = streak;
+          document.getElementById('stat-streak').textContent = calculateStreak(med);
         }
       } catch(e) {}
     }
 
-    function calculateStreak(lastSessionAt) {
-      if (!lastSessionAt) return 0;
-      const now = Date.now();
-      const diff = now - lastSessionAt;
-      const days = Math.floor(diff / (1000*60*60*24));
-      return days <= 1 ? 1 : 0;
+    function calculateStreak(med) {
+      if (!med || !med.lastSessionAt) return 0;
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      const lastDay = new Date(med.lastSessionAt).toDateString();
+      if (lastDay === today || lastDay === yesterday) return med.streak || 1;
+      return 0;
     }
 
     function startBreathingCycle() {
@@ -260,10 +307,12 @@
       ];
       let idx = 0;
       const cycle = () => {
-        if (paused || !timer) return;
+        if (!breathingActive) return;
+        if (paused) { setTimeout(cycle, 500); return; }
         document.getElementById('breathing-text').textContent = phases[idx].text;
+        const dur = phases[idx].duration;
         idx = (idx + 1) % phases.length;
-        setTimeout(cycle, phases[(idx-1+phases.length)%phases.length].duration);
+        setTimeout(cycle, dur);
       };
       cycle();
     }
