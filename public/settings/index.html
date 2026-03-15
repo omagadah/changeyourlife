@@ -78,6 +78,8 @@
         .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
         .hint-card { margin: 8px 0 20px; padding: 10px 14px; border-radius: 10px; background: rgba(59,130,246,0.08); border: 1px dashed rgba(59,130,246,0.35); color: #cfe3ff; font-size: 0.95rem; font-family: Georgia, "Times New Roman", serif; }
         .hint-card a { color: #a6c8ff; text-decoration: underline; }
+        .back-link { display: flex; align-items: center; gap: 8px; color: #9ca3af; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); transition: all 0.2s; margin-bottom: 20px; }
+        .back-link:hover { color: #e5eef8; background: rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
@@ -93,6 +95,7 @@
 <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/></svg>
 <h1>ChangeYourLife.ai</h1>
 </div>
+<a href="/app/" class="back-link">← Mon Espace</a>
 <nav class="nav-menu">
 <div class="nav-section">
 <div class="nav-section-title">Dashboard</div>
@@ -344,6 +347,62 @@ function showAdminFeedback(message, success = true) {
     }
 }
 
+// Chargement des stats dashboard depuis Firestore
+const MOOD_SCORE_MAP = { joy:9, grateful:8, calm:7, neutral:5, worried:4, sad:3, angry:2 };
+async function loadDashboardStats(uid) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', uid));
+        const data = userDoc.exists() ? userDoc.data() : {};
+
+        // Objectifs complétés
+        const goals = Array.isArray(data.goals) ? data.goals : [];
+        const el_hab = document.getElementById('stat-habitudes');
+        if (el_hab) el_hab.textContent = goals.filter(g => g.completed).length;
+
+        // Minutes de méditation
+        const medMin = (data.meditation && data.meditation.totalMinutes) || 0;
+        const el_focus = document.getElementById('stat-focus');
+        if (el_focus) el_focus.textContent = medMin;
+
+        // Journal entries
+        const jSnap = await getDocs(query(collection(db, 'users', uid, 'journal'), limit(200)));
+        const entries = jSnap.docs.map(d => d.data());
+        const el_journal = document.getElementById('stat-journal');
+        if (el_journal) el_journal.textContent = entries.length;
+
+        // Humeur moyenne
+        const el_humeur = document.getElementById('stat-humeur');
+        if (el_humeur && entries.length) {
+            const avg = entries.reduce((s, e) => s + (MOOD_SCORE_MAP[e.emotion] || 5), 0) / entries.length;
+            el_humeur.textContent = avg.toFixed(1) + '/10';
+        }
+
+        // Mise à jour du graphique avec les données réelles des 7 derniers jours
+        if (entries.length && chartInstance) {
+            const today = new Date();
+            const labels7 = Array.from({length: 7}, (_, i) => {
+                const d = new Date(); d.setDate(today.getDate() - (6-i));
+                return d.toLocaleDateString('fr-FR', { weekday: 'narrow' });
+            });
+            const data7 = Array.from({length: 7}, (_, i) => {
+                const d = new Date(); d.setDate(today.getDate() - (6-i));
+                const iso = d.toISOString().slice(0,10);
+                const dayE = entries.filter(e => {
+                    const ts = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt || 0);
+                    return ts.toISOString().slice(0,10) === iso;
+                });
+                if (!dayE.length) return null;
+                return Math.round(dayE.reduce((s, e) => s + (MOOD_SCORE_MAP[e.emotion]||5), 0) / dayE.length * 10) / 10;
+            });
+            chartDataSets['7J'] = { labels: labels7, data: data7 };
+            chartInstance.data.labels = labels7;
+            chartInstance.data.datasets[0].data = data7;
+            chartInstance.data.datasets[0].spanGaps = true;
+            chartInstance.update();
+        }
+    } catch(e) { console.warn('loadDashboardStats failed', e); }
+}
+
 // Initialisation de l'authentification
 function initAuth() {
     onAuthStateChanged(auth, async (user) => {
@@ -383,6 +442,7 @@ function initAuth() {
 
             // Charger les préférences depuis Firestore et brancher les toggles
             initSettingsToggles(user.uid);
+            loadDashboardStats(user.uid);
 
             initChart();
             initNavigation();
