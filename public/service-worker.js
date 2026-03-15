@@ -1,5 +1,5 @@
-// service-worker.js - v15
-const CACHE_NAME = 'changeyourlife-v15';
+// service-worker.js - v16
+const CACHE_NAME = 'changeyourlife-v16';
 const urlsToCache = [
   '/',
   '/app/',
@@ -21,7 +21,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Installing v15...');
+  console.log('[SW] Installing v16...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -47,7 +47,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating v15...');
+  console.log('[SW] Activating v16...');
   event.waitUntil(clients.claim());
 });
 
