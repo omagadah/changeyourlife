@@ -170,6 +170,12 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+        // Guard: email/password users must verify their email before accessing /app
+        const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
+        if (isEmailProvider && !user.emailVerified) {
+            window.location.replace('/verify-email');
+            return;
+        }
         document.getElementById('user-email').textContent = user.email || "Utilisateur Anonyme";
                 // keep trigger logo intact; use updateGlobalAvatar to refresh any avatar state
                 // if you want personal avatar, set localStorage 'userAvatarUrl' and call updateGlobalAvatar()

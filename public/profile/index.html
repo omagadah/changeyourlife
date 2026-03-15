@@ -46,7 +46,8 @@
 </head>
 <body>
     <script>(function(){ if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode'); })();</script>
-    <header class="header">
+    <header class="header" style="display:flex;align-items:center;gap:12px;">
+        <a href="/app/" style="color:#9fb5ff;text-decoration:none;font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:all .2s;white-space:nowrap">← Mon Espace</a>
         <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
             <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
                 <g stroke-width="3">
@@ -208,8 +209,9 @@
     <script type="module">
         import { updateGlobalAvatar } from '/js/common.js';
         import { initUserMenu } from '/js/userMenu.js';
+        // Run at module-load time (modules are deferred, DOM is ready)
+        try { updateGlobalAvatar(); } catch(e) {}
         try { initUserMenu(); } catch(e) {}
-        window.addEventListener('DOMContentLoaded', ()=>{ try{ updateGlobalAvatar(); }catch(e){} });
     </script>
 </body>
 </html>

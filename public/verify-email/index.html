@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vérification email - Change Your Life</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; display: flex; justify-content: center; align-items: center; background: #07192f; overflow: hidden; }
+    #vanta-birds-bg { position: fixed; inset: 0; z-index: -1; }
+
+    .card {
+      position: relative; z-index: 1;
+      background: rgba(25, 25, 40, 0.80);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 40px 36px;
+      max-width: 460px; width: 92%;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      animation: fadein .5s ease;
+    }
+    @keyframes fadein { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    .envelope { font-size: 3.5rem; margin-bottom: 20px; display: block; }
+
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 10px; }
+
+    .subtitle {
+      color: #bbb; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;
+    }
+    .email-badge {
+      display: inline-block;
+      background: rgba(0,112,243,0.18);
+      border: 1px solid rgba(0,112,243,0.4);
+      color: #7bbfff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+      word-break: break-all;
+    }
+
+    .status-bar {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 16px; border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.85rem; color: #aaa;
+      margin-bottom: 28px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+    .dot.verified { background: #10b981; animation: none; }
+
+    .btn {
+      display: block; width: 100%;
+      padding: 13px 20px; border-radius: 10px; border: none;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    .btn-primary { background: #0070f3; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #0056b3; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.15); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.14); }
+
+    .cooldown { font-size: 0.8rem; color: #888; margin-top: -4px; margin-bottom: 12px; min-height: 1.2em; }
+
+    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0 16px; }
+
+    .signout-link { font-size: 0.85rem; color: #888; cursor: pointer; background: none; border: none; text-decoration: underline; }
+    .signout-link:hover { color: #ccc; }
+
+    .notification {
+      position: fixed; top: 20px; left: 50%;
+      transform: translate(-50%, -100px);
+      background: rgba(16,185,129,0.92); color: #fff;
+      padding: 12px 24px; border-radius: 10px;
+      font-weight: 600; z-index: 2000;
+      opacity: 0; visibility: hidden;
+      transition: transform .4s ease, opacity .4s ease, visibility .4s;
+    }
+    .notification.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+  </style>
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  <div id="notification" class="notification"></div>
+
+  <div class="card">
+    <span class="envelope">📧</span>
+    <h1>Vérifiez votre email</h1>
+    <p class="subtitle">Un lien de confirmation a été envoyé à :</p>
+    <div class="email-badge" id="user-email-display">…</div>
+
+    <div class="status-bar">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">En attente de vérification…</span>
+    </div>
+
+    <button class="btn btn-primary" id="resend-btn">Renvoyer l'email de confirmation</button>
+    <div class="cooldown" id="cooldown-msg"></div>
+
+    <div class="divider"></div>
+    <button class="signout-link" id="signout-btn">Se déconnecter et revenir à la connexion</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script>
+    try {
+      VANTA.BIRDS({ el: '#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor: 0x07192f, color1: 0x7192ff, color2: 0xd1ff, quantity: 3.0 });
+    } catch(e) {}
+  </script>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import {
+      getAuth, onAuthStateChanged, signOut,
+      sendEmailVerification, reload
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
+
+    let app, auth;
+    if (window._cyfFirebase) {
+      ({ app, auth } = window._cyfFirebase);
+    } else {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      window._cyfFirebase = { app, auth };
+    }
+
+    const emailDisplay = document.getElementById('user-email-display');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const resendBtn = document.getElementById('resend-btn');
+    const cooldownMsg = document.getElementById('cooldown-msg');
+    const signoutBtn = document.getElementById('signout-btn');
+    const notif = document.getElementById('notification');
+
+    let pollTimer = null;
+    let resendCooldown = 0;
+    let cooldownTimer = null;
+
+    function showNotification(msg, color = '#10b981') {
+      notif.textContent = msg;
+      notif.style.background = color.startsWith('rgba') ? color : color;
+      notif.classList.add('show');
+      setTimeout(() => notif.classList.remove('show'), 4000);
+    }
+
+    function setVerified() {
+      statusDot.classList.add('verified');
+      statusText.textContent = 'Email vérifié ✓ Redirection…';
+      resendBtn.disabled = true;
+      clearInterval(pollTimer);
+      showNotification('Email vérifié ! Bienvenue 🎉');
+      setTimeout(() => window.location.replace('/app'), 1800);
+    }
+
+    function startResendCooldown(seconds = 60) {
+      resendCooldown = seconds;
+      resendBtn.disabled = true;
+      clearInterval(cooldownTimer);
+      cooldownTimer = setInterval(() => {
+        resendCooldown--;
+        if (resendCooldown <= 0) {
+          clearInterval(cooldownTimer);
+          resendBtn.disabled = false;
+          cooldownMsg.textContent = '';
+        } else {
+          cooldownMsg.textContent = `Vous pourrez renvoyer dans ${resendCooldown}s`;
+        }
+      }, 1000);
+      cooldownMsg.textContent = `Vous pourrez renvoyer dans ${seconds}s`;
+    }
+
+    async function checkVerification(user) {
+      try {
+        await reload(user);
+        if (user.emailVerified) setVerified();
+      } catch(e) { /* ignore network errors */ }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.replace('/login');
+        return;
+      }
+      // If already verified (e.g. came here by accident), redirect to app
+      if (user.emailVerified) {
+        window.location.replace('/app');
+        return;
+      }
+      // Show user's email
+      emailDisplay.textContent = user.email || '';
+
+      // Poll every 4 seconds to detect click on verification link
+      pollTimer = setInterval(() => checkVerification(user), 4000);
+    });
+
+    resendBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        await sendEmailVerification(user);
+        showNotification('Email renvoyé ! Vérifiez votre boîte mail 📧', '#0070f3');
+        startResendCooldown(60);
+      } catch (err) {
+        const code = err?.code || '';
+        if (code === 'auth/too-many-requests') {
+          showNotification('Trop de demandes. Attendez quelques minutes.', 'rgba(239,68,68,0.9)');
+          startResendCooldown(120);
+        } else {
+          showNotification('Erreur lors de l\'envoi. Réessayez.', 'rgba(239,68,68,0.9)');
+        }
+      }
+    });
+
+    signoutBtn.addEventListener('click', async () => {
+      clearInterval(pollTimer);
+      try { await signOut(auth); } catch(e) {}
+      window.location.replace('/login');
+    });
+  </script>
+</body>
+</html>
