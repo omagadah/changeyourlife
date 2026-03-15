@@ -11,83 +11,108 @@
 
     .card {
       position: relative; z-index: 1;
-      background: rgba(25, 25, 40, 0.80);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 40px 36px;
-      max-width: 460px; width: 92%;
+      background: rgba(15, 28, 52, 0.92);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,112,243,0.25);
+      border-radius: 24px;
+      padding: 44px 40px;
+      max-width: 480px; width: 92%;
       text-align: center;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
       animation: fadein .5s ease;
     }
-    @keyframes fadein { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadein { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
 
-    .envelope { font-size: 3.5rem; margin-bottom: 20px; display: block; }
+    .logo-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px; border-radius: 18px;
+      background: linear-gradient(135deg, #0070f3, #00aaff);
+      font-size: 1.6rem; margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,112,243,0.4);
+    }
 
     h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 10px; }
 
-    .subtitle {
-      color: #bbb; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;
-    }
+    .subtitle { color: #9bb3d0; font-size: 0.92rem; line-height: 1.65; margin-bottom: 6px; }
+
     .email-badge {
       display: inline-block;
-      background: rgba(0,112,243,0.18);
-      border: 1px solid rgba(0,112,243,0.4);
+      background: rgba(0,112,243,0.15);
+      border: 1px solid rgba(0,112,243,0.35);
       color: #7bbfff;
-      padding: 6px 16px;
+      padding: 5px 14px;
       border-radius: 20px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
       word-break: break-all;
     }
 
-    .status-bar {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 10px 16px; border-radius: 10px;
+    /* ── OTP input ── */
+    .otp-row {
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 12px;
+    }
+    .otp-box {
+      width: 56px; height: 68px;
+      font-size: 1.8rem; font-weight: 700; text-align: center;
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      font-size: 0.85rem; color: #aaa;
-      margin-bottom: 28px;
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      color: #fff;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      caret-color: #0070f3;
     }
-    .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;
-      animation: pulse 1.6s ease-in-out infinite;
+    .otp-box:focus {
+      border-color: #0070f3;
+      background: rgba(0,112,243,0.1);
+      box-shadow: 0 0 0 3px rgba(0,112,243,0.2);
     }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
-    .dot.verified { background: #10b981; animation: none; }
+    .otp-box.filled { border-color: rgba(0,170,255,0.5); }
+    .otp-box.error { border-color: #ef4444; background: rgba(239,68,68,0.08); animation: shake .3s ease; }
+    .otp-box.success { border-color: #10b981; background: rgba(16,185,129,0.1); }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+    .otp-hint { font-size: 0.78rem; color: #4a6a8a; margin-bottom: 24px; min-height: 1.2em; }
+
+    .error-msg { font-size: 0.85rem; color: #ef4444; margin-bottom: 16px; min-height: 1.2em; }
 
     .btn {
       display: block; width: 100%;
-      padding: 13px 20px; border-radius: 10px; border: none;
+      padding: 14px 20px; border-radius: 12px; border: none;
       font-size: 1rem; font-weight: 600; cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 12px;
+      transition: all 0.2s; margin-bottom: 12px;
     }
-    .btn-primary { background: #0070f3; color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: #0056b3; transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: rgba(255,255,255,0.08); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.15); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.14); }
+    .btn-primary { background: linear-gradient(135deg, #0070f3, #0056d6); color: #fff; box-shadow: 0 4px 16px rgba(0,112,243,0.3); }
+    .btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, #0080ff, #0070f3); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,112,243,0.4); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,0.06); color: #9bb3d0; border: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .cooldown { font-size: 0.8rem; color: #888; margin-top: -4px; margin-bottom: 12px; min-height: 1.2em; }
+    .cooldown { font-size: 0.8rem; color: #4a6a8a; margin-top: -4px; margin-bottom: 14px; min-height: 1.2em; }
 
-    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0 16px; }
+    .divider { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 0 16px; }
 
-    .signout-link { font-size: 0.85rem; color: #888; cursor: pointer; background: none; border: none; text-decoration: underline; }
-    .signout-link:hover { color: #ccc; }
+    .signout-link { font-size: 0.82rem; color: #4a6a8a; cursor: pointer; background: none; border: none; text-decoration: underline; transition: color .2s; }
+    .signout-link:hover { color: #9bb3d0; }
+
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; animation: pulse 1.6s ease-in-out infinite; margin-right: 6px; vertical-align: middle; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
     .notification {
       position: fixed; top: 20px; left: 50%;
       transform: translate(-50%, -100px);
-      background: rgba(16,185,129,0.92); color: #fff;
-      padding: 12px 24px; border-radius: 10px;
-      font-weight: 600; z-index: 2000;
+      padding: 12px 24px; border-radius: 12px;
+      font-weight: 600; z-index: 2000; font-size: 0.9rem;
       opacity: 0; visibility: hidden;
       transition: transform .4s ease, opacity .4s ease, visibility .4s;
+      pointer-events: none;
     }
     .notification.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+    .notification.success { background: rgba(16,185,129,0.92); color: #fff; }
+    .notification.info { background: rgba(0,112,243,0.92); color: #fff; }
+    .notification.error { background: rgba(239,68,68,0.92); color: #fff; }
   </style>
 </head>
 <body>
@@ -95,22 +120,27 @@
   <div id="notification" class="notification"></div>
 
   <div class="card">
-    <span class="envelope">📧</span>
+    <div class="logo-badge">📧</div>
     <h1>Vérifiez votre email</h1>
-    <p class="subtitle">Un lien de confirmation a été envoyé à :</p>
+    <p class="subtitle">Un code à 6 chiffres a été envoyé à :</p>
     <div class="email-badge" id="user-email-display">…</div>
 
-    <div class="status-bar">
-      <div class="dot" id="status-dot"></div>
-      <span id="status-text">En attente de vérification…</span>
+    <!-- OTP input -->
+    <div class="otp-row" id="otp-row">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="0" autocomplete="off">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="1" autocomplete="off">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="2" autocomplete="off">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="3" autocomplete="off">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="4" autocomplete="off">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="5" autocomplete="off">
     </div>
+    <div class="otp-hint" id="otp-hint"><span class="status-dot"></span> En attente de votre code…</div>
+    <div class="error-msg" id="error-msg"></div>
 
-    <button class="btn btn-primary" id="resend-btn">Renvoyer l'email de confirmation</button>
+    <button class="btn btn-primary" id="verify-btn" disabled>Vérifier mon email</button>
+
+    <button class="btn btn-secondary" id="resend-btn">Renvoyer le code</button>
     <div class="cooldown" id="cooldown-msg"></div>
-
-    <div style="margin-top:4px;margin-bottom:16px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);font-size:0.82rem;color:#f59e0b;line-height:1.5;">
-      💡 <strong>Pas reçu l'email ?</strong> Vérifiez votre dossier <strong>Spam / Indésirables</strong>. Les emails automatiques sont parfois filtrés par Yahoo Mail, Hotmail ou Gmail.
-    </div>
 
     <div class="divider"></div>
     <button class="signout-link" id="signout-btn">Se déconnecter et revenir à la connexion</button>
@@ -126,10 +156,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import {
-      getAuth, onAuthStateChanged, signOut,
-      sendEmailVerification, reload
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signOut, reload } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
     const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
 
@@ -142,34 +169,71 @@
       window._cyfFirebase = { app, auth };
     }
 
-    const emailDisplay = document.getElementById('user-email-display');
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
-    const resendBtn = document.getElementById('resend-btn');
-    const cooldownMsg = document.getElementById('cooldown-msg');
-    const signoutBtn = document.getElementById('signout-btn');
-    const notif = document.getElementById('notification');
+    // ── DOM refs ───────────────────────────────────────────────────────────────
+    const emailDisplay  = document.getElementById('user-email-display');
+    const verifyBtn     = document.getElementById('verify-btn');
+    const resendBtn     = document.getElementById('resend-btn');
+    const cooldownMsg   = document.getElementById('cooldown-msg');
+    const errorMsg      = document.getElementById('error-msg');
+    const otpHint       = document.getElementById('otp-hint');
+    const signoutBtn    = document.getElementById('signout-btn');
+    const notif         = document.getElementById('notification');
+    const otpBoxes      = Array.from(document.querySelectorAll('.otp-box'));
 
-    let pollTimer = null;
+    let currentUser = null;
     let resendCooldown = 0;
     let cooldownTimer = null;
 
-    function showNotification(msg, color = '#10b981') {
+    // ── Notification helper ────────────────────────────────────────────────────
+    function showNotif(msg, type = 'success') {
       notif.textContent = msg;
-      notif.style.background = color.startsWith('rgba') ? color : color;
-      notif.classList.add('show');
+      notif.className = `notification show ${type}`;
       setTimeout(() => notif.classList.remove('show'), 4000);
     }
 
-    function setVerified() {
-      statusDot.classList.add('verified');
-      statusText.textContent = 'Email vérifié ✓ Redirection…';
-      resendBtn.disabled = true;
-      clearInterval(pollTimer);
-      showNotification('Email vérifié ! Bienvenue 🎉');
-      setTimeout(() => window.location.replace('/app'), 1800);
+    // ── OTP logic ──────────────────────────────────────────────────────────────
+    function getOtpValue() { return otpBoxes.map(b => b.value).join(''); }
+
+    function setOtpState(state) {
+      otpBoxes.forEach(b => {
+        b.classList.remove('error', 'success');
+        if (state) b.classList.add(state);
+      });
     }
 
+    otpBoxes.forEach((box, i) => {
+      box.addEventListener('input', (e) => {
+        // Accept only digits
+        box.value = box.value.replace(/\D/g, '').slice(-1);
+        box.classList.toggle('filled', !!box.value);
+        errorMsg.textContent = '';
+        if (box.value && i < 5) otpBoxes[i + 1].focus();
+        verifyBtn.disabled = getOtpValue().length !== 6;
+      });
+
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !box.value && i > 0) {
+          otpBoxes[i - 1].value = '';
+          otpBoxes[i - 1].classList.remove('filled');
+          otpBoxes[i - 1].focus();
+          verifyBtn.disabled = true;
+        }
+        if (e.key === 'Enter' && getOtpValue().length === 6) verifyCode();
+      });
+
+      // Handle paste on any box
+      box.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        pasted.split('').forEach((ch, j) => {
+          if (otpBoxes[j]) { otpBoxes[j].value = ch; otpBoxes[j].classList.add('filled'); }
+        });
+        if (pasted.length === 6) { otpBoxes[5].focus(); verifyBtn.disabled = false; }
+        else if (pasted.length > 0) otpBoxes[pasted.length - 1].focus();
+      });
+    });
+
+    // ── Cooldown ───────────────────────────────────────────────────────────────
     function startResendCooldown(seconds = 60) {
       resendCooldown = seconds;
       resendBtn.disabled = true;
@@ -181,70 +245,126 @@
           resendBtn.disabled = false;
           cooldownMsg.textContent = '';
         } else {
-          cooldownMsg.textContent = `Vous pourrez renvoyer dans ${resendCooldown}s`;
+          cooldownMsg.textContent = `Renvoyer dans ${resendCooldown}s`;
         }
       }, 1000);
-      cooldownMsg.textContent = `Vous pourrez renvoyer dans ${seconds}s`;
+      cooldownMsg.textContent = `Renvoyer dans ${seconds}s`;
     }
 
-    async function checkVerification(user) {
+    // ── Send/Resend OTP ────────────────────────────────────────────────────────
+    async function sendOtp(user) {
       try {
-        await reload(user);
-        if (user.emailVerified) setVerified();
-      } catch(e) { /* ignore network errors */ }
+        const idToken = await user.getIdToken(true);
+        const res = await fetch('/api/send-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 429) {
+            startResendCooldown(data.retryAfter || 60);
+            cooldownMsg.textContent = `Renvoyer dans ${data.retryAfter || 60}s`;
+          } else {
+            showNotif(data.error || 'Impossible d\'envoyer le code', 'error');
+          }
+          return;
+        }
+        showNotif('Code envoyé ! Vérifiez votre boîte mail 📧', 'info');
+        startResendCooldown(60);
+        otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé — entrez-le ci-dessus';
+        otpBoxes[0].focus();
+      } catch (err) {
+        console.error('sendOtp error', err);
+        showNotif('Erreur réseau. Réessayez.', 'error');
+      }
     }
 
+    // ── Verify code ───────────────────────────────────────────────────────────
+    async function verifyCode() {
+      const code = getOtpValue();
+      if (code.length !== 6) return;
+      if (!currentUser) return;
+
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Vérification…';
+      errorMsg.textContent = '';
+
+      try {
+        const idToken = await currentUser.getIdToken(true);
+        const res = await fetch('/api/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, code }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setOtpState('error');
+          errorMsg.textContent = data.error || 'Code incorrect';
+          verifyBtn.textContent = 'Vérifier mon email';
+          verifyBtn.disabled = false;
+          // Clear boxes if too many attempts
+          if (data.attemptsLeft === 0 || !data.attemptsLeft) {
+            otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled', 'error'); });
+            verifyBtn.disabled = true;
+          }
+          return;
+        }
+
+        // ✅ Success
+        setOtpState('success');
+        showNotif('Email vérifié ! Bienvenue 🎉', 'success');
+        verifyBtn.textContent = 'Vérifié ✓ Redirection…';
+        otpHint.textContent = '✅ Email confirmé';
+
+        // Force Firebase client to reload the user token so emailVerified = true
+        await reload(currentUser);
+        setTimeout(() => window.location.replace('/app'), 1800);
+
+      } catch (err) {
+        console.error('verifyCode error', err);
+        setOtpState('error');
+        errorMsg.textContent = 'Erreur réseau. Réessayez.';
+        verifyBtn.textContent = 'Vérifier mon email';
+        verifyBtn.disabled = false;
+      }
+    }
+
+    verifyBtn.addEventListener('click', verifyCode);
+
+    // ── Resend ────────────────────────────────────────────────────────────────
+    resendBtn.addEventListener('click', () => {
+      if (!currentUser) return;
+      otpBoxes.forEach(b => { b.value = ''; b.classList.remove('filled', 'error', 'success'); });
+      verifyBtn.disabled = true;
+      errorMsg.textContent = '';
+      sendOtp(currentUser);
+    });
+
+    // ── Sign out ───────────────────────────────────────────────────────────────
+    signoutBtn.addEventListener('click', async () => {
+      try { await signOut(auth); } catch(e) {}
+      window.location.replace('/login');
+    });
+
+    // ── Auth state ────────────────────────────────────────────────────────────
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.replace('/login');
-        return;
-      }
-      // If already verified (e.g. came here by accident), redirect to app
-      if (user.emailVerified) {
-        window.location.replace('/app');
-        return;
-      }
-      // Show user's email
+      if (!user) { window.location.replace('/login'); return; }
+      if (user.emailVerified) { window.location.replace('/app'); return; }
+
+      currentUser = user;
       emailDisplay.textContent = user.email || '';
 
-      // Auto-send on first visit (if no cooldown stored in session)
+      // Auto-send on first visit this session
       const autoSentKey = 'cyf_verify_autosent_' + user.uid;
       if (!sessionStorage.getItem(autoSentKey)) {
         sessionStorage.setItem(autoSentKey, '1');
-        try {
-          await sendEmailVerification(user);
-          startResendCooldown(60);
-        } catch(e) {
-          // already sent recently or quota — ignore silently
-        }
+        await sendOtp(user);
+      } else {
+        otpHint.innerHTML = '<span class="status-dot"></span> Entrez le code reçu par email';
+        otpBoxes[0].focus();
       }
-
-      // Poll every 4 seconds to detect click on verification link
-      pollTimer = setInterval(() => checkVerification(user), 4000);
-    });
-
-    resendBtn.addEventListener('click', async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-      try {
-        await sendEmailVerification(user);
-        showNotification('Email renvoyé ! Vérifiez votre boîte mail 📧', '#0070f3');
-        startResendCooldown(60);
-      } catch (err) {
-        const code = err?.code || '';
-        if (code === 'auth/too-many-requests') {
-          showNotification('Trop de demandes. Attendez quelques minutes.', 'rgba(239,68,68,0.9)');
-          startResendCooldown(120);
-        } else {
-          showNotification('Erreur lors de l\'envoi. Réessayez.', 'rgba(239,68,68,0.9)');
-        }
-      }
-    });
-
-    signoutBtn.addEventListener('click', async () => {
-      clearInterval(pollTimer);
-      try { await signOut(auth); } catch(e) {}
-      window.location.replace('/login');
     });
   </script>
 </body>
