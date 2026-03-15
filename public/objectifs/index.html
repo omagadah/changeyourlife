@@ -215,9 +215,18 @@
       }
       grid.style.display = 'grid';
       empty.style.display = 'none';
-      grid.innerHTML = goals.map((_, idx) => `<div class="goal-card" data-idx="${idx}"></div>`).join('');
-      goals.forEach((g, idx) => {
-        const card = grid.children[idx];
+      // Sort: active goals first (overdue first among active), then completed
+      const sorted = goals.map((g, idx) => ({ g, idx })).sort((a, b) => {
+        if (a.g.completed !== b.g.completed) return a.g.completed ? 1 : -1;
+        // Among active: overdue first
+        const aOver = a.g.deadline && !a.g.completed && new Date(a.g.deadline) < new Date();
+        const bOver = b.g.deadline && !b.g.completed && new Date(b.g.deadline) < new Date();
+        if (aOver !== bOver) return aOver ? -1 : 1;
+        return 0;
+      });
+      grid.innerHTML = sorted.map(() => `<div class="goal-card"></div>`).join('');
+      sorted.forEach(({ g, idx }, sortedPos) => {
+        const card = grid.children[sortedPos];
         card.className = `goal-card${g.completed ? ' completed' : ''}`;
         const title = document.createElement('div'); title.className = 'goal-header';
         const titleText = document.createElement('div'); titleText.className = 'goal-title'; titleText.textContent = g.title;
