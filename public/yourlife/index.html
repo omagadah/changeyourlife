@@ -65,13 +65,16 @@
     .skill-check { font-size: 0.68rem; transition: opacity .2s; opacity: 0.5; }
     .skill-pill.done .skill-check { opacity: 1; }
 
-    .skill-del {
-      opacity: 0; font-size: 0.65rem; color: rgba(255,255,255,0.35);
+    .skill-del, .skill-edit {
+      opacity: 0; font-size: 0.65rem;
       cursor: pointer; background: none; border: none;
       padding: 0 0 0 3px; line-height: 1; transition: opacity .15s;
     }
-    .skill-pill:hover .skill-del { opacity: 1; }
+    .skill-del { color: rgba(255,255,255,0.35); }
+    .skill-edit { color: rgba(255,255,255,0.35); }
+    .skill-pill:hover .skill-del, .skill-pill:hover .skill-edit { opacity: 1; }
     .skill-del:hover { color: #ef4444 !important; }
+    .skill-edit:hover { color: #3b82f6 !important; }
 
     .btn-add-skill {
       display: inline-flex; align-items: center; gap: 4px;
@@ -328,6 +331,34 @@
       const lbl = document.createElement('span');
       lbl.textContent = skill.label;
 
+      const editBtn = document.createElement('button');
+      editBtn.className = 'skill-edit';
+      editBtn.textContent = '✏';
+      editBtn.title = 'Renommer';
+      editBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const input = document.createElement('input');
+        input.className = 'add-skill-input';
+        input.value = skill.label;
+        input.style.maxWidth = '160px';
+        const parent = pill.parentNode;
+        parent.insertBefore(input, pill);
+        pill.style.display = 'none';
+        input.focus(); input.select();
+        let saved = false;
+        const commit = () => {
+          if (saved) return; saved = true;
+          const val = input.value.trim();
+          if (val && val !== skill.label) { skill.label = val; scheduleSave(); }
+          render();
+        };
+        input.addEventListener('blur', commit);
+        input.addEventListener('keydown', ev => {
+          if (ev.key === 'Enter') { input.removeEventListener('blur', commit); commit(); }
+          if (ev.key === 'Escape') { saved = true; input.removeEventListener('blur', commit); render(); }
+        });
+      });
+
       const del = document.createElement('button');
       del.className = 'skill-del';
       del.textContent = '×';
@@ -337,9 +368,10 @@
         skillData[lvl.id] = skillData[lvl.id].filter(s => s.id !== skill.id);
         scheduleSave();
         render();
+        showToast(`🗑️ Compétence supprimée`);
       });
 
-      pill.append(check, lbl, del);
+      pill.append(check, lbl, editBtn, del);
       pill.addEventListener('click', () => {
         skill.done = !skill.done;
         scheduleSave();
