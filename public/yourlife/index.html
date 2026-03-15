@@ -14,9 +14,9 @@
     
     #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
     
-    .container { position: fixed; inset: 0; display: flex; flex-direction: column; z-index: 1; }
+    .container { position: fixed; inset: 60px 0 0 0; display: flex; flex-direction: column; z-index: 1; }
     
-    .header { padding: 20px 30px; background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
+    .header { padding: 0 24px; height: 60px; background: rgba(7,25,47,.85); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.08); display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 10000; }
     .header h1 { font-size: 1.5rem; font-weight: 600; }
     .header-info { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
     
@@ -51,15 +51,20 @@
   
   <div class="container">
     <div class="header">
-      <div>
-        <h1>🌳 Arbre de Compétences (Pyramide de Maslow)</h1>
-        <div class="header-info">Construisez votre chemin vers l'auto-réalisation • Cliquez sur un nœud pour le modifier</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <a href="/app/" style="color:#9fb5ff;text-decoration:none;font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:all .2s">← Mon Espace</a>
+        <div>
+          <h1 style="font-size:1.2rem">🌳 Arbre de Compétences</h1>
+          <div class="header-info">Pyramide de Maslow · Cliquez sur un nœud pour modifier</div>
+        </div>
       </div>
       <div class="toolbar">
         <span class="status" id="save-status">Chargement...</span>
         <button class="btn" id="btn-fit">📍 Centrer</button>
         <button class="btn" id="btn-reset">🔄 Réinitialiser</button>
-        <button class="btn user-panel-trigger" id="user-btn" style="width: 40px; padding: 8px; font-size: 1.2rem;">👤</button>
+        <button class="user-panel-trigger" id="user-btn" title="Mon Compte" aria-label="Ouvrir le menu">
+          <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+        </button>
       </div>
     </div>
     

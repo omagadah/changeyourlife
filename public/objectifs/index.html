@@ -54,10 +54,13 @@
 </head>
 <body>
   <div id="vanta-birds-bg"></div>
-  <header class="header">
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
-  </header>
-  <main class="page-shell">
+  <nav class="site-nav">
+    <a href="/app/" class="site-nav__back">← Mon Espace</a>
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+    </button>
+  </nav>
+  <main class="page-shell page-shell-nav">
     <div class="header-bar">
       <div>
         <h1>🎯 Objectifs & Progrès</h1>
@@ -65,7 +68,6 @@
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn primary" id="btn-new-goal">+ Nouvel objectif</button>
-        <a href="/app/" class="btn">← Mon Espace</a>
       </div>
     </div>
     <div class="content-area">
