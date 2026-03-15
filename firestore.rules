@@ -12,10 +12,9 @@ service cloud.firestore {
     
     function isValidJournalEntry() {
       let data = request.resource.data;
-      return data.content is string 
+      return data.content is string
         && data.content.size() <= 50000
         && data.emotion in ['joy', 'calm', 'grateful', 'worried', 'sad', 'angry', 'neutral']
-        && data.timestamp is timestamp
         && data.userId == request.auth.uid;
     }
 
