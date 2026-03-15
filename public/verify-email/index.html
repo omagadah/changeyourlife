@@ -108,6 +108,10 @@
     <button class="btn btn-primary" id="resend-btn">Renvoyer l'email de confirmation</button>
     <div class="cooldown" id="cooldown-msg"></div>
 
+    <div style="margin-top:4px;margin-bottom:16px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);font-size:0.82rem;color:#f59e0b;line-height:1.5;">
+      💡 <strong>Pas reçu l'email ?</strong> Vérifiez votre dossier <strong>Spam / Indésirables</strong>. Les emails automatiques sont parfois filtrés par Yahoo Mail, Hotmail ou Gmail.
+    </div>
+
     <div class="divider"></div>
     <button class="signout-link" id="signout-btn">Se déconnecter et revenir à la connexion</button>
   </div>
@@ -190,7 +194,7 @@
       } catch(e) { /* ignore network errors */ }
     }
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.replace('/login');
         return;
@@ -202,6 +206,18 @@
       }
       // Show user's email
       emailDisplay.textContent = user.email || '';
+
+      // Auto-send on first visit (if no cooldown stored in session)
+      const autoSentKey = 'cyf_verify_autosent_' + user.uid;
+      if (!sessionStorage.getItem(autoSentKey)) {
+        sessionStorage.setItem(autoSentKey, '1');
+        try {
+          await sendEmailVerification(user);
+          startResendCooldown(60);
+        } catch(e) {
+          // already sent recently or quota — ignore silently
+        }
+      }
 
       // Poll every 4 seconds to detect click on verification link
       pollTimer = setInterval(() => checkVerification(user), 4000);
