@@ -20,10 +20,21 @@
         .toast-notification::after { content: ''; position: absolute; bottom: 0; left: 0; height: 4px; background: var(--success-color); width: 100%; animation: progress 3s linear forwards; }
         @keyframes progress { from { width: 100%; } to { width: 0%; } }
         .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 30px; z-index: 1; overflow-y: auto; }
-        .welcome-message { text-align: left; margin-bottom: 40px; }
-        .welcome-message h1 { font-size: 1.2rem; margin-bottom: 0.4rem; font-weight: 600; }
-        .welcome-message p { font-size: 0.8rem; margin: 0; color: #bbb; }
+        .welcome-message { text-align: left; margin-bottom: 28px; }
+        .welcome-message h1 { font-size: 1.4rem; margin-bottom: 0.3rem; font-weight: 700; }
+        .welcome-message p { font-size: 0.82rem; margin: 0; color: #bbb; }
         #user-email { font-weight: bold; color: #00aaff; }
+        /* ── Stats row ── */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+        .stat-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+        .stat-chip-icon { font-size: 1.4rem; }
+        .stat-chip-value { font-size: 1.5rem; font-weight: 700; color: #e5eef8; }
+        .stat-chip-label { font-size: 0.74rem; color: #7e9ab5; text-transform: uppercase; letter-spacing: .4px; }
+        /* ── XP bar ── */
+        .xp-bar-outer { height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 6px; }
+        .xp-bar-inner { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 10px; transition: width .6s ease; }
+        /* ── Streak glow ── */
+        .stat-chip.streak .stat-chip-value { color: #f59e0b; text-shadow: 0 0 16px rgba(245,158,11,.5); }
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .tool-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-decoration: none; color: #e0e0e0; transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; position: relative; overflow: hidden; }
         .tool-card:hover { transform: translateY(-5px) scale(1.02); background-color: rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
@@ -93,9 +104,35 @@
         </header>
     <main class="app-container">
         <div class="welcome-message">
-            <h1>Bienvenue</h1>
-            <p>Connecté en tant que : <span id="user-email">Chargement...</span> <span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:8px"></span></p>
+            <h1 id="greeting-h1">Bienvenue 👋</h1>
+            <p><span id="greeting-sub">Connecté en tant que : </span><span id="user-email">Chargement...</span> <span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:8px"></span></p>
         </div>
+
+        <!-- ── Live stats ── -->
+        <div class="stats-row" id="stats-row">
+            <div class="stat-chip streak">
+                <div class="stat-chip-icon">🔥</div>
+                <div class="stat-chip-value" id="stat-streak">—</div>
+                <div class="stat-chip-label">Jours consécutifs</div>
+            </div>
+            <div class="stat-chip">
+                <div class="stat-chip-icon">⚡</div>
+                <div class="stat-chip-value" id="stat-xp">—</div>
+                <div class="stat-chip-label">XP total</div>
+                <div class="xp-bar-outer"><div class="xp-bar-inner" id="stat-xp-bar" style="width:0%"></div></div>
+            </div>
+            <div class="stat-chip">
+                <div class="stat-chip-icon">🎯</div>
+                <div class="stat-chip-value" id="stat-goals">—</div>
+                <div class="stat-chip-label">Objectifs actifs</div>
+            </div>
+            <div class="stat-chip">
+                <div class="stat-chip-icon">📔</div>
+                <div class="stat-chip-value" id="stat-journal">—</div>
+                <div class="stat-chip-label">Entrées journal</div>
+            </div>
+        </div>
+
         <div class="tools-grid">
                         <a href="/yourlife" class="tool-card" id="tool-card-1">
                                 <div class="tool-card-image" style="display:flex;align-items:center;justify-content:center">
@@ -129,6 +166,12 @@
                 <p>Définissez et suivez vos objectifs avec l'aide de l'IA.</p>
             </a>
 
+            <a href="/journal/" class="tool-card" id="card-journal">
+                <div class="tool-card-image">📔</div>
+                <h3>Journal</h3>
+                <p>Réflexions quotidiennes, suivi des émotions et insights pour mieux vous connaître.</p>
+            </a>
+
             <a href="/codex/" class="tool-card coming-soon" id="card-codex">
                 <div class="tool-card-image">📚</div>
                 <h3>Codex de connaissance</h3>
@@ -145,7 +188,7 @@
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module">
         import { onAuthStateChanged, signOut, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { updateGlobalAvatar } from '/js/common.js?v=16';
         import { initUserMenu } from '/js/userMenu.js?v=16';
 
@@ -183,12 +226,29 @@
                     const toast = document.getElementById('login-toast');
                     if(toast) { toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 4000); }
                 }
-                const userDocRef = doc(db, "users", user.uid);
+                // ── Personalized greeting ──
+        const hour = new Date().getHours();
+        const greetWord = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+        const greetEl = document.getElementById('greeting-h1');
+        const greetSub = document.getElementById('greeting-sub');
+
+        const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
+                const userData = userDoc.exists() ? userDoc.data() : {};
                 // update lastActive and reflect selectedTitle
                 try { await setDoc(userDocRef, { lastActive: new Date() }, { merge: true }); } catch(e) {}
-                try { const tEl = document.getElementById('user-title'); const t = userDoc.exists() ? (userDoc.data().selectedTitle || '') : ''; if (tEl && t) tEl.textContent = `· ${t}`; } catch(e) {}
-                if (!userDoc.exists() || userDoc.data().hasSeenTutorial !== true) { startTutorial(userDocRef); }
+                try {
+                    const displayName = userData.displayName || userData.username || '';
+                    if (greetEl) greetEl.textContent = displayName ? `${greetWord}, ${displayName} 👋` : `${greetWord} 👋`;
+                    if (greetSub) greetSub.textContent = '';
+                    const tEl = document.getElementById('user-title');
+                    const t = userData.selectedTitle || '';
+                    if (tEl && t) tEl.textContent = `· ${t}`;
+                } catch(e) {}
+                if (!userDoc.exists() || userData.hasSeenTutorial !== true) { startTutorial(userDocRef); }
+
+                // ── Load dashboard stats (async, non-blocking) ──
+                loadDashboardStats(db, user.uid, userData);
 
                 // Re-run init to ensure avatar + current path highlighting once auth is known
                 try { initUserMenu(); } catch(e) {}
@@ -207,6 +267,45 @@
             tour.on('cancel', markTutorialAsSeen);
             tour.start();
         }
+        // ── Dashboard stats loader ─────────────────────────────────────────────
+        async function loadDashboardStats(db, uid, userData) {
+            try {
+                // XP total across all domains
+                const levels = userData.levels || {};
+                const totalXP = ['body','heart','etre','order'].reduce((s, d) => s + (levels[d]?.xp || 0), 0);
+                const el = document.getElementById('stat-xp');
+                if (el) el.textContent = totalXP.toLocaleString('fr-FR');
+                // XP bar: show progress toward next 1000 XP milestone
+                const barEl = document.getElementById('stat-xp-bar');
+                if (barEl) barEl.style.width = `${Math.min(100, (totalXP % 1000) / 10)}%`;
+
+                // Goals (active = not completed)
+                const goals = userData.goals || [];
+                const activeGoals = goals.filter(g => !g.completed).length;
+                const gEl = document.getElementById('stat-goals');
+                if (gEl) gEl.textContent = activeGoals;
+
+                // Streak: count consecutive days with lastActive
+                // Simple heuristic: check activityDays array or just show 1 if active today
+                const streakEl = document.getElementById('stat-streak');
+                if (streakEl) {
+                    const lastActive = userData.lastActive?.toDate ? userData.lastActive.toDate() : new Date();
+                    const today = new Date().toDateString();
+                    const streak = userData.streak || 1;
+                    streakEl.textContent = lastActive.toDateString() === today ? (streak > 1 ? streak : 1) : 0;
+                }
+
+                // Journal entries count (from subcollection)
+                try {
+                    const jSnap = await getDocs(query(collection(db,'users',uid,'journal'), limit(300)));
+                    const jEl = document.getElementById('stat-journal');
+                    if (jEl) jEl.textContent = jSnap.size;
+                } catch(e) {
+                    const jEl = document.getElementById('stat-journal'); if (jEl) jEl.textContent = '—';
+                }
+            } catch(e) { console.warn('stats load failed', e); }
+        }
+
         const card = document.getElementById('tool-card-1');
         if (card) {
             card.addEventListener('mousemove', (e) => {

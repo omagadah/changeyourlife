@@ -1,199 +1,480 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent de Vie (v0) - Change Your Life</title>
-  <link rel="stylesheet" href="/css/main.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journal - Change Your Life</title>
+  <meta name="description" content="Votre journal de bord personnel — réflexions quotidiennes, émotions et insights pour mieux vous connaître." />
+  <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    .journal-container { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 25px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
-    .entry-list { flex: 1; overflow-y: auto; padding-right: 15px; }
-    .entry-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 15px; transition: all 0.3s ease; }
-    .entry-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .entry-date { font-size: 0.9rem; color: var(--text-secondary); }
-    .mood-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-    .mood-emoji { font-size: 1.2rem; }
-    .entry-content { margin-bottom: 10px; line-height: 1.5; }
-    .ai-insight { background: rgba(0,170,255,0.1); border-left: 3px solid var(--accent-color); padding: 10px; margin-top: 10px; border-radius: 0 8px 8px 0; font-size: 0.9rem; }
-    .new-entry { background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 20px; cursor: pointer; text-align: center; transition: all 0.3s ease; }
-    .new-entry:hover { background: rgba(255,255,255,0.08); border-color: var(--accent-color); }
-    .emotions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin: 15px 0; }
-    .emotion-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .emotion-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
-    .emotion-btn.selected { background: var(--accent-color); border-color: var(--accent-color); }
-    .emotion-emoji { font-size: 1.5rem; }
-    .emotion-label { font-size: 0.8rem; }
-    #entry-editor { display: none; position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 25px; z-index: 1000; }
-    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .close-editor { background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.2s ease; }
-    .close-editor:hover { background: rgba(255,255,255,0.1); }
-    textarea { width: 100%; min-height: 200px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; color: var(--text-primary); font-size: 1rem; line-height: 1.5; resize: none; margin-bottom: 20px; }
-    textarea:focus { outline: none; border-color: var(--accent-color); }
-    .action-row { display: flex; justify-content: flex-end; gap: 10px; }
-    .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; }
-    .btn-primary { background: var(--accent-color); color: #fff; }
-    .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text-primary); }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    body { color: #e5eef8; }
+
+    .layout {
+      position: fixed; top: 56px; bottom: 20px; left: 20px; right: 20px;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; grid-template-rows: 220px 1fr; top: 52px; }
+    }
+
+    .panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+    .sidebar-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+    .sidebar-sub { font-size: 0.78rem; color: #7e9ab5; }
+
+    .btn-new {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; margin-top: 10px; padding: 9px;
+      border-radius: 10px; border: 1px dashed rgba(59,130,246,0.45);
+      background: rgba(59,130,246,0.07); color: #9fb5ff;
+      font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-new:hover { background: rgba(59,130,246,0.18); border-color: #3b82f6; }
+
+    .entry-item {
+      padding: 11px 12px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer; transition: all 0.18s; margin-bottom: 7px;
+    }
+    .entry-item:hover { background: rgba(255,255,255,0.07); }
+    .entry-item.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
+    .entry-item-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+    .entry-emoji { font-size: 1.1rem; }
+    .entry-date { font-size: 0.72rem; color: #7e9ab5; flex: 1; }
+    .entry-domain-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .entry-preview { font-size: 0.8rem; color: #9fb5ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .empty-list { text-align: center; padding: 36px 16px; color: #7e9ab5; font-size: 0.88rem; }
+    .empty-list-icon { font-size: 2.2rem; margin-bottom: 8px; }
+
+    .mood-chart-wrap { margin-top: 10px; }
+    .mood-chart { display: flex; gap: 5px; align-items: flex-end; height: 44px; padding: 0 2px; }
+    .mood-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .mood-bar-bg { width: 10px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 28px; display: flex; align-items: flex-end; }
+    .mood-bar-fill { width: 100%; background: #3b82f6; border-radius: 4px; }
+    .mood-bar-label { font-size: 0.7rem; color: #7e9ab5; }
+
+    .emotions { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .emotion-btn {
+      padding: 5px 10px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04); color: #e5eef8;
+      cursor: pointer; font-size: 0.8rem; transition: all 0.15s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .emotion-btn:hover { background: rgba(255,255,255,0.1); }
+    .emotion-btn.selected { background: rgba(59,130,246,0.22); border-color: #3b82f6; color: #fff; }
+
+    .domains { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .domain-btn {
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: #9ca3af;
+      cursor: pointer; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; transition: all 0.15s;
+    }
+    .domain-btn.sel-none  { border-color: #6b7280; color: #9ca3af; background: rgba(107,114,128,0.15); }
+    .domain-btn.sel-body  { border-color: #2dd4bf; color: #2dd4bf; background: rgba(45,212,191,0.15); }
+    .domain-btn.sel-heart { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.15); }
+    .domain-btn.sel-etre  { border-color: #9ca3ff; color: #9ca3ff; background: rgba(156,163,255,0.15); }
+    .domain-btn.sel-order { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
+
+    .editor-date { font-size: 0.78rem; color: #7e9ab5; margin-bottom: 12px; }
+    .editor-title-input {
+      width: 100%; font-size: 1.3rem; font-weight: 700;
+      background: transparent; border: none; color: #e5eef8; outline: none;
+      margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;
+    }
+    .editor-title-input::placeholder { color: rgba(229,238,248,0.25); }
+    .editor-content-input {
+      width: 100%; flex: 1; min-height: 180px;
+      background: transparent; border: none; color: #e5eef8; outline: none;
+      resize: none; font-size: 0.97rem; line-height: 1.75; font-family: inherit;
+    }
+    .editor-content-input::placeholder { color: rgba(229,238,248,0.22); }
+    .editor-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 10px; flex-shrink: 0;
+    }
+    .word-count { font-size: 0.76rem; color: #7e9ab5; }
+
+    .read-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+    .read-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; color: #7e9ab5; }
+    .read-content { font-size: 0.97rem; line-height: 1.8; color: #c8d9ec; white-space: pre-wrap; margin-top: 16px; }
+    .read-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 14px; }
+
+    .empty-editor { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #7e9ab5; padding: 40px; }
+    .empty-editor-icon { font-size: 3rem; margin-bottom: 14px; }
+    .empty-editor-title { font-size: 1rem; font-weight: 600; color: #9fb5ff; margin-bottom: 6px; }
+    .empty-editor-sub { font-size: 0.85rem; line-height: 1.5; }
+
+    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn.primary { background: #3b82f6; border-color: #2563eb; }
+    .btn.primary:hover { background: #2563eb; }
+    .btn.danger { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
+    .btn.danger:hover { background: rgba(239,68,68,0.25); }
+
+    .toast { position: fixed; top: 22px; left: 50%; transform: translate(-50%, -130px); background: rgba(16,185,129,0.92); color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; z-index: 9999; transition: transform .3s ease; font-size: 0.9rem; }
+    .toast.show { transform: translate(-50%, 0); }
+    .toast.error { background: rgba(239,68,68,0.92); }
   </style>
 </head>
 <body>
   <div id="vanta-birds-bg"></div>
-    
-  <header class="header">
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-      <!-- SVG Logo -->
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
-        <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
-          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-          <circle cx="140" cy="30" r="10" fill="none" stroke="white"/>
-          <circle cx="140" cy="60" r="10" fill="none" stroke="white"/>
-          <circle cx="140" cy="90" r="10" fill="none" stroke="white"/>
-        </g>
-      </svg>
+  <div id="toast" class="toast"></div>
+
+  <nav class="site-nav">
+    <a href="/app/" class="site-nav__back">← Mon Espace</a>
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
     </button>
-  </header>
+  </nav>
 
-  <div class="journal-container" style="display:grid;grid-template-columns: minmax(320px, 520px) 1fr; gap:18px;">
-    <section id="life-builder" style="overflow:auto">
-      <h1>Agent de Vie</h1>
-      <div class="subtle" style="margin-bottom:10px">Retranscris ta vie étape par étape (pyramide de Maslow, identité, objectifs). Tes niveaux progressent en fonction de ton avancement.</div>
-
-      <div class="card" style="margin-bottom:12px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12)">
-        <div class="kv"><strong>Progression</strong><span id="lm-progress-label" class="subtle">0%</span></div>
-        <div class="progress"><div id="lm-progress" class="bar" style="width:0%"></div></div>
+  <div class="layout">
+    <!-- ── Sidebar ── -->
+    <aside class="panel">
+      <div class="panel-header">
+        <div class="sidebar-title">📔 Journal</div>
+        <div class="sidebar-sub" id="entry-count">Chargement…</div>
+        <button class="btn-new" id="btn-new-entry">✦ Nouvelle entrée</button>
+        <div class="mood-chart-wrap" id="mood-chart-wrap" style="display:none">
+          <div style="font-size:0.7rem;color:#7e9ab5;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
+          <div class="mood-chart" id="mood-chart"></div>
+        </div>
       </div>
-
-      <form id="lm-form" class="stack" style="display:flex;flex-direction:column;gap:12px">
-        <div class="card">
-          <h3>1) Besoins physiologiques</h3>
-          <div class="subtle">Sommeil, alimentation, santé</div>
-          <label style="display:block;margin-top:8px">État (0-5)</label>
-          <input type="range" min="0" max="5" step="1" id="maslow-physio-score" />
-          <label style="display:block;margin-top:8px">Notes</label>
-          <textarea id="maslow-physio-notes" placeholder="Renseigne tes habitudes de base..."></textarea>
-        </div>
-        <div class="card">
-          <h3>2) Sécurité</h3>
-          <div class="subtle">Stabilité, finances, logement</div>
-          <label style="display:block;margin-top:8px">État (0-5)</label>
-          <input type="range" min="0" max="5" step="1" id="maslow-security-score" />
-          <label style="display:block;margin-top:8px">Notes</label>
-          <textarea id="maslow-security-notes" placeholder="Finances, environnement, routine..."></textarea>
-        </div>
-        <div class="card">
-          <h3>3) Amour / Appartenance</h3>
-          <div class="subtle">Relations, soutien, communauté</div>
-          <label style="display:block;margin-top:8px">État (0-5)</label>
-          <input type="range" min="0" max="5" step="1" id="maslow-love-score" />
-          <label style="display:block;margin-top:8px">Notes</label>
-          <textarea id="maslow-love-notes" placeholder="Amis, famille, cercle, appartenance..."></textarea>
-        </div>
-        <div class="card">
-          <h3>4) Estime</h3>
-          <div class="subtle">Confiance, respect, accomplissements</div>
-          <label style="display:block;margin-top:8px">État (0-5)</label>
-          <input type="range" min="0" max="5" step="1" id="maslow-esteem-score" />
-          <label style="display:block;margin-top:8px">Notes</label>
-          <textarea id="maslow-esteem-notes" placeholder="Fiertés, compétences, confiance..."></textarea>
-        </div>
-        <div class="card">
-          <h3>5) Réalisation de soi</h3>
-          <div class="subtle">Sens, expression, créativité</div>
-          <label style="display:block;margin-top:8px">État (0-5)</label>
-          <input type="range" min="0" max="5" step="1" id="maslow-actual-score" />
-          <label style="display:block;margin-top:8px">Notes</label>
-          <textarea id="maslow-actual-notes" placeholder="Expression, mission, apprentissages..."></textarea>
-        </div>
-
-        <div class="card">
-          <h3>Identité & Direction</h3>
-          <label style="display:block;margin-top:8px">Vision personnelle</label>
-          <textarea id="id-vision" placeholder="À quoi ressemble ta vie idéale ?"></textarea>
-          <label style="display:block;margin-top:8px">Valeurs (séparées par des virgules)</label>
-          <input id="id-values" class="input" placeholder="Ex: santé, famille, liberté"/>
-          <label style="display:block;margin-top:8px">Forces</label>
-          <textarea id="id-strengths" placeholder="Tes points forts"></textarea>
-          <label style="display:block;margin-top:8px">Objectifs (court terme)</label>
-          <textarea id="goals-short" placeholder="3-6 mois"></textarea>
-          <label style="display:block;margin-top:8px">Objectifs (long terme)</label>
-          <textarea id="goals-long" placeholder="1-3 ans"></textarea>
-        </div>
-
-        <div class="row" style="justify-content:flex-end">
-          <button type="button" id="lm-save" class="btn btn-primary">Enregistrer & Calculer</button>
-        </div>
-      </form>
-    </section>
-
-    <aside id="agent-pane" style="border-left:1px solid rgba(255,255,255,0.1);padding-left:12px;overflow:hidden;display:flex;flex-direction:column;gap:10px">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h2 style="margin:0">Assistant IA (v0.app)</h2>
-        <a href="https://v0.app/chat/ai-agent-builder-roAX5JAUfYt" target="_blank" rel="noopener" class="btn btn-secondary">Ouvrir dans un onglet</a>
-      </div>
-      <div style="flex:1;min-height:320px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.12)">
-        <iframe src="https://v0.app/chat/ai-agent-builder-roAX5JAUfYt" title="Agent IA"
-          style="width:100%;height:100%;border:0;background:rgba(0,0,0,0.05)" 
-          allow="clipboard-read; clipboard-write; microphone; camera; geolocation;" 
-          referrerpolicy="no-referrer" loading="lazy"></iframe>
-      </div>
-      <div class="subtle">Tu peux discuter avec l’agent pour clarifier ta vision et tes priorités. Reviens sur la colonne de gauche pour consigner et sauvegarder.</div>
+      <div class="panel-body" id="entry-list"></div>
     </aside>
+
+    <!-- ── Main panel ── -->
+    <section class="panel" id="main-panel">
+
+      <!-- Empty state -->
+      <div class="panel-body empty-editor" id="view-empty">
+        <div class="empty-editor-icon">✍️</div>
+        <div class="empty-editor-title">Commence à écrire</div>
+        <div class="empty-editor-sub">Sélectionne une entrée à gauche,<br/>ou crée une nouvelle pour aujourd'hui.</div>
+      </div>
+
+      <!-- Editor -->
+      <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-editor">
+        <div class="panel-header">
+          <div class="editor-date" id="editor-date"></div>
+          <div class="emotions" id="emotion-picker"></div>
+          <div class="domains" id="domain-picker"></div>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:0">
+          <input type="text" class="editor-title-input" id="editor-title" placeholder="Titre (optionnel)…" maxlength="120" />
+          <textarea class="editor-content-input" id="editor-content" placeholder="Commence à écrire… Que s'est-il passé aujourd'hui ? Comment te sens-tu ? Quelles pensées traversent ton esprit ?"></textarea>
+          <div class="editor-footer">
+            <span class="word-count" id="word-count">0 mot</span>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="btn-cancel-edit">Annuler</button>
+              <button class="btn primary" id="btn-save-entry">Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Read view -->
+      <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-read">
+        <div class="panel-header">
+          <div class="read-title" id="read-title"></div>
+          <div class="read-meta">
+            <span id="read-emotion-badge"></span>
+            <span>·</span>
+            <span id="read-date"></span>
+            <span>·</span>
+            <span id="read-domain-badge"></span>
+            <span id="read-word-count"></span>
+          </div>
+        </div>
+        <div class="panel-body" style="flex:1;overflow-y:auto">
+          <div class="read-content" id="read-content"></div>
+          <div class="read-footer">
+            <button class="btn danger" id="btn-delete-entry">Supprimer</button>
+            <button class="btn" id="btn-edit-entry">✏️ Modifier</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-  
-  <script type="module" src="/js/agent-builder.js"></script>
+  <script>try { VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:true, touchControls:true, backgroundColor:0x07192f, quantity:3.0 }); } catch(e){}</script>
+
   <script type="module">
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
-        
-    // Init Vanta.js background
-    window.addEventListener('DOMContentLoaded', () => {
-      const vantaBg = VANTA.BIRDS({
-        el: "#vanta-birds-bg",
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.00,
-        minWidth: 200.00,
-        scale: 1.00,
-        scaleMobile: 1.00,
-        backgroundColor: 0x07192f,
-        color1: 0x4a3a3a,
-        color2: 0xcccccc,
-        quantity: 4.00
-      });
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, orderBy, query, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-      // Ensure the canvas doesn't capture pointer events
-      setTimeout(() => {
-        const canvas = document.querySelector('#vanta-birds-bg canvas');
-        if (canvas) {
-          canvas.style.pointerEvents = 'none';
-          canvas.style.zIndex = '0';
-          document.getElementById('vanta-birds-bg').style.zIndex = '0';
-        }
-      }, 100);
+    try { updateGlobalAvatar(); } catch(e) {}
+    try { initUserMenu(); } catch(e) {}
+
+    // ── Firebase ──────────────────────────────────────────────────────────────
+    let auth, db, uid;
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(cfg);
+      auth = getAuth(app); db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    // ── Data constants ─────────────────────────────────────────────────────────
+    const EMOTIONS = [
+      { key:'joy',      emoji:'😊', label:'Joie' },
+      { key:'calm',     emoji:'😌', label:'Calme' },
+      { key:'grateful', emoji:'🙏', label:'Gratitude' },
+      { key:'worried',  emoji:'😟', label:'Inquiet' },
+      { key:'sad',      emoji:'😢', label:'Triste' },
+      { key:'angry',    emoji:'😡', label:'Frustré' },
+      { key:'neutral',  emoji:'😐', label:'Neutre' },
+    ];
+    const DOMAINS = [
+      { key:'none',  label:'Général' },
+      { key:'body',  label:'Corps' },
+      { key:'heart', label:'Cœur' },
+      { key:'etre',  label:'Être' },
+      { key:'order', label:'Ordre' },
+    ];
+    const EMOTION_MAP = Object.fromEntries(EMOTIONS.map(e => [e.key, e]));
+    const DOMAIN_COLORS = { body:'#2dd4bf', heart:'#ef4444', etre:'#9ca3ff', order:'#f59e0b', none:'#6b7280' };
+    const MOOD_SCORE = { joy:9, grateful:8, calm:7, neutral:5, worried:4, sad:3, angry:2 };
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let entries = [];
+    let selEmotion = 'neutral';
+    let selDomain = 'none';
+    let editingId = null;
+    let readId = null;
+
+    // ── Auth ───────────────────────────────────────────────────────────────────
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = '/login'; return; }
+      uid = user.uid;
+      await loadEntries();
+      buildPickers();
     });
 
-    // Initialize UI components
-    window.addEventListener('DOMContentLoaded', () => { try { updateGlobalAvatar(); } catch (e) {} });
+    // ── Firestore helpers ──────────────────────────────────────────────────────
+    const journalCol = () => collection(db, 'users', uid, 'journal');
 
-    // Handle menu clicks
-    document.querySelectorAll('.user-panel-trigger').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        initUserMenu();
-        const menu = document.getElementById('cyf-user-menu');
-        if (menu) {
-          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
+    async function loadEntries() {
+      try {
+        const snap = await getDocs(query(journalCol(), orderBy('createdAt','desc'), limit(300)));
+        entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch(e) { console.warn(e); entries = []; }
+      renderList();
+      renderMoodChart();
+    }
+
+    // ── Render: entry list ─────────────────────────────────────────────────────
+    function renderList() {
+      const list = document.getElementById('entry-list');
+      const cnt  = document.getElementById('entry-count');
+      cnt.textContent = entries.length ? `${entries.length} entrée${entries.length > 1 ? 's' : ''}` : 'Aucune entrée';
+      list.innerHTML = '';
+      if (!entries.length) {
+        const empty = document.createElement('div'); empty.className = 'empty-list';
+        empty.innerHTML = '<div class="empty-list-icon">📝</div><div>Aucune entrée</div><div style="font-size:.75rem;margin-top:4px">Commence par écrire aujourd\'hui</div>';
+        list.appendChild(empty); return;
+      }
+      entries.forEach(e => {
+        const item = document.createElement('div');
+        item.className = `entry-item${e.id === readId ? ' active' : ''}`;
+        item.dataset.id = e.id;
+
+        const row = document.createElement('div'); row.className = 'entry-item-row';
+        const emoSpan = document.createElement('span'); emoSpan.className = 'entry-emoji';
+        emoSpan.textContent = (EMOTION_MAP[e.emotion] || EMOTION_MAP.neutral).emoji;
+        const dateSpan = document.createElement('span'); dateSpan.className = 'entry-date';
+        const ts = tsToDate(e.createdAt);
+        dateSpan.textContent = ts.toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
+        const dot = document.createElement('div'); dot.className = 'entry-domain-dot';
+        dot.style.background = DOMAIN_COLORS[e.domain || 'none'];
+        row.append(emoSpan, dateSpan, dot); item.appendChild(row);
+
+        const prev = document.createElement('div'); prev.className = 'entry-preview';
+        prev.textContent = e.title || (e.content || '').slice(0, 55) || '(vide)';
+        item.appendChild(prev);
+        item.addEventListener('click', () => openReadView(e.id));
+        list.appendChild(item);
       });
+    }
+
+    // ── Render: mood chart ─────────────────────────────────────────────────────
+    function renderMoodChart() {
+      const wrap  = document.getElementById('mood-chart-wrap');
+      const chart = document.getElementById('mood-chart');
+      if (entries.length < 2) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block'; chart.innerHTML = '';
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - i));
+        return { iso: d.toISOString().slice(0,10), lbl: d.toLocaleDateString('fr-FR', { weekday:'narrow' }) };
+      });
+      days.forEach(({ iso, lbl }) => {
+        const dayE = entries.filter(e => tsToDate(e.createdAt).toISOString().slice(0,10) === iso);
+        const avg = dayE.length ? dayE.reduce((s,e) => s + (MOOD_SCORE[e.emotion]||5), 0) / dayE.length : 0;
+        const h = Math.round((avg / 10) * 28);
+        const bwrap = document.createElement('div'); bwrap.className = 'mood-bar-wrap';
+        const bg = document.createElement('div'); bg.className = 'mood-bar-bg';
+        const fill = document.createElement('div'); fill.className = 'mood-bar-fill';
+        fill.style.height = `${h}px`;
+        fill.style.background = avg >= 7 ? '#10b981' : avg >= 5 ? '#3b82f6' : avg > 0 ? '#f59e0b' : 'rgba(255,255,255,.06)';
+        bg.appendChild(fill); bwrap.appendChild(bg);
+        const ll = document.createElement('div'); ll.className = 'mood-bar-label'; ll.textContent = lbl;
+        bwrap.appendChild(ll); chart.appendChild(bwrap);
+      });
+    }
+
+    // ── Pickers ────────────────────────────────────────────────────────────────
+    function buildPickers() {
+      // Emotions
+      const ep = document.getElementById('emotion-picker'); ep.innerHTML = '';
+      EMOTIONS.forEach(({ key, emoji, label }) => {
+        const btn = document.createElement('button'); btn.className = `emotion-btn${key===selEmotion?' selected':''}`; btn.dataset.key = key;
+        const s1 = document.createElement('span'); s1.textContent = emoji;
+        const s2 = document.createElement('span'); s2.textContent = label;
+        btn.append(s1, s2);
+        btn.addEventListener('click', () => { selEmotion = key; ep.querySelectorAll('.emotion-btn').forEach(b => b.classList.toggle('selected', b.dataset.key===key)); });
+        ep.appendChild(btn);
+      });
+      // Domains
+      const dp = document.getElementById('domain-picker'); dp.innerHTML = '';
+      DOMAINS.forEach(({ key, label }) => {
+        const btn = document.createElement('button'); btn.className = `domain-btn${key===selDomain?` sel-${key}`:''}`; btn.dataset.key = key; btn.textContent = label;
+        btn.addEventListener('click', () => { selDomain = key; dp.querySelectorAll('.domain-btn').forEach(b => { b.className = `domain-btn${b.dataset.key===key?` sel-${key}`:''}`; }); });
+        dp.appendChild(btn);
+      });
+    }
+
+    function setEmotion(key) { selEmotion = key; document.querySelectorAll('#emotion-picker .emotion-btn').forEach(b => b.classList.toggle('selected', b.dataset.key===key)); }
+    function setDomain(key) { selDomain = key; document.querySelectorAll('#domain-picker .domain-btn').forEach(b => { b.className = `domain-btn${b.dataset.key===key?` sel-${key}`:''}`; }); }
+
+    // ── Views ──────────────────────────────────────────────────────────────────
+    function showView(name) {
+      ['empty','editor','read'].forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        el.style.display = (name===v) ? 'flex' : 'none';
+      });
+    }
+
+    function openEditor(id = null) {
+      editingId = id;
+      const todayStr = capFirst(new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
+      if (id) {
+        const e = entries.find(x => x.id===id); if (!e) return;
+        document.getElementById('editor-date').textContent = capFirst(tsToDate(e.createdAt).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
+        document.getElementById('editor-title').value = e.title || '';
+        document.getElementById('editor-content').value = e.content || '';
+        setEmotion(e.emotion || 'neutral');
+        setDomain(e.domain || 'none');
+      } else {
+        document.getElementById('editor-date').textContent = todayStr;
+        document.getElementById('editor-title').value = '';
+        document.getElementById('editor-content').value = '';
+        setEmotion('neutral'); setDomain('none');
+        selEmotion = 'neutral'; selDomain = 'none';
+      }
+      updateWC(); showView('editor');
+      setTimeout(() => document.getElementById('editor-content').focus(), 80);
+    }
+
+    function openReadView(id) {
+      readId = id;
+      const e = entries.find(x => x.id===id); if (!e) return;
+      const ts = tsToDate(e.createdAt);
+      const emo = EMOTION_MAP[e.emotion] || EMOTION_MAP.neutral;
+      const dm  = DOMAINS.find(x => x.key===(e.domain||'none'));
+      const wc  = (e.content||'').trim().split(/\s+/).filter(Boolean).length;
+      document.getElementById('read-title').textContent = e.title || 'Entrée sans titre';
+      document.getElementById('read-date').textContent = ts.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      document.getElementById('read-emotion-badge').textContent = `${emo.emoji} ${emo.label}`;
+      document.getElementById('read-domain-badge').textContent = dm ? dm.label : 'Général';
+      document.getElementById('read-word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
+      document.getElementById('read-content').textContent = e.content || '';
+      renderList();
+      showView('read');
+    }
+
+    // ── Word count ─────────────────────────────────────────────────────────────
+    function updateWC() {
+      const wc = (document.getElementById('editor-content').value||'').trim().split(/\s+/).filter(Boolean).length;
+      document.getElementById('word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
+    }
+    document.getElementById('editor-content').addEventListener('input', updateWC);
+
+    // ── Save entry ─────────────────────────────────────────────────────────────
+    document.getElementById('btn-save-entry').addEventListener('click', async () => {
+      const title   = document.getElementById('editor-title').value.trim();
+      const content = document.getElementById('editor-content').value.trim();
+      if (!content && !title) { document.getElementById('editor-content').focus(); return; }
+      const id = editingId || `e_${Date.now()}`;
+      const existing = editingId ? entries.find(x => x.id===id) : null;
+      const data = { id, title, content, emotion: selEmotion, domain: selDomain, createdAt: existing?.createdAt || serverTimestamp(), updatedAt: serverTimestamp() };
+      try {
+        await setDoc(doc(journalCol(), id), data, { merge: true });
+        if (!editingId) {
+          entries.unshift({ ...data, createdAt: { toDate: () => new Date() } });
+        } else {
+          const idx = entries.findIndex(x => x.id===id);
+          if (idx !== -1) entries[idx] = { ...data, createdAt: entries[idx].createdAt };
+        }
+        editingId = null; readId = id;
+        renderList(); renderMoodChart();
+        showToast('Entrée sauvegardée ✓');
+        openReadView(id);
+      } catch(e) { console.error(e); showToast('Erreur lors de la sauvegarde', true); }
     });
+
+    // ── Delete entry ───────────────────────────────────────────────────────────
+    document.getElementById('btn-delete-entry').addEventListener('click', async () => {
+      if (!readId || !confirm('Supprimer cette entrée ?')) return;
+      try {
+        await deleteDoc(doc(journalCol(), readId));
+        entries = entries.filter(e => e.id !== readId);
+        readId = null; renderList(); renderMoodChart(); showView('empty');
+        showToast('Entrée supprimée');
+      } catch(e) { console.error(e); }
+    });
+
+    // ── Button wiring ──────────────────────────────────────────────────────────
+    document.getElementById('btn-new-entry').addEventListener('click', () => { readId = null; openEditor(null); });
+    document.getElementById('btn-cancel-edit').addEventListener('click', () => { editingId = null; showView(readId ? 'read' : 'empty'); if (readId) openReadView(readId); });
+    document.getElementById('btn-edit-entry').addEventListener('click', () => { if (readId) openEditor(readId); });
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function tsToDate(ts) { return ts?.toDate ? ts.toDate() : new Date(ts || Date.now()); }
+    function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+    function showToast(msg, err = false) {
+      const t = document.getElementById('toast'); t.textContent = msg;
+      t.className = `toast${err?' error':''} show`;
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ── Init: show empty state ─────────────────────────────────────────────────
+    showView('empty');
   </script>
 </body>
 </html>

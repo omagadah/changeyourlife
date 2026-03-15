@@ -1,10 +1,11 @@
-// service-worker.js - v17
-const CACHE_NAME = 'changeyourlife-v17';
+// service-worker.js - v18
+const CACHE_NAME = 'changeyourlife-v18';
 const urlsToCache = [
   '/',
   '/app/',
   '/login/',
   '/verify-email/',
+  '/journal/',
   '/settings/',
   '/profile/',
   '/yourlife/',
@@ -22,7 +23,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Installing v17...');
+  console.log('[SW] Installing v18...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -48,7 +49,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating v17...');
+  console.log('[SW] Activating v18...');
   event.waitUntil(clients.claim());
 });
 
