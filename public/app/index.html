@@ -113,7 +113,7 @@
             <div class="stat-chip streak">
                 <div class="stat-chip-icon">🔥</div>
                 <div class="stat-chip-value" id="stat-streak">—</div>
-                <div class="stat-chip-label">Jours consécutifs</div>
+                <div class="stat-chip-label">Jours méditation</div>
             </div>
             <div class="stat-chip">
                 <div class="stat-chip-icon">⚡</div>
@@ -285,14 +285,15 @@
                 const gEl = document.getElementById('stat-goals');
                 if (gEl) gEl.textContent = activeGoals;
 
-                // Streak: count consecutive days with lastActive
-                // Simple heuristic: check activityDays array or just show 1 if active today
+                // Streak: use meditation streak (properly tracked)
                 const streakEl = document.getElementById('stat-streak');
                 if (streakEl) {
-                    const lastActive = userData.lastActive?.toDate ? userData.lastActive.toDate() : new Date();
+                    const med = userData.meditation || {};
                     const today = new Date().toDateString();
-                    const streak = userData.streak || 1;
-                    streakEl.textContent = lastActive.toDateString() === today ? (streak > 1 ? streak : 1) : 0;
+                    const yesterday = new Date(Date.now() - 86400000).toDateString();
+                    const lastDay = med.lastSessionAt ? new Date(med.lastSessionAt).toDateString() : null;
+                    const streak = (lastDay === today || lastDay === yesterday) ? (med.streak || 1) : 0;
+                    streakEl.textContent = streak;
                 }
 
                 // Journal entries count (from subcollection)
