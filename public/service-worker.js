@@ -11,8 +11,6 @@ const urlsToCache = [
   '/yourlife/',
   '/meditation/',
   '/objectifs/',
-  '/js/yourlife-editor.js',
-  '/js/yourlife-skill-tree.js',
   '/css/main.min.css',
   '/js/common.js',
   '/js/userMenu.js',
