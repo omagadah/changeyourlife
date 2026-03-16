@@ -23,7 +23,7 @@ service cloud.firestore {
       allow read: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId);
       allow update: if isSignedIn() && isOwner(userId);
-      
+
       // Sous-collection journal
       match /journal/{entryId} {
         allow read: if isSignedIn() && isOwner(userId);
@@ -31,6 +31,25 @@ service cloud.firestore {
         allow update: if isSignedIn() && isOwner(userId) && isValidJournalEntry();
         allow delete: if isSignedIn() && isOwner(userId);
       }
+    }
+
+    // Autoévaluations (Roue de Vie)
+    match /assessments/{docId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Codex — notes personnelles
+    match /codexNotes/{docId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Codes OTP (écriture/lecture par Firebase Admin uniquement via serverless)
+    match /verificationCodes/{uid} {
+      allow read, write: if false;
     }
   }
 }

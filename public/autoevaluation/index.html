@@ -434,7 +434,10 @@ async function loadHistory(){
       const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'—'}</div>`).join('');
       return `<div class="hist-item"><div class="hist-date">${date}</div><div class="hist-chips">${chips}</div><div class="hist-global">${d.globalScore??'—'}/10</div></div>`;
     }).join('');
-  }catch(e){cont.innerHTML='<div class="empty"><p>Erreur de chargement</p></div>';}
+  }catch(e){
+    console.error('loadHistory error:',e);
+    cont.innerHTML='<div class="empty"><div class="ei">📊</div><p>Aucune évaluation effectuée pour l\'instant.<br>Lance ta première évaluation !</p></div>';
+  }
 }
 </script>
 </body>
