@@ -35,15 +35,56 @@
         .xp-bar-inner { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 10px; transition: width .6s ease; }
         /* ── Streak glow ── */
         .stat-chip.streak .stat-chip-value { color: #f59e0b; text-shadow: 0 0 16px rgba(245,158,11,.5); }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .tool-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-decoration: none; color: #e0e0e0; transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; position: relative; overflow: hidden; }
-        .tool-card:hover { transform: translateY(-5px) scale(1.02); background-color: rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
-        .tool-card.coming-soon { opacity: 0.6; cursor: default; pointer-events: none; }
-        .tool-card.coming-soon:hover { transform: none; background-color: rgba(255, 255, 255, 0.05); box-shadow: none; }
-        .tool-card.coming-soon::after { content: 'Prochainement'; position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; letter-spacing: 0.5px; }
-        .tool-card-image { height: 150px; background-color: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
-        .tool-card h3 { font-size: 1.1rem; margin-bottom: 5px; font-weight: 500; }
-        .tool-card p { font-size: 0.9rem; color: #bbb; line-height: 1.5; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+
+        .tool-card {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 20px; padding: 0;
+          text-decoration: none; color: #e0e0e0;
+          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+          position: relative; overflow: hidden;
+          display: flex; flex-direction: column;
+        }
+        .tool-card:not(.coming-soon):hover {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 48px rgba(0,0,0,0.35), var(--card-glow, 0 0 0 transparent);
+          border-color: var(--card-accent, rgba(255,255,255,0.2));
+        }
+        .tool-card.coming-soon { opacity: 0.5; cursor: default; pointer-events: none; }
+
+        /* Premium card banner */
+        .tool-card-banner {
+          height: 120px; border-radius: 18px 18px 0 0;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--card-gradient);
+          position: relative; overflow: hidden;
+          flex-shrink: 0;
+        }
+        .tool-card-banner::after {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.12) 0%, transparent 70%);
+        }
+        .tool-card-banner-icon {
+          font-size: 3rem; position: relative; z-index: 1;
+          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+        }
+        .coming-soon-badge {
+          position: absolute; top: 10px; right: 10px;
+          background: rgba(0,0,0,0.35); color: rgba(255,255,255,0.65);
+          padding: 3px 9px; border-radius: 6px; font-size: 0.68rem;
+          font-weight: 600; letter-spacing: 0.4px; z-index: 2;
+        }
+
+        .tool-card-body { padding: 18px 20px 20px; flex: 1; display: flex; flex-direction: column; }
+        .tool-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: #e5eef8; }
+        .tool-card p { font-size: 0.84rem; color: #7e9ab5; line-height: 1.55; flex: 1; }
+        .tool-card-arrow {
+          display: inline-flex; align-items: center; gap: 4px;
+          font-size: 0.78rem; font-weight: 600; color: var(--card-accent-text, #7bbfff);
+          margin-top: 14px; transition: gap .2s;
+        }
+        .tool-card:not(.coming-soon):hover .tool-card-arrow { gap: 8px; }
         .shepherd-element { background: rgba(35, 35, 35, 0.9) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; }
         .shepherd-header { background-color: transparent !important; padding-bottom: 0; }
         .shepherd-title { color: #f0f0f0 !important; font-weight: 600; }
@@ -133,55 +174,79 @@
         </div>
 
         <div class="tools-grid">
-                        <a href="/yourlife" class="tool-card" id="tool-card-1">
-                                <div class="tool-card-image" style="display:flex;align-items:center;justify-content:center">
-                                    <svg viewBox="0 0 120 80" width="64" height="48" aria-hidden="true">
-                                        <g fill="none" stroke="currentColor" stroke-width="2" opacity="0.85">
-                                            <line x1="60" y1="40" x2="95" y2="20"/>
-                                            <line x1="60" y1="40" x2="95" y2="60"/>
-                                            <line x1="60" y1="40" x2="25" y2="20"/>
-                                            <line x1="60" y1="40" x2="25" y2="60"/>
-                                            <circle cx="60" cy="40" r="10" fill="rgba(255,255,255,0.08)"/>
-                                            <circle cx="95" cy="20" r="7" fill="rgba(255,255,255,0.08)"/>
-                                            <circle cx="95" cy="60" r="7" fill="rgba(255,255,255,0.08)"/>
-                                            <circle cx="25" cy="20" r="7" fill="rgba(255,255,255,0.08)"/>
-                                            <circle cx="25" cy="60" r="7" fill="rgba(255,255,255,0.08)"/>
-                                        </g>
-                                    </svg>
-                                </div>
-                                <h3>Your Life</h3>
-                                <p>Construis ton modèle de vie, suis ta progression et débloque des niveaux.</p>
-                        </a>
-            
-            <a href="/meditation/" class="tool-card" id="card-meditation">
-                <div class="tool-card-image">🧘</div>
-                <h3>Méditation Guidée</h3>
-                <p>Des séances de méditation personnalisées avec guidage vocal IA.</p>
-            </a>
-            
-            <a href="/objectifs/" class="tool-card" id="card-objectifs">
-                <div class="tool-card-image">🎯</div>
-                <h3>Objectifs & Progrès</h3>
-                <p>Définissez et suivez vos objectifs avec l'aide de l'IA.</p>
-            </a>
 
-            <a href="/journal/" class="tool-card" id="card-journal">
-                <div class="tool-card-image">📔</div>
-                <h3>Journal</h3>
-                <p>Réflexions quotidiennes, suivi des émotions et insights pour mieux vous connaître.</p>
-            </a>
+          <a href="/yourlife" class="tool-card" id="tool-card-1"
+             style="--card-gradient:linear-gradient(135deg,#1e1b5e 0%,#3730a3 50%,#4f46e5 100%);--card-glow:0 8px 32px rgba(99,102,241,.3);--card-accent:rgba(99,102,241,.5);--card-accent-text:#a5b4fc">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">🌳</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Your Life</h3>
+              <p>Pyramide de Maslow interactive, carte mentale et chronologie de ta progression.</p>
+              <span class="tool-card-arrow">Explorer →</span>
+            </div>
+          </a>
 
-            <a href="/codex/" class="tool-card coming-soon" id="card-codex">
-                <div class="tool-card-image">📚</div>
-                <h3>Codex de connaissance</h3>
-                <p>Prochainement — Une bibliothèque vivante de concepts, méthodes et checklists pour progresser plus vite.</p>
-            </a>
+          <a href="/meditation/" class="tool-card" id="card-meditation"
+             style="--card-gradient:linear-gradient(135deg,#0c2d48 0%,#0e4d6e 50%,#0ea5e9 100%);--card-glow:0 8px 32px rgba(14,165,233,.25);--card-accent:rgba(14,165,233,.45);--card-accent-text:#7dd3fc">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">🧘</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Méditation Guidée</h3>
+              <p>Séances de méditation guidées, respiration, suivi de streak et bien-être quotidien.</p>
+              <span class="tool-card-arrow">Commencer →</span>
+            </div>
+          </a>
 
-            <a href="/autoevaluation/" class="tool-card coming-soon" id="card-autoeval">
-                <div class="tool-card-image">🧭</div>
-                <h3>Autoévaluation</h3>
-                <p>Prochainement — Tests rapides et bilans réguliers pour mesurer vos niveaux et guider vos priorités.</p>
-            </a>
+          <a href="/objectifs/" class="tool-card" id="card-objectifs"
+             style="--card-gradient:linear-gradient(135deg,#431407 0%,#9a3412 50%,#f97316 100%);--card-glow:0 8px 32px rgba(249,115,22,.25);--card-accent:rgba(249,115,22,.45);--card-accent-text:#fdba74">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">🎯</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Objectifs & Progrès</h3>
+              <p>Crée tes objectifs, fixe des deadlines et suis ta progression vers tes ambitions.</p>
+              <span class="tool-card-arrow">Mes objectifs →</span>
+            </div>
+          </a>
+
+          <a href="/journal/" class="tool-card" id="card-journal"
+             style="--card-gradient:linear-gradient(135deg,#2d1b3d 0%,#7c3aed 50%,#ec4899 100%);--card-glow:0 8px 32px rgba(236,72,153,.2);--card-accent:rgba(236,72,153,.4);--card-accent-text:#f9a8d4">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">📔</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Journal</h3>
+              <p>Réflexions, émotions, insights — un espace privé pour mieux te comprendre chaque jour.</p>
+              <span class="tool-card-arrow">Écrire →</span>
+            </div>
+          </a>
+
+          <a href="/codex/" class="tool-card coming-soon" id="card-codex"
+             style="--card-gradient:linear-gradient(135deg,#1e293b 0%,#334155 100%)">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">📚</span>
+              <span class="coming-soon-badge">Bientôt</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Codex de Connaissance</h3>
+              <p>Bibliothèque de concepts, méthodes et checklists pour progresser plus vite.</p>
+            </div>
+          </a>
+
+          <a href="/autoevaluation/" class="tool-card coming-soon" id="card-autoeval"
+             style="--card-gradient:linear-gradient(135deg,#0f2922 0%,#1a4a3a 100%)">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">🧭</span>
+              <span class="coming-soon-badge">Bientôt</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Autoévaluation</h3>
+              <p>Tests rapides et bilans réguliers pour mesurer tes niveaux et guider tes priorités.</p>
+            </div>
+          </a>
+
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
