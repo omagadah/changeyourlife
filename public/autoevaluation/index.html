@@ -192,6 +192,21 @@
     </div>
     <div class="hist-list" id="hist-list"></div>
   </section>
+
+  <!-- HISTORY DETAIL -->
+  <section id="s-hist-detail" class="screen">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <h2 style="font-size:1.2rem;font-weight:700;" id="detail-title">Évaluation du —</h2>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:3px;">Résultats détaillés</div>
+      </div>
+      <button class="btn-sec" onclick="goHistory()">← Historique</button>
+    </div>
+    <div class="results-grid" id="detail-grid"></div>
+    <div style="margin-top:16px;">
+      <button class="btn-start" style="padding:12px 24px;font-size:0.9rem;" onclick="startQuiz()">↺ Refaire une évaluation</button>
+    </div>
+  </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -403,6 +418,68 @@ function showResults(){
   save(scores,global);
 }
 
+window.showHistDetail=(i)=>{
+  const d=window._histDocs?.[i];if(!d)return;
+  const scores=d.scores||{};
+  const global=d.globalScore??'—';
+  const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+
+  document.getElementById('detail-title').textContent='Évaluation du '+date;
+  show('s-hist-detail');
+
+  // Rebuild radar + scores + insights identical to showResults()
+  if(radarChart)radarChart.destroy();
+  const canvas=document.createElement('canvas');canvas.id='radar-chart-detail';
+  const grid=document.getElementById('detail-grid');
+  grid.innerHTML=`
+    <div class="rcard wide">
+      <h3>🕸 Roue de Vie — ${date}</h3>
+      <div class="chart-box"><canvas id="radar-chart-detail"></canvas></div>
+      <div class="global-score"><div class="global-num">${global}</div><div class="global-label">Score global / 10</div></div>
+    </div>
+    <div class="rcard"><h3>📊 Scores par domaine</h3><div id="detail-dom-scores"></div></div>
+    <div class="rcard"><h3>💡 Insights</h3><div id="detail-insights"></div></div>`;
+
+  radarChart=new Chart(document.getElementById('radar-chart-detail').getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:DOMAINS.map(d=>d.emoji+' '+d.label),
+      datasets:[{label:'Score',data:DOMAINS.map(d=>scores[d.key]??0),
+        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#0070f3',borderWidth:2,
+        pointBackgroundColor:DOMAINS.map(d=>d.color),pointBorderColor:'transparent',pointRadius:6,pointHoverRadius:8}]
+    },
+    options:{responsive:true,scales:{r:{min:0,max:10,ticks:{stepSize:2,color:'rgba(155,179,208,0.5)',backdropColor:'transparent',font:{size:9}},
+      grid:{color:'rgba(255,255,255,0.05)'},angleLines:{color:'rgba(255,255,255,0.05)'},
+      pointLabels:{color:'#9bb3d0',font:{size:12,weight:'600'}}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}/10`}}}}
+  });
+
+  document.getElementById('detail-dom-scores').innerHTML=DOMAINS.map(dm=>`
+    <div class="dsrow">
+      <div class="ds-dot" style="background:${dm.color}"></div>
+      <div class="ds-name">${dm.label}</div>
+      <div class="ds-bar-bg"><div class="ds-bar" style="width:${(scores[dm.key]??0)*10}%;background:${dm.color}"></div></div>
+      <div class="ds-val" style="color:${dm.color}">${scores[dm.key]??'—'}</div>
+    </div>`).join('');
+
+  const sorted=[...DOMAINS].sort((a,b)=>(scores[a.key]??0)-(scores[b.key]??0));
+  const low=sorted[0],high=sorted[sorted.length-1];
+  const allSame=sorted.every(dm=>(scores[dm.key]??0)===(scores[sorted[0].key]??0));
+  const numericGlobal=typeof global==='number'?global:parseFloat(global);
+  document.getElementById('detail-insights').innerHTML= numericGlobal>=9
+    ?`<div class="insight" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);"><h4><span style="color:#fbbf24">🪞 Score très élevé</span></h4><p>Score global de ${global}/10. Si ces réponses reflètent ta réalité, c'est excellent !</p></div>`
+    : allSame
+    ?`<div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);"><h4><span style="color:#60aeff">⚖️ Équilibre parfait</span></h4><p>Tous les domaines à ${scores[low.key]}/10.</p></div>`
+    :`<div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
+        <h4><span style="color:${low.color}">${low.emoji} Priorité — ${low.label}</span></h4>
+        <p>Score <strong>${scores[low.key]}/10</strong> — domaine le plus à travailler.</p>
+      </div>
+      <div class="insight" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);margin-top:10px;">
+        <h4><span style="color:#34d399">${high.emoji} Point fort — ${high.label}</span></h4>
+        <p>Score <strong>${scores[high.key]}/10</strong> — ton meilleur domaine à cette date.</p>
+      </div>`;
+};
+
 async function save(scores,global){
   if(!currentUser)return;
   try{await addDoc(collection(db,'assessments'),{uid:currentUser.uid,scores,globalScore:global,answers:JSON.parse(JSON.stringify(answers)),createdAt:serverTimestamp()});}
@@ -428,11 +505,19 @@ async function loadHistory(){
       const tb=b.data().createdAt?.toMillis?.()??0;
       return tb-ta;
     });
-    cont.innerHTML=docs.map(doc=>{
+    // Store for click handler
+    window._histDocs = docs.map(doc => doc.data());
+
+    cont.innerHTML=docs.map((doc,i)=>{
       const d=doc.data();
       const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
       const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'—'}</div>`).join('');
-      return `<div class="hist-item"><div class="hist-date">${date}</div><div class="hist-chips">${chips}</div><div class="hist-global">${d.globalScore??'—'}/10</div></div>`;
+      return `<div class="hist-item" onclick="showHistDetail(${i})" title="Voir le détail">
+        <div class="hist-date">${date}</div>
+        <div class="hist-chips">${chips}</div>
+        <div class="hist-global">${d.globalScore??'—'}/10</div>
+        <div style="color:var(--muted);font-size:0.8rem;flex-shrink:0;">→</div>
+      </div>`;
     }).join('');
   }catch(e){
     console.error('loadHistory error:',e);
