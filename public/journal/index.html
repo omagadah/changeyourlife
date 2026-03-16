@@ -47,13 +47,21 @@
     .btn-new:hover { background: rgba(59,130,246,0.18); border-color: #3b82f6; }
 
     .entry-item {
-      padding: 11px 12px; border-radius: 12px;
+      padding: 12px 14px; border-radius: 13px;
       border: 1px solid rgba(255,255,255,0.07);
       background: rgba(255,255,255,0.03);
-      cursor: pointer; transition: all 0.18s; margin-bottom: 7px;
+      cursor: pointer; transition: all 0.18s; margin-bottom: 6px;
+      position: relative; overflow: hidden;
     }
-    .entry-item:hover { background: rgba(255,255,255,0.07); }
-    .entry-item.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
+    .entry-item::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: transparent; border-radius: 13px 0 0 13px;
+      transition: background .18s;
+    }
+    .entry-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14); transform: translateX(2px); }
+    .entry-item:hover::before { background: rgba(59,130,246,0.5); }
+    .entry-item.active { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.35); }
+    .entry-item.active::before { background: #3b82f6; }
     .search-bar { margin-top: 8px; position: relative; }
     .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#e5eef8; font-size:0.82rem; outline:none; transition:border-color .2s; }
     .search-bar input:focus { border-color:rgba(59,130,246,.5); }
@@ -77,7 +85,7 @@
     .mood-chart-wrap { margin-top: 10px; }
     .mood-chart { display: flex; gap: 5px; align-items: flex-end; height: 44px; padding: 0 2px; }
     .mood-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .mood-bar-bg { width: 10px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 28px; display: flex; align-items: flex-end; }
+    .mood-bar-bg { width: 14px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 32px; display: flex; align-items: flex-end; }
     .mood-bar-fill { width: 100%; background: #3b82f6; border-radius: 4px; }
     .mood-bar-label { font-size: 0.7rem; color: #7e9ab5; }
 
@@ -136,8 +144,8 @@
 
     .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
     .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: #3b82f6; border-color: #2563eb; }
-    .btn.primary:hover { background: #2563eb; }
+    .btn.primary { background: linear-gradient(135deg,#3b82f6,#2563eb); border-color: transparent; box-shadow: 0 4px 14px rgba(59,130,246,.3); }
+    .btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,.4); }
     .btn.danger { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
     .btn.danger:hover { background: rgba(239,68,68,0.25); }
 
