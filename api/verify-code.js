@@ -1,9 +1,9 @@
 // api/verify-code.js
 // Vérifie le code OTP et marque l'email comme vérifié via Firebase Admin
 
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
 function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];
@@ -11,7 +11,7 @@ function getAdminApp() {
   return initializeApp({ credential: cert(sa) });
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { idToken, code } = req.body || {};
@@ -25,7 +25,6 @@ export default async function handler(req, res) {
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Verify ID token
     const decoded = await auth.verifyIdToken(idToken);
     const uid = decoded.uid;
 
@@ -33,7 +32,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, alreadyVerified: true });
     }
 
-    // Fetch OTP record
     const codeRef = db.collection('verificationCodes').doc(uid);
     const snap = await codeRef.get();
 
@@ -43,24 +41,20 @@ export default async function handler(req, res) {
 
     const data = snap.data();
 
-    // Check expiry
     const expiresAt = data.expiresAt?.toMillis?.() || 0;
     if (Date.now() > expiresAt) {
       await codeRef.delete();
       return res.status(400).json({ error: 'Code expiré. Demandez-en un nouveau.' });
     }
 
-    // Max 5 attempts
     const attempts = (data.attempts || 0) + 1;
     if (attempts > 5) {
       await codeRef.delete();
       return res.status(400).json({ error: 'Trop de tentatives. Demandez un nouveau code.' });
     }
 
-    // Increment attempt count
     await codeRef.update({ attempts: FieldValue.increment(1) });
 
-    // Check code
     if (data.code !== cleanCode) {
       const remaining = 5 - attempts;
       return res.status(400).json({
@@ -71,10 +65,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ Code correct — mark email as verified via Firebase Admin
     await auth.updateUser(uid, { emailVerified: true });
-
-    // Clean up OTP record
     await codeRef.delete();
 
     return res.status(200).json({ success: true });
@@ -86,4 +77,4 @@ export default async function handler(req, res) {
     }
     return res.status(500).json({ error: 'Erreur serveur' });
   }
-}
+};
