@@ -1,44 +1,453 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Codex de connaissance — Bientôt disponible</title>
-  <link rel="stylesheet" href="/css/main.min.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codex de Connaissance — ChangeYourLife</title>
   <style>
-    body { color:#e5eef8; }
-    .shell { position: fixed; inset: 20px; border-radius: 20px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); display:grid; place-items:center; }
-    .card { text-align:center; max-width:800px; padding:24px; }
-    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#cfe1ff; font-size:12px; margin-bottom:10px; }
-    .cta { margin-top:18px; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.2); color:#e5eef8; background: rgba(255,255,255,0.06); text-decoration:none; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#07192f;--card:rgba(10,22,45,0.88);--border:rgba(0,112,243,0.18);
+      --text:#e8f0fe;--muted:#7ba3c8;--accent:#0070f3;
+      --corps:#2dd4bf;--coeur:#f87171;--etre:#a78bfa;--ordre:#fbbf24;--gen:#60aeff;
+    }
+    html,body{min-height:100vh;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text);}
+    #vanta-bg{position:fixed;inset:0;z-index:0;}
+    .layout{position:relative;z-index:1;display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+
+    /* SIDEBAR */
+    .sidebar{background:rgba(7,25,47,0.95);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;backdrop-filter:blur(20px);}
+    .sb-logo{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px;}
+    .sb-logo a{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color .2s;}
+    .sb-logo a:hover{color:var(--text);}
+    .sb-logo h2{font-size:1.05rem;font-weight:700;margin-top:10px;background:linear-gradient(135deg,#fff,#9bb3d0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .sb-search{padding:0 14px;margin-bottom:16px;}
+    .sb-search input{width:100%;padding:8px 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:var(--text);font-size:0.84rem;outline:none;transition:border-color .2s;}
+    .sb-search input::placeholder{color:var(--muted);}
+    .sb-search input:focus{border-color:rgba(0,112,243,0.4);}
+    .sb-section{padding:0 14px;margin-bottom:8px;}
+    .sb-section-label{font-size:0.68rem;font-weight:700;color:rgba(123,163,200,0.5);text-transform:uppercase;letter-spacing:.8px;padding:0 6px;margin-bottom:6px;}
+    .cat-btn{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border-radius:9px;background:transparent;border:none;color:var(--muted);font-size:0.84rem;cursor:pointer;transition:all .2s;text-align:left;}
+    .cat-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+    .cat-btn.active{background:rgba(0,112,243,0.12);color:#60aeff;}
+    .cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .cat-count{margin-left:auto;font-size:0.72rem;background:rgba(255,255,255,0.08);padding:1px 7px;border-radius:99px;}
+    .sb-divider{height:1px;background:rgba(255,255,255,0.05);margin:10px 14px;}
+    .btn-add-note{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 14px;padding:9px;border-radius:10px;background:rgba(0,112,243,0.1);border:1px solid rgba(0,112,243,0.25);color:#60aeff;font-size:0.84rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-add-note:hover{background:rgba(0,112,243,0.18);}
+
+    /* MAIN */
+    .main{padding:28px 32px;}
+    .main-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+    .main-title{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#fff,#9bb3d0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .main-sub{font-size:0.85rem;color:var(--muted);margin-top:4px;}
+    .view-toggle{display:flex;gap:6px;}
+    .vt-btn{padding:7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--muted);font-size:0.8rem;cursor:pointer;transition:all .2s;}
+    .vt-btn.active{background:rgba(0,112,243,0.15);border-color:rgba(0,112,243,0.3);color:#60aeff;}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+    .cards-list{display:flex;flex-direction:column;gap:8px;}
+
+    /* CONCEPT CARD */
+    .ccard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .22s;backdrop-filter:blur(16px);position:relative;overflow:hidden;}
+    .ccard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;}
+    .ccard:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3);border-color:rgba(0,112,243,0.35);}
+    .ccard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+    .ccard-emoji{font-size:1.6rem;flex-shrink:0;}
+    .ccard-badge{font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid;flex-shrink:0;}
+    .ccard h3{font-size:0.97rem;font-weight:700;margin-bottom:7px;line-height:1.4;}
+    .ccard p{font-size:0.81rem;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .ccard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
+    .tag{font-size:0.7rem;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid rgba(255,255,255,0.07);}
+    .ccard-list{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;}
+    .ccard-list .ccard-emoji{font-size:1.3rem;}
+    .ccard-list .cl-body{flex:1;}
+    .ccard-list h3{font-size:0.92rem;margin-bottom:3px;}
+    .ccard-list p{-webkit-line-clamp:1;}
+    .user-badge{font-size:0.68rem;padding:2px 7px;border-radius:99px;background:rgba(96,174,255,0.12);border:1px solid rgba(96,174,255,0.25);color:#60aeff;margin-left:auto;flex-shrink:0;}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s;}
+    .modal-overlay.open{opacity:1;pointer-events:auto;}
+    .modal{background:rgba(8,20,42,0.98);border:1px solid rgba(0,112,243,0.25);border-radius:22px;max-width:600px;width:100%;max-height:88vh;overflow-y:auto;padding:36px;box-shadow:0 24px 60px rgba(0,0,0,0.5);transform:translateY(16px);transition:transform .25s;}
+    .modal-overlay.open .modal{transform:translateY(0);}
+    .modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.08);border:none;color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;transition:all .2s;}
+    .modal-close:hover{background:rgba(255,255,255,0.14);color:var(--text);}
+    .modal-emoji{font-size:2.5rem;margin-bottom:12px;}
+    .modal-cat{font-size:0.75rem;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid;display:inline-block;margin-bottom:14px;}
+    .modal h2{font-size:1.4rem;font-weight:800;margin-bottom:6px;}
+    .modal .modal-tagline{font-size:0.92rem;color:#9bb3d0;margin-bottom:20px;line-height:1.6;}
+    .modal-body{color:#c8d8ee;font-size:0.88rem;line-height:1.75;}
+    .modal-body h4{color:#fff;font-size:0.9rem;margin:18px 0 8px;}
+    .modal-body ul{margin-left:18px;}
+    .modal-body ul li{margin-bottom:5px;}
+    .modal-body blockquote{border-left:3px solid var(--accent);padding-left:14px;color:var(--muted);font-style:italic;margin:12px 0;}
+    .modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);}
+
+    /* ADD NOTE MODAL */
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:6px;}
+    .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:var(--text);font-size:0.9rem;outline:none;transition:border-color .2s;font-family:inherit;}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:rgba(0,112,243,0.5);}
+    .form-group textarea{resize:vertical;min-height:100px;}
+    .form-group select option{background:#0d1f3c;}
+    .form-actions{display:flex;gap:10px;margin-top:20px;}
+    .btn-submit{flex:1;padding:11px;border-radius:10px;background:linear-gradient(135deg,#0070f3,#0056cc);border:none;color:#fff;font-weight:700;cursor:pointer;font-size:0.9rem;transition:all .2s;}
+    .btn-submit:hover{transform:translateY(-1px);}
+    .btn-cancel{padding:11px 20px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);cursor:pointer;font-size:0.9rem;transition:all .2s;}
+    .btn-cancel:hover{background:rgba(255,255,255,0.1);color:var(--text);}
+    .no-results{text-align:center;padding:60px 20px;color:var(--muted);}
+    .no-results .ni{font-size:2.5rem;margin-bottom:12px;}
+
+    @media(max-width:700px){
+      .layout{grid-template-columns:1fr;}
+      .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+      .main{padding:20px 16px;}
+      .cards-grid{grid-template-columns:1fr;}
+    }
   </style>
 </head>
 <body>
-  <div id="vanta-birds-bg"></div>
-  <nav class="site-nav">
-    <a href="/app/" class="site-nav__back">← Mon Espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-    </button>
-  </nav>
-  <main class="shell" style="inset:70px 20px 20px 20px!important">
-    <div class="card">
-      <div class="pill">Bientôt disponible</div>
-      <h1>Codex de connaissance</h1>
-      <p>Une bibliothèque vivante de concepts, méthodes et checklists pour progresser plus vite.</p>
-      <a class="cta" href="/app/">← Retour à Mon Espace</a>
+<div id="vanta-bg"></div>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <a href="/app">← Mon Espace</a>
+      <h2>📚 Codex</h2>
     </div>
+    <div class="sb-search">
+      <input type="search" id="search-input" placeholder="🔍 Rechercher…" oninput="applyFilters()">
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Catégories</div>
+      <button class="cat-btn active" data-cat="all" onclick="filterCat('all',this)">
+        <div class="cat-dot" style="background:var(--gen)"></div> Tout voir
+        <span class="cat-count" id="cnt-all">0</span>
+      </button>
+      <button class="cat-btn" data-cat="corps" onclick="filterCat('corps',this)">
+        <div class="cat-dot" style="background:var(--corps)"></div> Corps
+        <span class="cat-count" id="cnt-corps">0</span>
+      </button>
+      <button class="cat-btn" data-cat="coeur" onclick="filterCat('coeur',this)">
+        <div class="cat-dot" style="background:var(--coeur)"></div> Cœur
+        <span class="cat-count" id="cnt-coeur">0</span>
+      </button>
+      <button class="cat-btn" data-cat="etre" onclick="filterCat('etre',this)">
+        <div class="cat-dot" style="background:var(--etre)"></div> Être
+        <span class="cat-count" id="cnt-etre">0</span>
+      </button>
+      <button class="cat-btn" data-cat="ordre" onclick="filterCat('ordre',this)">
+        <div class="cat-dot" style="background:var(--ordre)"></div> Ordre
+        <span class="cat-count" id="cnt-ordre">0</span>
+      </button>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-section-label">Mes notes</div>
+      <button class="cat-btn" data-cat="user" onclick="filterCat('user',this)">
+        <div class="cat-dot" style="background:#60aeff"></div> Mes ajouts
+        <span class="cat-count" id="cnt-user">0</span>
+      </button>
+    </div>
+    <div class="sb-divider"></div>
+    <button class="btn-add-note" onclick="openAddModal()">+ Ajouter une note</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title" id="main-title">Tout le Codex</div>
+        <div class="main-sub" id="main-sub">Concepts, méthodes et checklists pour progresser</div>
+      </div>
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vt-grid" onclick="setView('grid')">⊞ Grille</button>
+        <button class="vt-btn" id="vt-list" onclick="setView('list')">☰ Liste</button>
+      </div>
+    </div>
+    <div class="cards-grid" id="cards-container"></div>
   </main>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-  <script type="module">
-    import { updateGlobalAvatar } from '/js/common.js';
-    import { initUserMenu } from '/js/userMenu.js';
-    try { initUserMenu(); } catch(e) {}
-    window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
-      try { updateGlobalAvatar(); } catch(e){}
-    });
-  </script>
+</div>
+
+<!-- CONCEPT MODAL -->
+<div class="modal-overlay" id="concept-modal" onclick="closeModal(event)">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeConceptModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ADD NOTE MODAL -->
+<div class="modal-overlay" id="add-modal" onclick="closeAddModal(event)">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeAddModal()">✕</button>
+    <h2 style="margin-bottom:20px;">✏️ Ajouter une note</h2>
+    <div class="form-group">
+      <label>Titre *</label>
+      <input type="text" id="note-title" placeholder="Nom du concept ou de la méthode">
+    </div>
+    <div class="form-group">
+      <label>Catégorie</label>
+      <select id="note-cat">
+        <option value="corps">💪 Corps</option>
+        <option value="coeur">❤️ Cœur</option>
+        <option value="etre">✨ Être</option>
+        <option value="ordre">⚡ Ordre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Résumé *</label>
+      <textarea id="note-summary" placeholder="Décris le concept en quelques phrases…"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Contenu détaillé (optionnel)</label>
+      <textarea id="note-body" placeholder="Notes, étapes, exemples…" style="min-height:120px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Tags (séparés par des virgules)</label>
+      <input type="text" id="note-tags" placeholder="habitude, productivité, santé…">
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeAddModal()">Annuler</button>
+      <button class="btn-submit" onclick="saveNote()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+<script>VANTA.BIRDS({el:"#vanta-bg",mouseControls:true,touchControls:true,backgroundColor:0x07192f,color1:0x7192ff,color2:0xd1ff,colorMode:"varianceGradient",quantity:3});</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const FC={apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",authDomain:"changeyourlife-cc210.firebaseapp.com",projectId:"changeyourlife-cc210",storageBucket:"changeyourlife-cc210.appspot.com",messagingSenderId:"801720080785",appId:"1:801720080785:web:1a74aadba5755ea26c2230"};
+let app,auth,db,currentUser=null;
+if(!window._cyfFirebase){app=initializeApp(FC);auth=getAuth(app);db=getFirestore(app);window._cyfFirebase={app,auth,db};}
+else{({app,auth,db}=window._cyfFirebase);}
+onAuthStateChanged(auth,u=>{currentUser=u;if(u)loadUserNotes();});
+
+const COLORS={corps:'#2dd4bf',coeur:'#f87171',etre:'#a78bfa',ordre:'#fbbf24',gen:'#60aeff'};
+const CAT_LABELS={corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
+
+// ── BUILT-IN KNOWLEDGE BASE ───────────────────────────────────────────────────
+const BUILT_IN=[
+  // CORPS
+  {id:'b1',cat:'corps',emoji:'😴',title:'Hygiène du sommeil',tagline:'La qualité de ton sommeil détermine 80% de ta performance.',
+  summary:'Le sommeil est le levier n°1 de la récupération physique et mentale. 7 à 9 heures par nuit, avec une heure de coucher régulière.',
+  body:`<h4>Principes clés</h4><ul><li>Couche-toi et lève-toi à la même heure chaque jour (même le week-end)</li><li>Évite les écrans 60 min avant de dormir (lumière bleue bloque la mélatonine)</li><li>Chambre fraîche (16-19°C) et entièrement sombre</li><li>Pas de caféine après 14h</li><li>Exposition à la lumière naturelle dès le matin</li></ul><h4>Protocole simple</h4><ul><li>21h30 : baisse les lumières, coupe les notifications</li><li>22h00 : lecture, stretching ou méditation</li><li>22h30 : extinction des lumières</li></ul><blockquote>"Le sommeil n'est pas une perte de temps, c'est la charge de ta batterie." — Matthew Walker</blockquote>`,
+  tags:['sommeil','récupération','énergie','routine']},
+
+  {id:'b2',cat:'corps',emoji:'🏃',title:'Entraînement par zone 2',tagline:'La base de la forme physique durable.',
+  summary:'L\'entraînement en zone 2 (cardio modéré) est la fondation de l\'endurance. 80% de ton volume d\'entraînement devrait être à faible intensité.',
+  body:`<h4>C'est quoi la Zone 2 ?</h4><p>Effort où tu peux tenir une conversation complète. FC entre 60-70% de ton max. Ressenti "confortable mais pas paresseux".</p><h4>Pourquoi c'est puissant</h4><ul><li>Augmente la densité des mitochondries (usines d'énergie cellulaire)</li><li>Améliore l'utilisation des graisses comme carburant</li><li>Récupération plus rapide et moins de blessures</li><li>Base pour tous les autres types d'effort</li></ul><h4>Plan minimal</h4><ul><li>3x 45 min/semaine de marche rapide, vélo ou natation modérée</li><li>Test : tu peux parler en phrases complètes = bonne zone</li></ul>`,
+  tags:['sport','cardio','endurance','énergie']},
+
+  {id:'b3',cat:'corps',emoji:'🥗',title:'Alimentation anti-inflammatoire',tagline:'Mange pour nourrir ton cerveau et ton énergie.',
+  summary:'L\'alimentation impacte directement l\'humeur, l\'énergie et la cognition. Les bases : vraie nourriture, peu de transformé, protéines suffisantes.',
+  body:`<h4>Les piliers</h4><ul><li><strong>Protéines</strong> : 1,6-2g/kg de poids corporel (viande, poisson, œufs, légumineuses)</li><li><strong>Oméga-3</strong> : saumon, sardines, noix, graines de chia (anti-inflammatoire)</li><li><strong>Légumes & fibres</strong> : microbiote = 2ème cerveau</li><li><strong>Hydratation</strong> : 30-40ml/kg/jour</li></ul><h4>À réduire</h4><ul><li>Sucres raffinés et ultra-transformés</li><li>Huiles végétales industrielles (tournesol, maïs)</li><li>Alcool (perturbateur du sommeil et de la testostérone)</li></ul>`,
+  tags:['nutrition','énergie','santé','cerveau']},
+
+  // CŒUR
+  {id:'b4',cat:'coeur',emoji:'🧠',title:'Régulation émotionnelle',tagline:'Tes émotions sont des données, pas des ordres.',
+  summary:'Apprendre à identifier et réguler ses émotions est la compétence de vie la plus sous-estimée. Elle se travaille comme un muscle.',
+  body:`<h4>Le modèle STOP</h4><ul><li><strong>S</strong>top : pause volontaire dans la réaction</li><li><strong>T</strong>hink : qu'est-ce que je ressens vraiment ?</li><li><strong>O</strong>bserve : d'où vient cette émotion ?</li><li><strong>P</strong>roceed : quelle est la réponse utile ?</li></ul><h4>Techniques de régulation</h4><ul><li><strong>Respiration 4-7-8</strong> : inspire 4s, retiens 7s, expire 8s (active le parasympathique)</li><li><strong>Labeling</strong> : nommer précisément l'émotion réduit son intensité de 50%</li><li><strong>Journaling</strong> : écrire 10 min libère l'anxiété</li></ul><blockquote>"Entre le stimulus et la réponse, il y a un espace. Dans cet espace réside notre liberté." — Viktor Frankl</blockquote>`,
+  tags:['émotions','mindset','stress','intelligence émotionnelle']},
+
+  {id:'b5',cat:'coeur',emoji:'💬',title:'Communication non-violente (CNV)',tagline:'Exprimer ses besoins sans blesser ni se taire.',
+  summary:'La CNV de Marshall Rosenberg est un cadre pour communiquer avec authenticité et empathie, même dans les conflits.',
+  body:`<h4>Les 4 étapes (OSBD)</h4><ul><li><strong>O</strong>bservation : décrire les faits sans jugement ("Quand tu…")</li><li><strong>S</strong>entiment : exprimer ce que tu ressens ("Je me sens…")</li><li><strong>B</strong>esoin : identifier le besoin sous-jacent ("Parce que j'ai besoin de…")</li><li><strong>D</strong>emande : formuler une demande concrète et négociable ("Est-ce que tu pourrais…?")</li></ul><h4>Exemple</h4><blockquote>"Quand tu n'as pas répondu à mon message (observation), je me suis senti ignoré (sentiment) parce que j'ai besoin de connexion (besoin). Est-ce qu'on peut convenir d'un moment pour parler ? (demande)"</blockquote>`,
+  tags:['communication','relations','conflits','empathie']},
+
+  {id:'b6',cat:'coeur',emoji:'🤝',title:'Théorie de l\'attachement',tagline:'Comprendre ton style relationnel pour mieux t\'y adapter.',
+  summary:'Notre style d\'attachement (sécure, anxieux, évitant) façonne toutes nos relations. Le reconnaître est la première étape pour le transformer.',
+  body:`<h4>Les 3 styles principaux</h4><ul><li><strong>Sécure</strong> : à l'aise avec l'intimité et l'autonomie. Base saine.</li><li><strong>Anxieux</strong> : peur d'être abandonné, hypervigilant aux signaux relationnels</li><li><strong>Évitant</strong> : peur de l'intimité, tendance à l'autosuffisance défensive</li></ul><h4>Comment évoluer vers le sécure</h4><ul><li>Identifier ses réactions automatiques en relation</li><li>Thérapie (TCC, thérapie d'attachement)</li><li>Choisir des partenaires et amis au style sécure</li><li>Pratiquer la vulnérabilité graduelle</li></ul>`,
+  tags:['relations','psychologie','attachement','couple']},
+
+  // ÊTRE
+  {id:'b7',cat:'etre',emoji:'🧭',title:'Ikigai — Raison d\'être',tagline:'Trouver l\'intersection de ce que tu aimes, sais faire, peux monétiser et dont le monde a besoin.',
+  summary:'L\'Ikigai est un concept japonais pour trouver son sens profond. Il se situe à l\'intersection de 4 cercles.',
+  body:`<h4>Les 4 cercles</h4><ul><li>Ce que tu <strong>aimes</strong> (passion)</li><li>Ce en quoi tu es <strong>bon(ne)</strong> (talent)</li><li>Ce dont le <strong>monde a besoin</strong> (mission)</li><li>Ce pour quoi tu peux être <strong>payé(e)</strong> (vocation)</li></ul><h4>Comment le trouver</h4><ul><li>Fais la liste de 20 activités qui te font perdre la notion du temps</li><li>Quels problèmes du monde t'indignent ou t'inspirent ?</li><li>Quels compliments reçois-tu régulièrement sans effort de ta part ?</li><li>L'intersection des réponses = ton Ikigai</li></ul><blockquote>"Un ikigai ne se trouve pas, il se construit dans l'action."</blockquote>`,
+  tags:['sens','purpose','identité','carrière']},
+
+  {id:'b8',cat:'etre',emoji:'🪞',title:'Modèle de croissance — Growth Mindset',tagline:'L\'intelligence n\'est pas fixe, elle se développe.',
+  summary:'Carol Dweck a montré que croire que ses capacités sont modifiables (growth mindset) change radicalement les résultats à long terme.',
+  body:`<h4>Fixed vs Growth</h4><ul><li><strong>Fixed</strong> : "Je suis nul en maths" → évite les défis, peur de l'échec</li><li><strong>Growth</strong> : "Je ne suis pas encore bon en maths" → cherche les défis, apprend de l'échec</li></ul><h4>Comment cultiver le Growth Mindset</h4><ul><li>Ajoute "encore" à chaque phrase limitative ("Je n'arrive pas encore à…")</li><li>Celebrate l'effort, pas le résultat</li><li>Vois les critiques comme un GPS, pas une attaque</li><li>Entoure-toi de personnes qui te challengent</li></ul>`,
+  tags:['mindset','croissance','apprentissage','résilience']},
+
+  {id:'b9',cat:'etre',emoji:'🧘',title:'Pleine conscience (Mindfulness)',tagline:'Être présent, pas parfait.',
+  summary:'La pleine conscience est la capacité à observer ses pensées et émotions sans s\'y identifier. Pratique scientifiquement validée contre l\'anxiété et le stress.',
+  body:`<h4>Les bases</h4><ul><li>Observer sans juger : les pensées sont des nuages, pas toi</li><li>Revenir au présent via les sens (respiration, corps, sons)</li><li>Pratiquer 10 min/jour = changements cérébraux mesurables en 8 semaines (MBSR)</li></ul><h4>Exercice de base — Scan corporel</h4><ul><li>Assieds-toi, ferme les yeux, respire naturellement</li><li>Dirige ton attention des pieds vers la tête</li><li>Note les sensations sans les analyser</li><li>Si une pensée arrive, observe-la et reviens au corps</li></ul><blockquote>"Tu ne peux pas arrêter les vagues, mais tu peux apprendre à surfer." — Jon Kabat-Zinn</blockquote>`,
+  tags:['méditation','présence','stress','bien-être']},
+
+  // ORDRE
+  {id:'b10',cat:'ordre',emoji:'🎯',title:'Méthode OKR',tagline:'Objectifs clairs + indicateurs mesurables = exécution redoutable.',
+  summary:'Les OKR (Objectives & Key Results) sont utilisés par Google, Intel et des milliers d\'équipes pour aligner ambition et action concrète.',
+  body:`<h4>Structure</h4><ul><li><strong>Objective</strong> : ce que tu veux accomplir (inspirant, qualitatif)</li><li><strong>Key Results</strong> : comment tu mesures le succès (2-5 métriques concrètes)</li></ul><h4>Exemple personnel</h4><ul><li><strong>O :</strong> Devenir plus en forme physiquement ce trimestre</li><li><strong>KR1 :</strong> S'entraîner 3x/semaine pendant 90 jours</li><li><strong>KR2 :</strong> Perdre 4kg de masse grasse (mesure bimensuelle)</li><li><strong>KR3 :</strong> Courir 10km sans m'arrêter</li></ul><h4>Règles d'or</h4><ul><li>Max 3-5 objectives par trimestre</li><li>Un KR doit être binaire ou mesurable</li><li>Review hebdomadaire obligatoire</li></ul>`,
+  tags:['objectifs','productivité','stratégie','carrière']},
+
+  {id:'b11',cat:'ordre',emoji:'⏱',title:'Time Blocking',tagline:'Planifie tes heures avant que les autres ne le fassent.',
+  summary:'Le time blocking consiste à assigner chaque tâche à un bloc horaire dédié dans ton calendrier. C\'est la méthode de Cal Newport et Elon Musk.',
+  body:`<h4>Principe</h4><p>Plutôt qu'une to-do list, tu réserves des créneaux horaires pour chaque type de travail. Les tâches non planifiées n'existent pas.</p><h4>Mise en place</h4><ul><li><strong>Deep work blocks</strong> : 90-120 min de travail cognitif intense (matin, notifications off)</li><li><strong>Shallow work blocks</strong> : emails, réunions, admin (après-midi)</li><li><strong>Buffer blocks</strong> : 30 min entre les blocs pour absorber les imprévus</li></ul><h4>Règles</h4><ul><li>Planifie le lendemain soir (10 min)</li><li>Sois réaliste : plan 60% du temps max</li><li>Respecte les blocs comme des réunions externes</li></ul>`,
+  tags:['productivité','temps','focus','organisation']},
+
+  {id:'b12',cat:'ordre',emoji:'💰',title:'Règle des 50/30/20',tagline:'La base de toute liberté financière.',
+  summary:'Budgétisation simple et universelle : 50% besoins, 30% envies, 20% épargne/investissement.',
+  body:`<h4>La répartition</h4><ul><li><strong>50% — Besoins</strong> : loyer, nourriture, transport, assurances</li><li><strong>30% — Envies</strong> : restaurants, sorties, abonnements, voyage</li><li><strong>20% — Épargne</strong> : fonds d'urgence (3-6 mois de dépenses), investissement, remboursement dettes</li></ul><h4>Ordre de priorité pour l'épargne</h4><ul><li>D'abord : fonds d'urgence (3 mois de dépenses)</li><li>Ensuite : rembourser les dettes à taux élevé (>5%)</li><li>Puis : investissements long terme (index funds, immobilier)</li></ul><blockquote>"Ce n'est pas votre revenu qui vous rend riche, c'est vos habitudes." — Robert Kiyosaki</blockquote>`,
+  tags:['finances','épargne','budget','liberté']},
+
+  {id:'b13',cat:'ordre',emoji:'📦',title:'Méthode GTD (Getting Things Done)',tagline:'Vider son esprit pour mieux penser.',
+  summary:'La GTD de David Allen est le système de productivité le plus influent au monde. Principe : ton cerveau est fait pour avoir des idées, pas pour les stocker.',
+  body:`<h4>Les 5 étapes</h4><ul><li><strong>1. Capturer</strong> : tout noter dans un inbox unique (app, carnet)</li><li><strong>2. Clarifier</strong> : chaque élément est-il actionnable ? Si oui, quelle est la prochaine action ?</li><li><strong>3. Organiser</strong> : projets, actions suivantes, en attente, un jour/peut-être</li><li><strong>4. Réviser</strong> : review hebdomadaire de tout le système</li><li><strong>5. Engager</strong> : choisir la bonne tâche au bon moment</li></ul><h4>La règle des 2 minutes</h4><p>Si une action prend moins de 2 minutes, fais-la immédiatement. Ne la planifie pas.</p>`,
+  tags:['productivité','organisation','GTD','clarté']},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let allItems=[...BUILT_IN];
+let userNotes=[];
+let currentCat='all';
+let currentView='grid';
+let activeItem=null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateCounts();renderCards();
+
+function updateCounts(){
+  const all=[...BUILT_IN,...userNotes];
+  document.getElementById('cnt-all').textContent=all.length;
+  ['corps','coeur','etre','ordre'].forEach(c=>{
+    document.getElementById('cnt-'+c).textContent=all.filter(i=>i.cat===c).length;
+  });
+  document.getElementById('cnt-user').textContent=userNotes.length;
+}
+
+async function loadUserNotes(){
+  if(!currentUser||!db)return;
+  try{
+    const q=query(collection(db,'codexNotes'),where('uid','==',currentUser.uid));
+    const snap=await getDocs(q);
+    userNotes=snap.docs.map(d=>({...d.data(),id:d.id,isUser:true}));
+    allItems=[...BUILT_IN,...userNotes];
+    updateCounts();renderCards();
+  }catch(e){console.error('loadNotes',e);}
+}
+
+window.filterCat=(cat,btn)=>{
+  currentCat=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const titles={all:'Tout le Codex',corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre',user:'Mes notes'};
+  document.getElementById('main-title').textContent=titles[cat]||'Codex';
+  renderCards();
+};
+
+window.applyFilters=()=>renderCards();
+window.setView=(v)=>{
+  currentView=v;
+  document.getElementById('vt-grid').classList.toggle('active',v==='grid');
+  document.getElementById('vt-list').classList.toggle('active',v==='list');
+  renderCards();
+};
+
+function getFiltered(){
+  const search=document.getElementById('search-input').value.toLowerCase().trim();
+  let items=[...BUILT_IN,...userNotes];
+  if(currentCat==='user')items=userNotes;
+  else if(currentCat!=='all')items=items.filter(i=>i.cat===currentCat);
+  if(search)items=items.filter(i=>
+    i.title.toLowerCase().includes(search)||
+    i.summary.toLowerCase().includes(search)||
+    (i.tags||[]).some(t=>t.includes(search))
+  );
+  return items;
+}
+
+function catColor(cat){return COLORS[cat]||COLORS.gen;}
+
+function renderCards(){
+  const items=getFiltered();
+  const cont=document.getElementById('cards-container');
+  cont.className=currentView==='grid'?'cards-grid':'cards-list';
+  if(!items.length){cont.innerHTML='<div class="no-results"><div class="ni">🔍</div><p>Aucun résultat pour cette recherche.</p></div>';return;}
+  cont.innerHTML=items.map((item,i)=>{
+    const c=catColor(item.cat);
+    const badgeStyle=`color:${c};border-color:${c}44;`;
+    const tags=(item.tags||[]).slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('');
+    const userBadge=item.isUser?'<span class="user-badge">Ma note</span>':'';
+    if(currentView==='list'){
+      return `<div class="ccard ccard-list" style="border-color:${c}22;" onclick="openConcept(${i})" data-idx="${i}">
+        <div class="ccard-emoji">${item.emoji||'📌'}</div>
+        <div class="cl-body">
+          <h3>${item.title}</h3>
+          <p style="color:var(--muted);font-size:0.8rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${item.summary}</p>
+        </div>
+        <div class="ccard-badge" style="${badgeStyle}">${CAT_LABELS[item.cat]||item.cat}</div>
+        ${userBadge}
+      </div>`;
+    }
+    return `<div class="ccard" style="--c:${c};" onclick="openConcept(${i})" data-idx="${i}">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${c};border-radius:16px 16px 0 0;"></div>
+      <div class="ccard-top">
+        <div class="ccard-emoji">${item.emoji||'📌'}</div>
+        <div class="ccard-badge" style="${badgeStyle}">${CAT_LABELS[item.cat]||item.cat}</div>
+      </div>
+      <h3>${item.title}</h3>
+      <p>${item.summary}</p>
+      <div class="ccard-tags">${tags}${item.isUser?'<span class="tag" style="color:#60aeff;border-color:#60aeff33;">Ma note</span>':''}</div>
+    </div>`;
+  }).join('');
+
+  // store filtered for modal ref
+  window._filteredItems=items;
+}
+
+window.openConcept=(idx)=>{
+  const items=window._filteredItems||getFiltered();
+  const item=items[idx];if(!item)return;
+  activeItem=item;
+  const c=catColor(item.cat);
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-emoji">${item.emoji||'📌'}</div>
+    <div class="modal-cat" style="color:${c};border-color:${c}44;">${CAT_LABELS[item.cat]||item.cat}</div>
+    <h2>${item.title}</h2>
+    <div class="modal-tagline">${item.tagline||item.summary}</div>
+    <div class="modal-body">${item.body||'<p>'+item.summary+'</p>'}</div>
+    <div class="modal-tags">${(item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>`;
+  document.getElementById('concept-modal').classList.add('open');
+};
+
+window.closeModal=(e)=>{if(e.target.id==='concept-modal')closeConceptModal();};
+window.closeConceptModal=()=>document.getElementById('concept-modal').classList.remove('open');
+
+// ADD NOTE
+window.openAddModal=()=>document.getElementById('add-modal').classList.add('open');
+window.closeAddModal=(e)=>{
+  if(!e||e.target.id==='add-modal')document.getElementById('add-modal').classList.remove('open');
+};
+
+window.saveNote=async()=>{
+  const title=document.getElementById('note-title').value.trim();
+  const summary=document.getElementById('note-summary').value.trim();
+  if(!title||!summary){alert('Titre et résumé obligatoires');return;}
+  const note={
+    title,summary,
+    cat:document.getElementById('note-cat').value,
+    body:document.getElementById('note-body').value.trim()||null,
+    tags:document.getElementById('note-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    emoji:'📌',isUser:true,tagline:summary
+  };
+  if(currentUser&&db){
+    try{
+      const ref=await addDoc(collection(db,'codexNotes'),{...note,uid:currentUser.uid,createdAt:serverTimestamp()});
+      note.id=ref.id;
+    }catch(e){console.error('saveNote',e);}
+  }
+  userNotes.push(note);allItems=[...BUILT_IN,...userNotes];
+  updateCounts();renderCards();
+  document.getElementById('add-modal').classList.remove('open');
+  ['note-title','note-summary','note-body','note-tags'].forEach(id=>{document.getElementById(id).value='';});
+};
+</script>
 </body>
 </html>

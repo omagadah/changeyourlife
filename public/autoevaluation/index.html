@@ -1,44 +1,408 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Autoévaluation — Bientôt disponible</title>
-  <link rel="stylesheet" href="/css/main.min.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autoévaluation — ChangeYourLife</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    body { color:#e5eef8; }
-    .shell { position: fixed; inset: 20px; border-radius: 20px; border:1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); display:grid; place-items:center; }
-    .card { text-align:center; max-width:800px; padding:24px; }
-    .pill { display:inline-block; padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#cfe1ff; font-size:12px; margin-bottom:10px; }
-    .cta { margin-top:18px; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.2); color:#e5eef8; background: rgba(255,255,255,0.06); text-decoration:none; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#07192f;--card:rgba(10,22,45,0.88);--border:rgba(0,112,243,0.2);
+      --text:#e8f0fe;--muted:#7ba3c8;
+      --corps:#2dd4bf;--coeur:#f87171;--etre:#a78bfa;--ordre:#fbbf24;
+    }
+    html,body{min-height:100vh;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text);}
+    #vanta-bg{position:fixed;inset:0;z-index:0;}
+    .page{position:relative;z-index:1;min-height:100vh;padding:20px 16px 80px;}
+    .nav{display:flex;align-items:center;gap:14px;margin-bottom:32px;max-width:820px;margin-left:auto;margin-right:auto;}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:0.85rem;transition:all .2s;}
+    .nav-back:hover{background:rgba(255,255,255,0.1);color:var(--text);}
+    .nav-title{font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,#fff,#9bb3d0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .screen{display:none;max-width:820px;margin:0 auto;animation:fadeIn .3s ease;}
+    .screen.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* INTRO */
+    .intro-hero{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:52px 44px;text-align:center;backdrop-filter:blur(20px);}
+    .intro-hero .big-icon{font-size:4rem;margin-bottom:18px;}
+    .intro-hero h2{font-size:2rem;font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,#fff,#9bb3d0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .intro-hero p{color:var(--muted);line-height:1.75;max-width:500px;margin:0 auto 36px;font-size:0.98rem;}
+    .domains-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px;}
+    .d-chip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 12px;text-align:center;transition:border-color .2s;}
+    .d-chip:hover{border-color:rgba(255,255,255,0.15);}
+    .d-chip .dc-emoji{font-size:1.6rem;margin-bottom:6px;}
+    .d-chip .dc-name{font-size:0.88rem;font-weight:700;}
+    .d-chip .dc-sub{font-size:0.72rem;color:var(--muted);margin-top:3px;}
+    .btn-start{display:inline-flex;align-items:center;gap:10px;padding:16px 40px;border-radius:14px;background:linear-gradient(135deg,#0070f3,#0056cc);color:#fff;font-weight:700;font-size:1.05rem;border:none;cursor:pointer;transition:all .2s;box-shadow:0 6px 24px rgba(0,112,243,0.4);}
+    .btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,112,243,0.5);}
+    .history-link{display:block;margin-top:16px;font-size:0.84rem;color:var(--muted);cursor:pointer;text-decoration:underline;}
+    .history-link:hover{color:var(--text);}
+
+    /* QUIZ */
+    .quiz-top{margin-bottom:24px;}
+    .prog-wrap{background:rgba(255,255,255,0.08);border-radius:99px;height:6px;margin-bottom:14px;overflow:hidden;}
+    .prog-fill{height:6px;border-radius:99px;background:linear-gradient(90deg,#0070f3,#00aaff);transition:width .5s cubic-bezier(.4,0,.2,1);}
+    .quiz-info{display:flex;justify-content:space-between;align-items:center;}
+    .domain-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:99px;font-size:0.82rem;font-weight:700;border:1px solid;background:rgba(0,0,0,0.2);}
+    .quiz-counter{font-size:0.8rem;color:var(--muted);}
+    .qcard{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;backdrop-filter:blur(20px);transition:opacity .22s;}
+    .qcard.fading{opacity:0;}
+    .qcard h3{font-size:1.18rem;font-weight:600;line-height:1.65;margin-bottom:36px;}
+    .rating-hint{display:flex;justify-content:space-between;font-size:0.74rem;color:var(--muted);margin-bottom:8px;}
+    .rating-row{display:flex;gap:5px;}
+    .rb{flex:1;padding:10px 0;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--muted);font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;}
+    .rb:hover{border-color:rgba(0,112,243,0.45);background:rgba(0,112,243,0.1);color:var(--text);}
+    .rb.sel{background:rgba(0,112,243,0.22);border-color:#0070f3;color:#fff;}
+    .qdots{display:flex;gap:7px;justify-content:center;margin-top:22px;}
+    .qdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.13);transition:all .2s;}
+    .qdot.done{background:#0070f3;}
+    .qdot.cur{transform:scale(1.4);}
+    .quiz-actions{display:flex;justify-content:space-between;margin-top:20px;gap:12px;}
+    .btn-prev{padding:10px 20px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-size:0.9rem;cursor:pointer;transition:all .2s;}
+    .btn-prev:hover{background:rgba(255,255,255,0.1);color:var(--text);}
+    .btn-nxt{padding:10px 26px;border-radius:10px;background:linear-gradient(135deg,#0070f3,#0056cc);border:none;color:#fff;font-weight:700;font-size:0.9rem;cursor:pointer;transition:all .2s;opacity:.4;pointer-events:none;}
+    .btn-nxt.ok{opacity:1;pointer-events:auto;}
+    .btn-nxt.ok:hover{transform:translateY(-1px);}
+
+    /* RESULTS */
+    .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .rcard{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;backdrop-filter:blur(20px);}
+    .rcard.wide{grid-column:1/-1;}
+    .rcard h3{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;}
+    .chart-box{max-width:300px;margin:0 auto;}
+    .global-score{text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);}
+    .global-num{font-size:2.4rem;font-weight:800;color:#60aeff;}
+    .global-label{font-size:0.8rem;color:var(--muted);margin-top:2px;}
+    .dsrow{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+    .dsrow:last-of-type{margin-bottom:0;}
+    .ds-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+    .ds-name{font-size:0.83rem;font-weight:600;width:52px;flex-shrink:0;}
+    .ds-bar-bg{flex:1;background:rgba(255,255,255,0.07);border-radius:99px;height:7px;}
+    .ds-bar{height:7px;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+    .ds-val{font-size:0.83rem;font-weight:700;width:30px;text-align:right;flex-shrink:0;}
+    .insight{border-radius:12px;padding:15px 18px;margin-bottom:10px;}
+    .insight:last-child{margin-bottom:0;}
+    .insight h4{font-size:0.88rem;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+    .insight p{font-size:0.82rem;color:var(--muted);line-height:1.6;}
+    .res-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+    .btn-sec{padding:9px 18px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-size:0.85rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s;}
+    .btn-sec:hover{background:rgba(255,255,255,0.1);color:var(--text);}
+
+    /* HISTORY */
+    .hist-list{display:flex;flex-direction:column;gap:10px;}
+    .hist-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;backdrop-filter:blur(16px);display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .2s;}
+    .hist-item:hover{border-color:rgba(0,112,243,0.4);}
+    .hist-date{font-size:0.8rem;color:var(--muted);width:100px;flex-shrink:0;}
+    .hist-chips{display:flex;gap:10px;flex:1;flex-wrap:wrap;}
+    .hchip{display:flex;align-items:center;gap:5px;font-size:0.8rem;font-weight:600;}
+    .hchip-dot{width:7px;height:7px;border-radius:50%;}
+    .hist-global{font-size:1.05rem;font-weight:700;color:#60aeff;flex-shrink:0;}
+    .empty{text-align:center;padding:52px 20px;color:var(--muted);}
+    .empty .ei{font-size:2.8rem;margin-bottom:12px;}
+
+    @media(max-width:640px){
+      .domains-grid{grid-template-columns:repeat(2,1fr);}
+      .results-grid{grid-template-columns:1fr;}
+      .rcard.wide{grid-column:auto;}
+      .intro-hero{padding:32px 20px;}
+      .qcard{padding:24px 18px;}
+      .rb{font-size:0.78rem;padding:8px 0;}
+    }
   </style>
 </head>
 <body>
-  <div id="vanta-birds-bg"></div>
-  <nav class="site-nav">
-    <a href="/app/" class="site-nav__back">← Mon Espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-    </button>
+<div id="vanta-bg"></div>
+<div class="page">
+  <nav class="nav">
+    <a href="/app" class="nav-back">← Tableau de bord</a>
+    <span class="nav-title">Autoévaluation</span>
   </nav>
-  <main class="shell" style="inset:70px 20px 20px 20px!important">
-    <div class="card">
-      <div class="pill">Bientôt disponible</div>
-      <h1>Autoévaluation</h1>
-      <p>Tests rapides et bilans réguliers pour mesurer vos niveaux et guider vos priorités.</p>
-      <a class="cta" href="/app/">← Retour à Mon Espace</a>
+
+  <!-- INTRO -->
+  <section id="s-intro" class="screen active">
+    <div class="intro-hero">
+      <div class="big-icon">🎯</div>
+      <h2>Roue de Vie</h2>
+      <p>Évalue honnêtement ton niveau dans les 4 domaines fondamentaux. 20 questions, 5 minutes. Résultats visuels + recommandations personnalisées.</p>
+      <div class="domains-grid">
+        <div class="d-chip"><div class="dc-emoji">💪</div><div class="dc-name" style="color:var(--corps)">Corps</div><div class="dc-sub">Santé · Énergie · Sport</div></div>
+        <div class="d-chip"><div class="dc-emoji">❤️</div><div class="dc-name" style="color:var(--coeur)">Cœur</div><div class="dc-sub">Émotions · Relations</div></div>
+        <div class="d-chip"><div class="dc-emoji">✨</div><div class="dc-name" style="color:var(--etre)">Être</div><div class="dc-sub">Identité · Sens · Mental</div></div>
+        <div class="d-chip"><div class="dc-emoji">⚡</div><div class="dc-name" style="color:var(--ordre)">Ordre</div><div class="dc-sub">Organisation · Finances</div></div>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">▶ Commencer l'évaluation</button>
+      <span class="history-link" onclick="goHistory()">📊 Voir mes évaluations précédentes</span>
     </div>
-  </main>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-  <script type="module">
-    import { updateGlobalAvatar } from '/js/common.js';
-    import { initUserMenu } from '/js/userMenu.js';
-    try { initUserMenu(); } catch(e) {}
-    window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
-      try { updateGlobalAvatar(); } catch(e){}
+  </section>
+
+  <!-- QUIZ -->
+  <section id="s-quiz" class="screen">
+    <div class="quiz-top">
+      <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="quiz-info">
+        <div class="domain-badge" id="dom-badge"></div>
+        <div class="quiz-counter" id="quiz-ctr"></div>
+      </div>
+    </div>
+    <div class="qcard" id="qcard">
+      <h3 id="q-text"></h3>
+      <div class="rating-hint"><span>😞 Très peu satisfait</span><span>😐 Moyen</span><span>🌟 Excellent</span></div>
+      <div class="rating-row" id="rating-row"></div>
+      <div class="qdots" id="qdots"></div>
+    </div>
+    <div class="quiz-actions">
+      <button class="btn-prev" onclick="prevQ()">← Précédent</button>
+      <button class="btn-nxt" id="btn-nxt" onclick="nextQ()">Suivant →</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="s-results" class="screen">
+    <div class="results-grid">
+      <div class="rcard wide">
+        <h3>🕸 Ta Roue de Vie</h3>
+        <div class="chart-box"><canvas id="radar-chart"></canvas></div>
+        <div class="global-score">
+          <div class="global-num" id="g-score">—</div>
+          <div class="global-label">Score global / 10</div>
+        </div>
+      </div>
+      <div class="rcard">
+        <h3>📊 Scores par domaine</h3>
+        <div id="dom-scores"></div>
+      </div>
+      <div class="rcard">
+        <h3>💡 Insights</h3>
+        <div id="insights"></div>
+      </div>
+    </div>
+    <div class="res-actions" style="margin-top:16px;">
+      <button class="btn-start" style="padding:12px 24px;font-size:0.9rem;" onclick="startQuiz()">↺ Refaire</button>
+      <button class="btn-sec" onclick="goHistory()">📊 Historique</button>
+      <a href="/objectifs" class="btn-sec">🎯 Créer des objectifs</a>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="s-history" class="screen">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-size:1.2rem;font-weight:700;">Mes évaluations</h2>
+      <button class="btn-sec" onclick="goIntro()">← Retour</button>
+    </div>
+    <div class="hist-list" id="hist-list"></div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+<script>VANTA.BIRDS({el:"#vanta-bg",mouseControls:true,touchControls:true,backgroundColor:0x07192f,color1:0x7192ff,color2:0xd1ff,colorMode:"varianceGradient",quantity:3});</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const FC={apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",authDomain:"changeyourlife-cc210.firebaseapp.com",projectId:"changeyourlife-cc210",storageBucket:"changeyourlife-cc210.appspot.com",messagingSenderId:"801720080785",appId:"1:801720080785:web:1a74aadba5755ea26c2230"};
+let app,auth,db;
+if(!window._cyfFirebase){app=initializeApp(FC);auth=getAuth(app);db=getFirestore(app);window._cyfFirebase={app,auth,db};}
+else{({app,auth,db}=window._cyfFirebase);}
+
+const DOMAINS=[
+  {key:'corps',label:'Corps',color:'#2dd4bf',emoji:'💪',questions:[
+    "Comment évalues-tu ton niveau d'énergie physique au quotidien ?",
+    "Es-tu satisfait(e) de la qualité de ton sommeil (durée, récupération) ?",
+    "Pratiques-tu une activité physique régulière (sport, marche, etc.) ?",
+    "Comment évalues-tu la qualité de tes habitudes alimentaires ?",
+    "Ton corps te semble-t-il en bonne santé générale ?"
+  ]},
+  {key:'coeur',label:'Cœur',color:'#f87171',emoji:'❤️',questions:[
+    "Comment évalues-tu la qualité de tes relations proches (famille, amis) ?",
+    "Te sens-tu émotionnellement équilibré(e) la plupart du temps ?",
+    "Es-tu satisfait(e) de ta vie amoureuse ou affective actuelle ?",
+    "As-tu un réseau de soutien solide sur qui tu peux compter ?",
+    "Exprimes-tu facilement tes émotions et besoins à tes proches ?"
+  ]},
+  {key:'etre',label:'Être',color:'#a78bfa',emoji:'✨',questions:[
+    "As-tu un sentiment clair de tes valeurs profondes et de ton identité ?",
+    "Te sens-tu aligné(e) avec ton but ou ta mission de vie ?",
+    "Consacres-tu du temps régulier à ton développement personnel ?",
+    "Comment évalues-tu ton niveau de confiance et d'estime de toi ?",
+    "Ta vie actuelle correspond-elle à la personne que tu veux devenir ?"
+  ]},
+  {key:'ordre',label:'Ordre',color:'#fbbf24',emoji:'⚡',questions:[
+    "Es-tu satisfait(e) de ta situation financière actuelle ?",
+    "Ton environnement de vie et de travail te convient-il ?",
+    "Comment évalues-tu ton organisation et ta gestion du temps ?",
+    "As-tu des objectifs clairs et un plan concret pour ta carrière/projets ?",
+    "Ton espace de vie est-il ordonné et agréable au quotidien ?"
+  ]}
+];
+
+let dIdx=0,qIdx=0,answers={},radarChart=null,currentUser=null;
+DOMAINS.forEach(d=>{answers[d.key]=Array(d.questions.length).fill(null);});
+onAuthStateChanged(auth,u=>{currentUser=u;});
+
+// screens
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+window.goIntro=()=>show('s-intro');
+window.goHistory=()=>{loadHistory();show('s-history');};
+
+// quiz
+window.startQuiz=()=>{
+  dIdx=0;qIdx=0;
+  DOMAINS.forEach(d=>{answers[d.key]=Array(d.questions.length).fill(null);});
+  show('s-quiz');render();
+};
+
+function totalQ(){return DOMAINS.reduce((s,d)=>s+d.questions.length,0);}
+function globalIdx(){let i=0;for(let k=0;k<dIdx;k++)i+=DOMAINS[k].questions.length;return i+qIdx;}
+
+function render(){
+  const D=DOMAINS[dIdx];
+  const gIdx=globalIdx(),total=totalQ();
+  document.getElementById('prog-fill').style.width=((gIdx/total)*100)+'%';
+  const badge=document.getElementById('dom-badge');
+  badge.textContent=D.emoji+' '+D.label;
+  badge.style.color=D.color;badge.style.borderColor=D.color+'55';
+  document.getElementById('quiz-ctr').textContent=`Q${gIdx+1}/${total}`;
+  document.getElementById('q-text').textContent=D.questions[qIdx];
+
+  const rr=document.getElementById('rating-row');rr.innerHTML='';
+  const saved=answers[D.key][qIdx];
+  for(let i=1;i<=10;i++){
+    const b=document.createElement('button');
+    b.className='rb'+(saved===i?' sel':'');
+    b.textContent=i;b.onclick=()=>pick(i);rr.appendChild(b);
+  }
+
+  const qd=document.getElementById('qdots');qd.innerHTML='';
+  D.questions.forEach((_,i)=>{
+    const dot=document.createElement('div');
+    dot.className='qdot'+(i===qIdx?' cur':''+(answers[D.key][i]!==null?' done':''));
+    if(i===qIdx)dot.style.background=D.color;
+    else if(answers[D.key][i]!==null)dot.style.background=D.color+'88';
+    qd.appendChild(dot);
+  });
+  syncBtn();
+}
+
+function pick(v){
+  const D=DOMAINS[dIdx];answers[D.key][qIdx]=v;
+  document.querySelectorAll('.rb').forEach((b,i)=>b.classList.toggle('sel',i+1===v));
+  const dots=document.querySelectorAll('.qdot');
+  dots.forEach((d,i)=>{
+    d.className='qdot'+(i===qIdx?' cur':'');
+    if(i===qIdx)d.style.background=D.color;
+    else if(answers[D.key][i]!==null){d.style.background=D.color+'88';}
+    else d.style.background='';
+  });
+  syncBtn();
+}
+
+function syncBtn(){
+  const D=DOMAINS[dIdx];
+  const ok=answers[D.key][qIdx]!==null;
+  const btn=document.getElementById('btn-nxt');
+  btn.classList.toggle('ok',ok);
+  const last=dIdx===DOMAINS.length-1&&qIdx===DOMAINS[dIdx].questions.length-1;
+  btn.textContent=last?'Voir mes résultats →':'Suivant →';
+}
+
+function transition(cb){
+  const c=document.getElementById('qcard');c.classList.add('fading');
+  setTimeout(()=>{cb();render();c.classList.remove('fading');},220);
+}
+
+window.nextQ=()=>{
+  const D=DOMAINS[dIdx];if(answers[D.key][qIdx]===null)return;
+  if(qIdx<D.questions.length-1)transition(()=>qIdx++);
+  else if(dIdx<DOMAINS.length-1)transition(()=>{dIdx++;qIdx=0;});
+  else showResults();
+};
+window.prevQ=()=>{
+  if(qIdx>0)transition(()=>qIdx--);
+  else if(dIdx>0)transition(()=>{dIdx--;qIdx=DOMAINS[dIdx].questions.length-1;});
+};
+
+// results
+function avg(arr){const v=arr.filter(x=>x!==null);return v.length?Math.round((v.reduce((a,b)=>a+b,0)/v.length)*10)/10:0;}
+
+function showResults(){
+  const scores={};DOMAINS.forEach(d=>{scores[d.key]=avg(answers[d.key]);});
+  const global=Math.round((Object.values(scores).reduce((a,b)=>a+b,0)/DOMAINS.length)*10)/10;
+  show('s-results');
+  document.getElementById('g-score').textContent=global;
+
+  if(radarChart)radarChart.destroy();
+  radarChart=new Chart(document.getElementById('radar-chart').getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:DOMAINS.map(d=>d.emoji+' '+d.label),
+      datasets:[{
+        label:'Score',data:DOMAINS.map(d=>scores[d.key]),
+        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#0070f3',borderWidth:2,
+        pointBackgroundColor:DOMAINS.map(d=>d.color),pointBorderColor:'transparent',pointRadius:6,pointHoverRadius:8
+      }]
+    },
+    options:{responsive:true,scales:{r:{
+      min:0,max:10,ticks:{stepSize:2,color:'rgba(155,179,208,0.5)',backdropColor:'transparent',font:{size:9}},
+      grid:{color:'rgba(255,255,255,0.05)'},angleLines:{color:'rgba(255,255,255,0.05)'},
+      pointLabels:{color:'#9bb3d0',font:{size:12,weight:'600'}}
+    }},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}/10`}}}}
+  });
+
+  document.getElementById('dom-scores').innerHTML=DOMAINS.map(d=>`
+    <div class="dsrow">
+      <div class="ds-dot" style="background:${d.color}"></div>
+      <div class="ds-name">${d.label}</div>
+      <div class="ds-bar-bg"><div class="ds-bar" style="width:${scores[d.key]*10}%;background:${d.color}" data-w="${scores[d.key]*10}"></div></div>
+      <div class="ds-val" style="color:${d.color}">${scores[d.key]}</div>
+    </div>`).join('');
+
+  const sorted=[...DOMAINS].sort((a,b)=>scores[a.key]-scores[b.key]);
+  const low=sorted[0],high=sorted[sorted.length-1];
+  document.getElementById('insights').innerHTML=`
+    <div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
+      <h4><span style="color:${low.color}">${low.emoji} Priorité — ${low.label}</span></h4>
+      <p>Score <strong>${scores[low.key]}/10</strong>. C'est ton domaine le plus à travailler. Fixe un objectif concret cette semaine.</p>
+    </div>
+    <div class="insight" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);margin-top:10px;">
+      <h4><span style="color:#34d399">${high.emoji} Point fort — ${high.label}</span></h4>
+      <p>Score <strong>${scores[high.key]}/10</strong>. C'est ta base. Utilise cette énergie pour faire progresser les autres domaines.</p>
+    </div>`;
+
+  // animate bars
+  setTimeout(()=>{
+    document.querySelectorAll('.ds-bar').forEach(b=>{
+      b.style.width=b.dataset.w+'%';
     });
-  </script>
+  },100);
+
+  save(scores,global);
+}
+
+async function save(scores,global){
+  if(!currentUser)return;
+  try{await addDoc(collection(db,'assessments'),{uid:currentUser.uid,scores,globalScore:global,answers:JSON.parse(JSON.stringify(answers)),createdAt:serverTimestamp()});}
+  catch(e){console.error('save',e);}
+}
+
+async function loadHistory(){
+  const cont=document.getElementById('hist-list');
+  cont.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)">Chargement…</div>';
+  if(!currentUser){cont.innerHTML='<div class="empty"><div class="ei">🔒</div><p>Connecte-toi pour voir ton historique</p></div>';return;}
+  try{
+    const q=query(collection(db,'assessments'),where('uid','==',currentUser.uid),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    if(snap.empty){cont.innerHTML='<div class="empty"><div class="ei">📊</div><p>Aucune évaluation encore.<br>Lance ta première !</p></div>';return;}
+    cont.innerHTML=snap.docs.map(doc=>{
+      const d=doc.data();
+      const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'—'}</div>`).join('');
+      return `<div class="hist-item"><div class="hist-date">${date}</div><div class="hist-chips">${chips}</div><div class="hist-global">${d.globalScore??'—'}/10</div></div>`;
+    }).join('');
+  }catch(e){cont.innerHTML='<div class="empty"><p>Erreur de chargement</p></div>';}
+}
+</script>
 </body>
 </html>
