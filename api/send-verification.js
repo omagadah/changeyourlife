@@ -1,10 +1,10 @@
 // api/send-verification.js
 // Génère un OTP 6 chiffres, le stocke en Firestore, envoie un beau mail français via Resend
 
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
-import { Resend } from 'resend';
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
+const { getFirestore } = require('firebase-admin/firestore');
+const { Resend } = require('resend');
 
 // ── Firebase Admin singleton ──────────────────────────────────────────────────
 function getAdminApp() {
@@ -90,11 +90,21 @@ function buildEmailHtml(code, email) {
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { idToken } = req.body || {};
   if (!idToken) return res.status(400).json({ error: 'idToken requis' });
+
+  // Check env vars before attempting anything
+  if (!process.env.RESEND_API_KEY) {
+    console.error('[send-verification] RESEND_API_KEY is not set');
+    return res.status(500).json({ error: 'Configuration email manquante (RESEND_API_KEY)', code: 'MISSING_API_KEY' });
+  }
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error('[send-verification] FIREBASE_SERVICE_ACCOUNT is not set');
+    return res.status(500).json({ error: 'Configuration serveur manquante', code: 'MISSING_SA' });
+  }
 
   try {
     const app = getAdminApp();
@@ -132,12 +142,6 @@ export default async function handler(req, res) {
       attempts: 0,
     });
 
-    // Check env vars before attempting send
-    if (!process.env.RESEND_API_KEY) {
-      console.error('[send-verification] RESEND_API_KEY is not set in environment variables');
-      return res.status(500).json({ error: 'Configuration email manquante (RESEND_API_KEY)', code: 'MISSING_API_KEY' });
-    }
-
     // Send email via Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { data: resendData, error: resendError } = await resend.emails.send({
@@ -149,26 +153,20 @@ export default async function handler(req, res) {
 
     if (resendError) {
       console.error('[send-verification] Resend error:', JSON.stringify(resendError, null, 2));
-      // Domain not verified = Resend returns a specific error
-      const isDomainError = resendError.message?.toLowerCase().includes('domain') ||
-                            resendError.name === 'validation_error';
       return res.status(500).json({
-        error: isDomainError
-          ? 'Domaine email non vérifié — contactez le support'
-          : 'Impossible d\'envoyer l\'email',
+        error: 'Impossible d\'envoyer l\'email',
         code: resendError.name || 'RESEND_ERROR',
       });
     }
 
     console.log('[send-verification] Email sent successfully, id:', resendData?.id);
-
     return res.status(200).json({ success: true });
 
   } catch (err) {
-    console.error('send-verification error:', err);
+    console.error('[send-verification] error:', err.message, err.code);
     if (err.code === 'auth/argument-error' || err.code === 'auth/id-token-expired') {
       return res.status(401).json({ error: 'Session expirée, reconnectez-vous' });
     }
-    return res.status(500).json({ error: 'Erreur serveur' });
+    return res.status(500).json({ error: 'Erreur serveur: ' + err.message });
   }
-}
+};
