@@ -249,7 +249,12 @@ if (googleBtn) {
         try { await signInWithRedirect(auth, provider); } catch (err2) { showError(err2.message || 'Erreur fallback Google'); }
         return;
       }
-      showError(err.message || 'Erreur lors de la connexion Google');
+      console.error('[Google signin] code:', err?.code, 'message:', err?.message, err);
+      if (err?.code === 'auth/internal-error') {
+        showError('Erreur OAuth Google — vérifiez que les popups ne sont pas bloquées par votre navigateur ou VPN');
+      } else {
+        showError(err.message || 'Erreur lors de la connexion Google');
+      }
     }
   });
 }
@@ -265,6 +270,7 @@ if (githubBtn) {
       showNotification('Connexion GitHub réussie — redirection…');
     } catch (err) {
       const code = err?.code || '';
+      console.error('[GitHub signin] code:', code, 'message:', err?.message, err);
       if (code === 'auth/unauthorized-domain') {
         showError('Domaine non autorisé — vérifie les Authorized domains dans Firebase Console');
         return;
@@ -273,7 +279,11 @@ if (githubBtn) {
         try { await signInWithRedirect(auth, provider); } catch (err2) { showError(err2.message || 'Erreur fallback GitHub'); }
         return;
       }
-      showError(err.message || 'Erreur lors de la connexion GitHub');
+      if (code === 'auth/internal-error') {
+        showError('Erreur OAuth GitHub — vérifiez que les popups ne sont pas bloquées par votre navigateur ou VPN');
+      } else {
+        showError(err.message || 'Erreur lors de la connexion GitHub');
+      }
     }
   });
 }
