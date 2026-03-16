@@ -1,4 +1,8 @@
 {
+  "functions": {
+    "api/send-verification.js": { "runtime": "nodejs20.x" },
+    "api/verify-code.js": { "runtime": "nodejs20.x" }
+  },
   "headers": [
     {
       "source": "/css/(.*)",
