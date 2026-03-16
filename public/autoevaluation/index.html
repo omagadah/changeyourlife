@@ -200,7 +200,7 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const FC={apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",authDomain:"changeyourlife-cc210.firebaseapp.com",projectId:"changeyourlife-cc210",storageBucket:"changeyourlife-cc210.appspot.com",messagingSenderId:"801720080785",appId:"1:801720080785:web:1a74aadba5755ea26c2230"};
 let app,auth,db;
@@ -361,15 +361,37 @@ function showResults(){
 
   const sorted=[...DOMAINS].sort((a,b)=>scores[a.key]-scores[b.key]);
   const low=sorted[0],high=sorted[sorted.length-1];
-  document.getElementById('insights').innerHTML=`
-    <div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
-      <h4><span style="color:${low.color}">${low.emoji} Priorité — ${low.label}</span></h4>
-      <p>Score <strong>${scores[low.key]}/10</strong>. C'est ton domaine le plus à travailler. Fixe un objectif concret cette semaine.</p>
-    </div>
-    <div class="insight" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);margin-top:10px;">
-      <h4><span style="color:#34d399">${high.emoji} Point fort — ${high.label}</span></h4>
-      <p>Score <strong>${scores[high.key]}/10</strong>. C'est ta base. Utilise cette énergie pour faire progresser les autres domaines.</p>
-    </div>`;
+  const allSame=sorted.every(d=>scores[d.key]===scores[sorted[0].key]);
+  const allVeryHigh=global>=9;
+
+  let insightsHtml='';
+  if(allVeryHigh){
+    insightsHtml=`
+      <div class="insight" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);">
+        <h4><span style="color:#fbbf24">🪞 Un moment d'honnêteté</span></h4>
+        <p>Tu as obtenu un score très élevé partout. Si c'est sincère, c'est remarquable ! Mais souviens-toi : <strong>tricher ici, c'est te tromper toi-même</strong>. Cette évaluation n'est vue que par toi. Plus tes réponses sont honnêtes, plus les insights t'aident vraiment. Tu peux refaire le questionnaire en prenant le temps de réfléchir à chaque réponse.</p>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn-prev" onclick="startQuiz()" style="width:100%;justify-content:center;">↺ Refaire honnêtement</button>
+      </div>`;
+  } else if(allSame){
+    insightsHtml=`
+      <div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);">
+        <h4><span style="color:#60aeff">⚖️ Équilibre parfait</span></h4>
+        <p>Tous tes domaines sont au même niveau (${scores[low.key]}/10). C'est rare — choisis le domaine qui te tient le plus à cœur pour commencer à progresser.</p>
+      </div>`;
+  } else {
+    insightsHtml=`
+      <div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
+        <h4><span style="color:${low.color}">${low.emoji} Priorité — ${low.label}</span></h4>
+        <p>Score <strong>${scores[low.key]}/10</strong>. C'est le domaine qui mérite le plus ton attention. Fixe un objectif concret cette semaine.</p>
+      </div>
+      <div class="insight" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);margin-top:10px;">
+        <h4><span style="color:#34d399">${high.emoji} Point fort — ${high.label}</span></h4>
+        <p>Score <strong>${scores[high.key]}/10</strong>. C'est ta base solide. Utilise cette énergie pour faire progresser les autres domaines.</p>
+      </div>`;
+  }
+  document.getElementById('insights').innerHTML=insightsHtml;
 
   // animate bars
   setTimeout(()=>{
@@ -390,12 +412,23 @@ async function save(scores,global){
 async function loadHistory(){
   const cont=document.getElementById('hist-list');
   cont.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)">Chargement…</div>';
-  if(!currentUser){cont.innerHTML='<div class="empty"><div class="ei">🔒</div><p>Connecte-toi pour voir ton historique</p></div>';return;}
+  // Wait for auth if needed
+  if(!currentUser){
+    await new Promise(r=>setTimeout(r,1200));
+    if(!currentUser){cont.innerHTML='<div class="empty"><div class="ei">🔒</div><p>Connecte-toi pour voir ton historique</p></div>';return;}
+  }
   try{
-    const q=query(collection(db,'assessments'),where('uid','==',currentUser.uid),orderBy('createdAt','desc'));
+    // No orderBy to avoid composite index requirement — sort in JS
+    const q=query(collection(db,'assessments'),where('uid','==',currentUser.uid));
     const snap=await getDocs(q);
     if(snap.empty){cont.innerHTML='<div class="empty"><div class="ei">📊</div><p>Aucune évaluation encore.<br>Lance ta première !</p></div>';return;}
-    cont.innerHTML=snap.docs.map(doc=>{
+    // Sort by date descending in JS (avoids composite index)
+    const docs=snap.docs.slice().sort((a,b)=>{
+      const ta=a.data().createdAt?.toMillis?.()??0;
+      const tb=b.data().createdAt?.toMillis?.()??0;
+      return tb-ta;
+    });
+    cont.innerHTML=docs.map(doc=>{
       const d=doc.data();
       const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
       const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'—'}</div>`).join('');
