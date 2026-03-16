@@ -132,9 +132,15 @@ export default async function handler(req, res) {
       attempts: 0,
     });
 
+    // Check env vars before attempting send
+    if (!process.env.RESEND_API_KEY) {
+      console.error('[send-verification] RESEND_API_KEY is not set in environment variables');
+      return res.status(500).json({ error: 'Configuration email manquante (RESEND_API_KEY)', code: 'MISSING_API_KEY' });
+    }
+
     // Send email via Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { error: resendError } = await resend.emails.send({
+    const { data: resendData, error: resendError } = await resend.emails.send({
       from: 'ChangeYourLife <noreply@changeyourlife.ai>',
       to: email,
       subject: `${code} — Votre code de vérification ChangeYourLife`,
@@ -142,9 +148,19 @@ export default async function handler(req, res) {
     });
 
     if (resendError) {
-      console.error('Resend error:', resendError);
-      return res.status(500).json({ error: 'Impossible d\'envoyer l\'email' });
+      console.error('[send-verification] Resend error:', JSON.stringify(resendError, null, 2));
+      // Domain not verified = Resend returns a specific error
+      const isDomainError = resendError.message?.toLowerCase().includes('domain') ||
+                            resendError.name === 'validation_error';
+      return res.status(500).json({
+        error: isDomainError
+          ? 'Domaine email non vérifié — contactez le support'
+          : 'Impossible d\'envoyer l\'email',
+        code: resendError.name || 'RESEND_ERROR',
+      });
     }
+
+    console.log('[send-verification] Email sent successfully, id:', resendData?.id);
 
     return res.status(200).json({ success: true });
 

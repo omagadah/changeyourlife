@@ -253,6 +253,7 @@
 
     // ── Send/Resend OTP ────────────────────────────────────────────────────────
     async function sendOtp(user) {
+      otpHint.innerHTML = '<span class="status-dot"></span> Envoi du code…';
       try {
         const idToken = await user.getIdToken(true);
         const res = await fetch('/api/send-verification', {
@@ -264,18 +265,25 @@
         if (!res.ok) {
           if (res.status === 429) {
             startResendCooldown(data.retryAfter || 60);
-            cooldownMsg.textContent = `Renvoyer dans ${data.retryAfter || 60}s`;
+            otpHint.innerHTML = '<span class="status-dot"></span> Entrez le code déjà envoyé par email';
+            otpBoxes[0].focus();
           } else {
+            console.error('sendOtp API error:', data);
+            otpHint.innerHTML = `⚠️ ${data.error || 'Impossible d\'envoyer le code'}`;
+            otpHint.style.color = '#ef4444';
             showNotif(data.error || 'Impossible d\'envoyer le code', 'error');
           }
           return;
         }
         showNotif('Code envoyé ! Vérifiez votre boîte mail 📧', 'info');
         startResendCooldown(60);
-        otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé — entrez-le ci-dessus';
+        otpHint.style.color = '';
+        otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé — vérifiez vos spams si besoin';
         otpBoxes[0].focus();
       } catch (err) {
         console.error('sendOtp error', err);
+        otpHint.innerHTML = '⚠️ Erreur réseau — vérifiez votre connexion';
+        otpHint.style.color = '#ef4444';
         showNotif('Erreur réseau. Réessayez.', 'error');
       }
     }
