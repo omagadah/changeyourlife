@@ -5,188 +5,268 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Profil - Change Your Life</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
+    <link rel="stylesheet" href="/css/main.min.css"/>
     <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; --ok:#10b981; --warn:#f59e0b; --danger:#ef4444; }
-        body.light-mode { --background-color: #f0f3f5; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0,0,0,0.1); --text-primary:#121212; --text-secondary:#555; }
+        :root {
+          --background-color:#07192f; --glass-bg:rgba(14,26,50,0.75);
+          --glass-border:rgba(255,255,255,0.09); --text-primary:#e5eef8;
+          --text-secondary:#7e9ab5; --accent-color:#0070f3;
+          --ok:#10b981; --warn:#f59e0b; --danger:#ef4444;
+        }
         *{margin:0;padding:0;box-sizing:border-box}
-        html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text-primary);background-color:var(--background-color);transition:background-color .3s ease,color .3s ease}
-        .header{position:fixed;top:20px;right:30px;z-index:100}
-        .user-panel-trigger{width:40px;height:40px;background-color:transparent;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;transition:transform .2s ease,box-shadow .2s ease;user-select:none}
-        .user-panel-trigger:hover{transform:scale(1.06);box-shadow:0 0 14px rgba(255,255,255,.55)}
-        .app-container{position:absolute;top:15px;bottom:15px;left:15px;right:15px;background:var(--glass-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;border:1px solid var(--glass-border);box-shadow:0 8px 32px rgba(0,0,0,.3);padding:24px;z-index:1;display:grid;grid-template-columns:320px 1fr;gap:24px;overflow:hidden}
-        .left-card{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:16px;overflow:auto}
-        .right-panel{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:16px;padding:18px;display:flex;flex-direction:column;overflow:hidden}
-        h1{font-size:1.4rem;font-weight:700;margin-bottom:4px}
-        .subtle{color:var(--text-secondary);font-size:.9rem}
-        .avatar-preview{width:150px;height:150px;margin:8px auto;background:rgba(0,0,0,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--glass-border)}
-        .center{text-align:center}
-        .row{display:flex;gap:10px;align-items:center}
-        .stack{display:flex;flex-direction:column;gap:10px}
-        .input, .textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(0,0,0,.2);color:var(--text-primary)}
-        .textarea{min-height:90px;resize:vertical}
-        .btn{padding:10px 16px;border-radius:10px;border:none;background:var(--accent-color);color:#fff;font-weight:700;cursor:pointer}
-        .btn.secondary{background:rgba(255,255,255,.1);color:var(--text-primary)}
-        .btn.ghost{background:transparent;border:1px solid var(--glass-border);color:var(--text-secondary)}
-        .tabs{display:flex;gap:8px;border-bottom:1px solid var(--glass-border);padding-bottom:8px;margin-bottom:12px}
-        .tab{padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--text-secondary)}
-        .tab.active{background:rgba(0,170,255,.12);color:var(--accent-color);border:1px solid rgba(0,170,255,.35)}
-        .tab-content{flex:1;overflow:auto}
-        .section{display:none}
-        .section.active{display:block}
-        .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
-        .card{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:12px;padding:12px}
-        .progress{height:10px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
-        .bar{height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);width:0%}
-        .kv{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-        .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--glass-border);color:var(--text-secondary)}
-        .toast{position:fixed;top:20px;left:50%;transform:translate(-50%,-150%);background:rgba(30,30,30,.85);backdrop-filter:blur(10px);color:#fff;padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:99999;transition:transform .4s ease}
-        .toast.show{transform:translate(-50%,0)}
-        @media (max-width: 900px){ .app-container{grid-template-columns:1fr} }
+        html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text-primary);background:var(--background-color)}
+
+        /* ── Layout ── */
+        .app-container {
+          position:absolute; top:72px; bottom:16px; left:16px; right:16px;
+          display:grid; grid-template-columns:300px 1fr; gap:16px;
+          z-index:1; overflow:hidden;
+        }
+        .left-card {
+          background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+          border:1px solid var(--glass-border); border-radius:20px;
+          padding:20px; display:flex; flex-direction:column; gap:14px; overflow-y:auto;
+        }
+        .right-panel {
+          background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+          border:1px solid var(--glass-border); border-radius:20px;
+          padding:20px; display:flex; flex-direction:column; overflow:hidden;
+        }
+
+        /* ── Avatar left ── */
+        .profile-avatar-wrap {
+          display:flex; flex-direction:column; align-items:center; gap:10px;
+          padding:16px 12px; background:rgba(255,255,255,0.03);
+          border:1px solid var(--glass-border); border-radius:16px;
+        }
+        .avatar-preview {
+          width:88px; height:88px; border-radius:50%;
+          background:rgba(0,112,243,0.15);
+          border:2px solid rgba(0,112,243,0.35);
+          display:flex; align-items:center; justify-content:center;
+          overflow:hidden;
+        }
+        .profile-name { font-weight:800; font-size:1rem; color:#e5eef8; text-align:center; }
+        .profile-title-display { font-size:0.76rem; color:#7bbfff; font-style:italic; text-align:center; }
+        .player-badge {
+          display:inline-flex; align-items:center; gap:5px;
+          padding:4px 12px; border-radius:999px;
+          background:rgba(255,255,255,0.05); border:1px solid var(--glass-border);
+          font-size:0.72rem; color:var(--text-secondary);
+        }
+
+        /* ── Form elements ── */
+        .field-group { display:flex; flex-direction:column; gap:5px; }
+        .field-label { font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; }
+        .input, .textarea {
+          width:100%; padding:10px 13px; border-radius:10px;
+          border:1px solid rgba(255,255,255,0.1);
+          background:rgba(255,255,255,0.06);
+          color:var(--text-primary); font-size:0.88rem;
+          outline:none; transition:border-color .2s, background .2s;
+          font-family:inherit;
+        }
+        .input:focus, .textarea:focus { border-color:var(--accent-color); background:rgba(0,112,243,0.08); }
+        .input:disabled { opacity:.45; cursor:not-allowed; }
+        .textarea { min-height:80px; resize:vertical; }
+
+        /* ── Buttons ── */
+        .btn {
+          padding:10px 18px; border-radius:10px; border:none;
+          background:var(--accent-color); color:#fff; font-weight:700;
+          cursor:pointer; font-size:0.87rem; transition:all .2s;
+        }
+        .btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
+        .btn.secondary { background:rgba(255,255,255,0.08); color:var(--text-primary); border:1px solid var(--glass-border); }
+        .btn.secondary:hover { background:rgba(255,255,255,0.14); }
+        .btn.save-main {
+          background:linear-gradient(135deg,#0070f3,#0050d0);
+          box-shadow:0 4px 14px rgba(0,112,243,.35);
+        }
+        .btn.save-main:hover { box-shadow:0 6px 20px rgba(0,112,243,.5); }
+
+        /* ── Tabs ── */
+        .tabs {
+          display:inline-flex; gap:4px;
+          background:rgba(255,255,255,0.04);
+          border:1px solid var(--glass-border);
+          border-radius:11px; padding:4px; margin-bottom:16px; flex-shrink:0;
+        }
+        .tab {
+          padding:7px 16px; border-radius:8px; cursor:pointer;
+          color:var(--text-secondary); font-size:0.83rem; font-weight:600;
+          transition:all .2s; border:none; background:none;
+        }
+        .tab.active { background:rgba(255,255,255,0.1); color:#fff; }
+        .tab-content { flex:1; overflow-y:auto; }
+        .section { display:none; }
+        .section.active { display:block; }
+
+        /* ── Cards ── */
+        .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+        .card {
+          background:rgba(255,255,255,0.04); border:1px solid var(--glass-border);
+          border-radius:14px; padding:14px;
+        }
+        .row { display:flex; gap:10px; align-items:center; }
+        .stack { display:flex; flex-direction:column; gap:8px; }
+        .kv { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .subtle { color:var(--text-secondary); font-size:0.82rem; }
+
+        /* ── Level progress bars ── */
+        .progress { height:6px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden; margin-top:6px; }
+        .bar { height:100%; background:linear-gradient(90deg,#3b82f6,#06b6d4); width:0%; border-radius:10px; transition:width .7s ease; }
+        .bar.body  { background:linear-gradient(90deg,#ef4444,#f97316); }
+        .bar.etre  { background:linear-gradient(90deg,#6366f1,#8b5cf6); }
+        .bar.heart { background:linear-gradient(90deg,#ec4899,#f43f5e); }
+        .bar.order { background:linear-gradient(90deg,#10b981,#14b8a6); }
+
+        /* ── Toast ── */
+        .toast { position:fixed;top:20px;left:50%;transform:translate(-50%,-150%);background:rgba(16,185,129,.92);color:#fff;padding:11px 22px;border-radius:10px;font-weight:600;z-index:99999;transition:transform .4s ease;font-size:.88rem;pointer-events:none; }
+        .toast.show { transform:translate(-50%,0); }
+
+        @media (max-width:900px) { .app-container { grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
     <script>(function(){ if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode'); })();</script>
-    <header class="header" style="display:flex;align-items:center;gap:12px;">
-        <a href="/app/" style="color:#9fb5ff;text-decoration:none;font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transition:all .2s;white-space:nowrap">← Mon Espace</a>
-        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-            <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
-                <g stroke-width="3">
-                    <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
-                    <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-                    <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-                    <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-                    <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-                    <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-                    <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
-                </g>
-            </svg>
-        </button>
-    </header>
+    <nav class="site-nav">
+      <a href="/app/" class="site-nav__back">← Mon Espace</a>
+      <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
+        <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;">
+          <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+          <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+          <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+          <circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g>
+        </svg>
+      </button>
+    </nav>
 
     <div class="app-container">
-        <!-- Left Profile Card -->
-        <aside class="left-card">
-            <h1>Votre Avatar</h1>
-            <div class="subtle">Personnalisez votre identité visuelle</div>
-            <div class="avatar-preview" id="avatar-preview-container"></div>
-            <div class="center">
-                <div id="username-display" style="font-weight:700;margin-top:8px;color:var(--accent-color)"></div>
-                <div id="title-display" class="subtle" style="font-style:italic"></div>
-            </div>
-            <div class="stack">
-                <div class="card">
-                    <div class="stack">
-                        <label style="font-size:.9rem;color:var(--text-secondary)">Télécharger un avatar</label>
-                        <input type="file" id="avatar-file-input" accept="image/*"/>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="row">
-                        <input id="avatar-initial-input" class="input" placeholder="A" style="max-width:80px;text-align:center"/>
-                        <button id="generate-initial-avatar" class="btn secondary" style="flex:1">Générer depuis initiale</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <button id="random-avatar-btn" class="btn secondary">Aléatoire</button>
-                    <button id="save-profile-button" class="btn" style="flex:1">Enregistrer</button>
-                </div>
-                <div class="pill" id="player-pill"><span id="player-id">Player #—</span></div>
-            </div>
-        </aside>
+      <!-- Left: Avatar Card -->
+      <aside class="left-card">
+        <div class="profile-avatar-wrap">
+          <div class="avatar-preview" id="avatar-preview-container"></div>
+          <div class="profile-name" id="username-display">—</div>
+          <div class="profile-title-display" id="title-display"></div>
+          <span class="player-badge" id="player-pill"><span id="player-id">Player #—</span></span>
+        </div>
 
-        <!-- Right Tabs Panel -->
-        <section class="right-panel">
-            <div class="tabs">
-                <div class="tab active" data-tab="identity">Identité</div>
-                <div class="tab" data-tab="preferences">Préférences</div>
-                <div class="tab" data-tab="levels">Niveaux</div>
-            </div>
-            <div class="tab-content">
-                <!-- Identity -->
-                <div id="tab-identity" class="section active">
-                    <div class="grid-2">
-                        <div class="card">
-                            <div class="stack">
-                                <label>Nom d'utilisateur</label>
-                                <input type="text" id="username" class="input" placeholder="Choisissez un nom public"/>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="stack">
-                                <label>Titre du profil (12 caractères max)</label>
-                                <input type="text" id="profile-title" class="input" maxlength="12" placeholder="Ex: Explorateur de potentiels"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card" style="margin-top:12px">
-                        <div class="stack">
-                            <label>Bio</label>
-                            <textarea id="profile-bio" class="textarea" placeholder="Présentez-vous en quelques lignes..."></textarea>
-                        </div>
-                    </div>
-                    <div class="grid-2" style="margin-top:12px">
-                        <div class="card">
-                            <div class="stack">
-                                <label>Site ou lien</label>
-                                <input type="url" id="profile-website" class="input" placeholder="https://..."/>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="stack">
-                                <label>Email (lecture seule)</label>
-                                <input type="text" id="profile-email" class="input" disabled/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stack">
+          <div class="field-label">Photo de profil</div>
+          <input type="file" id="avatar-file-input" accept="image/*" style="font-size:.82rem;color:var(--text-secondary)"/>
+        </div>
 
-                <!-- Preferences -->
-                <div id="tab-preferences" class="section">
-                    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;">
-                        <div>
-                            <div style="font-weight:700;margin-bottom:4px">Paramètres & Préférences</div>
-                            <div class="subtle">Thème, animations, notifications — tout est centralisé dans les Paramètres.</div>
-                        </div>
-                        <a href="/settings/" class="btn" style="white-space:nowrap;text-decoration:none">Ouvrir les Paramètres →</a>
-                    </div>
-                </div>
+        <div class="stack">
+          <div class="field-label">Avatar par initiale</div>
+          <div class="row">
+            <input id="avatar-initial-input" class="input" placeholder="A" style="max-width:64px;text-align:center;font-size:1.1rem;font-weight:700"/>
+            <button id="generate-initial-avatar" class="btn secondary" style="flex:1;font-size:.82rem">Générer</button>
+          </div>
+        </div>
 
-                <!-- Levels -->
-                        <div id="tab-levels" class="section">
-                            <div class="grid-2">
-                                <div class="card">
-                                    <div class="kv"><strong>Corps</strong><span id="lvl-body-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                                    <div class="progress"><div id="lvl-body" class="bar"></div></div>
-                                    <div class="row" id="dev-body" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="body">+10 XP (dev)</button></div>
-                                </div>
-                                <div class="card">
-                                    <div class="kv"><strong>Être</strong><span id="lvl-etre-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                                    <div class="progress"><div id="lvl-etre" class="bar"></div></div>
-                                    <div class="row" id="dev-etre" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="etre">+10 XP (dev)</button></div>
-                                </div>
-                                <div class="card">
-                                    <div class="kv"><strong>Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                                    <div class="progress"><div id="lvl-heart" class="bar"></div></div>
-                                    <div class="row" id="dev-heart" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="heart">+10 XP (dev)</button></div>
-                                </div>
-                                <div class="card">
-                                    <div class="kv"><strong>Ordre</strong><span id="lvl-order-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                                    <div class="progress"><div id="lvl-order" class="bar"></div></div>
-                                    <div class="row" id="dev-order" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="order">+10 XP (dev)</button></div>
-                                </div>
-                            </div>
-                            <div class="subtle" id="dev-note" style="margin-top:10px;display:none">Astuce dev: ces boutons appellent la fonction addXp (ou écrivent localement en localhost).</div>
-                            <div class="card" style="margin-top:16px;">
-                                <div class="kv"><strong>Badges débloqués</strong><span class="subtle" id="badges-count">0</span></div>
-                                <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:10px"></div>
-                            </div>
-                            <div class="card" style="margin-top:12px;">
-                                <div class="kv"><strong>Titres</strong><span class="subtle">Sélectionne ton titre affiché</span></div>
-                                <div id="titles-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
-                            </div>
-                        </div>
+        <div class="row" style="margin-top:4px">
+          <button id="random-avatar-btn" class="btn secondary" style="flex:1">🎲 Aléatoire</button>
+          <button id="save-profile-button" class="btn save-main" style="flex:2">Enregistrer</button>
+        </div>
+      </aside>
+
+      <!-- Right: Tabs -->
+      <section class="right-panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="identity">Identité</button>
+          <button class="tab" data-tab="preferences">Préférences</button>
+          <button class="tab" data-tab="levels">Niveaux & XP</button>
+        </div>
+
+        <div class="tab-content">
+          <!-- Identity -->
+          <div id="tab-identity" class="section active">
+            <div class="grid-2">
+              <div class="card">
+                <div class="field-group">
+                  <div class="field-label">Nom d'utilisateur</div>
+                  <input type="text" id="username" class="input" placeholder="Ton nom public"/>
+                </div>
+              </div>
+              <div class="card">
+                <div class="field-group">
+                  <div class="field-label">Titre affiché <span style="color:var(--text-secondary);font-weight:400">(12 car. max)</span></div>
+                  <input type="text" id="profile-title" class="input" maxlength="12" placeholder="Ex: Explorateur"/>
+                </div>
+              </div>
             </div>
-        </section>
+            <div class="card" style="margin-top:12px">
+              <div class="field-group">
+                <div class="field-label">Bio</div>
+                <textarea id="profile-bio" class="textarea" placeholder="Présente-toi en quelques mots..."></textarea>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:12px">
+              <div class="card">
+                <div class="field-group">
+                  <div class="field-label">Site / Lien</div>
+                  <input type="url" id="profile-website" class="input" placeholder="https://..."/>
+                </div>
+              </div>
+              <div class="card">
+                <div class="field-group">
+                  <div class="field-label">Email (lecture seule)</div>
+                  <input type="text" id="profile-email" class="input" disabled/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preferences -->
+          <div id="tab-preferences" class="section">
+            <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;">
+              <div>
+                <div style="font-weight:700;margin-bottom:6px">Paramètres & Préférences</div>
+                <div class="subtle">Thème, animations, notifications — tout est centralisé dans les Paramètres.</div>
+              </div>
+              <a href="/settings/" class="btn save-main" style="white-space:nowrap;text-decoration:none;flex-shrink:0">Ouvrir les Paramètres →</a>
+            </div>
+          </div>
+
+          <!-- Levels -->
+          <div id="tab-levels" class="section">
+            <div class="grid-2">
+              <div class="card">
+                <div class="kv"><strong>💪 Corps</strong><span id="lvl-body-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                <div class="progress"><div id="lvl-body" class="bar body"></div></div>
+                <div class="row" id="dev-body" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="body" style="font-size:.78rem">+10 XP (dev)</button></div>
+              </div>
+              <div class="card">
+                <div class="kv"><strong>🌌 Être</strong><span id="lvl-etre-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                <div class="progress"><div id="lvl-etre" class="bar etre"></div></div>
+                <div class="row" id="dev-etre" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="etre" style="font-size:.78rem">+10 XP (dev)</button></div>
+              </div>
+              <div class="card">
+                <div class="kv"><strong>❤️ Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                <div class="progress"><div id="lvl-heart" class="bar heart"></div></div>
+                <div class="row" id="dev-heart" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="heart" style="font-size:.78rem">+10 XP (dev)</button></div>
+              </div>
+              <div class="card">
+                <div class="kv"><strong>📐 Ordre</strong><span id="lvl-order-label" class="subtle">Niv. 0 · 0 XP</span></div>
+                <div class="progress"><div id="lvl-order" class="bar order"></div></div>
+                <div class="row" id="dev-order" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="order" style="font-size:.78rem">+10 XP (dev)</button></div>
+              </div>
+            </div>
+            <div class="subtle" id="dev-note" style="margin-top:10px;display:none;font-size:.75rem">Mode dev actif — boutons XP visibles.</div>
+            <div class="card" style="margin-top:14px">
+              <div class="kv"><strong>Badges débloqués</strong><span class="subtle" id="badges-count">0</span></div>
+              <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:10px"></div>
+            </div>
+            <div class="card" style="margin-top:12px">
+              <div class="kv"><strong>Titres</strong><span class="subtle">Sélectionne ton titre</span></div>
+              <div id="titles-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div id="toast" class="toast">Profil mis à jour</div>

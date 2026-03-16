@@ -20,21 +20,36 @@
         .toast-notification::after { content: ''; position: absolute; bottom: 0; left: 0; height: 4px; background: var(--success-color); width: 100%; animation: progress 3s linear forwards; }
         @keyframes progress { from { width: 100%; } to { width: 0%; } }
         .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 30px; z-index: 1; overflow-y: auto; }
-        .welcome-message { text-align: left; margin-bottom: 28px; }
-        .welcome-message h1 { font-size: 1.4rem; margin-bottom: 0.3rem; font-weight: 700; }
-        .welcome-message p { font-size: 0.82rem; margin: 0; color: #bbb; }
-        #user-email { font-weight: bold; color: #00aaff; }
+        /* ── Welcome ── */
+        .welcome-message { text-align: left; margin-bottom: 24px; }
+        .welcome-message h1 { font-size: 1.5rem; margin-bottom: 4px; font-weight: 800; color: #e5eef8; letter-spacing: -.3px; }
+        .welcome-sub { font-size: 0.82rem; color: #4a6a8a; }
         /* ── Stats row ── */
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
-        .stat-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
-        .stat-chip-icon { font-size: 1.4rem; }
-        .stat-chip-value { font-size: 1.5rem; font-weight: 700; color: #e5eef8; }
-        .stat-chip-label { font-size: 0.74rem; color: #7e9ab5; text-transform: uppercase; letter-spacing: .4px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .stat-chip {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px; padding: 16px 16px 14px;
+          display: flex; flex-direction: column; gap: 4px;
+          position: relative; overflow: hidden;
+          border-left: 3px solid var(--chip-color, rgba(255,255,255,0.1));
+        }
+        .stat-chip::before {
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(135deg, var(--chip-color, transparent) 0%, transparent 60%);
+          opacity: 0.06; pointer-events: none;
+        }
+        .stat-chip-icon { font-size: 1.25rem; margin-bottom: 2px; }
+        .stat-chip-value { font-size: 1.6rem; font-weight: 800; color: #e5eef8; line-height: 1; }
+        .stat-chip-label { font-size: 0.7rem; color: #4a6a8a; text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+        .stat-chip.streak { --chip-color: #f59e0b; }
+        .stat-chip.xp     { --chip-color: #3b82f6; }
+        .stat-chip.goals  { --chip-color: #f97316; }
+        .stat-chip.journal{ --chip-color: #a78bfa; }
+        .stat-chip.streak .stat-chip-value { color: #fbbf24; }
         /* ── XP bar ── */
-        .xp-bar-outer { height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 6px; }
-        .xp-bar-inner { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 10px; transition: width .6s ease; }
-        /* ── Streak glow ── */
-        .stat-chip.streak .stat-chip-value { color: #f59e0b; text-shadow: 0 0 16px rgba(245,158,11,.5); }
+        .xp-bar-outer { height: 3px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        .xp-bar-inner { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 10px; transition: width .8s ease; }
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 
         .tool-card {
@@ -144,8 +159,8 @@
         </header>
     <main class="app-container">
         <div class="welcome-message">
-            <h1 id="greeting-h1">Bienvenue 👋</h1>
-            <p><span id="greeting-sub">Connecté en tant que : </span><span id="user-email">Chargement...</span> <span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:8px"></span></p>
+            <h1 id="greeting-h1">Bonjour 👋</h1>
+            <div class="welcome-sub" id="welcome-sub">Prêt à avancer aujourd'hui ?<span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:6px"></span></div>
         </div>
 
         <!-- ── Live stats ── -->
@@ -155,18 +170,18 @@
                 <div class="stat-chip-value" id="stat-streak">—</div>
                 <div class="stat-chip-label">Jours méditation</div>
             </div>
-            <div class="stat-chip">
+            <div class="stat-chip xp">
                 <div class="stat-chip-icon">⚡</div>
                 <div class="stat-chip-value" id="stat-xp">—</div>
                 <div class="stat-chip-label">XP total</div>
                 <div class="xp-bar-outer"><div class="xp-bar-inner" id="stat-xp-bar" style="width:0%"></div></div>
             </div>
-            <div class="stat-chip">
+            <div class="stat-chip goals">
                 <div class="stat-chip-icon">🎯</div>
                 <div class="stat-chip-value" id="stat-goals">—</div>
                 <div class="stat-chip-label">Objectifs actifs</div>
             </div>
-            <div class="stat-chip">
+            <div class="stat-chip journal">
                 <div class="stat-chip-icon">📔</div>
                 <div class="stat-chip-value" id="stat-journal">—</div>
                 <div class="stat-chip-label">Entrées journal</div>
@@ -305,9 +320,13 @@
                     const displayName = userData.displayName || userData.username || '';
                     if (greetEl) greetEl.textContent = displayName ? `${greetWord}, ${displayName} 👋` : `${greetWord} 👋`;
                     if (greetSub) greetSub.textContent = '';
+                    const subEl = document.getElementById('welcome-sub');
                     const tEl = document.getElementById('user-title');
                     const t = userData.selectedTitle || '';
                     if (tEl && t) tEl.textContent = `· ${t}`;
+                    // Motivational sub based on time
+                    const subs = ['Prêt à avancer aujourd\'hui ?', 'Chaque jour compte.', 'Construis ta meilleure version.'];
+                    if (subEl && !t) subEl.childNodes[0].textContent = subs[new Date().getDay() % subs.length];
                 } catch(e) {}
                 if (!userDoc.exists() || userData.hasSeenTutorial !== true) { startTutorial(userDocRef); }
 
