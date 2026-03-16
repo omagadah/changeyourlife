@@ -254,6 +254,7 @@
     // ── Send/Resend OTP ────────────────────────────────────────────────────────
     async function sendOtp(user) {
       otpHint.innerHTML = '<span class="status-dot"></span> Envoi du code…';
+      otpHint.style.color = '';
       try {
         const idToken = await user.getIdToken(true);
         const res = await fetch('/api/send-verification', {
@@ -261,7 +262,20 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken }),
         });
-        const data = await res.json();
+
+        // Try to parse JSON — if it fails, the API returned HTML (crash)
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          const statusText = `HTTP ${res.status}`;
+          console.error('sendOtp: API returned non-JSON', statusText);
+          otpHint.innerHTML = `⚠️ Erreur serveur (${statusText}) — contactez le support`;
+          otpHint.style.color = '#ef4444';
+          showNotif(`Erreur serveur ${statusText}`, 'error');
+          return;
+        }
+
         if (!res.ok) {
           if (res.status === 429) {
             startResendCooldown(data.retryAfter || 60);
@@ -281,8 +295,8 @@
         otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé — vérifiez vos spams si besoin';
         otpBoxes[0].focus();
       } catch (err) {
-        console.error('sendOtp error', err);
-        otpHint.innerHTML = '⚠️ Erreur réseau — vérifiez votre connexion';
+        console.error('sendOtp fetch error', err);
+        otpHint.innerHTML = '⚠️ Erreur réseau — vérifiez votre connexion internet';
         otpHint.style.color = '#ef4444';
         showNotif('Erreur réseau. Réessayez.', 'error');
       }
