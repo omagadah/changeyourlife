@@ -175,6 +175,7 @@
       <div class="rcard">
         <h3>💡 Insights</h3>
         <div id="insights"></div>
+        <div id="action-bridge"></div>
       </div>
     </div>
     <div class="res-actions" style="margin-top:16px;">
@@ -407,6 +408,25 @@ function showResults(){
       </div>`;
   }
   document.getElementById('insights').innerHTML=insightsHtml;
+
+  // ── Pont vers objectifs ────────────────────────────────────────────────────
+  const actionEl = document.getElementById('action-bridge');
+  if(actionEl) {
+    if(!allVeryHigh) {
+      const target = allSame ? sorted[0] : low;
+      const domainLabels = {corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
+      actionEl.innerHTML=`
+        <div style="margin-top:16px;padding:16px 18px;background:rgba(0,112,243,0.06);border:1px solid rgba(0,112,243,0.2);border-radius:12px">
+          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:8px">💡 Passe à l'action maintenant</div>
+          <p style="font-size:0.85rem;color:#9bb3d0;margin-bottom:12px">Ton domaine <strong style="color:${target.color}">${target.emoji} ${target.label}</strong> a le plus besoin d'attention. Crée un objectif concret cette semaine.</p>
+          <a href="/objectifs/?domain=${target.key}" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0070f3,#0056cc);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,112,243,0.5)'" onmouseout="this.style.boxShadow='none'">
+            🎯 Créer un objectif ${target.label} →
+          </a>
+        </div>`;
+    } else {
+      actionEl.innerHTML='';
+    }
+  }
 
   // animate bars
   setTimeout(()=>{

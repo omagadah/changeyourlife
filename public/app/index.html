@@ -109,6 +109,23 @@
         .shepherd-button:not(:disabled):hover { background: #0056b3 !important; }
         .shepherd-button.shepherd-button-secondary:hover { background: rgba(255, 255, 255, 0.2) !important; }
         .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.9) !important; }
+        /* ── Roue de Vie widget ── */
+        #wheel-section { margin-bottom: 24px; }
+        .wheel-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+        .wheel-section-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:600; }
+        .wheel-eval-date { font-size:0.72rem; color:#4a6a8a; flex:1; text-align:center; }
+        .wheel-new-eval-btn { font-size:0.72rem; color:#60aeff; text-decoration:none; padding:3px 8px; border:1px solid rgba(96,174,255,0.3); border-radius:6px; transition:background .2s; white-space:nowrap; }
+        .wheel-new-eval-btn:hover { background:rgba(96,174,255,0.1); }
+        .wheel-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+        .wheel-radar-box { width:150px; height:150px; flex-shrink:0; }
+        .wheel-domain-bars { flex:1; min-width:180px; display:flex; flex-direction:column; gap:10px; }
+        .wdb-row { display:flex; align-items:center; gap:8px; }
+        .wdb-label { width:60px; font-size:0.74rem; color:#7ba3c8; white-space:nowrap; }
+        .wdb-bar-bg { flex:1; height:5px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+        .wdb-bar { height:100%; border-radius:4px; width:0%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+        .wdb-val { width:26px; text-align:right; font-size:0.78rem; font-weight:700; }
+        .wheel-cta-card { background:rgba(0,112,243,0.06); border:1px dashed rgba(0,112,243,0.25); border-radius:16px; padding:20px; text-align:center; text-decoration:none; display:block; transition:background .2s; }
+        .wheel-cta-card:hover { background:rgba(0,112,243,0.1); }
         .shepherd-highlight-user { z-index: 10001; box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); border-radius: 50%; animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); } 50% { box-shadow: 0 0 0 6px rgba(255, 74, 74, 0.8), 0 0 35px rgba(255, 74, 74, 0.8); } 100% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); } }
     </style>
@@ -125,6 +142,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <div id="vanta-birds-bg"></div>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
@@ -187,6 +205,25 @@
                 <div class="stat-chip-label">Entrées journal</div>
             </div>
         </div>
+
+        <!-- ── Roue de Vie — dernière évaluation ── -->
+        <div id="wheel-section" style="display:none">
+          <div class="wheel-section-header">
+            <span class="wheel-section-label">🕸 Roue de Vie</span>
+            <span id="wheel-eval-date" class="wheel-eval-date"></span>
+            <a href="/autoevaluation/" class="wheel-new-eval-btn">Nouvelle éval. →</a>
+          </div>
+          <div class="wheel-card">
+            <div class="wheel-radar-box"><canvas id="dash-radar"></canvas></div>
+            <div id="dash-domain-bars" class="wheel-domain-bars"></div>
+          </div>
+        </div>
+        <!-- ── CTA première évaluation ── -->
+        <a id="wheel-cta-section" href="/autoevaluation/" style="display:none;margin-bottom:24px" class="wheel-cta-card">
+          <div style="font-size:2rem;margin-bottom:8px">🕸</div>
+          <div style="font-weight:700;color:#e5eef8;margin-bottom:4px">Fais ta première Roue de Vie</div>
+          <div style="font-size:0.82rem;color:#7ba3c8">5 minutes pour découvrir tes forces et tes axes de progression → résultat immédiat</div>
+        </a>
 
         <div class="tools-grid">
 
@@ -265,7 +302,7 @@
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module">
         import { onAuthStateChanged, signOut, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { updateGlobalAvatar } from '/js/common.js?v=16';
         import { initUserMenu } from '/js/userMenu.js?v=16';
 
@@ -330,6 +367,7 @@
 
                 // ── Load dashboard stats (async, non-blocking) ──
                 loadDashboardStats(db, user.uid, userData);
+                loadWheelWidget(db, user.uid);
 
                 // Re-run init to ensure avatar + current path highlighting once auth is known
                 try { initUserMenu(); } catch(e) {}
@@ -340,12 +378,41 @@
         // no legacy panel DOM — new menu handles toggle & sign-out
         function startTutorial(userDocRef) {
             const tour = new Shepherd.Tour({ useModalOverlay: true, defaultStepOptions: { classes: 'shepherd-element', scrollTo: { behavior: 'smooth', block: 'center' } } });
-            tour.addStep({ title: 'Bienvenue sur votre Espace !', text: "Ceci est votre tableau de bord personnel. C'est ici que vous trouverez tous vos outils pour progresser avec l'ia.", attachTo: { element: '.app-container', on: 'top' }, buttons: [{ action: tour.next, text: 'Suivant &rarr;' }] });
-            tour.addStep({ title: 'Votre Menu', text: 'Votre menu personnel se trouve ici. Vous pouvez l\'utiliser pour accéder à vos paramètres ou vous déconnecter.', attachTo: { element: '.user-panel-trigger', on: 'bottom' }, highlightClass: 'shepherd-highlight-user', buttons: [{ action: tour.back, classes: 'shepherd-button-secondary', text: '&larr; Retour' }, { action: tour.next, text: 'Compris !' }] });
-            tour.addStep({ title: 'Prêt à commencer ?', text: 'Change Your Life est conçu pour vous aider à voir la vie comme un jeu, avec des quêtes et des succès à débloquer. Explorez, apprenez et grandissez. Votre aventure commence maintenant !', buttons: [{ action: tour.complete, text: 'C\'est parti !' }] });
-            const markTutorialAsSeen = () => setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true }).catch(e => console.error("Erreur de mise à jour du tutoriel:", e));
-            tour.on('complete', markTutorialAsSeen);
-            tour.on('cancel', markTutorialAsSeen);
+            tour.addStep({
+              title: '👋 Bienvenue sur Change Your Life',
+              text: "Ce tableau de bord est ton <strong>espace de transformation personnelle</strong>.<br><br>Tout est organisé autour de <strong>4 domaines de vie</strong> : 💪 Corps, ❤️ Cœur, ✨ Être et ⚡ Ordre. Chaque action dans ces domaines te fait progresser.",
+              attachTo: { element: '.app-container', on: 'top' },
+              buttons: [{ action: tour.next, text: 'Suivant →' }]
+            });
+            tour.addStep({
+              title: '🕸 Ta première étape : la Roue de Vie',
+              text: "Commence par une <strong>autoévaluation de 5 minutes</strong>.<br><br>Elle va révéler tes forces et tes points d'amélioration à travers 20 questions. Résultat immédiat avec un radar visuel.",
+              attachTo: { element: '#card-autoeval', on: 'top' },
+              buttons: [
+                { action: tour.back, classes: 'shepherd-button-secondary', text: '← Retour' },
+                { action: tour.next, text: 'Suivant →' }
+              ]
+            });
+            tour.addStep({
+              title: '🎯 Objectifs & Journal',
+              text: "Crée des <strong>objectifs concrets</strong> dans chacun de tes 4 domaines et écris dans ton <strong>journal quotidien</strong> pour suivre ton évolution.<br><br>Ton XP augmente à chaque action.",
+              attachTo: { element: '#card-objectifs', on: 'top' },
+              buttons: [
+                { action: tour.back, classes: 'shepherd-button-secondary', text: '← Retour' },
+                { action: tour.next, text: 'Compris !' }
+              ]
+            });
+            tour.addStep({
+              title: '🚀 C\'est parti !',
+              text: "Tu n'es pas seul(e) dans cette aventure.<br><br><strong>Lance ton autoévaluation</strong> maintenant — 5 minutes qui peuvent changer ta perspective sur ta vie.",
+              buttons: [
+                { action: () => { tour.complete(); window.location.href='/autoevaluation/'; }, text: '🕸 Faire mon évaluation' },
+                { action: tour.complete, classes: 'shepherd-button-secondary', text: 'Explorer d\'abord' }
+              ]
+            });
+            const markSeen = () => setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true }).catch(()=>{});
+            tour.on('complete', markSeen);
+            tour.on('cancel', markSeen);
             tour.start();
         }
         // ── Dashboard stats loader ─────────────────────────────────────────────
@@ -386,6 +453,81 @@
                     const jEl = document.getElementById('stat-journal'); if (jEl) jEl.textContent = '—';
                 }
             } catch(e) { console.warn('stats load failed', e); }
+        }
+
+        // ── Roue de Vie widget ──────────────────────────────────────────────────
+        async function loadWheelWidget(db, uid) {
+          const WHEEL_DOMAINS = [
+            {key:'corps', label:'Corps', color:'#2dd4bf', emoji:'💪'},
+            {key:'coeur', label:'Cœur',  color:'#f87171', emoji:'❤️'},
+            {key:'etre',  label:'Être',  color:'#a78bfa', emoji:'✨'},
+            {key:'ordre', label:'Ordre', color:'#fbbf24', emoji:'⚡'}
+          ];
+          try {
+            const snap = await getDocs(query(collection(db,'assessments'), where('uid','==',uid)));
+            if (snap.empty) {
+              const el = document.getElementById('wheel-cta-section');
+              if (el) el.style.display = 'block';
+              return;
+            }
+            const sorted = snap.docs.slice().sort((a,b) =>
+              (b.data().createdAt?.toMillis?.()??0) - (a.data().createdAt?.toMillis?.()??0));
+            const d = sorted[0].data();
+            const scores = d.scores || {};
+            const date = d.createdAt?.toDate
+              ? d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})
+              : '—';
+
+            const sec = document.getElementById('wheel-section');
+            if (sec) sec.style.display = 'block';
+            const dateEl = document.getElementById('wheel-eval-date');
+            if (dateEl) dateEl.textContent = date;
+
+            // Domain bars
+            const barsEl = document.getElementById('dash-domain-bars');
+            if (barsEl) {
+              barsEl.innerHTML = WHEEL_DOMAINS.map(wd => {
+                const s = scores[wd.key] ?? 0;
+                return `<div class="wdb-row">
+                  <div class="wdb-label">${wd.emoji} ${wd.label}</div>
+                  <div class="wdb-bar-bg"><div class="wdb-bar" style="background:${wd.color}" data-w="${s*10}"></div></div>
+                  <div class="wdb-val" style="color:${wd.color}">${s}</div>
+                </div>`;
+              }).join('');
+              setTimeout(() => {
+                barsEl.querySelectorAll('.wdb-bar').forEach(b => { b.style.width = b.dataset.w + '%'; });
+              }, 300);
+            }
+
+            // Radar chart
+            const canvas = document.getElementById('dash-radar');
+            if (canvas && window.Chart) {
+              new Chart(canvas.getContext('2d'), {
+                type: 'radar',
+                data: {
+                  labels: WHEEL_DOMAINS.map(wd => wd.emoji + ' ' + wd.label),
+                  datasets: [{
+                    data: WHEEL_DOMAINS.map(wd => scores[wd.key] ?? 0),
+                    backgroundColor: 'rgba(0,112,243,0.1)',
+                    borderColor: '#0070f3', borderWidth: 1.5,
+                    pointBackgroundColor: WHEEL_DOMAINS.map(wd => wd.color),
+                    pointBorderColor: 'transparent', pointRadius: 4
+                  }]
+                },
+                options: {
+                  responsive: true, maintainAspectRatio: true,
+                  scales: { r: {
+                    min:0, max:10,
+                    ticks: { display:false },
+                    grid: { color:'rgba(255,255,255,0.06)' },
+                    angleLines: { color:'rgba(255,255,255,0.06)' },
+                    pointLabels: { color:'#7ba3c8', font:{size:9} }
+                  }},
+                  plugins: { legend:{display:false}, tooltip:{enabled:false} }
+                }
+              });
+            }
+          } catch(e) { console.warn('Wheel widget:', e); }
         }
 
         const card = document.getElementById('tool-card-1');
