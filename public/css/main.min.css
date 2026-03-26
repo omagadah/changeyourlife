@@ -292,6 +292,38 @@ html, body {
 /* z-indices */
 .header, .toast-notification, .user-panel, .site-nav { z-index:10000 !important; }
 
+/* ── XP Float Animation ─────────────────────────────────────── */
+.xp-float {
+  position:fixed; pointer-events:none; z-index:99998;
+  font-size:1rem; font-weight:800; color:#fbbf24;
+  text-shadow:0 2px 8px rgba(0,0,0,0.5);
+  animation:xpFloat 1.4s var(--ease) forwards;
+}
+@keyframes xpFloat {
+  0%   { opacity:0; transform:translateY(0) scale(0.7); }
+  15%  { opacity:1; transform:translateY(-8px) scale(1.1); }
+  80%  { opacity:1; transform:translateY(-40px) scale(1); }
+  100% { opacity:0; transform:translateY(-56px) scale(0.9); }
+}
+
+/* ── Level-up banner ─────────────────────────────────────────── */
+.levelup-banner {
+  position:fixed; top:80px; left:50%; transform:translate(-50%,-140%);
+  background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(0,112,243,0.15));
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(251,191,36,0.35);
+  border-radius:18px; padding:16px 28px; z-index:99997;
+  display:flex; align-items:center; gap:14px;
+  transition:transform 0.5s var(--ease-spring);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(251,191,36,0.1) inset;
+}
+.levelup-banner.show { transform:translate(-50%,0); }
+.levelup-icon { font-size:2rem; animation:levelupSpin .6s var(--ease-spring); }
+@keyframes levelupSpin { 0%{transform:scale(0) rotate(-45deg)} 100%{transform:scale(1) rotate(0)} }
+.levelup-text { }
+.levelup-title { font-size:1rem; font-weight:800; color:#fde68a; letter-spacing:-0.2px; }
+.levelup-sub { font-size:0.8rem; color:rgba(255,255,255,0.6); margin-top:2px; }
+
 /* ── Responsive: mobile padding adjustments ── */
 @media (max-width:640px) {
   .page-shell { inset:8px; border-radius:var(--r-lg); padding:16px; }

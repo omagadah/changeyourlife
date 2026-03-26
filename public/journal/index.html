@@ -291,6 +291,7 @@
   <script type="module">
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
+    import { showXpFloat } from '/js/xp.js';
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, orderBy, query, limit, serverTimestamp, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -678,6 +679,7 @@
           try {
             const xpKey = selDomain === 'none' ? 'etre' : selDomain;
             await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(10) });
+            try { showXpFloat(10, document.getElementById('btn-save-entry')); } catch(e) {}
           } catch(_) {}
         } else {
           const idx = entries.findIndex(x => x.id===id);
