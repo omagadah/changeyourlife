@@ -315,6 +315,57 @@
         .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
+        /* ── How it works ── */
+        .how-step {
+          padding:28px; border-radius:18px;
+          background:rgba(255,255,255,0.025);
+          border:1px solid rgba(255,255,255,0.07);
+          transition:transform .2s, background .2s;
+        }
+        .how-step:hover { transform:translateY(-3px); background:rgba(255,255,255,0.045); }
+        .how-num { font-size:0.65rem; font-weight:800; color:rgba(0,112,243,0.5); letter-spacing:1px; margin-bottom:12px; }
+        .how-icon { font-size:2.2rem; margin-bottom:14px; }
+        .how-title-inner { font-size:1rem; font-weight:800; margin-bottom:8px; color:#eef4ff; }
+        .how-desc { font-size:0.84rem; color:rgba(255,255,255,0.5); line-height:1.65; }
+
+        /* ── Testimonials ── */
+        .testi-card {
+          padding:24px; border-radius:18px;
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.07);
+          display:flex; flex-direction:column; gap:16px;
+        }
+        .testi-stars { color:#fbbf24; font-size:0.85rem; letter-spacing:2px; }
+        .testi-text { font-size:0.88rem; color:rgba(255,255,255,0.65); line-height:1.65; font-style:italic; flex:1; }
+        .testi-author { display:flex; align-items:center; gap:12px; }
+        .testi-avatar {
+          width:40px; height:40px; border-radius:50%; flex-shrink:0;
+          background:linear-gradient(135deg,#0070f3,#6366f1);
+          display:flex; align-items:center; justify-content:center;
+          font-size:1rem; font-weight:800; color:#fff;
+        }
+        .testi-name { font-size:0.84rem; font-weight:700; color:#eef4ff; }
+        .testi-role { font-size:0.72rem; color:rgba(255,255,255,0.35); margin-top:2px; }
+
+        /* ── FAQ ── */
+        .faq-list { display:flex; flex-direction:column; gap:8px; }
+        .faq-item {
+          border:1px solid rgba(255,255,255,0.07); border-radius:14px;
+          background:rgba(255,255,255,0.025);
+          overflow:hidden; transition:background .2s;
+        }
+        .faq-item[open] { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.12); }
+        .faq-q {
+          padding:16px 20px; font-size:0.9rem; font-weight:700; color:#eef4ff;
+          cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between;
+          transition:color .2s;
+        }
+        .faq-q::-webkit-details-marker { display:none; }
+        .faq-q::after { content:'+'; font-size:1.2rem; color:rgba(255,255,255,0.3); transition:transform .2s; flex-shrink:0; }
+        .faq-item[open] .faq-q::after { transform:rotate(45deg); color:#60a5fa; }
+        .faq-item[open] .faq-q { color:#60a5fa; }
+        .faq-a { padding:0 20px 16px; font-size:0.86rem; color:rgba(255,255,255,0.5); line-height:1.65; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px; }
+
         @media (max-width: 640px) {
             .top-bar { padding: 0 16px; }
             .top-bar-brand span { display: none; }
@@ -470,6 +521,117 @@
             <h3>Ordre</h3>
             <p>Finances, organisation, environnement, productivité. La structure qui libère l'esprit et permet à l'énergie de circuler librement.</p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COMMENT ÇA MARCHE ── -->
+    <div class="section-divider"></div>
+    <section id="how" aria-labelledby="how-title">
+      <div class="section reveal">
+        <div class="section-header">
+          <span class="section-label">Comment ça marche</span>
+          <h2 class="section-title" id="how-title">Simple. Efficace.<br>Gratuit.</h2>
+          <p class="section-sub">3 étapes pour commencer ta transformation, dès aujourd'hui.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;counter-reset:step">
+          <div class="how-step reveal" style="counter-increment:step">
+            <div class="how-num">01</div>
+            <div class="how-icon">🎡</div>
+            <h3 class="how-title-inner">Fais ta Roue de Vie</h3>
+            <p class="how-desc">Réponds à 20 questions en 5 minutes. Obtiens un radar visuel de tes 4 domaines (Corps, Cœur, Être, Ordre) et identifie instantanément où concentrer tes efforts.</p>
+          </div>
+          <div class="how-step reveal" style="counter-increment:step">
+            <div class="how-num">02</div>
+            <div class="how-icon">🎯</div>
+            <h3 class="how-title-inner">Crée tes objectifs</h3>
+            <p class="how-desc">Transforme tes axes d'amélioration en objectifs concrets avec des deadlines. La plateforme t'accompagne pas à pas et célèbre chaque victoire avec des gains d'XP.</p>
+          </div>
+          <div class="how-step reveal" style="counter-increment:step">
+            <div class="how-num">03</div>
+            <div class="how-icon">🔥</div>
+            <h3 class="how-title-inner">Construis tes routines</h3>
+            <p class="how-desc">Journal quotidien, méditation guidée, suivi des habitudes — chaque action alimente ton système XP et te fait monter en niveau dans chacun de tes domaines de vie.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TÉMOIGNAGES ── -->
+    <div class="section-divider"></div>
+    <section id="testimonials" aria-labelledby="testi-title">
+      <div class="section reveal">
+        <div class="section-header">
+          <span class="section-label">Témoignages</span>
+          <h2 class="section-title" id="testi-title">Ce qu'ils en disent</h2>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+          <div class="testi-card reveal">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"La Roue de Vie m'a ouvert les yeux. En 5 minutes, j'ai compris pourquoi je me sentais à plat malgré mes succès professionnels — je négligeais totalement mon domaine Cœur."</p>
+            <div class="testi-author">
+              <div class="testi-avatar">M</div>
+              <div>
+                <div class="testi-name">Marie, 34 ans</div>
+                <div class="testi-role">Consultante · Paris</div>
+              </div>
+            </div>
+          </div>
+          <div class="testi-card reveal">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"Le journal avec les prompts du jour a changé ma relation à l'écriture. Je n'avais jamais pu tenir un journal plus de 3 jours — là, ça fait 6 semaines que j'écris chaque matin."</p>
+            <div class="testi-author">
+              <div class="testi-avatar" style="background:linear-gradient(135deg,#a78bfa,#6366f1)">T</div>
+              <div>
+                <div class="testi-name">Thomas, 28 ans</div>
+                <div class="testi-role">Développeur · Lyon</div>
+              </div>
+            </div>
+          </div>
+          <div class="testi-card reveal">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"Le système de niveaux et d'XP rend la progression addictive. Je me retrouve à compléter mes habitudes non pas par obligation, mais parce que j'ai envie de voir ma jauge monter."</p>
+            <div class="testi-author">
+              <div class="testi-avatar" style="background:linear-gradient(135deg,#2dd4bf,#06b6d4)">S</div>
+              <div>
+                <div class="testi-name">Sophie, 41 ans</div>
+                <div class="testi-role">Enseignante · Bordeaux</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <div class="section-divider"></div>
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="section reveal" style="max-width:720px;margin:0 auto">
+        <div class="section-header" style="text-align:center">
+          <span class="section-label">FAQ</span>
+          <h2 class="section-title" id="faq-title">Questions fréquentes</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item reveal">
+            <summary class="faq-q">C'est vraiment gratuit ?</summary>
+            <p class="faq-a">Oui, 100% gratuit. Tous les modules — journal, méditation, objectifs, roue de vie, habitudes — sont accessibles sans abonnement ni carte bancaire. Le projet est développé par passion, pas pour le profit.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-q">Mes données sont-elles privées ?</summary>
+            <p class="faq-a">Tes données appartiennent uniquement à toi. Elles sont stockées de manière sécurisée via Firebase (Google Cloud), chiffrées, et ne sont jamais partagées ni vendues. Tu peux les supprimer à tout moment.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-q">Combien de temps ça prend par jour ?</summary>
+            <p class="faq-a">Aussi peu que 5 minutes suffit pour maintenir ta progression : une entrée de journal, cocher tes habitudes, ou une courte méditation. L'idée est de construire une pratique durable, pas de te surcharger.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-q">À qui s'adresse ChangeYourLife.ai ?</summary>
+            <p class="faq-a">À toute personne qui veut progresser — que tu sois débutant dans le développement personnel ou expérimenté. La plateforme s'adapte à ton rythme. Pas de jugement, pas de pression.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-q">Une IA est-elle vraiment utilisée ?</summary>
+            <p class="faq-a">Actuellement, l'IA intervient dans les prompts de journal, les suggestions d'action du jour et les analyses de ta roue de vie. Nous développons un compagnon IA plus avancé — reste connecté(e).</p>
+          </details>
         </div>
       </div>
     </section>
