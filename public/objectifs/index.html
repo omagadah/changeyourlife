@@ -260,6 +260,17 @@
     document.getElementById('btn-save-goal').addEventListener('click', saveGoal);
     document.getElementById('modal-goal').addEventListener('click', (e) => { if (e.target.id === 'modal-goal') closeModal(); });
 
+    // ── Auto-open modal if ?domain= is in URL (from autoévaluation bridge) ──
+    const urlDomain = new URLSearchParams(window.location.search).get('domain');
+    const domainMap = {corps:'body', coeur:'heart', etre:'etre', ordre:'order'};
+    if (urlDomain && domainMap[urlDomain]) {
+      setTimeout(() => {
+        openModal();
+        const sel = document.getElementById('input-domain');
+        if (sel) sel.value = domainMap[urlDomain];
+      }, 600);
+    }
+
     function openModal(idx = null) {
       editingId = idx;
       const modal = document.getElementById('modal-goal');
