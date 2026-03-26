@@ -34,6 +34,26 @@
           animation:fadeUp .5s ease both;
         }
 
+        /* ── Today progress ── */
+        .today-card {
+          display:flex; align-items:center; gap:16px;
+          padding:14px 18px; border-radius:16px; margin-bottom:18px;
+          background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+          flex-wrap:wrap;
+        }
+        .today-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3); font-weight:700; flex-shrink:0; }
+        .today-items { display:flex; gap:8px; flex-wrap:wrap; flex:1; }
+        .today-item {
+          display:inline-flex; align-items:center; gap:6px;
+          padding:5px 11px; border-radius:999px; font-size:0.75rem; font-weight:600;
+          border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:var(--text-2);
+          transition:all .2s;
+        }
+        .today-item.done { background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3); color:#86efac; }
+        .today-item.partial { background:rgba(251,191,36,0.08); border-color:rgba(251,191,36,0.25); color:#fde68a; }
+        .today-dot { width:7px; height:7px; border-radius:50%; background:currentColor; opacity:0.8; flex-shrink:0; }
+        .today-pct { font-size:0.65rem; font-weight:700; opacity:0.7; }
+
         /* ── Quick actions ── */
         .quick-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
         .qa-btn {
@@ -275,6 +295,12 @@
           <div class="welcome-right">
             <div class="total-xp-badge">⚡ <span id="total-xp-badge">0 XP</span></div>
           </div>
+        </div>
+
+        <!-- ── Today's progress ── -->
+        <div class="today-card" id="today-progress-card" style="display:none">
+          <span class="today-label">Aujourd'hui</span>
+          <div class="today-items" id="today-items"></div>
         </div>
 
         <!-- ── Quick actions ── -->
@@ -520,6 +546,7 @@
                 loadXPRings(userData);
                 loadActionDuJour(userData);
                 loadWheelWidget(db, user.uid);
+                loadTodayProgress(db, user.uid, userData);
 
                 // Re-run init to ensure avatar + current path highlighting once auth is known
                 try { initUserMenu(); } catch(e) {}
@@ -776,6 +803,54 @@
               <a href="${href}" class="action-card-btn">${btnText}</a>
             </div>
           </div>`;
+        }
+
+        // ── Today's progress card ──────────────────────────────────────────────
+        async function loadTodayProgress(db, uid, userData) {
+          const card = document.getElementById('today-progress-card');
+          const items = document.getElementById('today-items');
+          if (!card || !items) return;
+
+          const todayStr = new Date().toDateString();
+          const checks = [];
+
+          // Meditation
+          const med = userData.meditation || {};
+          const meditatedToday = med.lastSessionAt && new Date(med.lastSessionAt).toDateString() === todayStr;
+          checks.push({ label: '🧘 Méditation', done: meditatedToday });
+
+          // Habits
+          const habits = Array.isArray(userData.habits) ? userData.habits : [];
+          if (habits.length > 0) {
+            const done = habits.filter(h => h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === todayStr).length;
+            const all = done === habits.length;
+            checks.push({ label: `✅ Habitudes`, done: all, partial: !all && done > 0, count: `${done}/${habits.length}` });
+          }
+
+          // Journal (try subcollection)
+          try {
+            const jSnap = await getDocs(query(collection(db,'users',uid,'journal'), limit(5)));
+            const writtenToday = jSnap.docs.some(d => {
+              const ts = d.data().createdAt;
+              const date = ts?.toDate ? ts.toDate() : (ts ? new Date(ts) : null);
+              return date && date.toDateString() === todayStr;
+            });
+            checks.push({ label: '📔 Journal', done: writtenToday });
+          } catch(e) {
+            checks.push({ label: '📔 Journal', done: false });
+          }
+
+          // Only show if user has some activity data
+          const hasData = meditatedToday || habits.length > 0;
+          if (!hasData) return;
+
+          items.innerHTML = checks.map(c => `
+            <span class="today-item${c.done?' done':c.partial?' partial':''}">
+              <span class="today-dot"></span>
+              ${c.label}${c.count ? ` <span class="today-pct">${c.count}</span>` : ''}
+            </span>
+          `).join('');
+          card.style.display = 'flex';
         }
 
         // ── Citation du jour ───────────────────────────────────────────────────
