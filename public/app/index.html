@@ -181,6 +181,18 @@
         .tool-card-arrow { display:inline-flex; align-items:center; gap:4px; font-size:0.76rem; font-weight:700; color:var(--card-accent-text,#7bbfff); margin-top:12px; transition:gap .18s; }
         .tool-card:not(.coming-soon):hover .tool-card-arrow { gap:8px; }
 
+        /* ── Quote du jour ── */
+        .quote-card {
+          padding:16px 20px; border-radius:16px;
+          background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+          display:flex; align-items:flex-start; gap:14px;
+          position:relative; overflow:hidden;
+        }
+        .quote-mark { font-size:2.2rem; line-height:1; color:rgba(255,255,255,0.12); flex-shrink:0; font-family:Georgia,serif; margin-top:-4px; }
+        .quote-body { flex:1; min-width:0; }
+        .quote-text { font-size:0.9rem; color:#c8d8ee; line-height:1.65; font-style:italic; margin-bottom:6px; }
+        .quote-author { font-size:0.72rem; font-weight:700; color:#4a6a8a; text-transform:uppercase; letter-spacing:.4px; }
+
         /* ── Shepherd ── */
         .shepherd-element { background:rgba(10,22,45,0.97) !important; backdrop-filter:blur(20px) !important; border-radius:14px !important; border:1px solid rgba(255,255,255,0.1) !important; box-shadow:0 16px 48px rgba(0,0,0,0.5) !important; }
         .shepherd-header { background:transparent !important; }
@@ -315,6 +327,9 @@
 
         <!-- ── Action du jour ── -->
         <div id="action-today"></div>
+
+        <!-- ── Citation du jour ── -->
+        <div id="quote-du-jour" style="margin-bottom:22px"></div>
 
         <!-- ── Roue de Vie — dernière évaluation ── -->
         <div id="wheel-section" style="display:none">
@@ -738,6 +753,54 @@
             </div>
           </div>`;
         }
+
+        // ── Citation du jour ───────────────────────────────────────────────────
+        function loadQuoteDuJour() {
+          const el = document.getElementById('quote-du-jour');
+          if (!el) return;
+          const QUOTES = [
+            { text: "La discipline est le pont entre les objectifs et l'accomplissement.", author: "Jim Rohn" },
+            { text: "Tu n'as pas besoin d'être parfait, tu as besoin d'être constant.", author: "Marie Forleo" },
+            { text: "Chaque action que tu fais, bonne ou mauvaise, forge ton caractère.", author: "Sénèque" },
+            { text: "Le secret du changement est de concentrer toute ton énergie non pas à lutter contre l'ancien, mais à construire le nouveau.", author: "Socrate" },
+            { text: "Vous êtes la somme de vos habitudes. Changez vos habitudes, changez votre vie.", author: "John C. Maxwell" },
+            { text: "Le plus grand voyage est celui de la connaissance de soi.", author: "Socrate" },
+            { text: "Chaque matin, tu as deux choix : continuer à dormir avec tes rêves, ou te lever et les poursuivre.", author: "Anonyme" },
+            { text: "Le succès n'est pas final, l'échec n'est pas fatal. Ce qui compte, c'est le courage de continuer.", author: "Winston Churchill" },
+            { text: "Prends soin de ton corps, c'est le seul endroit où tu dois vivre.", author: "Jim Rohn" },
+            { text: "Tout ce que l'esprit peut concevoir et croire, il peut l'accomplir.", author: "Napoleon Hill" },
+            { text: "La souffrance que tu ressens aujourd'hui est la force que tu ressentiras demain.", author: "Anonyme" },
+            { text: "Investis en toi-même. Ta carrière est le moteur de ta richesse.", author: "Paul Clitheroe" },
+            { text: "Ce n'est pas la montagne que nous conquérons, mais nous-mêmes.", author: "Edmund Hillary" },
+            { text: "Ne compte pas les jours, fais que les jours comptent.", author: "Muhammad Ali" },
+            { text: "Le changement commence au bord de ta zone de confort.", author: "Roy T. Bennett" },
+            { text: "Les miracles se produisent chaque jour, changez simplement votre perception de ce qu'est un miracle.", author: "Tony Robbins" },
+            { text: "Ta vie ne s'améliore pas par chance, elle s'améliore par le changement.", author: "Jim Rohn" },
+            { text: "Connais-toi toi-même.", author: "Oracle de Delphes" },
+            { text: "La plus grande gloire n'est pas de ne jamais tomber, mais de se relever à chaque fois qu'on tombe.", author: "Confucius" },
+            { text: "Un voyage de mille lieues commence toujours par un premier pas.", author: "Lao Tzu" },
+            { text: "Ce que tu penses, tu le deviens. Ce que tu ressens, tu l'attires. Ce que tu imagines, tu le crées.", author: "Bouddha" },
+            { text: "La motivation te met en marche, l'habitude te garde en marche.", author: "Jim Ryun" },
+            { text: "Les gens heureux n'ont pas la meilleure de tout, ils font le meilleur de tout ce qu'ils ont.", author: "Anonyme" },
+            { text: "Pour avoir une nouvelle idée, il faut être prêt à remettre en question les anciennes.", author: "Aldous Huxley" },
+            { text: "Vis comme si tu mourais demain, apprends comme si tu vivais pour toujours.", author: "Gandhi" },
+            { text: "La gratitude transforme ce que nous avons en suffisance.", author: "Melody Beattie" },
+            { text: "Chaque expert a d'abord été un débutant.", author: "Helen Hayes" },
+            { text: "Le succès est la somme de petits efforts répétés jour après jour.", author: "Robert Collier" },
+            { text: "Croire en soi est la première étape vers la réussite.", author: "Anonyme" },
+            { text: "Le meilleur investissement que tu puisses faire est en toi-même.", author: "Warren Buffett" },
+          ];
+          const dayIdx = Math.floor(Date.now() / 86400000) % QUOTES.length;
+          const q = QUOTES[dayIdx];
+          el.innerHTML = `<div class="quote-card">
+            <span class="quote-mark">"</span>
+            <div class="quote-body">
+              <div class="quote-text">${q.text}</div>
+              <div class="quote-author">— ${q.author}</div>
+            </div>
+          </div>`;
+        }
+        loadQuoteDuJour();
 
         const card = document.getElementById('tool-card-1');
         if (card) {
