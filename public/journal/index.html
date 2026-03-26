@@ -55,7 +55,7 @@
     .btn-new:hover { background: rgba(59,130,246,0.18); border-color: #3b82f6; }
 
     .entry-item {
-      padding: 12px 14px; border-radius: 13px;
+      padding: 11px 13px 11px 17px; border-radius: 13px;
       border: 1px solid rgba(255,255,255,0.07);
       background: rgba(255,255,255,0.03);
       cursor: pointer; transition: all 0.18s; margin-bottom: 6px;
@@ -63,13 +63,21 @@
     }
     .entry-item::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px; background: transparent; border-radius: 13px 0 0 13px;
-      transition: background .18s;
+      width: 4px; background: var(--entry-color, rgba(255,255,255,0.1));
+      border-radius: 13px 0 0 13px; opacity: 0.6;
+      transition: opacity .18s, width .18s;
     }
-    .entry-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14); transform: translateX(2px); }
-    .entry-item:hover::before { background: rgba(59,130,246,0.5); }
-    .entry-item.active { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.35); }
-    .entry-item.active::before { background: #3b82f6; }
+    .entry-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.13); transform: translateX(2px); }
+    .entry-item:hover::before { opacity: 1; width: 4px; }
+    .entry-item.active { background: rgba(59,130,246,0.09); border-color: rgba(59,130,246,0.3); }
+    .entry-item.active::before { opacity: 1; width: 4px; }
+
+    .entry-word-badge {
+      display: inline-flex; align-items: center;
+      padding: 1px 6px; border-radius: 6px; font-size: 0.68rem; font-weight: 600;
+      background: rgba(255,255,255,0.05); color: var(--text-3);
+      letter-spacing: 0.2px; flex-shrink: 0;
+    }
     .search-bar { margin-top: 8px; position: relative; }
     .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#e5eef8; font-size:0.82rem; outline:none; transition:border-color .2s; }
     .search-bar input:focus { border-color:rgba(59,130,246,.5); }
@@ -121,29 +129,44 @@
     .domain-btn.sel-etre  { border-color: #9ca3ff; color: #9ca3ff; background: rgba(156,163,255,0.15); }
     .domain-btn.sel-order { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
 
-    .editor-date { font-size: 0.78rem; color: #7e9ab5; margin-bottom: 12px; }
-    .editor-title-input {
-      width: 100%; font-size: 1.3rem; font-weight: 700;
-      background: transparent; border: none; color: #e5eef8; outline: none;
-      margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;
+    .editor-date {
+      font-size: 0.75rem; color: var(--text-3); margin-bottom: 12px;
+      text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
     }
-    .editor-title-input::placeholder { color: rgba(229,238,248,0.25); }
+    .editor-title-input {
+      width: 100%; font-size: 1.25rem; font-weight: 700;
+      background: transparent; border: none; color: var(--text-1); outline: none;
+      margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 9px;
+      letter-spacing: -0.3px;
+    }
+    .editor-title-input::placeholder { color: rgba(229,238,248,0.2); }
     .editor-content-input {
       width: 100%; flex: 1; min-height: 180px;
-      background: transparent; border: none; color: #e5eef8; outline: none;
-      resize: none; font-size: 0.97rem; line-height: 1.75; font-family: inherit;
+      background: transparent; border: none; color: #c8d9f0; outline: none;
+      resize: none; font-size: 0.96rem; line-height: 1.85; font-family: inherit;
     }
-    .editor-content-input::placeholder { color: rgba(229,238,248,0.22); }
+    .editor-content-input::placeholder { color: rgba(229,238,248,0.18); }
     .editor-footer {
       display: flex; justify-content: space-between; align-items: center;
-      padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 10px; flex-shrink: 0;
+      padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 10px; flex-shrink: 0;
     }
-    .word-count { font-size: 0.76rem; color: #7e9ab5; }
+    .word-count {
+      font-size: 0.74rem; color: var(--text-3); font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .word-count-bar {
+      display: inline-block; height: 3px; width: 40px; border-radius: 3px;
+      background: rgba(255,255,255,0.08); overflow: hidden; vertical-align: middle;
+    }
+    .word-count-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--blue), #60a5fa);
+      border-radius: 3px; transition: width 0.3s ease; min-width: 0;
+    }
 
-    .read-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
-    .read-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; color: #7e9ab5; }
-    .read-content { font-size: 0.97rem; line-height: 1.8; color: #c8d9ec; white-space: pre-wrap; margin-top: 16px; }
-    .read-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 14px; }
+    .read-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; color: var(--text-1); }
+    .read-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-2); }
+    .read-content { font-size: 0.96rem; line-height: 1.85; color: #b8cce0; white-space: pre-wrap; margin-top: 16px; }
+    .read-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 14px; }
 
     .empty-editor { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #7e9ab5; padding: 40px; }
     .empty-editor-icon { font-size: 3rem; margin-bottom: 14px; }
@@ -213,14 +236,19 @@
         </div>
         <div class="panel-body" style="display:flex;flex-direction:column;gap:0">
           <input type="text" class="editor-title-input" id="editor-title" placeholder="Titre (optionnel)…" maxlength="120" />
-          <div id="prompt-du-jour" style="display:none;margin-bottom:10px;padding:10px 14px;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:10px;cursor:pointer;transition:background .2s" title="Cliquer pour utiliser ce prompt">
-            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:4px">✦ Prompt du jour</div>
-            <div id="prompt-text" style="font-size:0.88rem;color:#c8d8ee;line-height:1.5"></div>
-            <div style="font-size:0.72rem;color:#4a6a8a;margin-top:5px">Cliquer pour l'utiliser →</div>
+          <div id="prompt-du-jour" style="display:none;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(0,112,243,0.08),rgba(96,165,250,0.05));border:1px solid rgba(0,112,243,0.22);border-radius:12px;cursor:pointer;transition:all 0.2s;user-select:none" title="Cliquer pour utiliser ce prompt">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.7px;color:var(--blue-light);font-weight:700">✦ Prompt du jour</span>
+              <span style="font-size:0.72rem;color:var(--text-3)">Cliquer →</span>
+            </div>
+            <div id="prompt-text" style="font-size:0.9rem;color:#d0e4ff;line-height:1.6;font-style:italic"></div>
           </div>
           <textarea class="editor-content-input" id="editor-content" placeholder="Commence à écrire… Que s'est-il passé aujourd'hui ? Comment te sens-tu ? Quelles pensées traversent ton esprit ?"></textarea>
           <div class="editor-footer">
-            <span class="word-count" id="word-count">0 mot</span>
+            <span class="word-count" id="word-count">
+              <span class="word-count-bar"><span class="word-count-bar-fill" id="wc-bar" style="width:0%"></span></span>
+              <span id="wc-label">0 mot</span>
+            </span>
             <div style="display:flex;gap:8px">
               <button class="btn" id="btn-cancel-edit">Annuler</button>
               <button class="btn primary" id="btn-save-entry">Sauvegarder</button>
@@ -231,6 +259,7 @@
 
       <!-- Read view -->
       <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-read">
+        <div id="read-domain-bar" style="height:3px;width:100%;border-radius:3px 3px 0 0;background:transparent;flex-shrink:0;transition:background .3s"></div>
         <div class="panel-header">
           <div class="read-title" id="read-title"></div>
           <div class="read-meta">
@@ -395,21 +424,44 @@
         const item = document.createElement('div');
         item.className = `entry-item${e.id === readId ? ' active' : ''}`;
         item.dataset.id = e.id;
+        const domColor = DOMAIN_COLORS[e.domain || 'none'];
+        item.style.setProperty('--entry-color', domColor);
 
+        // Top row: emoji + date + word badge
         const row = document.createElement('div'); row.className = 'entry-item-row';
+        const emo = EMOTION_MAP[e.emotion] || EMOTION_MAP.neutral;
         const emoSpan = document.createElement('span'); emoSpan.className = 'entry-emoji';
-        emoSpan.textContent = (EMOTION_MAP[e.emotion] || EMOTION_MAP.neutral).emoji;
+        emoSpan.textContent = emo.emoji;
         const dateSpan = document.createElement('span'); dateSpan.className = 'entry-date';
         const ts = tsToDate(e.createdAt);
-        dateSpan.textContent = ts.toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
-        const dot = document.createElement('div'); dot.className = 'entry-domain-dot';
-        dot.style.background = DOMAIN_COLORS[e.domain || 'none'];
-        row.append(emoSpan, dateSpan, dot); item.appendChild(row);
+        const isToday = ts.toDateString() === new Date().toDateString();
+        const isYesterday = ts.toDateString() === new Date(Date.now()-86400000).toDateString();
+        dateSpan.textContent = isToday ? 'Aujourd\'hui · ' + ts.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+          : isYesterday ? 'Hier · ' + ts.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+          : ts.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+        // Word count badge
+        const wc = (e.content || '').trim().split(/\s+/).filter(Boolean).length;
+        const wcBadge = document.createElement('span'); wcBadge.className = 'entry-word-badge';
+        wcBadge.textContent = wc ? `${wc}m` : '';
+        row.append(emoSpan, dateSpan, wcBadge); item.appendChild(row);
 
-        const prev = document.createElement('div'); prev.className = 'entry-preview';
-        const raw = e.title || (e.content || '').slice(0, 55) || '(vide)';
-        prev.textContent = !e.title && (e.content||'').length > 55 ? raw + '…' : raw;
-        item.appendChild(prev);
+        // Title or preview
+        if (e.title) {
+          const titleEl = document.createElement('div');
+          titleEl.style.cssText = 'font-size:0.85rem;font-weight:700;color:#d4e4f7;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+          titleEl.textContent = e.title;
+          item.appendChild(titleEl);
+          if (e.content) {
+            const prev = document.createElement('div'); prev.className = 'entry-preview';
+            prev.textContent = (e.content||'').slice(0,50) + ((e.content||'').length > 50 ? '…' : '');
+            item.appendChild(prev);
+          }
+        } else {
+          const prev = document.createElement('div'); prev.className = 'entry-preview';
+          const raw = (e.content || '').slice(0, 65);
+          prev.textContent = (e.content||'').length > 65 ? raw + '…' : (raw || '(vide)');
+          item.appendChild(prev);
+        }
         item.addEventListener('click', () => openReadView(e.id));
         list.appendChild(item);
       });
@@ -573,10 +625,12 @@
       const dm  = DOMAINS.find(x => x.key===(e.domain||'none'));
       const wc  = (e.content||'').trim().split(/\s+/).filter(Boolean).length;
       document.getElementById('read-title').textContent = e.title || 'Entrée sans titre';
-      document.getElementById('read-date').textContent = ts.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      document.getElementById('read-date').textContent = ts.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + ts.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
       document.getElementById('read-emotion-badge').textContent = `${emo.emoji} ${emo.label}`;
-      document.getElementById('read-domain-badge').textContent = dm ? dm.label : 'Général';
+      const domColor = DOMAIN_COLORS[e.domain || 'none'];
+      document.getElementById('read-domain-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:${domColor};display:inline-block"></span>${dm ? dm.label : 'Général'}</span>`;
       document.getElementById('read-word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
+      document.getElementById('read-domain-bar').style.background = `linear-gradient(90deg, ${domColor}, transparent)`;
       document.getElementById('read-content').textContent = e.content || '';
       // Show "modifié" badge if updatedAt differs meaningfully from createdAt
       const badge = document.getElementById('read-edited-badge');
@@ -591,7 +645,10 @@
     const DRAFT_KEY = 'cyf_journal_draft';
     function updateWC() {
       const wc = (document.getElementById('editor-content').value||'').trim().split(/\s+/).filter(Boolean).length;
-      document.getElementById('word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
+      document.getElementById('wc-label').textContent = `${wc} mot${wc!==1?'s':''}`;
+      // Fill bar: 0–300 words = 0–100%
+      const pct = Math.min(100, Math.round(wc / 3));
+      document.getElementById('wc-bar').style.width = pct + '%';
     }
     function saveDraft() {
       const title = document.getElementById('editor-title').value;
