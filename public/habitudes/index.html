@@ -198,6 +198,7 @@
     import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { initUserMenu } from '/js/userMenu.js';
     import { updateGlobalAvatar } from '/js/common.js';
+    import { showXpFloat } from '/js/xp.js';
 
     let auth, db, uid, habits = [], editingIdx = null;
     let selectedEmoji = '✅';
@@ -351,7 +352,10 @@
         await saveHabits();
         // Award XP
         const xpKey = h.domain || 'etre';
-        try { await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(5) }); } catch(_) {}
+        try {
+          await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(5) });
+          try { showXpFloat(5); } catch(e) {}
+        } catch(_) {}
         showToast(`+5 XP · Habitude complétée ! 🔥 ${newStreak} jour${newStreak!==1?'s':''}`, 'xp');
       } else {
         // Uncheck (deduct streak if today was the only day)

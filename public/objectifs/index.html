@@ -148,6 +148,7 @@
   <script type="module">
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
+    import { showXpFloat } from '/js/xp.js';
     import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
@@ -359,7 +360,10 @@
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
         if (justCompleted) {
           const xpKey = g.domain || 'etre';
-          try { await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) }); } catch(_) {}
+          try {
+            await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) });
+            try { showXpFloat(25); } catch(e) {}
+          } catch(_) {}
         }
         renderGoals(); renderTemplates();
       } catch(e) {}
@@ -374,7 +378,10 @@
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
         if (!wasCompleted) {
           const xpKey = goals[idx].domain || 'etre';
-          try { await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) }); } catch(_) {}
+          try {
+            await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) });
+            try { showXpFloat(25); } catch(e) {}
+          } catch(_) {}
         }
         renderGoals(); renderTemplates();
       } catch(e) {}
