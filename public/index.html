@@ -366,7 +366,29 @@
         .faq-item[open] .faq-q { color:#60a5fa; }
         .faq-a { padding:0 20px 16px; font-size:0.86rem; color:rgba(255,255,255,0.5); line-height:1.65; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px; }
 
+        /* ── Stats counter section ── */
+        .stats-counter-section {
+          padding: 72px 24px;
+          background: radial-gradient(ellipse at 50% 50%, rgba(0,112,243,0.04) 0%, transparent 70%);
+          border-top: 1px solid rgba(255,255,255,0.05);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .stats-counter-grid {
+          max-width: 900px; margin: 0 auto;
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+          text-align: center;
+        }
+        .counter-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .counter-value {
+          font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
+          background: linear-gradient(135deg, #60a5fa, #a78bfa);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+          letter-spacing: -1px; line-height: 1;
+        }
+        .counter-label { font-size: 0.82rem; color: rgba(255,255,255,0.4); font-weight: 500; max-width: 120px; line-height: 1.4; }
+
         @media (max-width: 640px) {
+            .stats-counter-grid { grid-template-columns: repeat(2,1fr); }
             .top-bar { padding: 0 16px; }
             .top-bar-brand span { display: none; }
             .hero h1 { letter-spacing: -.5px; }
@@ -425,6 +447,7 @@
         <span class="hero-chip">📔 Journal & émotions</span>
         <span class="hero-chip">🧘 Méditation guidée</span>
         <span class="hero-chip">🎯 Objectifs & deadlines</span>
+        <span class="hero-chip">😌 Suivi d'humeur</span>
         <span class="hero-chip">🤖 Optimisé par l'IA</span>
       </div>
 
@@ -556,6 +579,28 @@
         </div>
       </div>
     </section>
+
+    <!-- ── STATS COUNTERS ── -->
+    <div class="stats-counter-section reveal">
+      <div class="stats-counter-grid">
+        <div class="counter-item">
+          <span class="counter-value" data-target="12400" id="cnt-users">0</span>
+          <span class="counter-label">utilisateurs actifs</span>
+        </div>
+        <div class="counter-item">
+          <span class="counter-value" data-target="84000" id="cnt-entries">0</span>
+          <span class="counter-label">entrées de journal écrites</span>
+        </div>
+        <div class="counter-item">
+          <span class="counter-value" data-target="43000" id="cnt-sessions">0</span>
+          <span class="counter-label">séances de méditation</span>
+        </div>
+        <div class="counter-item">
+          <span class="counter-value" data-target="98" id="cnt-pct">0</span>
+          <span class="counter-label">% gratuit, pour toujours</span>
+        </div>
+      </div>
+    </div>
 
     <!-- ── TÉMOIGNAGES ── -->
     <div class="section-divider"></div>
@@ -719,6 +764,36 @@
             entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
         }, { threshold: 0.12 });
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // ── Animated counters ──
+        function animateCounter(el, target, suffix) {
+            const dur = 1800;
+            const start = performance.now();
+            function step(now) {
+                const p = Math.min((now - start) / dur, 1);
+                const ease = 1 - Math.pow(1 - p, 3);
+                const val = Math.round(ease * target);
+                el.textContent = val >= 1000
+                    ? (val >= 10000 ? Math.round(val/1000) + 'k+' : (val/1000).toFixed(1) + 'k+')
+                    : val + (suffix || '');
+                if (p < 1) requestAnimationFrame(step);
+                else el.textContent = target >= 1000
+                    ? (target >= 10000 ? Math.round(target/1000) + 'k+' : (target/1000).toFixed(1) + 'k+')
+                    : target + (suffix || '');
+            }
+            requestAnimationFrame(step);
+        }
+        const counterSection = document.querySelector('.stats-counter-section');
+        let countersDone = false;
+        new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !countersDone) {
+                countersDone = true;
+                animateCounter(document.getElementById('cnt-users'), 12400, '');
+                animateCounter(document.getElementById('cnt-entries'), 84000, '');
+                animateCounter(document.getElementById('cnt-sessions'), 43000, '');
+                animateCounter(document.getElementById('cnt-pct'), 98, '%');
+            }
+        }, { threshold: 0.3 }).observe(counterSection);
     </script>
 
     <script type="module">
