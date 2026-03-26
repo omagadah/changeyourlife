@@ -37,19 +37,30 @@
     .habits-list { display:flex; flex-direction:column; gap:8px; }
     .habit-card {
       display:flex; align-items:center; gap:14px;
-      padding:14px 16px; border-radius:12px;
+      padding:13px 15px 13px 18px; border-radius:12px;
       background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      transition:background .15s, border-color .15s;
+      transition:background .18s, border-color .18s, transform .18s;
+      position:relative; overflow:hidden;
     }
-    .habit-card.done-today { background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.2); }
+    .habit-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+      background:var(--habit-color, rgba(255,255,255,0.15)); border-radius:12px 0 0 12px;
+      opacity:0.6; transition:opacity .2s;
+    }
+    .habit-card:hover { background:rgba(255,255,255,0.05); transform:translateX(2px); }
+    .habit-card:hover::before { opacity:1; }
+    .habit-card.done-today {
+      background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.18);
+    }
+    .habit-card.done-today::before { background:#22c55e; opacity:0.8; }
     .habit-check {
-      width:32px; height:32px; flex-shrink:0; border-radius:50%;
+      width:30px; height:30px; flex-shrink:0; border-radius:50%;
       border:2px solid rgba(255,255,255,0.18); background:transparent;
       display:flex; align-items:center; justify-content:center;
-      cursor:pointer; transition:all .2s; font-size:1rem;
+      cursor:pointer; transition:all .2s; font-size:0.9rem;
       color:transparent;
     }
-    .habit-card.done-today .habit-check { background:rgba(34,197,94,0.2); border-color:#22c55e; color:#22c55e; }
+    .habit-card.done-today .habit-check { background:rgba(34,197,94,0.18); border-color:#22c55e; color:#22c55e; }
     .habit-check:hover { border-color:rgba(255,255,255,0.4); }
     .habit-emoji { font-size:1.4rem; flex-shrink:0; }
     .habit-body { flex:1; min-width:0; }
@@ -303,10 +314,13 @@
       });
     }
 
+    const HABIT_DOMAIN_COLORS = { corps:'#2dd4bf', coeur:'#f87171', etre:'#a78bfa', ordre:'#fbbf24' };
+
     function renderHabitCard(h, idx) {
       const done = isDoneToday(h);
       const streak = getStreak(h);
-      return `<div class="habit-card ${done ? 'done-today' : ''}">
+      const hColor = HABIT_DOMAIN_COLORS[h.domain] || 'rgba(255,255,255,0.2)';
+      return `<div class="habit-card ${done ? 'done-today' : ''}" style="--habit-color:${hColor}">
         <button class="habit-check" data-idx="${idx}" title="${done ? 'Décocher' : 'Marquer comme fait'}">✓</button>
         <span class="habit-emoji">${h.emoji || '✅'}</span>
         <div class="habit-body">
