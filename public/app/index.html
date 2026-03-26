@@ -6,168 +6,193 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Espace - Change Your Life</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
+    <link rel="stylesheet" href="/css/main.min.css"/>
     <style>
-        :root { --background-color: #07192f; --glass-bg: rgba(20, 20, 20, 0.6); --glass-border: rgba(255, 255, 255, 0.1); --text-primary: #e0e0e0; --text-secondary: #bbb; --accent-color: #00aaff; --danger-color: #ff4a4a; --success-color: #28a745; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-primary); background-color: var(--background-color); }
-        .header { position: fixed; top: 20px; right: 30px; z-index: 100; }
-    .user-panel-trigger { width: 40px; height: 40px; background-color: transparent; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; }
-    .user-panel-trigger:hover { transform: scale(1.06); box-shadow: 0 0 14px rgba(255,255,255,0.55); }
-        .toast-notification { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%); background: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px); color: white; padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 15px; z-index: 99999; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .toast-notification.show { transform: translate(-50%, 0); }
-        .toast-icon .checkmark { stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
-        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
-        .toast-notification::after { content: ''; position: absolute; bottom: 0; left: 0; height: 4px; background: var(--success-color); width: 100%; animation: progress 3s linear forwards; }
-        @keyframes progress { from { width: 100%; } to { width: 0%; } }
-        .app-container { position: absolute; top: 15px; bottom: 15px; left: 15px; right: 15px; background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); padding: 30px; z-index: 1; overflow-y: auto; }
+        /* ── App container ── */
+        .app-container {
+          position:absolute; top:15px; bottom:15px; left:15px; right:15px;
+          background:rgba(11,24,41,0.82);
+          backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+          border-radius:22px;
+          border:1px solid rgba(255,255,255,0.07);
+          box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset, 0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 56px rgba(0,0,0,0.5);
+          padding:28px 28px 24px;
+          z-index:1; overflow-y:auto;
+        }
+
         /* ── Welcome ── */
-        .welcome-message { text-align: left; margin-bottom: 24px; }
-        .welcome-message h1 { font-size: 1.5rem; margin-bottom: 4px; font-weight: 800; color: #e5eef8; letter-spacing: -.3px; }
-        .welcome-sub { font-size: 0.82rem; color: #4a6a8a; }
-        /* ── Stats row ── */
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .welcome-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; gap:12px; }
+        .welcome-left h1 { font-size:1.55rem; font-weight:800; color:#eef4ff; letter-spacing:-.4px; margin-bottom:4px; }
+        .welcome-date { font-size:0.78rem; color:#4a6a8a; }
+        .welcome-sub-text { font-size:0.82rem; color:#4a6a8a; margin-top:2px; }
+        .welcome-right { flex-shrink:0; }
+        .total-xp-badge {
+          display:inline-flex; align-items:center; gap:5px;
+          padding:6px 14px; border-radius:999px;
+          background:rgba(0,112,243,0.1); border:1px solid rgba(0,112,243,0.25);
+          font-size:0.78rem; font-weight:700; color:#60a5fa;
+          animation:fadeUp .5s ease both;
+        }
+
+        /* ── Quick actions ── */
+        .quick-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+        .qa-btn {
+          display:flex; flex-direction:column; align-items:center; gap:6px;
+          padding:14px 10px; border-radius:16px; text-decoration:none;
+          border:1px solid rgba(255,255,255,0.07);
+          background:rgba(255,255,255,0.03);
+          transition:all .2s cubic-bezier(.4,0,.2,1);
+          position:relative; overflow:hidden;
+        }
+        .qa-btn::before {
+          content:''; position:absolute; inset:0; border-radius:16px;
+          background:var(--qa-bg, transparent); opacity:0.08;
+          transition:opacity .2s;
+        }
+        .qa-btn:hover { transform:translateY(-3px); border-color:var(--qa-border,rgba(255,255,255,0.15)); box-shadow:0 8px 24px rgba(0,0,0,0.3), var(--qa-glow,none); }
+        .qa-btn:hover::before { opacity:0.14; }
+        .qa-btn:active { transform:translateY(-1px) scale(0.98); }
+        .qa-icon { font-size:1.6rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+        .qa-label { font-size:0.72rem; font-weight:700; color:#8ba4c8; text-align:center; letter-spacing:.2px; }
+        .qa-xp { font-size:0.6rem; color:#4a6a8a; font-weight:600; }
+
+        /* ── Stats bar ── */
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
         .stat-chip {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px; padding: 16px 16px 14px;
-          display: flex; flex-direction: column; gap: 4px;
-          position: relative; overflow: hidden;
-          border-left: 3px solid var(--chip-color, rgba(255,255,255,0.1));
-        }
-        .stat-chip::before {
-          content: ''; position: absolute; inset: 0;
-          background: linear-gradient(135deg, var(--chip-color, transparent) 0%, transparent 60%);
-          opacity: 0.06; pointer-events: none;
-        }
-        .stat-chip-icon { font-size: 1.25rem; margin-bottom: 2px; }
-        .stat-chip-value { font-size: 1.6rem; font-weight: 800; color: #e5eef8; line-height: 1; }
-        .stat-chip-label { font-size: 0.7rem; color: #4a6a8a; text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
-        .stat-chip.streak { --chip-color: #f59e0b; }
-        .stat-chip.xp     { --chip-color: #3b82f6; }
-        .stat-chip.goals  { --chip-color: #f97316; }
-        .stat-chip.journal{ --chip-color: #a78bfa; }
-        .stat-chip.streak .stat-chip-value { color: #fbbf24; }
-        /* ── XP bar ── */
-        .xp-bar-outer { height: 3px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 8px; }
-        .xp-bar-inner { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 10px; transition: width .8s ease; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
-
-        .tool-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 20px; padding: 0;
-          text-decoration: none; color: #e0e0e0;
-          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-          position: relative; overflow: hidden;
-          display: flex; flex-direction: column;
-        }
-        .tool-card:not(.coming-soon):hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 48px rgba(0,0,0,0.35), var(--card-glow, 0 0 0 transparent);
-          border-color: var(--card-accent, rgba(255,255,255,0.2));
-        }
-        .tool-card.coming-soon { opacity: 0.5; cursor: default; pointer-events: none; }
-
-        /* Premium card banner */
-        .tool-card-banner {
-          height: 120px; border-radius: 18px 18px 0 0;
-          display: flex; align-items: center; justify-content: center;
-          background: var(--card-gradient);
-          position: relative; overflow: hidden;
-          flex-shrink: 0;
-        }
-        .tool-card-banner::after {
-          content: ''; position: absolute; inset: 0;
-          background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.12) 0%, transparent 70%);
-        }
-        .tool-card-banner-icon {
-          font-size: 3rem; position: relative; z-index: 1;
-          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
-        }
-        .coming-soon-badge {
-          position: absolute; top: 10px; right: 10px;
-          background: rgba(0,0,0,0.35); color: rgba(255,255,255,0.65);
-          padding: 3px 9px; border-radius: 6px; font-size: 0.68rem;
-          font-weight: 600; letter-spacing: 0.4px; z-index: 2;
-        }
-
-        .tool-card-body { padding: 18px 20px 20px; flex: 1; display: flex; flex-direction: column; }
-        .tool-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: #e5eef8; }
-        .tool-card p { font-size: 0.84rem; color: #7e9ab5; line-height: 1.55; flex: 1; }
-        .tool-card-arrow {
-          display: inline-flex; align-items: center; gap: 4px;
-          font-size: 0.78rem; font-weight: 600; color: var(--card-accent-text, #7bbfff);
-          margin-top: 14px; transition: gap .2s;
-        }
-        .tool-card:not(.coming-soon):hover .tool-card-arrow { gap: 8px; }
-        .shepherd-element { background: rgba(35, 35, 35, 0.9) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; }
-        .shepherd-header { background-color: transparent !important; padding-bottom: 0; }
-        .shepherd-title { color: #f0f0f0 !important; font-weight: 600; }
-        .shepherd-text { color: #cccccc !important; font-size: 0.95rem; line-height: 1.5; }
-        .shepherd-button { background: #0070f3 !important; border-radius: 8px !important; color: white !important; padding: 0.6rem 1.2rem !important; transition: background-color 0.2s ease; }
-        .shepherd-button.shepherd-button-secondary { background: rgba(255, 255, 255, 0.1) !important; }
-        .shepherd-button:not(:disabled):hover { background: #0056b3 !important; }
-        .shepherd-button.shepherd-button-secondary:hover { background: rgba(255, 255, 255, 0.2) !important; }
-        .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.9) !important; }
-        /* ── XP Levels widget ── */
-        #xp-levels-section { margin-bottom: 24px; }
-        .xp-levels-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .xp-levels-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:600; }
-        .xp-levels-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-        .xp-lvl-card {
-          padding:14px 12px; border-radius:14px;
           background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
-          display:flex; flex-direction:column; gap:6px;
-          border-top:3px solid var(--dom-color,rgba(255,255,255,0.1));
-          transition:transform .2s;
+          border-radius:14px; padding:14px 14px 12px;
+          display:flex; flex-direction:column; gap:3px;
+          position:relative; overflow:hidden;
+          border-bottom:2px solid var(--chip-color,rgba(255,255,255,0.08));
+          transition:border-color .2s;
         }
-        .xp-lvl-card:hover { transform:translateY(-2px); }
-        .xp-lvl-top { display:flex; align-items:center; justify-content:space-between; }
-        .xp-lvl-emoji { font-size:1.1rem; }
-        .xp-lvl-rank { font-size:1.3rem; font-weight:900; color:var(--dom-color); }
-        .xp-lvl-title { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--dom-color); }
-        .xp-lvl-xp { font-size:0.72rem; color:#4a6a8a; }
-        .xp-lvl-bar-bg { height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; }
-        .xp-lvl-bar { height:100%; background:var(--dom-color); border-radius:4px; transition:width 1s ease; }
+        .stat-chip:hover { border-color:var(--chip-color,rgba(255,255,255,0.2)); background:rgba(255,255,255,0.05); }
+        .stat-chip-icon { font-size:1.1rem; }
+        .stat-chip-value { font-size:1.5rem; font-weight:800; color:#eef4ff; line-height:1.1; }
+        .stat-chip-label { font-size:0.65rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; }
+        .stat-chip.streak { --chip-color:#f59e0b; }
+        .stat-chip.xp     { --chip-color:#3b82f6; }
+        .stat-chip.goals  { --chip-color:#f97316; }
+        .stat-chip.journal{ --chip-color:#a78bfa; }
+        .stat-chip.streak .stat-chip-value { color:#fbbf24; }
+        .xp-bar-outer { height:2px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; margin-top:6px; }
+        .xp-bar-inner { height:100%; background:linear-gradient(90deg,#3b82f6,#60a5fa); border-radius:4px; transition:width .8s ease; }
+
+        /* ── Domain rings (XP) ── */
+        .rings-section { margin-bottom:22px; }
+        .rings-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .rings-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; }
+        .rings-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+        .ring-card {
+          display:flex; flex-direction:column; align-items:center; gap:10px;
+          padding:16px 10px; border-radius:16px;
+          background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+          transition:transform .2s, background .2s;
+        }
+        .ring-card:hover { transform:translateY(-2px); background:rgba(255,255,255,0.045); }
+        .ring-wrap {
+          width:72px; height:72px; border-radius:50%; flex-shrink:0;
+          background:conic-gradient(var(--rcolor,#3b82f6) var(--rpct,0%), rgba(255,255,255,0.05) 0%);
+          display:flex; align-items:center; justify-content:center;
+          position:relative; transition:background 1s cubic-bezier(.4,0,.2,1);
+        }
+        .ring-wrap::before {
+          content:''; position:absolute; inset:7px; border-radius:50%;
+          background:var(--bg-surface,#0b1829);
+        }
+        .ring-inner { position:relative; z-index:1; text-align:center; }
+        .ring-emoji { font-size:1.2rem; display:block; }
+        .ring-level { font-size:0.65rem; font-weight:800; color:var(--rcolor,#3b82f6); line-height:1; }
+        .ring-meta { text-align:center; }
+        .ring-title { font-size:0.65rem; font-weight:700; color:var(--rcolor); text-transform:uppercase; letter-spacing:.4px; }
+        .ring-xp { font-size:0.62rem; color:#4a6a8a; margin-top:2px; }
 
         /* ── Action du jour ── */
-        #action-today { margin-bottom: 24px; }
+        #action-today { margin-bottom:22px; }
         .action-card {
-          background:rgba(0,112,243,0.05); border:1px solid rgba(0,112,243,0.18);
-          border-radius:14px; padding:14px 18px;
-          display:flex; align-items:center; gap:14px;
+          display:flex; align-items:center; gap:16px;
+          padding:16px 20px; border-radius:16px;
+          background:rgba(0,112,243,0.06); border:1px solid rgba(0,112,243,0.18);
+          position:relative; overflow:hidden;
         }
-        .action-card-icon { font-size:1.6rem; flex-shrink:0; }
+        .action-card::before {
+          content:''; position:absolute; left:0; top:0; bottom:0;
+          width:3px; background:linear-gradient(180deg,#3b82f6,#60a5fa);
+          border-radius:3px 0 0 3px;
+        }
+        .action-card-icon { font-size:1.8rem; flex-shrink:0; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
         .action-card-body { flex:1; }
-        .action-card-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:#60aeff; font-weight:700; margin-bottom:2px; }
-        .action-card-text { font-size:0.88rem; color:#c8d8ee; line-height:1.4; }
+        .action-card-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:.6px; color:#60aeff; font-weight:700; margin-bottom:3px; }
+        .action-card-text { font-size:0.86rem; color:#c8d8ee; line-height:1.45; }
         .action-card-btn {
           display:inline-flex; align-items:center; gap:4px; margin-top:8px;
-          padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;
-          background:rgba(0,112,243,0.2); border:1px solid rgba(0,112,243,0.35);
+          padding:6px 12px; border-radius:8px; font-size:0.76rem; font-weight:700;
+          background:rgba(0,112,243,0.18); border:1px solid rgba(0,112,243,0.3);
           color:#60aeff; text-decoration:none; transition:background .2s;
         }
-        .action-card-btn:hover { background:rgba(0,112,243,0.3); }
+        .action-card-btn:hover { background:rgba(0,112,243,0.28); }
 
-        /* ── Roue de Vie widget ── */
-        #wheel-section { margin-bottom: 24px; }
+        /* ── Wheel widget ── */
+        #wheel-section { margin-bottom:22px; }
         .wheel-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
-        .wheel-section-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:600; }
+        .wheel-section-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; }
         .wheel-eval-date { font-size:0.72rem; color:#4a6a8a; flex:1; text-align:center; }
-        .wheel-new-eval-btn { font-size:0.72rem; color:#60aeff; text-decoration:none; padding:3px 8px; border:1px solid rgba(96,174,255,0.3); border-radius:6px; transition:background .2s; white-space:nowrap; }
+        .wheel-new-eval-btn { font-size:0.72rem; color:#60aeff; text-decoration:none; padding:4px 10px; border:1px solid rgba(96,174,255,0.25); border-radius:7px; transition:background .2s; white-space:nowrap; font-weight:600; }
         .wheel-new-eval-btn:hover { background:rgba(96,174,255,0.1); }
-        .wheel-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+        .wheel-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
         .wheel-radar-box { width:150px; height:150px; flex-shrink:0; }
         .wheel-domain-bars { flex:1; min-width:180px; display:flex; flex-direction:column; gap:10px; }
         .wdb-row { display:flex; align-items:center; gap:8px; }
         .wdb-label { width:60px; font-size:0.74rem; color:#7ba3c8; white-space:nowrap; }
-        .wdb-bar-bg { flex:1; height:5px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+        .wdb-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; }
         .wdb-bar { height:100%; border-radius:4px; width:0%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
-        .wdb-val { width:26px; text-align:right; font-size:0.78rem; font-weight:700; }
-        .wheel-cta-card { background:rgba(0,112,243,0.06); border:1px dashed rgba(0,112,243,0.25); border-radius:16px; padding:20px; text-align:center; text-decoration:none; display:block; transition:background .2s; }
-        .wheel-cta-card:hover { background:rgba(0,112,243,0.1); }
-        .shepherd-highlight-user { z-index: 10001; box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); border-radius: 50%; animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); } 50% { box-shadow: 0 0 0 6px rgba(255, 74, 74, 0.8), 0 0 35px rgba(255, 74, 74, 0.8); } 100% { box-shadow: 0 0 0 3px rgba(255, 74, 74, 0.8), 0 0 20px rgba(255, 74, 74, 0.5); } }
+        .wdb-val { width:24px; text-align:right; font-size:0.76rem; font-weight:700; }
+        .wheel-cta-card { background:rgba(0,112,243,0.05); border:1px dashed rgba(0,112,243,0.2); border-radius:16px; padding:22px; text-align:center; text-decoration:none; display:block; transition:background .2s, border-color .2s; margin-bottom:22px; }
+        .wheel-cta-card:hover { background:rgba(0,112,243,0.09); border-color:rgba(0,112,243,0.35); }
+
+        /* ── Tools grid ── */
+        .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+        .tool-card {
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+          border-radius:18px; padding:0; text-decoration:none; color:#e0e0e0;
+          transition:transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s, border-color .22s;
+          position:relative; overflow:hidden; display:flex; flex-direction:column;
+        }
+        .tool-card:not(.coming-soon):hover {
+          transform:translateY(-5px) scale(1.01);
+          box-shadow:0 20px 48px rgba(0,0,0,0.45), var(--card-glow,none);
+          border-color:var(--card-accent,rgba(255,255,255,0.18));
+        }
+        .tool-card.coming-soon { opacity:0.42; cursor:default; pointer-events:none; }
+        .tool-card-banner {
+          height:110px; border-radius:17px 17px 0 0;
+          display:flex; align-items:center; justify-content:center;
+          background:var(--card-gradient); position:relative; overflow:hidden; flex-shrink:0;
+        }
+        .tool-card-banner::after {
+          content:''; position:absolute; inset:0;
+          background:radial-gradient(ellipse at 30% 60%,rgba(255,255,255,0.15) 0%,transparent 65%);
+        }
+        .tool-card-banner-icon { font-size:2.6rem; position:relative; z-index:1; filter:drop-shadow(0 4px 14px rgba(0,0,0,0.45)); }
+        .coming-soon-badge { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.4); color:rgba(255,255,255,0.6); padding:3px 8px; border-radius:5px; font-size:0.65rem; font-weight:700; letter-spacing:.4px; z-index:2; }
+        .tool-card-body { padding:16px 18px 18px; flex:1; display:flex; flex-direction:column; }
+        .tool-card h3 { font-size:0.95rem; font-weight:800; margin-bottom:5px; color:#eef4ff; letter-spacing:-.2px; }
+        .tool-card p { font-size:0.8rem; color:#7e9ab5; line-height:1.55; flex:1; }
+        .tool-card-arrow { display:inline-flex; align-items:center; gap:4px; font-size:0.76rem; font-weight:700; color:var(--card-accent-text,#7bbfff); margin-top:12px; transition:gap .18s; }
+        .tool-card:not(.coming-soon):hover .tool-card-arrow { gap:8px; }
+
+        /* ── Shepherd ── */
+        .shepherd-element { background:rgba(10,22,45,0.97) !important; backdrop-filter:blur(20px) !important; border-radius:14px !important; border:1px solid rgba(255,255,255,0.1) !important; box-shadow:0 16px 48px rgba(0,0,0,0.5) !important; }
+        .shepherd-header { background:transparent !important; }
+        .shepherd-title { color:#eef4ff !important; font-weight:700; font-size:1rem; }
+        .shepherd-text { color:#8ba4c8 !important; font-size:0.88rem; line-height:1.6; }
+        .shepherd-button { background:#0070f3 !important; border-radius:9px !important; color:#fff !important; padding:0.55rem 1.2rem !important; font-weight:700 !important; }
+        .shepherd-button.shepherd-button-secondary { background:rgba(255,255,255,0.08) !important; }
+        .shepherd-button:not(:disabled):hover { background:#0080ff !important; }
+        .shepherd-arrow::before { background:rgba(10,22,45,0.97) !important; }
+        .shepherd-highlight-user { z-index:10001; box-shadow:0 0 0 3px rgba(0,112,243,0.8),0 0 20px rgba(0,112,243,0.5); border-radius:50%; animation:pulse-blue 2s infinite; }
+        @keyframes pulse-blue { 0%,100%{box-shadow:0 0 0 3px rgba(0,112,243,0.8),0 0 20px rgba(0,112,243,0.5)} 50%{box-shadow:0 0 0 6px rgba(0,112,243,0.8),0 0 35px rgba(0,112,243,0.8)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
     </style>
 </head>
 <body>
@@ -216,43 +241,74 @@
                 </button>
         </header>
     <main class="app-container">
-        <div class="welcome-message">
+        <!-- ── Welcome ── -->
+        <div class="welcome-row">
+          <div class="welcome-left">
             <h1 id="greeting-h1">Bonjour 👋</h1>
-            <div class="welcome-sub" id="welcome-sub">Prêt à avancer aujourd'hui ?<span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:6px"></span></div>
+            <div class="welcome-date" id="welcome-date"></div>
+            <div class="welcome-sub-text" id="welcome-sub">Prêt à avancer aujourd'hui ?<span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:6px"></span></div>
+          </div>
+          <div class="welcome-right">
+            <div class="total-xp-badge">⚡ <span id="total-xp-badge">0 XP</span></div>
+          </div>
+        </div>
+
+        <!-- ── Quick actions ── -->
+        <div class="quick-actions">
+          <a href="/meditation/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#0ea5e9,#0284c7);--qa-border:rgba(14,165,233,0.35);--qa-glow:0 8px 24px rgba(14,165,233,0.2)">
+            <span class="qa-icon">🧘</span>
+            <span class="qa-label">Méditer</span>
+            <span class="qa-xp">+15 XP</span>
+          </a>
+          <a href="/journal/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#ec4899,#a855f7);--qa-border:rgba(236,72,153,0.3);--qa-glow:0 8px 24px rgba(236,72,153,0.18)">
+            <span class="qa-icon">✍️</span>
+            <span class="qa-label">Journal</span>
+            <span class="qa-xp">+10 XP</span>
+          </a>
+          <a href="/habitudes/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#22c55e,#16a34a);--qa-border:rgba(34,197,94,0.3);--qa-glow:0 8px 24px rgba(34,197,94,0.18)">
+            <span class="qa-icon">✅</span>
+            <span class="qa-label">Habitudes</span>
+            <span class="qa-xp">+5 XP</span>
+          </a>
+          <a href="/autoevaluation/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#2dd4bf,#06b6d4);--qa-border:rgba(45,212,191,0.3);--qa-glow:0 8px 24px rgba(45,212,191,0.18)">
+            <span class="qa-icon">🎡</span>
+            <span class="qa-label">Évaluer</span>
+            <span class="qa-xp">Roue de vie</span>
+          </a>
         </div>
 
         <!-- ── Live stats ── -->
         <div class="stats-row" id="stats-row">
-            <div class="stat-chip streak">
-                <div class="stat-chip-icon">🔥</div>
-                <div class="stat-chip-value" id="stat-streak">—</div>
-                <div class="stat-chip-label">Jours méditation</div>
-            </div>
-            <div class="stat-chip xp">
-                <div class="stat-chip-icon">⚡</div>
-                <div class="stat-chip-value" id="stat-xp">—</div>
-                <div class="stat-chip-label">XP total</div>
-                <div class="xp-bar-outer"><div class="xp-bar-inner" id="stat-xp-bar" style="width:0%"></div></div>
-            </div>
-            <div class="stat-chip goals">
-                <div class="stat-chip-icon">🎯</div>
-                <div class="stat-chip-value" id="stat-goals">—</div>
-                <div class="stat-chip-label">Objectifs actifs</div>
-            </div>
-            <div class="stat-chip journal">
-                <div class="stat-chip-icon">📔</div>
-                <div class="stat-chip-value" id="stat-journal">—</div>
-                <div class="stat-chip-label">Entrées journal</div>
-            </div>
+          <div class="stat-chip streak">
+            <div class="stat-chip-icon">🔥</div>
+            <div class="stat-chip-value" id="stat-streak">—</div>
+            <div class="stat-chip-label">Série méditation</div>
+          </div>
+          <div class="stat-chip xp">
+            <div class="stat-chip-icon">⚡</div>
+            <div class="stat-chip-value" id="stat-xp">—</div>
+            <div class="stat-chip-label">XP total</div>
+            <div class="xp-bar-outer"><div class="xp-bar-inner" id="stat-xp-bar" style="width:0%"></div></div>
+          </div>
+          <div class="stat-chip goals">
+            <div class="stat-chip-icon">🎯</div>
+            <div class="stat-chip-value" id="stat-goals">—</div>
+            <div class="stat-chip-label">Objectifs actifs</div>
+          </div>
+          <div class="stat-chip journal">
+            <div class="stat-chip-icon">📔</div>
+            <div class="stat-chip-value" id="stat-journal">—</div>
+            <div class="stat-chip-label">Entrées journal</div>
+          </div>
         </div>
 
-        <!-- ── XP Niveaux par domaine ── -->
-        <div id="xp-levels-section">
-          <div class="xp-levels-header">
-            <span class="xp-levels-label">⚡ Niveaux par domaine</span>
-            <a href="/profile/" style="font-size:0.72rem;color:#4a6a8a;text-decoration:none">Voir profil →</a>
+        <!-- ── Domain XP rings ── -->
+        <div class="rings-section">
+          <div class="rings-header">
+            <span class="rings-label">Niveaux par domaine</span>
+            <a href="/profile/" style="font-size:0.68rem;color:#4a6a8a;text-decoration:none;transition:color .2s" onmouseover="this.style.color='#8ba4c8'" onmouseout="this.style.color='#4a6a8a'">Voir profil complet →</a>
           </div>
-          <div class="xp-levels-grid" id="xp-levels-grid">
+          <div class="rings-grid" id="rings-grid">
             <!-- filled by JS -->
           </div>
         </div>
@@ -265,90 +321,80 @@
           <div class="wheel-section-header">
             <span class="wheel-section-label">🕸 Roue de Vie</span>
             <span id="wheel-eval-date" class="wheel-eval-date"></span>
-            <a href="/autoevaluation/" class="wheel-new-eval-btn">Nouvelle éval. →</a>
+            <a href="/autoevaluation/" class="wheel-new-eval-btn">+ Nouvelle éval.</a>
           </div>
           <div class="wheel-card">
             <div class="wheel-radar-box"><canvas id="dash-radar"></canvas></div>
             <div id="dash-domain-bars" class="wheel-domain-bars"></div>
           </div>
         </div>
-        <!-- ── CTA première évaluation ── -->
-        <a id="wheel-cta-section" href="/autoevaluation/" style="display:none;margin-bottom:24px" class="wheel-cta-card">
-          <div style="font-size:2rem;margin-bottom:8px">🕸</div>
-          <div style="font-weight:700;color:#e5eef8;margin-bottom:4px">Fais ta première Roue de Vie</div>
-          <div style="font-size:0.82rem;color:#7ba3c8">5 minutes pour découvrir tes forces et tes axes de progression → résultat immédiat</div>
+        <a id="wheel-cta-section" href="/autoevaluation/" style="display:none" class="wheel-cta-card">
+          <div style="font-size:2rem;margin-bottom:8px">🎡</div>
+          <div style="font-weight:700;color:#eef4ff;margin-bottom:5px">Lance ta première Roue de Vie</div>
+          <div style="font-size:0.82rem;color:#7ba3c8">5 minutes · 20 questions · Résultat radar visuel immédiat</div>
         </a>
 
+        <!-- ── Module cards ── -->
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.8px;color:#4a6a8a;font-weight:700;margin-bottom:12px">Tous les modules</div>
         <div class="tools-grid">
 
           <a href="/yourlife" class="tool-card" id="tool-card-1"
              style="--card-gradient:linear-gradient(135deg,#1e1b5e 0%,#3730a3 50%,#4f46e5 100%);--card-glow:0 8px 32px rgba(99,102,241,.3);--card-accent:rgba(99,102,241,.5);--card-accent-text:#a5b4fc">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">🌳</span>
-            </div>
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">🌳</span></div>
             <div class="tool-card-body">
               <h3>Your Life</h3>
-              <p>Pyramide de Maslow interactive, carte mentale et chronologie de ta progression.</p>
+              <p>Pyramide de Maslow interactive et carte de ta progression.</p>
               <span class="tool-card-arrow">Explorer →</span>
             </div>
           </a>
 
           <a href="/meditation/" class="tool-card" id="card-meditation"
-             style="--card-gradient:linear-gradient(135deg,#0c2d48 0%,#0e4d6e 50%,#0ea5e9 100%);--card-glow:0 8px 32px rgba(14,165,233,.25);--card-accent:rgba(14,165,233,.45);--card-accent-text:#7dd3fc">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">🧘</span>
-            </div>
+             style="--card-gradient:linear-gradient(135deg,#0c2d48 0%,#0e4d6e 50%,#0ea5e9 100%);--card-glow:0 8px 32px rgba(14,165,233,.25);--card-accent:rgba(14,165,233,.4);--card-accent-text:#7dd3fc">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">🧘</span></div>
             <div class="tool-card-body">
               <h3>Méditation Guidée</h3>
-              <p>Séances de méditation guidées, respiration, suivi de streak et bien-être quotidien.</p>
+              <p>Séances guidées, sons ambiants, streak et bien-être quotidien.</p>
               <span class="tool-card-arrow">Commencer →</span>
             </div>
           </a>
 
           <a href="/objectifs/" class="tool-card" id="card-objectifs"
-             style="--card-gradient:linear-gradient(135deg,#431407 0%,#9a3412 50%,#f97316 100%);--card-glow:0 8px 32px rgba(249,115,22,.25);--card-accent:rgba(249,115,22,.45);--card-accent-text:#fdba74">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">🎯</span>
-            </div>
+             style="--card-gradient:linear-gradient(135deg,#431407 0%,#9a3412 50%,#f97316 100%);--card-glow:0 8px 32px rgba(249,115,22,.25);--card-accent:rgba(249,115,22,.4);--card-accent-text:#fdba74">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">🎯</span></div>
             <div class="tool-card-body">
               <h3>Objectifs & Progrès</h3>
-              <p>Crée tes objectifs, fixe des deadlines et suis ta progression vers tes ambitions.</p>
+              <p>Crée tes objectifs, fixe des deadlines et suis ta progression.</p>
               <span class="tool-card-arrow">Mes objectifs →</span>
             </div>
           </a>
 
           <a href="/journal/" class="tool-card" id="card-journal"
              style="--card-gradient:linear-gradient(135deg,#2d1b3d 0%,#7c3aed 50%,#ec4899 100%);--card-glow:0 8px 32px rgba(236,72,153,.2);--card-accent:rgba(236,72,153,.4);--card-accent-text:#f9a8d4">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">📔</span>
-            </div>
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">📔</span></div>
             <div class="tool-card-body">
               <h3>Journal</h3>
-              <p>Réflexions, émotions, insights — un espace privé pour mieux te comprendre chaque jour.</p>
+              <p>Réflexions, émotions, insights — ton espace intime quotidien.</p>
               <span class="tool-card-arrow">Écrire →</span>
             </div>
           </a>
 
-          <a href="/codex/" class="tool-card" id="card-codex"
-             style="--card-gradient:linear-gradient(135deg,#1e293b 0%,#334155 100%);--card-accent:rgba(96,174,255,0.35);--card-glow:0 0 24px rgba(96,174,255,0.12)">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">📚</span>
-            </div>
+          <a href="/habitudes/" class="tool-card" id="card-habitudes"
+             style="--card-gradient:linear-gradient(135deg,#052e16 0%,#166534 50%,#22c55e 100%);--card-glow:0 8px 32px rgba(34,197,94,.2);--card-accent:rgba(34,197,94,.4);--card-accent-text:#86efac">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">✅</span></div>
             <div class="tool-card-body">
-              <h3>Codex de Connaissance</h3>
-              <p>Bibliothèque de concepts, méthodes et checklists pour progresser plus vite.</p>
+              <h3>Habitudes</h3>
+              <p>Routines quotidiennes, streaks et gains d'XP chaque jour.</p>
+              <span class="tool-card-arrow">Mes habitudes →</span>
             </div>
           </a>
 
-          <a href="/habitudes/" class="tool-card" id="card-habitudes"
-             style="--card-gradient:linear-gradient(135deg,#052e16 0%,#166534 50%,#22c55e 100%);--card-glow:0 8px 32px rgba(34,197,94,.25);--card-accent:rgba(34,197,94,.45);--card-accent-text:#86efac">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">✅</span>
-            </div>
+          <a href="/codex/" class="tool-card" id="card-codex"
+             style="--card-gradient:linear-gradient(135deg,#1e293b 0%,#334155 100%);--card-accent:rgba(96,174,255,0.3);--card-glow:0 0 24px rgba(96,174,255,0.1)">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">📚</span></div>
             <div class="tool-card-body">
-              <h3>Habitudes</h3>
-              <p>Construis des routines quotidiennes, suis tes streaks et gagne de l'XP chaque jour.</p>
-              <span class="tool-card-arrow">Mes habitudes →</span>
+              <h3>Codex de Connaissance</h3>
+              <p>Tes apprentissages, citations et insights en un seul endroit.</p>
+              <span class="tool-card-arrow">Ouvrir →</span>
             </div>
           </a>
 
@@ -431,9 +477,15 @@
                 } catch(e) {}
                 if (!userDoc.exists() || userData.hasSeenTutorial !== true) { startTutorial(userDocRef); }
 
+                // ── Welcome date ──
+                const wd = document.getElementById('welcome-date');
+                if (wd) {
+                  const now = new Date();
+                  wd.textContent = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
+                }
                 // ── Load dashboard stats (async, non-blocking) ──
                 loadDashboardStats(db, user.uid, userData);
-                loadXPLevels(userData);
+                loadXPRings(userData);
                 loadActionDuJour(userData);
                 loadWheelWidget(db, user.uid);
 
@@ -486,14 +538,7 @@
         // ── Dashboard stats loader ─────────────────────────────────────────────
         async function loadDashboardStats(db, uid, userData) {
             try {
-                // XP total across all domains
-                const levels = userData.levels || {};
-                const totalXP = ['body','heart','etre','order'].reduce((s, d) => s + (levels[d]?.xp || 0), 0);
-                const el = document.getElementById('stat-xp');
-                if (el) el.textContent = totalXP.toLocaleString('fr-FR');
-                // XP bar: show progress toward next 1000 XP milestone
-                const barEl = document.getElementById('stat-xp-bar');
-                if (barEl) barEl.style.width = `${Math.min(100, (totalXP % 1000) / 10)}%`;
+                // XP stats handled by loadXPRings
 
                 // Goals (active = not completed)
                 const goals = userData.goals || [];
@@ -598,8 +643,8 @@
           } catch(e) { console.warn('Wheel widget:', e); }
         }
 
-        // ── XP Levels per domain ───────────────────────────────────────────────
-        function loadXPLevels(userData) {
+        // ── XP Domain Rings ────────────────────────────────────────────────────
+        function loadXPRings(userData) {
           const DOMAINS = [
             {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf'},
             {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171'},
@@ -608,33 +653,51 @@
           ];
           const THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 4000, 8000, Infinity];
           const TITLES = ['Novice','Apprenti','Initié','Pratiquant','Avancé','Expert','Maître','Légende'];
-          const getLevel = xp => {
+          const getInfo = rawXp => {
+            const xp = typeof rawXp === 'number' ? rawXp : (rawXp?.xp || 0);
             let lvl = 0;
             while (lvl < THRESHOLDS.length - 2 && xp >= THRESHOLDS[lvl+1]) lvl++;
-            return lvl;
-          };
-          const levels = userData.levels || {};
-          const grid = document.getElementById('xp-levels-grid');
-          if (!grid) return;
-          grid.innerHTML = DOMAINS.map(d => {
-            const xp = levels[d.key]?.xp || 0;
-            const lvl = getLevel(xp);
             const nextXP = THRESHOLDS[Math.min(lvl+1, THRESHOLDS.length-2)];
             const prevXP = THRESHOLDS[lvl];
             const pct = nextXP === Infinity ? 100 : Math.round((xp - prevXP) / (nextXP - prevXP) * 100);
-            return `<div class="xp-lvl-card" style="--dom-color:${d.color}">
-              <div class="xp-lvl-top">
-                <span class="xp-lvl-emoji">${d.emoji}</span>
-                <span class="xp-lvl-rank">Lv${lvl+1}</span>
+            return { xp, lvl: lvl+1, title: TITLES[Math.min(lvl, TITLES.length-1)], pct };
+          };
+          const levels = userData.levels || {};
+          const grid = document.getElementById('rings-grid');
+          if (!grid) return;
+
+          // Update total XP badge
+          const totalXP = DOMAINS.reduce((s,d) => s + (getInfo(levels[d.key]).xp), 0);
+          const badge = document.getElementById('total-xp-badge');
+          if (badge) badge.textContent = totalXP.toLocaleString('fr-FR') + ' XP';
+          const statXp = document.getElementById('stat-xp');
+          if (statXp) statXp.textContent = totalXP.toLocaleString('fr-FR');
+          const xpBar = document.getElementById('stat-xp-bar');
+          if (xpBar) setTimeout(() => { xpBar.style.width = `${Math.min(100,(totalXP%1000)/10)}%`; }, 400);
+
+          grid.innerHTML = DOMAINS.map(d => {
+            const { xp, lvl, title, pct } = getInfo(levels[d.key]);
+            return `<div class="ring-card">
+              <div class="ring-wrap" data-pct="${pct}" data-color="${d.color}" style="background:conic-gradient(rgba(255,255,255,0.04) 100%,transparent 0)">
+                <div class="ring-inner">
+                  <span class="ring-emoji">${d.emoji}</span>
+                  <span class="ring-level" style="color:${d.color}">Lv${lvl}</span>
+                </div>
               </div>
-              <div class="xp-lvl-title">${TITLES[Math.min(lvl, TITLES.length-1)]}</div>
-              <div class="xp-lvl-xp">${xp} XP</div>
-              <div class="xp-lvl-bar-bg"><div class="xp-lvl-bar" style="width:0%" data-w="${pct}%"></div></div>
+              <div class="ring-meta">
+                <div class="ring-title" style="color:${d.color}">${title}</div>
+                <div class="ring-xp">${xp} XP</div>
+              </div>
             </div>`;
           }).join('');
+          // Animate rings filling in
           setTimeout(() => {
-            grid.querySelectorAll('.xp-lvl-bar').forEach(b => { b.style.width = b.dataset.w; });
-          }, 300);
+            grid.querySelectorAll('.ring-wrap').forEach(r => {
+              const pct = parseInt(r.dataset.pct) || 0;
+              const col = r.dataset.color || '#3b82f6';
+              r.style.background = `conic-gradient(${col} ${pct}%, rgba(255,255,255,0.05) 0%)`;
+            });
+          }, 200);
         }
 
         // ── Action du jour ─────────────────────────────────────────────────────
