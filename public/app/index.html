@@ -109,6 +109,46 @@
         .shepherd-button:not(:disabled):hover { background: #0056b3 !important; }
         .shepherd-button.shepherd-button-secondary:hover { background: rgba(255, 255, 255, 0.2) !important; }
         .shepherd-arrow::before { background-color: rgba(35, 35, 35, 0.9) !important; }
+        /* ── XP Levels widget ── */
+        #xp-levels-section { margin-bottom: 24px; }
+        .xp-levels-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .xp-levels-label { font-size:0.72rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:600; }
+        .xp-levels-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+        .xp-lvl-card {
+          padding:14px 12px; border-radius:14px;
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+          display:flex; flex-direction:column; gap:6px;
+          border-top:3px solid var(--dom-color,rgba(255,255,255,0.1));
+          transition:transform .2s;
+        }
+        .xp-lvl-card:hover { transform:translateY(-2px); }
+        .xp-lvl-top { display:flex; align-items:center; justify-content:space-between; }
+        .xp-lvl-emoji { font-size:1.1rem; }
+        .xp-lvl-rank { font-size:1.3rem; font-weight:900; color:var(--dom-color); }
+        .xp-lvl-title { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--dom-color); }
+        .xp-lvl-xp { font-size:0.72rem; color:#4a6a8a; }
+        .xp-lvl-bar-bg { height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; }
+        .xp-lvl-bar { height:100%; background:var(--dom-color); border-radius:4px; transition:width 1s ease; }
+
+        /* ── Action du jour ── */
+        #action-today { margin-bottom: 24px; }
+        .action-card {
+          background:rgba(0,112,243,0.05); border:1px solid rgba(0,112,243,0.18);
+          border-radius:14px; padding:14px 18px;
+          display:flex; align-items:center; gap:14px;
+        }
+        .action-card-icon { font-size:1.6rem; flex-shrink:0; }
+        .action-card-body { flex:1; }
+        .action-card-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:#60aeff; font-weight:700; margin-bottom:2px; }
+        .action-card-text { font-size:0.88rem; color:#c8d8ee; line-height:1.4; }
+        .action-card-btn {
+          display:inline-flex; align-items:center; gap:4px; margin-top:8px;
+          padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;
+          background:rgba(0,112,243,0.2); border:1px solid rgba(0,112,243,0.35);
+          color:#60aeff; text-decoration:none; transition:background .2s;
+        }
+        .action-card-btn:hover { background:rgba(0,112,243,0.3); }
+
         /* ── Roue de Vie widget ── */
         #wheel-section { margin-bottom: 24px; }
         .wheel-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
@@ -206,6 +246,20 @@
             </div>
         </div>
 
+        <!-- ── XP Niveaux par domaine ── -->
+        <div id="xp-levels-section">
+          <div class="xp-levels-header">
+            <span class="xp-levels-label">⚡ Niveaux par domaine</span>
+            <a href="/profile/" style="font-size:0.72rem;color:#4a6a8a;text-decoration:none">Voir profil →</a>
+          </div>
+          <div class="xp-levels-grid" id="xp-levels-grid">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- ── Action du jour ── -->
+        <div id="action-today"></div>
+
         <!-- ── Roue de Vie — dernière évaluation ── -->
         <div id="wheel-section" style="display:none">
           <div class="wheel-section-header">
@@ -283,6 +337,18 @@
             <div class="tool-card-body">
               <h3>Codex de Connaissance</h3>
               <p>Bibliothèque de concepts, méthodes et checklists pour progresser plus vite.</p>
+            </div>
+          </a>
+
+          <a href="/habitudes/" class="tool-card" id="card-habitudes"
+             style="--card-gradient:linear-gradient(135deg,#052e16 0%,#166534 50%,#22c55e 100%);--card-glow:0 8px 32px rgba(34,197,94,.25);--card-accent:rgba(34,197,94,.45);--card-accent-text:#86efac">
+            <div class="tool-card-banner">
+              <span class="tool-card-banner-icon">✅</span>
+            </div>
+            <div class="tool-card-body">
+              <h3>Habitudes</h3>
+              <p>Construis des routines quotidiennes, suis tes streaks et gagne de l'XP chaque jour.</p>
+              <span class="tool-card-arrow">Mes habitudes →</span>
             </div>
           </a>
 
@@ -367,6 +433,8 @@
 
                 // ── Load dashboard stats (async, non-blocking) ──
                 loadDashboardStats(db, user.uid, userData);
+                loadXPLevels(userData);
+                loadActionDuJour(userData);
                 loadWheelWidget(db, user.uid);
 
                 // Re-run init to ensure avatar + current path highlighting once auth is known
@@ -528,6 +596,84 @@
               });
             }
           } catch(e) { console.warn('Wheel widget:', e); }
+        }
+
+        // ── XP Levels per domain ───────────────────────────────────────────────
+        function loadXPLevels(userData) {
+          const DOMAINS = [
+            {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf'},
+            {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171'},
+            {key:'etre',  label:'Être',  emoji:'✨', color:'#a78bfa'},
+            {key:'order', label:'Ordre', emoji:'⚡', color:'#fbbf24'},
+          ];
+          const THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 4000, 8000, Infinity];
+          const TITLES = ['Novice','Apprenti','Initié','Pratiquant','Avancé','Expert','Maître','Légende'];
+          const getLevel = xp => {
+            let lvl = 0;
+            while (lvl < THRESHOLDS.length - 2 && xp >= THRESHOLDS[lvl+1]) lvl++;
+            return lvl;
+          };
+          const levels = userData.levels || {};
+          const grid = document.getElementById('xp-levels-grid');
+          if (!grid) return;
+          grid.innerHTML = DOMAINS.map(d => {
+            const xp = levels[d.key]?.xp || 0;
+            const lvl = getLevel(xp);
+            const nextXP = THRESHOLDS[Math.min(lvl+1, THRESHOLDS.length-2)];
+            const prevXP = THRESHOLDS[lvl];
+            const pct = nextXP === Infinity ? 100 : Math.round((xp - prevXP) / (nextXP - prevXP) * 100);
+            return `<div class="xp-lvl-card" style="--dom-color:${d.color}">
+              <div class="xp-lvl-top">
+                <span class="xp-lvl-emoji">${d.emoji}</span>
+                <span class="xp-lvl-rank">Lv${lvl+1}</span>
+              </div>
+              <div class="xp-lvl-title">${TITLES[Math.min(lvl, TITLES.length-1)]}</div>
+              <div class="xp-lvl-xp">${xp} XP</div>
+              <div class="xp-lvl-bar-bg"><div class="xp-lvl-bar" style="width:0%" data-w="${pct}%"></div></div>
+            </div>`;
+          }).join('');
+          setTimeout(() => {
+            grid.querySelectorAll('.xp-lvl-bar').forEach(b => { b.style.width = b.dataset.w; });
+          }, 300);
+        }
+
+        // ── Action du jour ─────────────────────────────────────────────────────
+        function loadActionDuJour(userData) {
+          const el = document.getElementById('action-today');
+          if (!el) return;
+          const DOMAINS = [
+            {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf', href:'/meditation/'},
+            {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171', href:'/journal/'},
+            {key:'etre',  label:'Être',  emoji:'✨', color:'#a78bfa', href:'/journal/'},
+            {key:'order', label:'Ordre', emoji:'⚡', color:'#fbbf24', href:'/objectifs/'},
+          ];
+          const med = userData.meditation || {};
+          const today = new Date().toDateString();
+          const meditatedToday = med.lastSessionAt && new Date(med.lastSessionAt).toDateString() === today;
+
+          let icon, label, text, btnText, href;
+          if (!meditatedToday) {
+            icon = '🧘'; label = 'Action du jour';
+            text = 'Tu n\'as pas encore médité aujourd\'hui. Une séance de 10 min peut transformer ta journée.';
+            btnText = 'Méditer maintenant (+15 XP)'; href = '/meditation/';
+          } else {
+            // Suggest weakest domain
+            const levels = userData.levels || {};
+            const sorted = DOMAINS.slice().sort((a,b) => (levels[a.key]?.xp||0) - (levels[b.key]?.xp||0));
+            const weak = sorted[0];
+            icon = weak.emoji; label = 'Domaine à renforcer';
+            text = `Ton domaine <strong>${weak.label}</strong> a le moins d'XP. Quelques actions ciblées peuvent faire une grande différence.`;
+            btnText = `Agir sur ${weak.label} →`; href = weak.href;
+          }
+
+          el.innerHTML = `<div class="action-card">
+            <div class="action-card-icon">${icon}</div>
+            <div class="action-card-body">
+              <div class="action-card-label">${label}</div>
+              <div class="action-card-text">${text}</div>
+              <a href="${href}" class="action-card-btn">${btnText}</a>
+            </div>
+          </div>`;
         }
 
         const card = document.getElementById('tool-card-1');

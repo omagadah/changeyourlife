@@ -43,6 +43,20 @@
     .toast.error { background:rgba(239,68,68,.92); }
     .session-card.playing { border-color:#10b981; background:rgba(16,185,129,0.1); }
     .btn.pause-active { background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#f59e0b; }
+    /* ── Ambient sounds ── */
+    .ambient-section { margin:20px 0 4px; }
+    .ambient-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:.6px; color:#7ba3c8; font-weight:600; margin-bottom:8px; }
+    .ambient-grid { display:flex; gap:8px; flex-wrap:wrap; }
+    .amb-btn {
+      padding:7px 14px; border-radius:999px; font-size:0.82rem; cursor:pointer; transition:all .2s;
+      border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:#aab7cf;
+      display:flex; align-items:center; gap:5px;
+    }
+    .amb-btn:hover { background:rgba(255,255,255,0.1); }
+    .amb-btn.active { background:rgba(59,130,246,0.2); border-color:#3b82f6; color:#93c5fd; }
+    .amb-volume { display:flex; align-items:center; gap:8px; margin-top:10px; }
+    .amb-volume label { font-size:0.75rem; color:#7ba3c8; white-space:nowrap; }
+    .amb-volume input[type=range] { flex:1; accent-color:#3b82f6; cursor:pointer; }
   </style>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Méditation guidée avec sessions personnalisées, exercices de respiration et sons d'ambiance pour progresser dans votre bien-être." />
@@ -71,6 +85,21 @@
         <div class="breathing-guide" id="breathing-guide">
           <div class="breathing-circle"></div>
           <div class="breathing-text" id="breathing-text">Inspire...</div>
+        </div>
+        <!-- ── Sons ambiants ── -->
+        <div class="ambient-section">
+          <div class="ambient-label">🎵 Son d'ambiance</div>
+          <div class="ambient-grid">
+            <button class="amb-btn active" data-sound="none">🔇 Silence</button>
+            <button class="amb-btn" data-sound="rain">🌧 Pluie</button>
+            <button class="amb-btn" data-sound="ocean">🌊 Océan</button>
+            <button class="amb-btn" data-sound="forest">🌿 Forêt</button>
+            <button class="amb-btn" data-sound="white">📻 Bruit blanc</button>
+          </div>
+          <div class="amb-volume">
+            <label>Volume</label>
+            <input type="range" id="amb-volume" min="0" max="100" value="40" />
+          </div>
         </div>
         <div class="controls">
           <button class="btn primary" id="btn-start">Démarrer</button>
@@ -138,6 +167,104 @@
     let uid = null;
     let breathingActive = false;
 
+    // ── Ambient sound engine (Web Audio API) ─────────────────────────────────
+    let ambCtx = null, ambGain = null, ambNodes = [];
+    let currentAmbient = 'none';
+
+    function getAmbCtx() {
+      if (!ambCtx) { ambCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      return ambCtx;
+    }
+
+    function stopAmbient() {
+      ambNodes.forEach(n => { try { n.stop(); } catch(e){} try { n.disconnect(); } catch(e){} });
+      ambNodes = [];
+      if (ambGain) { try { ambGain.disconnect(); } catch(e){} ambGain = null; }
+    }
+
+    function startAmbient(type) {
+      stopAmbient();
+      if (type === 'none') return;
+      const ctx = getAmbCtx();
+      if (ctx.state === 'suspended') ctx.resume();
+      ambGain = ctx.createGain();
+      const vol = (document.getElementById('amb-volume')?.value || 40) / 100 * 0.6;
+      ambGain.gain.setValueAtTime(vol, ctx.currentTime);
+      ambGain.connect(ctx.destination);
+
+      if (type === 'white') {
+        const buf = createNoiseBuf(ctx, 3);
+        const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+        const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1800;
+        src.connect(filter); filter.connect(ambGain); src.start();
+        ambNodes = [src];
+      } else if (type === 'rain') {
+        // Rain = white noise + lowpass + LFO for intensity variation
+        const buf = createNoiseBuf(ctx, 3);
+        const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+        const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 600; filter.Q.value = 0.8;
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 0.3;
+        const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.15;
+        lfo.connect(lfoGain); lfoGain.connect(ambGain.gain);
+        src.connect(filter); filter.connect(ambGain); src.start(); lfo.start();
+        ambNodes = [src, lfo];
+      } else if (type === 'ocean') {
+        // Ocean = noise + very slow LFO (wave rhythm)
+        const buf = createNoiseBuf(ctx, 5);
+        const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+        const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 400;
+        const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.1;
+        const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.3;
+        lfo.connect(lfoGain); lfoGain.connect(ambGain.gain);
+        src.connect(filter); filter.connect(ambGain); src.start(); lfo.start();
+        // Add a second layer
+        const buf2 = createNoiseBuf(ctx, 3);
+        const src2 = ctx.createBufferSource(); src2.buffer = buf2; src2.loop = true;
+        const f2 = ctx.createBiquadFilter(); f2.type = 'highpass'; f2.frequency.value = 800;
+        const g2 = ctx.createGain(); g2.gain.value = 0.15;
+        src2.connect(f2); f2.connect(g2); g2.connect(ambGain); src2.start();
+        ambNodes = [src, src2, lfo];
+      } else if (type === 'forest') {
+        // Forest = filtered noise + occasional chirp tones
+        const buf = createNoiseBuf(ctx, 4);
+        const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+        const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1200; filter.Q.value = 0.5;
+        const g = ctx.createGain(); g.gain.value = 0.3;
+        src.connect(filter); filter.connect(g); g.connect(ambGain); src.start();
+        // Periodic bird chirp
+        function chirp() {
+          const o = ctx.createOscillator(); const og = ctx.createGain();
+          o.frequency.value = 1800 + Math.random() * 1200;
+          o.type = 'sine'; og.gain.setValueAtTime(0.12, ctx.currentTime);
+          og.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+          o.connect(og); og.connect(ambGain); o.start(); o.stop(ctx.currentTime + 0.3);
+        }
+        const iv = setInterval(() => { if (ambNodes.length && ambCtx) chirp(); else clearInterval(iv); }, 1500 + Math.random()*2000);
+        ambNodes = [src];
+      }
+    }
+
+    function createNoiseBuf(ctx, seconds) {
+      const sr = ctx.sampleRate, len = sr * seconds;
+      const buf = ctx.createBuffer(1, len, sr);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      return buf;
+    }
+
+    // Wire sound buttons
+    document.querySelectorAll('.amb-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.amb-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentAmbient = btn.dataset.sound;
+        if (timer) startAmbient(currentAmbient); // only start if session active
+      });
+    });
+    document.getElementById('amb-volume')?.addEventListener('input', e => {
+      if (ambGain) ambGain.gain.setValueAtTime((e.target.value / 100) * 0.6, getAmbCtx().currentTime);
+    });
+
     function showToast(msg, err = false) {
       const t = document.getElementById('toast');
       t.textContent = msg; t.className = `toast${err?' error':''} show`;
@@ -194,6 +321,7 @@
     function startSession() {
       if (!currentSession) return;
       paused = false;
+      startAmbient(currentAmbient);
       const btnStart = document.getElementById('btn-start');
       const btnPause = document.getElementById('btn-pause');
       btnStart.style.display = 'none';
@@ -225,6 +353,7 @@
 
     function stopSession() {
       clearInterval(timer); timer = null;
+      stopAmbient();
       breathingActive = false;
       elapsed = 0; paused = false;
       document.getElementById('btn-start').style.display = 'inline-block';
@@ -240,6 +369,7 @@
 
     async function completeSession() {
       clearInterval(timer); timer = null;
+      stopAmbient();
       breathingActive = false;
       document.getElementById('timer').textContent = '✓ Terminé !';
       document.getElementById('btn-start').style.display = 'inline-block';

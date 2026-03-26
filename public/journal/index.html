@@ -36,6 +36,14 @@
 
     .sidebar-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
     .sidebar-sub { font-size: 0.78rem; color: #7e9ab5; }
+    .sidebar-stats-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+    .sidebar-stat-pill {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:600;
+      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#7e9ab5;
+    }
+    .sidebar-stat-pill.streak { background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.2); color:#fbbf24; }
+    .sidebar-stat-pill.mood { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.2); color:#c4b5fd; }
 
     .btn-new {
       display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -171,6 +179,7 @@
       <div class="panel-header">
         <div class="sidebar-title">📔 Journal</div>
         <div class="sidebar-sub" id="entry-count">Chargement…</div>
+        <div class="sidebar-stats-row" id="sidebar-stats"></div>
         <button class="btn-new" id="btn-new-entry">✦ Nouvelle entrée</button>
         <div class="search-bar">
           <input type="text" id="journal-search" placeholder="Rechercher…" autocomplete="off" />
@@ -354,6 +363,26 @@
       cnt.textContent = visible.length !== entries.length
         ? `${visible.length}/${entries.length} entrée${entries.length>1?'s':''}`
         : entries.length ? `${entries.length} entrée${entries.length > 1 ? 's' : ''}` : 'Aucune entrée';
+
+      // ── Streak & mood stats ──────────────────────────────────────────────
+      const statsEl = document.getElementById('sidebar-stats');
+      if (statsEl && entries.length) {
+        // Streak: consecutive days with at least one entry
+        const daySet = new Set(entries.map(e => tsToDate(e.createdAt).toDateString()));
+        let streak = 0, d = new Date();
+        while (daySet.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
+        // Dominant emotion this week
+        const weekAgo = Date.now() - 7 * 86400000;
+        const weekEntries = entries.filter(e => tsToDate(e.createdAt).getTime() >= weekAgo);
+        const emotionCount = {};
+        weekEntries.forEach(e => { if (e.emotion && e.emotion !== 'neutral') emotionCount[e.emotion] = (emotionCount[e.emotion]||0)+1; });
+        const domEmo = Object.entries(emotionCount).sort((a,b)=>b[1]-a[1])[0];
+        const domEmoData = domEmo ? EMOTION_MAP[domEmo[0]] : null;
+        statsEl.innerHTML = `
+          ${streak > 0 ? `<span class="sidebar-stat-pill streak">🔥 ${streak} jour${streak>1?'s':''} d'affilée</span>` : ''}
+          ${domEmoData ? `<span class="sidebar-stat-pill mood">${domEmoData.emoji} ${domEmoData.label} cette semaine</span>` : ''}
+        `;
+      } else if (statsEl) { statsEl.innerHTML = ''; }
       list.innerHTML = '';
       if (!visible.length) {
         const empty = document.createElement('div'); empty.className = 'empty-list';

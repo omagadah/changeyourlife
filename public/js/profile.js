@@ -109,23 +109,27 @@ function wireAvatarInputs() {
     }
 }
 
+// ── Level computation from raw XP ─────────────────────────────────────────
+const XP_THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 4000, 8000, Infinity];
+const LEVEL_TITLES = ['Novice','Apprenti','Initié','Pratiquant','Avancé','Expert','Maître','Légende','Maître Absolu'];
+
+function xpToLevel(rawXp) {
+    const xp = typeof rawXp === 'number' ? rawXp : (rawXp?.xp || 0);
+    let lvl = 0;
+    while (lvl < XP_THRESHOLDS.length - 2 && xp >= XP_THRESHOLDS[lvl + 1]) lvl++;
+    const nextXp = XP_THRESHOLDS[Math.min(lvl + 1, XP_THRESHOLDS.length - 2)];
+    const prevXp = XP_THRESHOLDS[lvl];
+    const pct = nextXp === Infinity ? 100 : Math.round((xp - prevXp) / (nextXp - prevXp) * 100);
+    return { level: lvl + 1, xp, nextXp, prevXp, pct, title: LEVEL_TITLES[Math.min(lvl, LEVEL_TITLES.length-1)] };
+}
+
 function defaultLevels() {
-    return {
-        body: { level: 0, xp: 0, nextXp: 100 },
-        etre: { level: 0, xp: 0, nextXp: 100 },
-        heart: { level: 0, xp: 0, nextXp: 100 },
-        order: { level: 0, xp: 0, nextXp: 100 },
-        // legacy support (mind) is handled during normalization
-    };
+    return { body: { xp: 0 }, etre: { xp: 0 }, heart: { xp: 0 }, order: { xp: 0 } };
 }
 
 function normalizeLevels(levels) {
     const l = levels || {};
-    // If new 'etre' missing but legacy 'mind' exists, map it
-    if (!l.etre && l.mind) {
-        l.etre = l.mind;
-    }
-    // Ensure all keys present
+    if (!l.etre && l.mind) l.etre = l.mind;
     const base = defaultLevels();
     return { ...base, ...l };
 }
@@ -133,25 +137,40 @@ function normalizeLevels(levels) {
 function renderLevels(levels) {
     const l = normalizeLevels(levels);
     for (const key of Object.keys(lvlEls)) {
-        const cfg = l[key] || { level: 0, xp: 0, nextXp: 100 };
-        const pct = Math.max(0, Math.min(100, Math.round((cfg.xp / Math.max(1, cfg.nextXp)) * 100)));
-        if (lvlEls[key].bar) lvlEls[key].bar.style.width = pct + '%';
-        if (lvlEls[key].label) lvlEls[key].label.textContent = `Niv. ${cfg.level} · ${cfg.xp} XP`;
+        const cfg = xpToLevel(l[key]);
+        if (lvlEls[key].bar) {
+            setTimeout(() => { if (lvlEls[key].bar) lvlEls[key].bar.style.width = cfg.pct + '%'; }, 200);
+        }
+        if (lvlEls[key].label) {
+            lvlEls[key].label.textContent = `${cfg.title} · Niv. ${cfg.level} · ${cfg.xp} XP`;
+        }
     }
+    // Update global stats row
+    const totalXP = ['body','etre','heart','order'].reduce((s,k) => s + (xpToLevel(l[k]).xp), 0);
+    const el = document.getElementById('profile-total-xp');
+    if (el) el.textContent = totalXP.toLocaleString('fr-FR') + ' XP total';
 }
 
-// Compute badges based on levels (client-side heuristic)
-function computeBadges(levels) {
-    const badges = [];
-    const l = normalizeLevels(levels);
-    const anyLevel5 = Object.values(l).some(x => (x?.level || 0) >= 5);
-    const anyLevel10 = Object.values(l).some(x => (x?.level || 0) >= 10);
-    const allLevel3 = ['body','etre','heart','order'].every(k => (l[k]?.level || 0) >= 3);
-    if (anyLevel5) badges.push('Initié');
-    if (anyLevel10) badges.push('Mentor');
-    if (allLevel3) badges.push('Équilibré');
-    return badges;
+// Badge definitions: { id, emoji, name, desc, check(userData) }
+const BADGE_DEFS = [
+    { id:'first_step',   emoji:'🌱', name:'Premier pas',      desc:'Bienvenue sur ChangeYourLife !',            check: () => true },
+    { id:'meditant',     emoji:'🧘', name:'Méditant',         desc:'Complète ta première séance de méditation',  check: d => (d.meditation?.totalSessions||0) >= 1 },
+    { id:'scribe',       emoji:'📔', name:'Scribe',           desc:'Écris 5 entrées dans ton journal',           check: d => (d._journalCount||0) >= 5 },
+    { id:'determined',   emoji:'🎯', name:'Déterminé',        desc:'Complète ton premier objectif',              check: d => (d.goals||[]).some(g => g.completed) },
+    { id:'streak7',      emoji:'🔥', name:'Semaine de feu',   desc:'7 jours consécutifs de méditation',          check: d => (d.meditation?.streak||0) >= 7 },
+    { id:'xp100',        emoji:'⚡', name:'Chargé',           desc:'Atteins 100 XP au total',                    check: d => ['body','etre','heart','order'].reduce((s,k)=>s+(d.levels?.[k]?.xp||0),0) >= 100 },
+    { id:'xp500',        emoji:'💪', name:'Énergisé',         desc:'Atteins 500 XP au total',                    check: d => ['body','etre','heart','order'].reduce((s,k)=>s+(d.levels?.[k]?.xp||0),0) >= 500 },
+    { id:'xp2000',       emoji:'🏆', name:'Champion',         desc:'Atteins 2000 XP au total',                   check: d => ['body','etre','heart','order'].reduce((s,k)=>s+(d.levels?.[k]?.xp||0),0) >= 2000 },
+    { id:'balanced',     emoji:'⚖️', name:'Équilibré',        desc:'Atteins 250 XP dans chaque domaine',         check: d => ['body','etre','heart','order'].every(k=>(d.levels?.[k]?.xp||0)>=250) },
+    { id:'master',       emoji:'🌟', name:'Maître',           desc:'Atteins 1000 XP dans un domaine',            check: d => ['body','etre','heart','order'].some(k=>(d.levels?.[k]?.xp||0)>=1000) },
+    { id:'habitiste',    emoji:'✅', name:'Habitiste',        desc:'Crée au moins 3 habitudes',                  check: d => (d.habits||[]).length >= 3 },
+];
+
+function computeBadges(userData) {
+    return BADGE_DEFS.filter(b => { try { return b.check(userData); } catch(e) { return false; } }).map(b => b.id);
 }
+
+function getBadgeDef(id) { return BADGE_DEFS.find(b => b.id === id) || { emoji:'🏅', name:id, desc:'' }; }
 
 function showToast(msg) {
     if (!toastEl) return;
@@ -178,8 +197,14 @@ async function loadUserData(uid, userDocRef, user) {
             }
             // levels
             renderLevels(data.levels || defaultLevels());
-                // badges
-                renderBadges(Array.isArray(data.badges) ? data.badges : []);
+                // Compute + merge badges
+                const earnedIds = computeBadges(data);
+                const storedIds = Array.isArray(data.badges) ? data.badges : [];
+                const mergedIds = Array.from(new Set([...storedIds, ...earnedIds]));
+                if (mergedIds.length > storedIds.length) {
+                    setDoc(doc(db,'users',uid), { badges: mergedIds }, { merge: true }).catch(()=>{});
+                }
+                renderBadges(mergedIds);
                 // titles
                 const titles = Array.isArray(data.titles) ? data.titles : deriveTitlesFromLevels(data.levels || defaultLevels());
                 renderTitles(titles, data.selectedTitle || null, uid);
@@ -220,53 +245,40 @@ async function saveUserData(uid) {
     }
 }
 
-function renderBadges(badges) {
+function renderBadges(badgeIds) {
     if (!badgesGrid) return;
     badgesGrid.innerHTML = '';
-    const list = Array.isArray(badges) ? badges : [];
-    if (badgesCountEl) badgesCountEl.textContent = String(list.length);
-    if (!list.length) {
-        const d = document.createElement('div');
-        d.className = 'subtle';
-        d.textContent = "Aucun badge pour le moment. Continue ta progression !";
-        badgesGrid.appendChild(d);
-        return;
-    }
-    list.forEach(name => {
+    const list = Array.isArray(badgeIds) ? badgeIds : [];
+    if (badgesCountEl) badgesCountEl.textContent = `${list.length} / ${BADGE_DEFS.length}`;
+    // Show all badges, greyed out if not earned
+    BADGE_DEFS.forEach(def => {
+        const earned = list.includes(def.id);
         const item = document.createElement('div');
-        item.className = 'badge-item';
-        item.style.cssText = 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;';
+        item.style.cssText = `background:rgba(255,255,255,${earned?'0.06':'0.02'});border:1px solid rgba(255,255,255,${earned?'0.12':'0.05'});border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;opacity:${earned?'1':'0.4'};transition:opacity .2s;`;
+        item.title = def.desc;
         const icon = document.createElement('div');
-        icon.style.cssText = 'width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;';
-        icon.textContent = name.substring(0,1).toUpperCase();
+        icon.style.cssText = `width:36px;height:36px;border-radius:8px;background:${earned?'linear-gradient(135deg,#3b82f6,#8b5cf6)':'rgba(255,255,255,0.06)'};display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;`;
+        icon.textContent = def.emoji;
         const text = document.createElement('div');
-        const title = document.createElement('div'); title.style.fontWeight = '700'; title.textContent = name;
-        const subtitle = document.createElement('div'); subtitle.className = 'subtle'; subtitle.textContent = badgeTooltip(name);
+        const title = document.createElement('div'); title.style.cssText = 'font-weight:700;font-size:.82rem;'; title.textContent = def.name;
+        const subtitle = document.createElement('div'); subtitle.style.cssText = 'font-size:.72rem;color:#7e9ab5;margin-top:2px;'; subtitle.textContent = def.desc;
         text.appendChild(title); text.appendChild(subtitle);
         item.appendChild(icon); item.appendChild(text);
-        item.title = badgeTooltip(name);
         badgesGrid.appendChild(item);
     });
-}
-
-function badgeTooltip(name) {
-    switch(name){
-        case 'Initié': return "Atteindre le niveau 5 dans un domaine";
-        case 'Mentor': return "Atteindre le niveau 10 dans un domaine";
-        case 'Équilibré': return "Atteindre le niveau 3 dans les 4 domaines";
-        default: return "Badge débloqué";
-    }
 }
 
 function deriveTitlesFromLevels(levels) {
     const t = new Set();
     const l = normalizeLevels(levels);
-    if ((l.body?.level||0) >= 3) t.add('Corps discipliné');
-    if ((l.etre?.level||0) >= 3) t.add('Être centré');
-    if ((l.heart?.level||0) >= 3) t.add('Cœur ouvert');
-    if ((l.order?.level||0) >= 3) t.add('Esprit organisé');
-    if ((l.body?.level||0) >= 5 && (l.heart?.level||0) >= 5) t.add('Force & Bienveillance');
-    if (['body','etre','heart','order'].every(k => (l[k]?.level||0) >= 4)) t.add('Harmonie');
+    const lvl = k => xpToLevel(l[k]).level;
+    if (lvl('body') >= 2) t.add('Corps discipliné');
+    if (lvl('etre') >= 2) t.add('Être centré');
+    if (lvl('heart') >= 2) t.add('Cœur ouvert');
+    if (lvl('order') >= 2) t.add('Esprit organisé');
+    if (lvl('body') >= 4 && lvl('heart') >= 4) t.add('Force & Bienveillance');
+    if (['body','etre','heart','order'].every(k => lvl(k) >= 3)) t.add('Harmonie');
+    if (['body','etre','heart','order'].every(k => lvl(k) >= 5)) t.add('Maître de soi');
     return Array.from(t);
 }
 

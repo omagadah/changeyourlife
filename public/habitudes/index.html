@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habitudes - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell { position:fixed; inset:20px; background:var(--glass-bg); backdrop-filter:blur(15px); border-radius:20px; border:1px solid var(--glass-border); padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden; }
+    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .header-bar h1 { font-size:1.4rem; }
+    .header-sub { font-size:0.85rem; color:#7ba3c8; margin-top:2px; }
+    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
+    .toast.show { transform:translate(-50%,0); }
+    .toast.xp { background:rgba(59,130,246,.92); }
+
+    /* ── Daily progress bar ── */
+    .daily-progress-wrap { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px 20px; }
+    .dp-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .dp-title { font-size:0.88rem; font-weight:700; color:#e5eef8; }
+    .dp-count { font-size:0.82rem; color:#4a6a8a; }
+    .dp-bar-bg { height:6px; background:rgba(255,255,255,0.07); border-radius:6px; overflow:hidden; }
+    .dp-bar { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); border-radius:6px; transition:width .6s ease; }
+    .dp-domains { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .dp-dom-pill { padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:700; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#7ba3c8; }
+    .dp-dom-pill.done { background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.3); color:#86efac; }
+
+    /* ── Sections per domain ── */
+    .domain-section { }
+    .domain-section-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+    .domain-section-title { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
+    .domain-section-line { flex:1; height:1px; background:rgba(255,255,255,0.06); }
+
+    /* ── Habit cards ── */
+    .habits-list { display:flex; flex-direction:column; gap:8px; }
+    .habit-card {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 16px; border-radius:12px;
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      transition:background .15s, border-color .15s;
+    }
+    .habit-card.done-today { background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.2); }
+    .habit-check {
+      width:32px; height:32px; flex-shrink:0; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.18); background:transparent;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .2s; font-size:1rem;
+      color:transparent;
+    }
+    .habit-card.done-today .habit-check { background:rgba(34,197,94,0.2); border-color:#22c55e; color:#22c55e; }
+    .habit-check:hover { border-color:rgba(255,255,255,0.4); }
+    .habit-emoji { font-size:1.4rem; flex-shrink:0; }
+    .habit-body { flex:1; min-width:0; }
+    .habit-name { font-size:0.9rem; font-weight:600; color:#e5eef8; }
+    .habit-meta { font-size:0.72rem; color:#4a6a8a; margin-top:2px; display:flex; align-items:center; gap:8px; }
+    .habit-streak { display:flex; align-items:center; gap:3px; color:#f59e0b; }
+    .habit-actions { display:flex; gap:6px; opacity:0; transition:opacity .2s; }
+    .habit-card:hover .habit-actions { opacity:1; }
+    .habit-action-btn { padding:4px 8px; border-radius:6px; font-size:0.72rem; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#7ba3c8; transition:all .15s; }
+    .habit-action-btn:hover { background:rgba(255,255,255,0.1); color:#e5eef8; }
+    .habit-action-btn.del:hover { background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.3); color:#f87171; }
+
+    /* ── Add habit btn ── */
+    .add-habit-row { display:flex; justify-content:flex-end; }
+    .btn-add-habit {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:9px 18px; border-radius:10px; border:1px dashed rgba(34,197,94,0.4);
+      background:rgba(34,197,94,0.06); color:#86efac;
+      font-size:0.84rem; font-weight:700; cursor:pointer; transition:all .2s;
+    }
+    .btn-add-habit:hover { background:rgba(34,197,94,0.12); border-style:solid; }
+
+    /* ── Modal ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.hidden { display:none; }
+    .modal {
+      background:rgba(10,22,45,0.97); border:1px solid rgba(255,255,255,0.1);
+      border-radius:20px; padding:28px; width:100%; max-width:440px;
+      box-shadow:0 24px 64px rgba(0,0,0,0.5);
+    }
+    .modal h2 { font-size:1.1rem; font-weight:800; margin-bottom:20px; }
+    .field-group { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .field-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#7ba3c8; }
+    .field-input {
+      padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.05); color:#e5eef8; font-size:0.9rem;
+      font-family:inherit; transition:border-color .2s;
+    }
+    .field-input:focus { outline:none; border-color:rgba(34,197,94,0.4); }
+    .emoji-picker { display:flex; gap:8px; flex-wrap:wrap; }
+    .emoji-opt { width:36px; height:36px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+    .emoji-opt.selected { border-color:rgba(34,197,94,0.5); background:rgba(34,197,94,0.1); }
+    .modal-actions { display:flex; gap:10px; margin-top:6px; }
+    .btn-save { flex:1; padding:11px; border-radius:10px; border:none; background:#22c55e; color:#fff; font-weight:700; cursor:pointer; font-size:0.9rem; transition:background .2s; }
+    .btn-save:hover { background:#16a34a; }
+    .btn-cancel { padding:11px 18px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#7ba3c8; cursor:pointer; font-size:0.9rem; transition:background .2s; }
+    .btn-cancel:hover { background:rgba(255,255,255,0.08); }
+
+    /* ── Empty state ── */
+    .empty-state { text-align:center; padding:48px 24px; color:#4a6a8a; }
+    .empty-state .empty-icon { font-size:3rem; margin-bottom:12px; }
+    .empty-state p { font-size:0.9rem; line-height:1.6; }
+  </style>
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  <div id="toast" class="toast"></div>
+  <nav class="site-nav">
+    <a href="/app/" class="site-nav__back">← Mon Espace</a>
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+    </button>
+  </nav>
+  <main class="page-shell page-shell-nav">
+    <div class="header-bar">
+      <div>
+        <h1>✅ Habitudes</h1>
+        <div class="header-sub">Construis tes routines, une journée à la fois</div>
+      </div>
+      <button class="btn-add-habit" id="btn-add">+ Nouvelle habitude</button>
+    </div>
+    <div class="content-area" id="content-area">
+      <div class="empty-state">
+        <div class="empty-icon">🌱</div>
+        <p>Chargement…</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal ajout/édition -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouvelle habitude</h2>
+      <div class="field-group">
+        <label class="field-label">Nom de l'habitude</label>
+        <input type="text" class="field-input" id="input-name" placeholder="Ex: Méditer 10 min, Lire 20 pages…" maxlength="60" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Emoji</label>
+        <div class="emoji-picker" id="emoji-picker">
+          <div class="emoji-opt selected" data-e="✅">✅</div>
+          <div class="emoji-opt" data-e="🧘">🧘</div>
+          <div class="emoji-opt" data-e="📚">📚</div>
+          <div class="emoji-opt" data-e="💪">💪</div>
+          <div class="emoji-opt" data-e="🥗">🥗</div>
+          <div class="emoji-opt" data-e="💧">💧</div>
+          <div class="emoji-opt" data-e="🏃">🏃</div>
+          <div class="emoji-opt" data-e="😴">😴</div>
+          <div class="emoji-opt" data-e="📔">📔</div>
+          <div class="emoji-opt" data-e="🎯">🎯</div>
+          <div class="emoji-opt" data-e="❤️">❤️</div>
+          <div class="emoji-opt" data-e="✨">✨</div>
+          <div class="emoji-opt" data-e="⚡">⚡</div>
+          <div class="emoji-opt" data-e="🌿">🌿</div>
+          <div class="emoji-opt" data-e="🎵">🎵</div>
+          <div class="emoji-opt" data-e="🧠">🧠</div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Domaine</label>
+        <select class="field-input" id="input-domain">
+          <option value="body">💪 Corps</option>
+          <option value="heart">❤️ Cœur</option>
+          <option value="etre">✨ Être</option>
+          <option value="order">⚡ Ordre</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btn-modal-cancel">Annuler</button>
+        <button class="btn-save" id="btn-modal-save">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:false, touchControls:false, backgroundColor:0x07192f, color1:0x2d4a3e, color2:0xaaaaaa, quantity:3 });
+    });
+  </script>
+  <script type="module">
+    import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { initUserMenu } from '/js/userMenu.js';
+    import { updateGlobalAvatar } from '/js/common.js';
+
+    let auth, db, uid, habits = [], editingIdx = null;
+    let selectedEmoji = '✅';
+
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const firebaseConfig = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(firebaseConfig);
+      auth = getAuth(app); db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    try { initUserMenu(); } catch(e) {}
+
+    const DOMAINS = [
+      {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf'},
+      {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171'},
+      {key:'etre',  label:'Être',  emoji:'✨', color:'#a78bfa'},
+      {key:'order', label:'Ordre', emoji:'⚡', color:'#fbbf24'},
+    ];
+
+    const todayStr = () => new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    function isDoneToday(h) {
+      return h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === new Date().toDateString();
+    }
+
+    function getStreak(h) { return h.streak || 0; }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = '/login'; return; }
+      uid = user.uid;
+      try { updateGlobalAvatar((user.email||'U').charAt(0).toUpperCase()); } catch(e) {}
+      try { initUserMenu(); } catch(e) {}
+      await loadHabits();
+    });
+
+    async function loadHabits() {
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        habits = snap.exists() ? (snap.data().habits || []) : [];
+      } catch(e) { habits = []; }
+      render();
+    }
+
+    async function saveHabits() {
+      await setDoc(doc(db, 'users', uid), { habits }, { merge: true });
+    }
+
+    function render() {
+      const area = document.getElementById('content-area');
+      if (!area) return;
+
+      const doneCount = habits.filter(h => isDoneToday(h)).length;
+      const totalCount = habits.length;
+
+      if (totalCount === 0) {
+        area.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">🌱</div>
+          <p>Tu n'as pas encore d'habitudes.<br>Crée ta première habitude pour commencer à construire tes routines.</p>
+        </div>`;
+        return;
+      }
+
+      const pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
+      const domainsDone = DOMAINS.filter(d => habits.filter(h => h.domain === d.key).every(h => isDoneToday(h)) && habits.some(h => h.domain === d.key));
+
+      let html = `<div class="daily-progress-wrap">
+        <div class="dp-row">
+          <span class="dp-title">Aujourd'hui — ${doneCount}/${totalCount} complétées</span>
+          <span class="dp-count">${pct}%</span>
+        </div>
+        <div class="dp-bar-bg"><div class="dp-bar" style="width:${pct}%"></div></div>
+        <div class="dp-domains">
+          ${DOMAINS.map(d => {
+            const domHabits = habits.filter(h => h.domain === d.key);
+            if (!domHabits.length) return '';
+            const allDone = domHabits.every(h => isDoneToday(h));
+            return `<span class="dp-dom-pill ${allDone?'done':''}">${d.emoji} ${d.label}</span>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+      // Group by domain
+      DOMAINS.forEach(d => {
+        const domHabits = habits.filter((h, idx) => h.domain === d.key).map((h, _) => {
+          return { ...h, _origIdx: habits.indexOf(h) };
+        });
+        if (!domHabits.length) return;
+        html += `<div class="domain-section">
+          <div class="domain-section-header">
+            <span class="domain-section-title" style="color:${d.color}">${d.emoji} ${d.label}</span>
+            <div class="domain-section-line"></div>
+          </div>
+          <div class="habits-list">
+            ${domHabits.map(h => renderHabitCard(h, h._origIdx)).join('')}
+          </div>
+        </div>`;
+      });
+
+      area.innerHTML = html;
+
+      // Wire checkboxes
+      area.querySelectorAll('.habit-check').forEach(btn => {
+        btn.addEventListener('click', () => toggleDone(parseInt(btn.dataset.idx)));
+      });
+      area.querySelectorAll('.habit-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => openModal(parseInt(btn.dataset.idx)));
+      });
+      area.querySelectorAll('.habit-del-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteHabit(parseInt(btn.dataset.idx)));
+      });
+    }
+
+    function renderHabitCard(h, idx) {
+      const done = isDoneToday(h);
+      const streak = getStreak(h);
+      return `<div class="habit-card ${done ? 'done-today' : ''}">
+        <button class="habit-check" data-idx="${idx}" title="${done ? 'Décocher' : 'Marquer comme fait'}">✓</button>
+        <span class="habit-emoji">${h.emoji || '✅'}</span>
+        <div class="habit-body">
+          <div class="habit-name">${h.name}</div>
+          <div class="habit-meta">
+            <span class="habit-streak">🔥 ${streak} jour${streak !== 1 ? 's' : ''}</span>
+            ${done ? '<span style="color:#22c55e">✓ Fait aujourd\'hui</span>' : ''}
+          </div>
+        </div>
+        <div class="habit-actions">
+          <button class="habit-action-btn habit-edit-btn" data-idx="${idx}">✏️</button>
+          <button class="habit-action-btn del habit-del-btn" data-idx="${idx}">🗑️</button>
+        </div>
+      </div>`;
+    }
+
+    async function toggleDone(idx) {
+      const h = habits[idx];
+      if (!h) return;
+      const wasAlreadyDone = isDoneToday(h);
+
+      if (!wasAlreadyDone) {
+        // Mark done
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const lastDayStr = h.lastDoneAt ? new Date(h.lastDoneAt).toDateString() : null;
+        const newStreak = lastDayStr === yesterday ? (h.streak || 0) + 1 : 1;
+        habits[idx] = { ...h, lastDoneAt: Date.now(), streak: newStreak };
+        await saveHabits();
+        // Award XP
+        const xpKey = h.domain || 'etre';
+        try { await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(5) }); } catch(_) {}
+        showToast(`+5 XP · Habitude complétée ! 🔥 ${newStreak} jour${newStreak!==1?'s':''}`, 'xp');
+      } else {
+        // Uncheck (deduct streak if today was the only day)
+        habits[idx] = { ...h, lastDoneAt: null };
+        await saveHabits();
+        showToast('Habitude décochée');
+      }
+      render();
+    }
+
+    async function deleteHabit(idx) {
+      const name = habits[idx]?.name || 'cette habitude';
+      habits.splice(idx, 1);
+      await saveHabits();
+      showToast(`"${name}" supprimée`);
+      render();
+    }
+
+    // ── Modal ──────────────────────────────────────────────────────────────────
+    const overlay = document.getElementById('modal-overlay');
+    const inputName = document.getElementById('input-name');
+    const inputDomain = document.getElementById('input-domain');
+
+    document.getElementById('btn-add').addEventListener('click', () => openModal(null));
+    document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
+    document.getElementById('btn-modal-save').addEventListener('click', saveHabit);
+
+    document.getElementById('emoji-picker').addEventListener('click', e => {
+      const opt = e.target.closest('.emoji-opt');
+      if (!opt) return;
+      document.querySelectorAll('.emoji-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selectedEmoji = opt.dataset.e;
+    });
+
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+    function openModal(idx) {
+      editingIdx = idx;
+      selectedEmoji = '✅';
+      document.getElementById('modal-title').textContent = idx !== null ? 'Modifier l\'habitude' : 'Nouvelle habitude';
+      if (idx !== null && habits[idx]) {
+        const h = habits[idx];
+        inputName.value = h.name || '';
+        inputDomain.value = h.domain || 'body';
+        selectedEmoji = h.emoji || '✅';
+      } else {
+        inputName.value = '';
+        inputDomain.value = 'body';
+      }
+      document.querySelectorAll('.emoji-opt').forEach(o => {
+        o.classList.toggle('selected', o.dataset.e === selectedEmoji);
+      });
+      overlay.classList.remove('hidden');
+      setTimeout(() => inputName.focus(), 80);
+    }
+
+    function closeModal() { overlay.classList.add('hidden'); editingIdx = null; }
+
+    async function saveHabit() {
+      const name = inputName.value.trim();
+      if (!name) { inputName.focus(); return; }
+      const habit = { name, emoji: selectedEmoji, domain: inputDomain.value, streak: 0, lastDoneAt: null, createdAt: Date.now() };
+      if (editingIdx !== null) {
+        habits[editingIdx] = { ...habits[editingIdx], name: habit.name, emoji: habit.emoji, domain: habit.domain };
+      } else {
+        habit.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+        habits.push(habit);
+      }
+      await saveHabits();
+      closeModal();
+      showToast(editingIdx !== null ? 'Habitude modifiée ✓' : 'Habitude créée ! Commence dès aujourd\'hui 🌱');
+      render();
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────────
+    let _toastTimer;
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast ${type}`;
+      void t.offsetWidth; t.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>
