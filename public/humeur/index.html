@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Humeur - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell {
+      position:fixed; inset:20px;
+      background:var(--glass-bg); backdrop-filter:blur(15px);
+      border-radius:20px; border:1px solid var(--glass-border);
+      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
+    }
+    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
+    .header-sub { font-size:0.82rem; color:#7ba3c8; margin-top:2px; }
+    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+
+    /* ── Toast ── */
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
+    .toast.show { transform:translate(-50%,0); }
+    .toast.xp { background:rgba(59,130,246,.92); }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
+      color:#4a6a8a; font-weight:700; margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+
+    /* ── Today's mood card ── */
+    .today-mood-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px; padding:22px 22px 20px;
+      position:relative; overflow:hidden;
+    }
+    .today-mood-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+      background:var(--mood-accent, #4a6a8a); border-radius:16px 0 0 16px;
+      transition:background .4s;
+    }
+    .mood-question { font-size:1rem; font-weight:700; color:#eef4ff; margin-bottom:16px; }
+    .mood-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:18px; }
+    .mood-btn {
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+      width:62px; cursor:pointer; background:rgba(255,255,255,0.03);
+      border:1.5px solid rgba(255,255,255,0.08); border-radius:14px;
+      padding:10px 6px 8px; transition:all .18s cubic-bezier(.4,0,.2,1);
+      position:relative;
+    }
+    .mood-btn:hover { transform:translateY(-3px); background:rgba(255,255,255,0.07); }
+    .mood-btn.selected {
+      border-color:var(--mbcolor, #4a6a8a);
+      background:color-mix(in srgb, var(--mbcolor, #4a6a8a) 12%, transparent);
+      transform:translateY(-4px);
+      box-shadow:0 4px 18px color-mix(in srgb, var(--mbcolor, #4a6a8a) 30%, transparent);
+    }
+    .mood-emoji { font-size:1.8rem; line-height:1; }
+    .mood-label { font-size:0.62rem; font-weight:700; color:#4a6a8a; text-align:center; white-space:nowrap; }
+    .mood-btn.selected .mood-label { color:var(--mbcolor, #eef4ff); }
+
+    /* ── Note input ── */
+    .mood-note-wrap { margin-bottom:14px; }
+    .mood-note {
+      width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.08); border-radius:10px;
+      color:#e5eef8; font-size:0.86rem; padding:10px 13px; resize:none;
+      font-family:inherit; line-height:1.5; transition:border-color .2s;
+    }
+    .mood-note:focus { outline:none; border-color:rgba(96,164,255,0.35); background:rgba(255,255,255,0.05); }
+    .mood-note::placeholder { color:#4a6a8a; }
+
+    /* ── Domain selector ── */
+    .domain-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .domain-pill {
+      padding:5px 13px; border-radius:999px; font-size:0.73rem; font-weight:700;
+      border:1.5px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);
+      color:#7ba3c8; cursor:pointer; transition:all .15s;
+    }
+    .domain-pill:hover { background:rgba(255,255,255,0.07); }
+    .domain-pill.selected {
+      background:color-mix(in srgb, var(--dpcolor) 15%, transparent);
+      border-color:var(--dpcolor);
+      color:var(--dpcolor);
+    }
+
+    .save-mood-btn {
+      width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
+      background:linear-gradient(135deg,#1a56a4,#0070f3); color:#fff;
+      font-size:0.9rem; font-weight:700; font-family:inherit;
+      transition:filter .2s, transform .1s;
+    }
+    .save-mood-btn:hover { filter:brightness(1.1); }
+    .save-mood-btn:active { transform:scale(0.98); }
+    .save-mood-btn:disabled { opacity:0.45; cursor:not-allowed; }
+
+    /* ── Heatmap calendar ── */
+    .heatmap-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px; padding:20px;
+    }
+    .heatmap-legend { display:flex; align-items:center; gap:6px; margin-bottom:14px; justify-content:flex-end; }
+    .heatmap-legend-label { font-size:0.65rem; color:#4a6a8a; }
+    .legend-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+    .heatmap-grid {
+      display:grid; grid-template-columns:repeat(10,1fr); gap:5px;
+    }
+    .heatmap-cell {
+      aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.05);
+      cursor:default; transition:transform .15s;
+      position:relative;
+    }
+    .heatmap-cell:hover { transform:scale(1.3); z-index:2; }
+    .heatmap-cell[data-mood="1"] { background:#ef4444; opacity:.8; }
+    .heatmap-cell[data-mood="2"] { background:#f97316; opacity:.8; }
+    .heatmap-cell[data-mood="3"] { background:#eab308; opacity:.8; }
+    .heatmap-cell[data-mood="4"] { background:#22c55e; opacity:.8; }
+    .heatmap-cell[data-mood="5"] { background:#2dd4bf; opacity:.8; }
+    .heatmap-cell .cell-tooltip {
+      display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+      background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
+      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:#eef4ff;
+      white-space:nowrap; z-index:10; pointer-events:none;
+    }
+    .heatmap-cell:hover .cell-tooltip { display:block; }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    }
+    .stat-block {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:14px; padding:16px 14px; text-align:center;
+      border-bottom:2px solid var(--sb-color, rgba(255,255,255,0.08));
+    }
+    .stat-block-icon { font-size:1.2rem; margin-bottom:4px; }
+    .stat-block-value { font-size:1.6rem; font-weight:800; color:#eef4ff; line-height:1.1; }
+    .stat-block-label { font-size:0.63rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+
+    /* ── Recent entries ── */
+    .entries-list { display:flex; flex-direction:column; gap:9px; }
+    .entry-row {
+      display:flex; align-items:center; gap:13px;
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:12px; padding:12px 15px;
+      position:relative; overflow:hidden;
+      transition:background .15s;
+    }
+    .entry-row::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+      background:var(--entry-mood-color, rgba(255,255,255,0.1)); border-radius:12px 0 0 12px;
+    }
+    .entry-row:hover { background:rgba(255,255,255,0.04); }
+    .entry-emoji { font-size:1.5rem; flex-shrink:0; }
+    .entry-meta { flex:1; min-width:0; }
+    .entry-date { font-size:0.7rem; color:#4a6a8a; font-weight:600; margin-bottom:2px; }
+    .entry-note { font-size:0.83rem; color:#c8d8ee; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .entry-domain { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:999px; flex-shrink:0; background:rgba(255,255,255,0.06); color:#7ba3c8; }
+
+    /* ── Empty state ── */
+    .empty-entries { text-align:center; padding:28px 20px; color:#4a6a8a; font-size:0.85rem; }
+
+    /* ── Responsive ── */
+    @media (max-width:600px) {
+      .heatmap-grid { grid-template-columns:repeat(7,1fr); }
+      .stats-row { grid-template-columns:repeat(3,1fr); }
+      .mood-btn { width:52px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div id="vanta-bg" style="position:fixed;inset:0;z-index:-1;"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
+        backgroundColor:0x07192f, color1:0x3a2a4a, color2:0xcccccc, quantity:3 });
+    });
+  </script>
+
+  <header class="header">
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
+        <g stroke-width="3">
+          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+        </g>
+      </svg>
+    </button>
+    <nav class="header-nav">
+      <a href="/app" class="nav-link">Accueil</a>
+      <a href="/journal/" class="nav-link">Journal</a>
+      <a href="/habitudes/" class="nav-link">Habitudes</a>
+      <a href="/humeur/" class="nav-link active">Humeur</a>
+    </nav>
+  </header>
+
+  <div class="page-shell">
+    <div class="header-bar">
+      <div class="header-left">
+        <h1>😌 Humeur du jour</h1>
+        <div class="header-sub">Suis ton bien-être émotionnel au quotidien</div>
+      </div>
+      <div id="streak-badge" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:999px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);font-size:0.78rem;font-weight:700;color:#fbbf24;display:none">
+        🔥 <span id="streak-count">0</span> jour(s) de suite
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- Today's mood -->
+      <div class="today-mood-card" id="today-mood-card">
+        <div class="mood-question" id="mood-question">Comment tu te sens aujourd'hui ?</div>
+        <div class="mood-row" id="mood-row">
+          <div class="mood-btn" data-mood="1" style="--mbcolor:#ef4444" onclick="selectMood(1, this)">
+            <span class="mood-emoji">😞</span>
+            <span class="mood-label">Difficile</span>
+          </div>
+          <div class="mood-btn" data-mood="2" style="--mbcolor:#f97316" onclick="selectMood(2, this)">
+            <span class="mood-emoji">😟</span>
+            <span class="mood-label">Bas</span>
+          </div>
+          <div class="mood-btn" data-mood="3" style="--mbcolor:#eab308" onclick="selectMood(3, this)">
+            <span class="mood-emoji">😐</span>
+            <span class="mood-label">Neutre</span>
+          </div>
+          <div class="mood-btn" data-mood="4" style="--mbcolor:#22c55e" onclick="selectMood(4, this)">
+            <span class="mood-emoji">🙂</span>
+            <span class="mood-label">Bien</span>
+          </div>
+          <div class="mood-btn" data-mood="5" style="--mbcolor:#2dd4bf" onclick="selectMood(5, this)">
+            <span class="mood-emoji">😄</span>
+            <span class="mood-label">Excellent</span>
+          </div>
+        </div>
+
+        <div class="mood-note-wrap">
+          <textarea class="mood-note" id="mood-note" rows="2" placeholder="Une note sur ton état d'esprit… (optionnel)"></textarea>
+        </div>
+
+        <div class="domain-row" id="domain-row">
+          <div class="domain-pill" data-domain="corps" style="--dpcolor:#2dd4bf" onclick="selectDomain('corps', this)">Corps</div>
+          <div class="domain-pill" data-domain="coeur" style="--dpcolor:#f87171" onclick="selectDomain('coeur', this)">Cœur</div>
+          <div class="domain-pill" data-domain="etre" style="--dpcolor:#a78bfa" onclick="selectDomain('etre', this)">Être</div>
+          <div class="domain-pill" data-domain="ordre" style="--dpcolor:#fbbf24" onclick="selectDomain('ordre', this)">Ordre</div>
+        </div>
+
+        <button class="save-mood-btn" id="save-mood-btn" onclick="saveMood()" disabled>Enregistrer mon humeur</button>
+      </div>
+
+      <!-- Stats -->
+      <div>
+        <div class="section-title">Statistiques</div>
+        <div class="stats-row">
+          <div class="stat-block" style="--sb-color:#fbbf24">
+            <div class="stat-block-icon">🔥</div>
+            <div class="stat-block-value" id="stat-streak">0</div>
+            <div class="stat-block-label">Jours de suite</div>
+          </div>
+          <div class="stat-block" style="--sb-color:#22c55e">
+            <div class="stat-block-icon">📊</div>
+            <div class="stat-block-value" id="stat-avg">—</div>
+            <div class="stat-block-label">Moyenne (7j)</div>
+          </div>
+          <div class="stat-block" style="--sb-color:#60a5fa">
+            <div class="stat-block-icon">📅</div>
+            <div class="stat-block-value" id="stat-total">0</div>
+            <div class="stat-block-label">Entrées totales</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 30-day heatmap -->
+      <div class="heatmap-card">
+        <div class="section-title" style="margin-bottom:8px;">
+          30 derniers jours
+          <span style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+            <span style="font-size:0.65rem;color:#4a6a8a;font-weight:400;text-transform:none;letter-spacing:0">😞</span>
+            <div class="legend-dot" style="background:#ef4444"></div>
+            <div class="legend-dot" style="background:#f97316"></div>
+            <div class="legend-dot" style="background:#eab308"></div>
+            <div class="legend-dot" style="background:#22c55e"></div>
+            <div class="legend-dot" style="background:#2dd4bf"></div>
+            <span style="font-size:0.65rem;color:#4a6a8a;font-weight:400;text-transform:none;letter-spacing:0">😄</span>
+          </span>
+        </div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+
+      <!-- Recent entries -->
+      <div>
+        <div class="section-title">Historique récent</div>
+        <div class="entries-list" id="entries-list">
+          <div class="empty-entries">Aucune entrée encore — commence dès aujourd'hui !</div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /page-shell -->
+
+  <script type="module">
+    import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initUserMenu } from '/js/userMenu.js?v=16';
+    import { showXpFloat, showLevelUp } from '/js/xp.js';
+
+    try { initUserMenu(); } catch(e) {}
+
+    const MOOD_COLORS = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#2dd4bf' };
+    const MOOD_EMOJIS = { 1:'😞', 2:'😟', 3:'😐', 4:'🙂', 5:'😄' };
+    const MOOD_LABELS = { 1:'Difficile', 2:'Bas', 3:'Neutre', 4:'Bien', 5:'Excellent' };
+    const DOMAIN_COLORS = { corps:'#2dd4bf', coeur:'#f87171', etre:'#a78bfa', ordre:'#fbbf24' };
+    const DOMAIN_LABELS = { corps:'Corps', coeur:'Cœur', etre:'Être', ordre:'Ordre' };
+
+    let auth, db, currentUser;
+    let selectedMood = null;
+    let selectedDomain = null;
+    let allEntries = {}; // dateStr → {mood, note, domain, timestamp}
+    let todayAlreadyLogged = false;
+
+    // Expose helpers globally for onclick handlers
+    window.selectMood = selectMood;
+    window.selectDomain = selectDomain;
+    window.saveMood = saveMood;
+
+    // ── Init Firebase ──
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(cfg);
+      auth = getAuth(app); db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.replace('/login'); return; }
+      currentUser = user;
+      await loadEntries();
+      renderHeatmap();
+      renderEntries();
+      computeStats();
+    });
+
+    // ── Selection helpers ──
+    function selectMood(level, el) {
+      if (todayAlreadyLogged) return;
+      selectedMood = level;
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      const color = MOOD_COLORS[level];
+      document.getElementById('today-mood-card').style.setProperty('--mood-accent', color);
+      document.getElementById('save-mood-btn').disabled = false;
+    }
+
+    function selectDomain(domain, el) {
+      if (todayAlreadyLogged) return;
+      selectedDomain = selectedDomain === domain ? null : domain;
+      document.querySelectorAll('.domain-pill').forEach(p => p.classList.remove('selected'));
+      if (selectedDomain) el.classList.add('selected');
+    }
+
+    // ── Load entries from Firestore ──
+    async function loadEntries() {
+      const col = collection(db, 'users', currentUser.uid, 'moods');
+      const q = query(col, orderBy('timestamp', 'desc'), limit(90));
+      const snap = await getDocs(q);
+      allEntries = {};
+      snap.forEach(d => { allEntries[d.id] = d.data(); });
+
+      // Check today
+      const todayStr = todayDateStr();
+      if (allEntries[todayStr]) {
+        todayAlreadyLogged = true;
+        const e = allEntries[todayStr];
+        showAlreadyLogged(e);
+      }
+    }
+
+    function todayDateStr() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    }
+
+    function showAlreadyLogged(entry) {
+      document.getElementById('mood-question').textContent = `Déjà enregistré aujourd'hui — ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
+      document.getElementById('mood-row').style.opacity = '0.4';
+      document.getElementById('mood-row').style.pointerEvents = 'none';
+      document.getElementById('mood-note').value = entry.note || '';
+      document.getElementById('mood-note').disabled = true;
+      document.getElementById('domain-row').style.opacity = '0.4';
+      document.getElementById('domain-row').style.pointerEvents = 'none';
+      document.getElementById('save-mood-btn').disabled = true;
+      document.getElementById('save-mood-btn').textContent = '✓ Humeur enregistrée';
+      document.getElementById('today-mood-card').style.setProperty('--mood-accent', MOOD_COLORS[entry.mood]);
+      // Pre-select the mood btn visually
+      const btn = document.querySelector(`.mood-btn[data-mood="${entry.mood}"]`);
+      if (btn) btn.classList.add('selected');
+      if (entry.domain) {
+        const dp = document.querySelector(`.domain-pill[data-domain="${entry.domain}"]`);
+        if (dp) dp.classList.add('selected');
+      }
+    }
+
+    // ── Save mood ──
+    async function saveMood() {
+      if (!selectedMood || todayAlreadyLogged) return;
+      const btn = document.getElementById('save-mood-btn');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement…';
+
+      const dateStr = todayDateStr();
+      const note = document.getElementById('mood-note').value.trim();
+      const entry = {
+        mood: selectedMood,
+        note: note || null,
+        domain: selectedDomain || null,
+        timestamp: Date.now()
+      };
+
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid, 'moods', dateStr), entry);
+
+        // Award XP
+        const userRef = doc(db, 'users', currentUser.uid);
+        const snap = await getDoc(userRef);
+        const userData = snap.exists() ? snap.data() : {};
+        const domainKey = selectedDomain === 'corps' ? 'body' : selectedDomain === 'coeur' ? 'heart' : selectedDomain === 'etre' ? 'etre' : selectedDomain === 'ordre' ? 'order' : 'heart';
+        const xpField = `xp_${domainKey}`;
+        const curXp = (userData[xpField] || 0) + 5;
+        await updateDoc(userRef, { [xpField]: increment(5) });
+
+        // Check level up
+        const THRESHOLDS = [0,100,250,500,1000,2000,4000,8000,Infinity];
+        const TITLES = ['Novice','Apprenti','Initié','Pratiquant','Avancé','Expert','Maître','Légende'];
+        const prevLevel = THRESHOLDS.findIndex((t,i) => (userData[xpField]||0) < THRESHOLDS[i+1]);
+        const newLevel  = THRESHOLDS.findIndex((t,i) => curXp < THRESHOLDS[i+1]);
+        if (newLevel > prevLevel) {
+          const domLabel = DOMAIN_LABELS[selectedDomain] || 'Humeur';
+          showLevelUp(domLabel, newLevel + 1);
+        }
+
+        allEntries[dateStr] = entry;
+        todayAlreadyLogged = true;
+        showAlreadyLogged(entry);
+        renderHeatmap();
+        renderEntries();
+        computeStats();
+        showXpFloat(5, document.getElementById('save-mood-btn'));
+        showToast('+5 XP · Humeur enregistrée !', 'xp');
+      } catch(err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer mon humeur';
+        showToast('Erreur, réessaie.', '');
+      }
+    }
+
+    // ── Render 30-day heatmap ──
+    function renderHeatmap() {
+      const grid = document.getElementById('heatmap-grid');
+      grid.innerHTML = '';
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const entry = allEntries[dateStr];
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        if (entry) {
+          cell.setAttribute('data-mood', entry.mood);
+          const label = `${d.getDate()}/${d.getMonth()+1} — ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
+          cell.innerHTML = `<span class="cell-tooltip">${label}</span>`;
+        } else {
+          const label = `${d.getDate()}/${d.getMonth()+1}`;
+          cell.innerHTML = `<span class="cell-tooltip">${label}</span>`;
+        }
+        grid.appendChild(cell);
+      }
+    }
+
+    // ── Render recent entries list ──
+    function renderEntries() {
+      const list = document.getElementById('entries-list');
+      const sorted = Object.entries(allEntries)
+        .sort((a,b) => b[1].timestamp - a[1].timestamp)
+        .slice(0, 10);
+
+      if (!sorted.length) {
+        list.innerHTML = '<div class="empty-entries">Aucune entrée encore — commence dès aujourd\'hui !</div>';
+        return;
+      }
+
+      list.innerHTML = sorted.map(([dateStr, e]) => {
+        const color = MOOD_COLORS[e.mood];
+        const [y,m,d] = dateStr.split('-');
+        const dateLabel = formatDate(new Date(+y, +m-1, +d));
+        const domLabel = e.domain ? DOMAIN_LABELS[e.domain] : '';
+        const domStyle = e.domain ? `color:${DOMAIN_COLORS[e.domain]};background:color-mix(in srgb,${DOMAIN_COLORS[e.domain]} 12%,transparent);border-color:color-mix(in srgb,${DOMAIN_COLORS[e.domain]} 30%,transparent)` : '';
+        return `
+          <div class="entry-row" style="--entry-mood-color:${color}">
+            <span class="entry-emoji">${MOOD_EMOJIS[e.mood]}</span>
+            <div class="entry-meta">
+              <div class="entry-date">${dateLabel} · ${MOOD_LABELS[e.mood]}</div>
+              <div class="entry-note">${e.note || '<em style="opacity:.5">Sans note</em>'}</div>
+            </div>
+            ${domLabel ? `<span class="entry-domain" style="${domStyle}">${domLabel}</span>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    function formatDate(d) {
+      const today = new Date();
+      const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+      if (d.toDateString() === today.toDateString()) return "Aujourd'hui";
+      if (d.toDateString() === yesterday.toDateString()) return 'Hier';
+      return d.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
+    }
+
+    // ── Compute stats ──
+    function computeStats() {
+      const keys = Object.keys(allEntries).sort().reverse();
+
+      // Streak
+      let streak = 0;
+      const today = new Date();
+      for (let i = 0; i < 365; i++) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (allEntries[ds]) { streak++; } else { break; }
+      }
+      document.getElementById('stat-streak').textContent = streak;
+      document.getElementById('streak-count').textContent = streak;
+      if (streak > 0) document.getElementById('streak-badge').style.display = 'inline-flex';
+
+      // 7-day average
+      const last7 = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (allEntries[ds]) last7.push(allEntries[ds].mood);
+      }
+      const avg = last7.length ? (last7.reduce((a,b)=>a+b,0)/last7.length).toFixed(1) : '—';
+      document.getElementById('stat-avg').textContent = avg;
+      if (avg !== '—') {
+        const avgNum = parseFloat(avg);
+        const avgColor = avgNum >= 4 ? '#22c55e' : avgNum >= 3 ? '#eab308' : '#f87171';
+        document.getElementById('stat-avg').style.color = avgColor;
+      }
+
+      // Total
+      document.getElementById('stat-total').textContent = keys.length;
+    }
+
+    // ── Toast ──
+    function showToast(msg, cls) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast${cls?' '+cls:''}`;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>

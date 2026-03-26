@@ -55,7 +55,7 @@
         .today-pct { font-size:0.65rem; font-weight:700; opacity:0.7; }
 
         /* ── Quick actions ── */
-        .quick-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+        .quick-actions { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:22px; }
         .qa-btn {
           display:flex; flex-direction:column; align-items:center; gap:6px;
           padding:14px 10px; border-radius:16px; text-decoration:none;
@@ -215,7 +215,7 @@
 
         /* ── Responsive ── */
         @media (max-width: 760px) {
-          .quick-actions { grid-template-columns: repeat(2,1fr); }
+          .quick-actions { grid-template-columns: repeat(3,1fr); }
           .stats-row { grid-template-columns: repeat(3,1fr); }
           .rings-grid { grid-template-columns: repeat(2,1fr); }
           .app-container { padding: 18px 16px 16px; }
@@ -237,6 +237,17 @@
         .shepherd-highlight-user { z-index:10001; box-shadow:0 0 0 3px rgba(0,112,243,0.8),0 0 20px rgba(0,112,243,0.5); border-radius:50%; animation:pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0%,100%{box-shadow:0 0 0 3px rgba(0,112,243,0.8),0 0 20px rgba(0,112,243,0.5)} 50%{box-shadow:0 0 0 6px rgba(0,112,243,0.8),0 0 35px rgba(0,112,243,0.8)} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── Staggered section entry animations ── */
+        .welcome-row   { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:0ms; }
+        #today-progress-card { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:60ms; }
+        .quick-actions { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:120ms; }
+        .stats-row     { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:180ms; }
+        .rings-section { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:240ms; }
+        #action-today  { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:300ms; }
+        #wheel-section { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:360ms; }
+        #quote-du-jour { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:420ms; }
+        .tools-section { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:480ms; }
     </style>
 </head>
 <body>
@@ -324,6 +335,11 @@
             <span class="qa-icon">🎡</span>
             <span class="qa-label">Évaluer</span>
             <span class="qa-xp">Roue de vie</span>
+          </a>
+          <a href="/humeur/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#a78bfa,#7c3aed);--qa-border:rgba(167,139,250,0.3);--qa-glow:0 8px 24px rgba(167,139,250,0.18)">
+            <span class="qa-icon">😌</span>
+            <span class="qa-label">Humeur</span>
+            <span class="qa-xp">+5 XP</span>
           </a>
         </div>
 
@@ -464,6 +480,17 @@
             <div class="tool-card-body">
               <h3>Autoévaluation</h3>
               <p>Tests rapides et bilans réguliers pour mesurer tes niveaux et guider tes priorités.</p>
+              <span class="tool-card-arrow">Évaluer →</span>
+            </div>
+          </a>
+
+          <a href="/humeur/" class="tool-card" id="card-humeur"
+             style="--card-gradient:linear-gradient(135deg,#1f1033 0%,#3b1d6e 100%);--card-accent:rgba(167,139,250,0.35);--card-glow:0 0 24px rgba(167,139,250,0.12);--card-accent-text:#c4b5fd">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">😌</span></div>
+            <div class="tool-card-body">
+              <h3>Humeur</h3>
+              <p>Suis ton bien-être émotionnel au quotidien et observe tes tendances sur 30 jours.</p>
+              <span class="tool-card-arrow">Suivre →</span>
             </div>
           </a>
 
@@ -838,6 +865,17 @@
             checks.push({ label: '📔 Journal', done: writtenToday });
           } catch(e) {
             checks.push({ label: '📔 Journal', done: false });
+          }
+
+          // Humeur
+          try {
+            const now = new Date();
+            const moodDateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const moodDoc = await getDocs(query(collection(db,'users',uid,'moods'), limit(1)));
+            const loggedToday = moodDoc.docs.some(d => d.id === moodDateStr);
+            checks.push({ label: '😌 Humeur', done: loggedToday });
+          } catch(e) {
+            checks.push({ label: '😌 Humeur', done: false });
           }
 
           // Only show if user has some activity data

@@ -31,6 +31,15 @@ service cloud.firestore {
         allow update: if isSignedIn() && isOwner(userId) && isValidJournalEntry();
         allow delete: if isSignedIn() && isOwner(userId);
       }
+
+      // Sous-collection humeur
+      match /moods/{dateStr} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn() && isOwner(userId)
+          && request.resource.data.mood is int
+          && request.resource.data.mood >= 1
+          && request.resource.data.mood <= 5;
+      }
     }
 
     // Autoévaluations (Roue de Vie)
