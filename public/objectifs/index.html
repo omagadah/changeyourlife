@@ -131,7 +131,7 @@
     import { updateGlobalAvatar } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
     import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     let auth, db, uid, goals = [], editingId = null;
 
@@ -324,21 +324,32 @@
 
     window.updateProgress = async (idx) => {
       const g = goals[idx];
+      const wasDone = g.progress >= 100;
       g.progress = Math.min(100, (g.progress || 0) + 10);
-      if (g.progress >= 100) { g.completed = true; showToast('🏆 Objectif complété !'); }
+      const justCompleted = !wasDone && g.progress >= 100;
+      if (justCompleted) { g.completed = true; showToast('🏆 Objectif complété ! +25 XP'); }
       else showToast(`+10% — ${g.progress}% complété`);
       try {
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
+        if (justCompleted) {
+          const xpKey = g.domain || 'etre';
+          try { await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) }); } catch(_) {}
+        }
         renderGoals(); renderTemplates();
       } catch(e) {}
     };
 
     window.toggleComplete = async (idx) => {
-      goals[idx].completed = !goals[idx].completed;
-      if (goals[idx].completed) { goals[idx].progress = 100; showToast('✅ Objectif marqué comme complété'); }
+      const wasCompleted = goals[idx].completed;
+      goals[idx].completed = !wasCompleted;
+      if (goals[idx].completed) { goals[idx].progress = 100; showToast('✅ Objectif complété ! +25 XP'); }
       else showToast('↻ Objectif réactivé');
       try {
         await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
+        if (!wasCompleted) {
+          const xpKey = goals[idx].domain || 'etre';
+          try { await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) }); } catch(_) {}
+        }
         renderGoals(); renderTemplates();
       } catch(e) {}
     };

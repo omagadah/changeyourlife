@@ -40,9 +40,9 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
-            width: 100%; height: 100%; overflow: hidden;
+            width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #fff;
+            color: #fff; background: #020b18;
         }
         .skip-link { position: absolute; left: -9999px; z-index: 9999; padding: 1em; background: #00aaff; color: white; text-decoration: none; font-weight: 600; }
         .skip-link:focus { left: 0; top: 0; }
@@ -84,9 +84,9 @@
 
         /* ── Hero ── */
         .hero {
-            height: 100%; display: flex; flex-direction: column;
+            min-height: 100vh; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            text-align: center; padding: 80px 24px 60px;
+            text-align: center; padding: 80px 24px 80px;
         }
 
         /* Pill badge */
@@ -186,6 +186,135 @@
             50% { transform: scale(1.04); box-shadow: 0 0 22px rgba(217,4,41,.8); }
         }
 
+        /* ── Scroll arrow ── */
+        .scroll-arrow {
+            margin-top: 48px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.3); font-size: 0.72rem; letter-spacing: .5px;
+            animation: fadeUp .6s .7s ease both;
+            cursor: pointer; text-decoration: none;
+        }
+        .scroll-arrow svg { animation: bounce-y 1.8s ease-in-out infinite; }
+        @keyframes bounce-y { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+        /* ── Sections ── */
+        .section { padding: 96px 24px; max-width: 1100px; margin: 0 auto; }
+        .section-label {
+            display: inline-block; margin-bottom: 16px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+            color: #60a5fa;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+            line-height: 1.15; letter-spacing: -.8px; margin-bottom: 14px;
+        }
+        .section-sub {
+            font-size: 1rem; color: rgba(255,255,255,0.5); line-height: 1.6; max-width: 540px;
+        }
+        .section-header { margin-bottom: 56px; }
+
+        /* Divider */
+        .section-divider {
+            width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+        }
+
+        /* ── Feature cards ── */
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .feat-card {
+            padding: 28px; border-radius: 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: transform .2s, border-color .2s, background .2s;
+        }
+        .feat-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.055); border-color: rgba(255,255,255,0.13); }
+        .feat-icon {
+            width: 46px; height: 46px; border-radius: 12px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+        }
+        .feat-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: #e5eef8; }
+        .feat-card p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.55; }
+        .feat-badge {
+            display: inline-block; margin-top: 12px;
+            padding: 3px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;
+            background: rgba(0,112,243,0.15); border: 1px solid rgba(0,112,243,0.3); color: #60aeff;
+        }
+
+        /* ── Domains ── */
+        .domains-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+        }
+        .domain-card {
+            padding: 32px; border-radius: 20px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.025);
+            transition: transform .2s;
+        }
+        .domain-card:hover { transform: translateY(-3px); }
+        .domain-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            border-radius: 20px 20px 0 0;
+        }
+        .domain-corps::before { background: linear-gradient(90deg, #2dd4bf, #06b6d4); }
+        .domain-coeur::before { background: linear-gradient(90deg, #f87171, #fb923c); }
+        .domain-etre::before  { background: linear-gradient(90deg, #a78bfa, #818cf8); }
+        .domain-ordre::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .domain-emoji { font-size: 2rem; margin-bottom: 14px; display: block; }
+        .domain-card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
+        .domain-card p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.55; }
+        .domain-corps h3 { color: #2dd4bf; }
+        .domain-coeur h3 { color: #f87171; }
+        .domain-etre  h3 { color: #a78bfa; }
+        .domain-ordre h3 { color: #fbbf24; }
+
+        /* ── Mission / Manifesto ── */
+        .mission-section {
+            padding: 96px 24px; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(0,112,243,0.06) 0%, transparent 70%);
+        }
+        .mission-quote {
+            font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 800;
+            line-height: 1.25; letter-spacing: -.5px; max-width: 760px; margin: 0 auto 24px;
+        }
+        .mission-quote .hl { color: #60a5fa; }
+        .mission-text {
+            font-size: 1rem; color: rgba(255,255,255,0.45); line-height: 1.7;
+            max-width: 600px; margin: 0 auto 48px;
+        }
+
+        /* ── Final CTA ── */
+        .final-cta-section {
+            padding: 80px 24px 120px; text-align: center;
+        }
+        .final-cta-section h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 12px; }
+        .final-cta-section p { font-size: 0.95rem; color: rgba(255,255,255,0.45); margin-bottom: 36px; }
+        .cta-big {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 18px 44px; border-radius: 16px; border: none;
+            background: linear-gradient(135deg, #0070f3, #0050d0);
+            color: #fff; font-size: 1.1rem; font-weight: 700;
+            text-decoration: none; transition: all .25s;
+            box-shadow: 0 6px 30px rgba(0,112,243,0.45);
+        }
+        .cta-big:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,112,243,0.55); }
+        .cta-proof { margin-top: 18px; font-size: 0.75rem; color: rgba(255,255,255,0.25); }
+
+        /* Footer */
+        .footer {
+            padding: 28px 32px; display: flex; align-items: center; justify-content: space-between;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.78rem; color: rgba(255,255,255,0.25);
+        }
+        .footer a { color: rgba(255,255,255,0.35); text-decoration: none; }
+        .footer a:hover { color: rgba(255,255,255,0.6); }
+
+        /* Reveal on scroll */
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
         @media (max-width: 640px) {
             .top-bar { padding: 0 16px; }
             .top-bar-brand span { display: none; }
@@ -193,6 +322,9 @@
             .hero-cta-group { flex-direction: column; width: 100%; max-width: 300px; }
             .cta-primary, .cta-secondary { width: 100%; text-align: center; }
             #urgence-btn { font-size: 0.78rem; padding: 8px 14px; bottom: 16px; left: 16px; }
+            .domains-grid { grid-template-columns: 1fr; }
+            .section { padding: 64px 20px; }
+            .footer { flex-direction: column; gap: 10px; text-align: center; }
         }
     </style>
 </head>
@@ -251,8 +383,128 @@
       </div>
 
       <p class="hero-proof">100% gratuit · Aucune carte bancaire · Données privées</p>
+
+      <a href="#features" class="scroll-arrow" aria-label="Découvrir les fonctionnalités">
+        Découvrir
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </a>
     </div>
-    
+
+    <!-- ── FEATURES ── -->
+    <div class="section-divider"></div>
+    <section id="features" aria-labelledby="features-title">
+      <div class="section reveal">
+        <div class="section-header">
+          <span class="section-label">Fonctionnalités</span>
+          <h2 class="section-title" id="features-title">Tout ce qu'il te faut<br>pour avancer</h2>
+          <p class="section-sub">Des outils pensés ensemble, qui se complètent et mesurent ta progression dans tous les domaines de ta vie.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feat-card reveal">
+            <div class="feat-icon" style="background:rgba(45,212,191,0.12)">📔</div>
+            <h3>Journal intime</h3>
+            <p>Écris chaque jour avec des prompts inspirants, filtre par émotion ou domaine, et visualise ton évolution dans le temps.</p>
+            <span class="feat-badge">+10 XP / entrée</span>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon" style="background:rgba(167,139,250,0.12)">🧘</div>
+            <h3>Méditation guidée</h3>
+            <p>Séances de 5 à 30 minutes avec ambiances sonores, suivi de ta streak et de tes minutes cumulées.</p>
+            <span class="feat-badge">+15 XP / séance</span>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon" style="background:rgba(251,191,36,0.12)">🎯</div>
+            <h3>Objectifs de vie</h3>
+            <p>Crée des objectifs par domaine, suis ta progression pas à pas et célèbre chaque victoire avec des gains d'XP.</p>
+            <span class="feat-badge">+25 XP / complété</span>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon" style="background:rgba(96,165,250,0.12)">🎡</div>
+            <h3>Roue de vie</h3>
+            <p>Évalue tes 4 domaines en quelques minutes, visualise ton équilibre sur un radar et identifie où concentrer tes efforts.</p>
+            <span class="feat-badge">Historique & tendances</span>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon" style="background:rgba(248,113,113,0.12)">🌳</div>
+            <h3>Codex de connaissances</h3>
+            <p>Centralise les apprentissages clés de ta vie : citations, livres, insights — ton encyclopédie personnelle.</p>
+            <span class="feat-badge">Bientôt</span>
+          </div>
+          <div class="feat-card reveal">
+            <div class="feat-icon" style="background:rgba(0,112,243,0.12)">⚡</div>
+            <h3>Système XP & Niveaux</h3>
+            <p>Chaque action te rapporte de l'XP. Monte en niveau dans chaque domaine et débloques des insights sur toi-même.</p>
+            <span class="feat-badge">Gamification</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4 DOMAINS ── -->
+    <div class="section-divider"></div>
+    <section id="domains" aria-labelledby="domains-title">
+      <div class="section reveal">
+        <div class="section-header">
+          <span class="section-label">Les 4 domaines</span>
+          <h2 class="section-title" id="domains-title">Une vie équilibrée<br>sur 4 piliers</h2>
+          <p class="section-sub">Inspirée de la hiérarchie de Maslow, notre approche couvre toutes les dimensions de l'épanouissement humain.</p>
+        </div>
+        <div class="domains-grid">
+          <div class="domain-card domain-corps reveal">
+            <span class="domain-emoji">💪</span>
+            <h3>Corps</h3>
+            <p>Santé physique, énergie, sommeil, alimentation, sport. La fondation sur laquelle tout repose. Sans corps en bonne santé, rien d'autre ne tient.</p>
+          </div>
+          <div class="domain-card domain-coeur reveal">
+            <span class="domain-emoji">❤️</span>
+            <h3>Cœur</h3>
+            <p>Relations, amour, famille, amitié. Les connexions humaines qui donnent du sens à notre existence et alimentent notre résilience.</p>
+          </div>
+          <div class="domain-card domain-etre reveal">
+            <span class="domain-emoji">✨</span>
+            <h3>Être</h3>
+            <p>Identité, valeurs, spiritualité, croissance intérieure. Qui tu es vraiment, au-delà de ce que tu fais ou possèdes.</p>
+          </div>
+          <div class="domain-card domain-ordre reveal">
+            <span class="domain-emoji">⚡</span>
+            <h3>Ordre</h3>
+            <p>Finances, organisation, environnement, productivité. La structure qui libère l'esprit et permet à l'énergie de circuler librement.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MISSION ── -->
+    <div class="section-divider"></div>
+    <div class="mission-section">
+      <div class="reveal">
+        <span class="section-label">Notre manifeste</span>
+        <p class="mission-quote">
+          "La vie ne change pas d'un coup.<br>Elle change <span class="hl">un choix</span>, une habitude,<br>une entrée de journal à la fois."
+        </p>
+        <p class="mission-text">
+          ChangeYourLife.ai est né d'une conviction simple : les meilleurs outils de développement personnel ne devraient pas être réservés à ceux qui peuvent se payer un coach ou un thérapeute. Chaque personne mérite un espace pour se comprendre, progresser et construire la vie qu'elle veut vraiment.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── FINAL CTA ── -->
+    <div class="section-divider"></div>
+    <div class="final-cta-section reveal">
+      <h2>Prêt(e) à changer ta vie ?</h2>
+      <p>Rejoins des milliers de personnes qui construisent leur meilleure version, chaque jour.</p>
+      <a href="/login" id="cta-final" class="cta-big">
+        Commencer gratuitement →
+      </a>
+      <p class="cta-proof">100% gratuit · Pas de carte bancaire · Données privées</p>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <footer class="footer">
+      <span>© 2025 ChangeYourLife.ai — Tous droits réservés</span>
+      <span><a href="tel:3114">URGENCE · 3114</a></span>
+    </footer>
+
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
@@ -299,6 +551,14 @@
         }
     </script>
 
+    <!-- Scroll reveal -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+        }, { threshold: 0.12 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+
     <script type="module">
         import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { updateGlobalAvatar } from '/js/common.js';
@@ -319,12 +579,14 @@
         const ctaButton = document.getElementById('cta-button');
         const ctaTop = document.getElementById('cta-top');
         const ctaLogin = document.getElementById('cta-login');
+        const ctaFinal = document.getElementById('cta-final');
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (ctaButton) { ctaButton.href = '/app'; ctaButton.textContent = 'Accéder à mon espace →'; }
                 if (ctaTop) { ctaTop.href = '/app'; ctaTop.textContent = 'Mon espace'; }
                 if (ctaLogin) ctaLogin.style.display = 'none';
+                if (ctaFinal) { ctaFinal.href = '/app'; ctaFinal.textContent = 'Accéder à mon espace →'; }
             } else {
                 if (ctaButton) { ctaButton.href = '/login'; ctaButton.textContent = 'Commencer l\'aventure →'; }
                 if (ctaTop) { ctaTop.href = '/login'; ctaTop.textContent = 'Commencer'; }

@@ -266,13 +266,14 @@
           'meditation.totalSessions': increment(1),
           'meditation.totalMinutes': increment(currentSession.duration),
           'meditation.lastSessionAt': Date.now(),
-          'meditation.streak': streak
+          'meditation.streak': streak,
+          'levels.body.xp': increment(15)
         });
         await loadStats();
       } catch(e) {
         try {
           const userRef = doc(db, 'users', uid);
-          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1 }}, {merge:true});
+          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1 }, levels: { body: { xp: 15 } }}, {merge:true});
           await loadStats();
         } catch(e2) {}
       }

@@ -204,6 +204,11 @@
         </div>
         <div class="panel-body" style="display:flex;flex-direction:column;gap:0">
           <input type="text" class="editor-title-input" id="editor-title" placeholder="Titre (optionnel)…" maxlength="120" />
+          <div id="prompt-du-jour" style="display:none;margin-bottom:10px;padding:10px 14px;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:10px;cursor:pointer;transition:background .2s" title="Cliquer pour utiliser ce prompt">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:4px">✦ Prompt du jour</div>
+            <div id="prompt-text" style="font-size:0.88rem;color:#c8d8ee;line-height:1.5"></div>
+            <div style="font-size:0.72rem;color:#4a6a8a;margin-top:5px">Cliquer pour l'utiliser →</div>
+          </div>
           <textarea class="editor-content-input" id="editor-content" placeholder="Commence à écrire… Que s'est-il passé aujourd'hui ? Comment te sens-tu ? Quelles pensées traversent ton esprit ?"></textarea>
           <div class="editor-footer">
             <span class="word-count" id="word-count">0 mot</span>
@@ -250,7 +255,7 @@
     import { initUserMenu } from '/js/userMenu.js';
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, orderBy, query, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, orderBy, query, limit, serverTimestamp, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     try { updateGlobalAvatar(); } catch(e) {}
     try { initUserMenu(); } catch(e) {}
@@ -439,34 +444,96 @@
       });
     }
 
+    const PROMPTS = [
+      "Quelle est la chose la plus importante que j'ai apprise sur moi-même cette semaine ?",
+      "Qu'est-ce qui m'a donné de l'énergie aujourd'hui ? Qu'est-ce qui m'en a pris ?",
+      "Si je pouvais changer une seule chose de ma journée, ce serait quoi ?",
+      "Quel obstacle ai-je surmonté récemment dont je suis fier(e) ?",
+      "Quelle habitude je voudrais cultiver ce mois-ci, et pourquoi ?",
+      "Décris un moment de la journée où tu t'es senti(e) pleinement vivant(e).",
+      "Qu'est-ce que je reporte depuis trop longtemps ? Pourquoi ?",
+      "Quelles sont les 3 choses pour lesquelles je suis reconnaissant(e) aujourd'hui ?",
+      "Comment mon corps se sent-il en ce moment ? Qu'est-ce qu'il essaie de me dire ?",
+      "Quelle peur m'empêche d'avancer vers ce que je veux vraiment ?",
+      "Si j'avais tout l'argent et le temps du monde, comment passerais-je ma journée idéale ?",
+      "Qu'est-ce qui me met en colère ? Qu'est-ce que ça révèle sur mes valeurs ?",
+      "Qui a eu un impact positif sur moi récemment ? Est-ce que je le lui ai dit ?",
+      "Quelle décision difficile dois-je prendre et qu'est-ce qui me retient ?",
+      "Décris une version de toi dans 5 ans. Qu'est-ce qui a changé ?",
+      "Quel est mon plus grand rêve que je n'ose pas encore avouer ?",
+      "Qu'est-ce que la réussite signifie vraiment pour moi, pas pour les autres ?",
+      "Dans quel domaine est-ce que je me mens à moi-même en ce moment ?",
+      "Quelle relation dans ma vie mérite plus d'attention et d'énergie ?",
+      "Quel conseil donnerais-je à mon moi d'il y a 10 ans ?",
+      "Qu'est-ce qui m'apporte de la joie pure, sans raison particulière ?",
+      "Quelle habitude toxique voudrais-je abandonner définitivement ?",
+      "Comment est-ce que je prends soin de mon bien-être mental en ce moment ?",
+      "Qu'est-ce que j'ai évité de ressentir cette semaine ? Pourquoi ?",
+      "Quelle est la dernière fois où j'ai fait quelque chose pour la première fois ?",
+      "Qu'est-ce qui compte vraiment pour moi quand je retire tout le superflu ?",
+      "Comment est-ce que je réagis face à l'échec ? Est-ce que ça me convient ?",
+      "Qu'est-ce que j'aurais voulu apprendre plus tôt dans ma vie ?",
+      "Dans quelle situation est-ce que je me sens le plus moi-même ?",
+      "Quelle limite saine est-ce que je dois poser dans ma vie en ce moment ?",
+      "Qu'est-ce qui m'inspire profondément en ce moment ? Pourquoi ?",
+      "Comment est-ce que je me parle à moi-même quand je fais une erreur ?",
+      "Qu'est-ce que je ferais différemment si je n'avais pas peur du jugement ?",
+      "Quelle est la leçon la plus précieuse que m'a apprise une douleur passée ?",
+      "En quoi est-ce que je suis devenu(e) meilleur(e) cette année ?",
+      "Qu'est-ce qui me donne l'impression de me trahir moi-même ?",
+      "Quelles croyances limitantes est-ce que je porte depuis trop longtemps ?",
+      "Comment est-ce que je veux me souvenir de cette période dans ma vie ?",
+      "Qu'est-ce que j'aurais besoin d'entendre de quelqu'un en ce moment ?",
+      "Si ma vie était un livre, quel titre donnerais-je à ce chapitre ?",
+      "Quelle petite action concrète puis-je faire aujourd'hui pour avancer vers mon objectif ?",
+      "Qu'est-ce qui me manque pour me sentir vraiment en paix avec moi-même ?"
+    ];
+
     function openEditor(id = null) {
       editingId = id;
+      const promptDiv = document.getElementById('prompt-du-jour');
+      const promptText = document.getElementById('prompt-text');
+      const contentEl = document.getElementById('editor-content');
       const todayStr = capFirst(new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
       if (id) {
         const e = entries.find(x => x.id===id); if (!e) return;
         document.getElementById('editor-date').textContent = capFirst(tsToDate(e.createdAt).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }));
         document.getElementById('editor-title').value = e.title || '';
-        document.getElementById('editor-content').value = e.content || '';
+        contentEl.value = e.content || '';
         setEmotion(e.emotion || 'neutral');
         setDomain(e.domain || 'none');
+        if (promptDiv) promptDiv.style.display = 'none';
       } else {
         document.getElementById('editor-date').textContent = todayStr;
         // Restore draft if exists for a new entry (not editing)
         const draft = (() => { try { const d = localStorage.getItem(DRAFT_KEY); return d ? JSON.parse(d) : null; } catch(e) { return null; } })();
         if (draft && !draft.editingId) {
           document.getElementById('editor-title').value = draft.title || '';
-          document.getElementById('editor-content').value = draft.content || '';
+          contentEl.value = draft.content || '';
           setEmotion(draft.emotion || 'neutral'); setDomain(draft.domain || 'none');
           selEmotion = draft.emotion || 'neutral'; selDomain = draft.domain || 'none';
+          if (promptDiv) promptDiv.style.display = 'none';
         } else {
           document.getElementById('editor-title').value = '';
-          document.getElementById('editor-content').value = '';
+          contentEl.value = '';
           setEmotion('neutral'); setDomain('none');
           selEmotion = 'neutral'; selDomain = 'none';
+          // Show daily prompt (cycles by day)
+          if (promptDiv && promptText) {
+            const dayIndex = Math.floor(Date.now() / 86400000) % PROMPTS.length;
+            promptText.textContent = PROMPTS[dayIndex];
+            promptDiv.style.display = 'block';
+            promptDiv.onclick = () => {
+              contentEl.value = PROMPTS[dayIndex] + '\n\n';
+              promptDiv.style.display = 'none';
+              contentEl.focus();
+              updateWC();
+            };
+          }
         }
       }
       updateWC(); showView('editor');
-      setTimeout(() => document.getElementById('editor-content').focus(), 80);
+      setTimeout(() => contentEl.focus(), 80);
     }
 
     function openReadView(id) {
@@ -521,6 +588,11 @@
         await setDoc(doc(journalCol(), id), data, { merge: true });
         if (!editingId) {
           entries.unshift({ ...data, createdAt: { toDate: () => new Date() } });
+          // Award XP for journaling (10 XP to matching domain)
+          try {
+            const xpKey = selDomain === 'none' ? 'etre' : selDomain;
+            await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(10) });
+          } catch(_) {}
         } else {
           const idx = entries.findIndex(x => x.id===id);
           if (idx !== -1) entries[idx] = { ...data, createdAt: entries[idx].createdAt };
