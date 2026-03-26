@@ -12,21 +12,39 @@
     .header-bar h1 { margin: 0; font-size: 1.4rem; }
     .content-area { overflow-y: auto; display: grid; gap: 20px; }
     .goals-grid { display: grid; gap: 16px; }
-    .goal-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 18px; transition: all 0.3s ease; position: relative; }
-    .goal-card:hover { background: rgba(255,255,255,0.08); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-    .goal-card.completed { opacity: 0.6; }
+    .goal-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 18px 18px 16px 22px;
+      transition: all 0.22s var(--ease); position: relative; overflow: hidden;
+    }
+    .goal-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+      background: var(--goal-color, rgba(255,255,255,0.2)); border-radius:16px 0 0 16px;
+      opacity: 0.7; transition: opacity 0.2s, width 0.2s;
+    }
+    .goal-card:hover { background: rgba(255,255,255,0.06); box-shadow: 0 8px 24px rgba(0,0,0,0.2); transform: translateY(-1px); }
+    .goal-card:hover::before { opacity: 1; width: 5px; }
+    .goal-card.completed { opacity: 0.55; }
     .goal-card.completed .goal-title { text-decoration: line-through; }
-    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .goal-title { font-weight: 600; font-size: 1.1rem; flex: 1; }
-    .goal-domain { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-    .goal-domain.body { background: rgba(45,212,191,0.2); color: #2dd4bf; border: 1px solid #2dd4bf; }
-    .goal-domain.heart { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; }
-    .goal-domain.etre { background: rgba(156,163,255,0.2); color: #9ca3ff; border: 1px solid #9ca3ff; }
-    .goal-domain.order { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
-    .goal-desc { font-size: 0.9rem; color: #aab7cf; line-height: 1.5; margin-bottom: 12px; }
-    .progress-bar { background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 8px; }
-    .progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%; transition: width 0.4s ease; }
-    .progress-text { font-size: 0.8rem; color: #9fb5ff; }
+    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 10px; }
+    .goal-title { font-weight: 700; font-size: 1.05rem; flex: 1; letter-spacing: -0.2px; }
+    .goal-domain {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0;
+      background: color-mix(in srgb, var(--goal-color) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--goal-color) 40%, transparent);
+      color: var(--goal-color);
+    }
+    .goal-desc { font-size: 0.86rem; color: var(--text-2); line-height: 1.5; margin-bottom: 14px; }
+    .progress-bar { background: rgba(255,255,255,0.07); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 7px; }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--goal-color), color-mix(in srgb, var(--goal-color) 70%, white));
+      height: 100%; transition: width 0.5s var(--ease);
+    }
+    .progress-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .progress-text { font-size: 0.78rem; color: var(--text-2); font-weight: 600; }
+    .progress-pct { font-size:0.78rem; font-weight:700; color: var(--goal-color); }
     .goal-actions { display: flex; gap: 8px; margin-top: 12px; }
     .btn-icon { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
     .btn-icon:hover { background: rgba(255,255,255,0.12); transform: scale(1.05); }
@@ -224,23 +242,31 @@
         if (aOver !== bOver) return aOver ? -1 : 1;
         return 0;
       });
+      const DOMAIN_COLORS = { body:'#2dd4bf', heart:'#f87171', etre:'#a78bfa', order:'#fbbf24' };
+      const DOMAIN_LABELS = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre' };
       grid.innerHTML = sorted.map(() => `<div class="goal-card"></div>`).join('');
       sorted.forEach(({ g, idx }, sortedPos) => {
         const card = grid.children[sortedPos];
+        const goalColor = DOMAIN_COLORS[g.domain] || '#6b7280';
         card.className = `goal-card${g.completed ? ' completed' : ''}`;
-        const title = document.createElement('div'); title.className = 'goal-header';
+        card.style.setProperty('--goal-color', goalColor);
+        const titleRow = document.createElement('div'); titleRow.className = 'goal-header';
         const titleText = document.createElement('div'); titleText.className = 'goal-title'; titleText.textContent = g.title;
-        const domain = document.createElement('div'); domain.className = `goal-domain ${g.domain}`; domain.textContent = g.domain;
-        title.appendChild(titleText); title.appendChild(domain); card.appendChild(title);
+        const domain = document.createElement('div'); domain.className = 'goal-domain'; domain.textContent = DOMAIN_LABELS[g.domain] || g.domain;
+        titleRow.appendChild(titleText); titleRow.appendChild(domain); card.appendChild(titleRow);
         if (g.desc) { const desc = document.createElement('div'); desc.className = 'goal-desc'; desc.textContent = g.desc; card.appendChild(desc); }
-        const bar = document.createElement('div'); bar.className = 'progress-bar';
-        const fill = document.createElement('div'); fill.className = 'progress-fill'; fill.style.width = `${g.progress||0}%`; bar.appendChild(fill); card.appendChild(bar);
         const isOverdue = g.deadline && !g.completed && new Date(g.deadline) < new Date();
         if (isOverdue) card.classList.add('overdue');
-        const pct = document.createElement('div'); pct.className = 'progress-text';
-        pct.textContent = `${g.progress||0}% complété${g.deadline ? ` · Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : ''}`;
-        if (isOverdue) { const tag = document.createElement('span'); tag.className = 'overdue-tag'; tag.textContent = ' ⚠ En retard'; pct.appendChild(tag); }
-        card.appendChild(pct);
+        const pct = g.progress || 0;
+        // Progress row: label + pct
+        const progRow = document.createElement('div'); progRow.className = 'progress-row';
+        const progText = document.createElement('span'); progText.className = 'progress-text';
+        progText.textContent = g.deadline ? `Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : 'En cours';
+        if (isOverdue) { const tag = document.createElement('span'); tag.className = 'overdue-tag'; tag.textContent = ' ⚠ En retard'; progText.appendChild(tag); }
+        const progPct = document.createElement('span'); progPct.className = 'progress-pct'; progPct.textContent = `${pct}%`;
+        progRow.appendChild(progText); progRow.appendChild(progPct); card.appendChild(progRow);
+        const bar = document.createElement('div'); bar.className = 'progress-bar';
+        const fill = document.createElement('div'); fill.className = 'progress-fill'; fill.style.width = `${pct}%`; bar.appendChild(fill); card.appendChild(bar);
         const actions = document.createElement('div'); actions.className = 'goal-actions';
         const btnP = document.createElement('button'); btnP.className = 'btn-icon'; btnP.textContent = '+ 10%'; btnP.addEventListener('click', () => window.updateProgress(idx));
         const btnT = document.createElement('button'); btnT.className = 'btn-icon'; btnT.textContent = g.completed ? '↻ Réactiver' : '✓ Compléter'; btnT.addEventListener('click', () => window.toggleComplete(idx));
