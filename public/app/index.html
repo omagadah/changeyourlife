@@ -57,7 +57,7 @@
         .qa-xp { font-size:0.6rem; color:#4a6a8a; font-weight:600; }
 
         /* ── Stats bar ── */
-        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+        .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:22px; }
         .stat-chip {
           background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
           border-radius:14px; padding:14px 14px 12px;
@@ -193,6 +193,18 @@
         .quote-text { font-size:0.9rem; color:#c8d8ee; line-height:1.65; font-style:italic; margin-bottom:6px; }
         .quote-author { font-size:0.72rem; font-weight:700; color:#4a6a8a; text-transform:uppercase; letter-spacing:.4px; }
 
+        /* ── Responsive ── */
+        @media (max-width: 760px) {
+          .quick-actions { grid-template-columns: repeat(2,1fr); }
+          .stats-row { grid-template-columns: repeat(3,1fr); }
+          .rings-grid { grid-template-columns: repeat(2,1fr); }
+          .app-container { padding: 18px 16px 16px; }
+        }
+        @media (max-width: 480px) {
+          .stats-row { grid-template-columns: repeat(2,1fr); }
+          .welcome-left h1 { font-size: 1.25rem; }
+        }
+
         /* ── Shepherd ── */
         .shepherd-element { background:rgba(10,22,45,0.97) !important; backdrop-filter:blur(20px) !important; border-radius:14px !important; border:1px solid rgba(255,255,255,0.1) !important; box-shadow:0 16px 48px rgba(0,0,0,0.5) !important; }
         .shepherd-header { background:transparent !important; }
@@ -311,6 +323,11 @@
             <div class="stat-chip-icon">📔</div>
             <div class="stat-chip-value" id="stat-journal">—</div>
             <div class="stat-chip-label">Entrées journal</div>
+          </div>
+          <div class="stat-chip" style="--chip-color:#22c55e">
+            <div class="stat-chip-icon">✅</div>
+            <div class="stat-chip-value" id="stat-habits" style="color:#86efac">—</div>
+            <div class="stat-chip-label">Habitudes aujourd'hui</div>
           </div>
         </div>
 
@@ -560,6 +577,13 @@
                 const activeGoals = goals.filter(g => !g.completed).length;
                 const gEl = document.getElementById('stat-goals');
                 if (gEl) gEl.textContent = activeGoals;
+
+                // Habits done today
+                const habits = Array.isArray(userData.habits) ? userData.habits : [];
+                const todayStr = new Date().toDateString();
+                const habitsDoneToday = habits.filter(h => h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === todayStr).length;
+                const hEl = document.getElementById('stat-habits');
+                if (hEl) hEl.textContent = habits.length ? `${habitsDoneToday}/${habits.length}` : '—';
 
                 // Streak: use meditation streak (properly tracked)
                 const streakEl = document.getElementById('stat-streak');
