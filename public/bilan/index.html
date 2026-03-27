@@ -306,29 +306,19 @@
   </div><!-- /page-shell -->
 
   <script type="module">
-    import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { auth, db } from '/js/firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { initUserMenu } from '/js/userMenu.js?v=16';
 
     try { initUserMenu(); } catch(e) {}
 
-    let auth, db, currentUser;
+    let currentUser;
     let weekOffset = 0; // 0 = current week, -1 = last week, etc.
     let userData = {};
     let weekBilanData = null;
 
     window.saveBilan = saveBilan;
-
-    // ── Init Firebase ──
-    if (window._cyfFirebase) {
-      ({ auth, db } = window._cyfFirebase);
-    } else {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
-      const app = initializeApp(cfg);
-      auth = getAuth(app); db = getFirestore(app);
-      window._cyfFirebase = { app, auth, db };
-    }
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.replace('/login'); return; }
