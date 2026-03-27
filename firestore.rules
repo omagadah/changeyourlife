@@ -46,6 +46,21 @@ service cloud.firestore {
         allow read: if isSignedIn() && isOwner(userId);
         allow write: if isSignedIn() && isOwner(userId);
       }
+
+      // Sous-collection sommeil
+      match /sleep/{dateStr} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn() && isOwner(userId)
+          && request.resource.data.quality is int
+          && request.resource.data.quality >= 1
+          && request.resource.data.quality <= 5;
+      }
+
+      // Sous-collection gratitude
+      match /gratitude/{dateStr} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn() && isOwner(userId);
+      }
     }
 
     // Autoévaluations (Roue de Vie)

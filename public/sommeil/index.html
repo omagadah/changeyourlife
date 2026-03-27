@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sommeil - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell {
+      position:fixed; inset:20px;
+      background:var(--glass-bg); backdrop-filter:blur(15px);
+      border-radius:20px; border:1px solid var(--glass-border);
+      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
+    }
+    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
+    .header-sub { font-size:0.82rem; color:#7ba3c8; margin-top:2px; }
+    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
+    .toast.show { transform:translate(-50%,0); }
+
+    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+
+    /* ── Sleep entry card ── */
+    .sleep-entry-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px; padding:22px; position:relative; overflow:hidden;
+    }
+    .sleep-entry-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+      background:linear-gradient(180deg,#818cf8,#6366f1); border-radius:16px 0 0 16px;
+    }
+
+    .time-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+    .time-field { flex:1; min-width:120px; display:flex; flex-direction:column; gap:6px; }
+    .time-label { font-size:0.72rem; font-weight:700; color:#7ba3c8; text-transform:uppercase; letter-spacing:.5px; }
+    .time-input {
+      padding:10px 13px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.05); color:#e5eef8; font-size:1rem; font-weight:700;
+      outline:none; transition:border-color .2s; width:100%; box-sizing:border-box;
+      font-family:inherit;
+    }
+    .time-input:focus { border-color:rgba(99,102,241,0.5); background:rgba(99,102,241,0.06); }
+
+    /* ── Duration display ── */
+    .duration-display {
+      text-align:center; padding:10px; background:rgba(99,102,241,0.08);
+      border:1px solid rgba(99,102,241,0.2); border-radius:10px; margin-bottom:16px;
+    }
+    .duration-value { font-size:1.6rem; font-weight:800; color:#a5b4fc; }
+    .duration-label { font-size:0.7rem; color:#4a6a8a; margin-top:2px; }
+
+    /* ── Quality slider ── */
+    .quality-row { margin-bottom:16px; }
+    .quality-labels { display:flex; justify-content:space-between; font-size:0.68rem; color:#4a6a8a; margin-top:4px; }
+    .quality-slider { width:100%; accent-color:#6366f1; cursor:pointer; margin-top:6px; }
+    .quality-emojis { display:flex; justify-content:space-between; font-size:1.1rem; margin-top:6px; }
+
+    /* ── Note ── */
+    .sleep-note {
+      width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.08); border-radius:10px;
+      color:#e5eef8; font-size:0.84rem; padding:9px 12px; resize:none;
+      font-family:inherit; line-height:1.5; transition:border-color .2s;
+      margin-bottom:14px;
+    }
+    .sleep-note:focus { outline:none; border-color:rgba(99,102,241,0.35); }
+    .sleep-note::placeholder { color:#4a6a8a; }
+
+    .save-sleep-btn {
+      width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
+      background:linear-gradient(135deg,#4f46e5,#6366f1); color:#fff;
+      font-size:0.9rem; font-weight:700; font-family:inherit;
+      transition:filter .2s, transform .1s;
+    }
+    .save-sleep-btn:hover { filter:brightness(1.1); }
+    .save-sleep-btn:active { transform:scale(0.98); }
+    .save-sleep-btn:disabled { opacity:0.45; cursor:not-allowed; }
+
+    /* ── Stats ── */
+    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .stat-block { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px 14px; text-align:center; border-bottom:2px solid var(--sb-color, rgba(255,255,255,0.08)); }
+    .stat-block-icon { font-size:1.2rem; margin-bottom:4px; }
+    .stat-block-value { font-size:1.6rem; font-weight:800; color:#eef4ff; line-height:1.1; }
+    .stat-block-label { font-size:0.63rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+
+    /* ── 14-day chart ── */
+    .chart-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:18px 20px; }
+    .bar-chart { display:flex; gap:4px; align-items:flex-end; height:80px; }
+    .bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:4px 4px 0 0; overflow:hidden; flex:1; position:relative; display:flex; align-items:flex-end; }
+    .bar-fill { width:100%; background:linear-gradient(180deg,#6366f1,#4f46e5); border-radius:4px 4px 0 0; transition:height .8s cubic-bezier(.4,0,.2,1); }
+    .bar-day { font-size:0.58rem; color:#4a6a8a; white-space:nowrap; }
+
+    /* ── Log ── */
+    .log-list { display:flex; flex-direction:column; gap:8px; }
+    .log-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:11px; padding:11px 14px; position:relative; overflow:hidden; }
+    .log-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--qi-color, #6366f1); border-radius:11px 0 0 11px; }
+    .log-date { font-size:0.72rem; color:#4a6a8a; font-weight:600; width:60px; flex-shrink:0; }
+    .log-hours { font-size:1rem; font-weight:800; color:#eef4ff; flex-shrink:0; width:48px; }
+    .log-quality { font-size:1.1rem; flex-shrink:0; }
+    .log-note { font-size:0.8rem; color:#7ba3c8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+
+    @media (max-width:600px) {
+      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
+      .stats-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+      .time-row { flex-direction:column; gap:10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <div id="vanta-bg" style="position:fixed;inset:0;z-index:-1;"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
+        backgroundColor:0x07192f, color1:0x2a1a5a, color2:0xaaaacc, quantity:2 });
+    });
+  </script>
+
+  <header class="header">
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
+        <g stroke-width="3">
+          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+        </g>
+      </svg>
+    </button>
+    <nav class="header-nav">
+      <a href="/app" class="nav-link">Accueil</a>
+      <a href="/humeur/" class="nav-link">Humeur</a>
+      <a href="/sommeil/" class="nav-link active">Sommeil</a>
+    </nav>
+  </header>
+
+  <div class="page-shell">
+    <div class="header-bar">
+      <div class="header-left">
+        <h1>🌙 Suivi du Sommeil</h1>
+        <div class="header-sub">Enregistre tes heures et la qualité de ton sommeil</div>
+      </div>
+      <div id="streak-badge" style="display:none;padding:6px 14px;border-radius:999px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);font-size:0.78rem;font-weight:700;color:#a5b4fc">
+        🌙 <span id="streak-val">0</span> nuits de suite
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- Entry form -->
+      <div class="sleep-entry-card" id="entry-card">
+        <div style="font-size:0.9rem;font-weight:700;color:#eef4ff;margin-bottom:14px" id="entry-title">Ajouter une nuit</div>
+        <div class="time-row">
+          <div class="time-field">
+            <div class="time-label">🌙 Coucher</div>
+            <input type="time" class="time-input" id="bedtime" value="23:00" />
+          </div>
+          <div class="time-field">
+            <div class="time-label">☀️ Lever</div>
+            <input type="time" class="time-input" id="waketime" value="07:00" />
+          </div>
+          <div class="time-field" style="flex:0.6;min-width:80px">
+            <div class="time-label">📅 Nuit du</div>
+            <input type="date" class="time-input" id="sleep-date" />
+          </div>
+        </div>
+
+        <div class="duration-display" id="duration-display">
+          <div class="duration-value" id="duration-val">8h00</div>
+          <div class="duration-label">durée estimée</div>
+        </div>
+
+        <div class="quality-row">
+          <div class="time-label">Qualité du sommeil</div>
+          <div class="quality-emojis"><span>😩</span><span>😴</span><span>😐</span><span>😊</span><span>🌟</span></div>
+          <input type="range" class="quality-slider" id="quality-slider" min="1" max="5" value="3" />
+          <div class="quality-labels"><span>Mauvaise</span><span>Passable</span><span>Bonne</span><span>Excellente</span><span>Parfaite</span></div>
+        </div>
+
+        <textarea class="sleep-note" id="sleep-note" rows="2" placeholder="Rêves, réveils nocturnes, stress… (optionnel)"></textarea>
+        <button class="save-sleep-btn" id="save-sleep-btn">Enregistrer cette nuit</button>
+      </div>
+
+      <!-- Stats -->
+      <div>
+        <div class="sec-label">Cette semaine</div>
+        <div class="stats-grid">
+          <div class="stat-block" style="--sb-color:#6366f1">
+            <div class="stat-block-icon">⏱</div>
+            <div class="stat-block-value" id="stat-avg">—</div>
+            <div class="stat-block-label">Moy. / nuit</div>
+          </div>
+          <div class="stat-block" style="--sb-color:#a78bfa">
+            <div class="stat-block-icon">⭐</div>
+            <div class="stat-block-value" id="stat-quality">—</div>
+            <div class="stat-block-label">Qualité moy.</div>
+          </div>
+          <div class="stat-block" style="--sb-color:#fbbf24">
+            <div class="stat-block-icon">🔥</div>
+            <div class="stat-block-value" id="stat-streak">0</div>
+            <div class="stat-block-label">Nuits suivies</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14-day bar chart -->
+      <div class="chart-card">
+        <div class="sec-label" style="margin-bottom:10px">Durée · 14 dernières nuits</div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+
+      <!-- Log -->
+      <div>
+        <div class="sec-label">Historique</div>
+        <div class="log-list" id="log-list">
+          <div style="text-align:center;padding:24px;color:#4a6a8a;font-size:0.85rem">Aucune nuit enregistrée — commence ce soir !</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from '/js/firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { doc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initUserMenu } from '/js/userMenu.js?v=16';
+
+    try { initUserMenu(); } catch(e) {}
+
+    const QUALITY_EMOJI = { 1:'😩', 2:'😴', 3:'😐', 4:'😊', 5:'🌟' };
+    const QUALITY_LABEL = { 1:'Mauvaise', 2:'Passable', 3:'Bonne', 4:'Excellente', 5:'Parfaite' };
+    const QUALITY_COLOR = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#6366f1' };
+
+    let currentUser, allLogs = {}; // dateStr → {bedtime, waketime, quality, note, duration}
+
+    // ── Set today's date ──
+    const todayInput = document.getElementById('sleep-date');
+    todayInput.value = new Date().toISOString().slice(0,10);
+    todayInput.max = new Date().toISOString().slice(0,10);
+
+    // ── Duration calculator ──
+    function calcDuration(bed, wake) {
+      if (!bed || !wake) return null;
+      const [bh, bm] = bed.split(':').map(Number);
+      const [wh, wm] = wake.split(':').map(Number);
+      let mins = (wh * 60 + wm) - (bh * 60 + bm);
+      if (mins < 0) mins += 24 * 60; // overnight
+      return mins;
+    }
+    function fmtDuration(mins) {
+      if (mins === null) return '—';
+      const h = Math.floor(mins / 60), m = mins % 60;
+      return `${h}h${m > 0 ? String(m).padStart(2,'0') : '00'}`;
+    }
+    function updateDuration() {
+      const mins = calcDuration(document.getElementById('bedtime').value, document.getElementById('waketime').value);
+      document.getElementById('duration-val').textContent = fmtDuration(mins);
+      const color = mins === null ? '#4a6a8a' : mins >= 480 ? '#22c55e' : mins >= 360 ? '#eab308' : '#ef4444';
+      document.getElementById('duration-val').style.color = color;
+    }
+    document.getElementById('bedtime').addEventListener('input', updateDuration);
+    document.getElementById('waketime').addEventListener('input', updateDuration);
+    updateDuration();
+
+    // ── Firebase ──
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.replace('/login'); return; }
+      currentUser = user;
+      await loadLogs();
+      renderAll();
+    });
+
+    function dateKey(d = new Date()) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    async function loadLogs() {
+      const col = collection(db, 'users', currentUser.uid, 'sleep');
+      const snap = await getDocs(query(col, orderBy('date', 'desc'), limit(60)));
+      allLogs = {};
+      snap.forEach(d => { allLogs[d.id] = d.data(); });
+
+      // Pre-fill form if today already logged
+      const today = dateKey();
+      if (allLogs[today]) {
+        const l = allLogs[today];
+        document.getElementById('bedtime').value = l.bedtime || '23:00';
+        document.getElementById('waketime').value = l.waketime || '07:00';
+        document.getElementById('quality-slider').value = l.quality || 3;
+        document.getElementById('sleep-note').value = l.note || '';
+        document.getElementById('entry-title').textContent = 'Modifier la nuit d\'aujourd\'hui';
+        document.getElementById('save-sleep-btn').textContent = 'Mettre à jour';
+        updateDuration();
+      }
+    }
+
+    // ── Save ──
+    document.getElementById('save-sleep-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-sleep-btn');
+      const dateStr = document.getElementById('sleep-date').value || dateKey();
+      const bedtime = document.getElementById('bedtime').value;
+      const waketime = document.getElementById('waketime').value;
+      const quality = parseInt(document.getElementById('quality-slider').value, 10);
+      const note = document.getElementById('sleep-note').value.trim();
+      const duration = calcDuration(bedtime, waketime);
+
+      btn.disabled = true; btn.textContent = 'Enregistrement…';
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid, 'sleep', dateStr), {
+          date: dateStr, bedtime, waketime, quality, note: note || null,
+          duration, savedAt: Date.now()
+        });
+        allLogs[dateStr] = { date:dateStr, bedtime, waketime, quality, note:note||null, duration };
+        renderAll();
+        showToast('Nuit enregistrée !');
+        btn.textContent = 'Mettre à jour';
+      } catch(e) {
+        console.error(e);
+        showToast('Erreur, réessaie.');
+        btn.textContent = 'Enregistrer cette nuit';
+      }
+      btn.disabled = false;
+    });
+
+    // ── Render ──
+    function renderAll() {
+      renderStats();
+      renderBarChart();
+      renderLog();
+    }
+
+    function renderStats() {
+      const logs = Object.values(allLogs);
+      const total = logs.length;
+      document.getElementById('stat-streak').textContent = total;
+
+      const last7 = logs.filter(l => {
+        const d = new Date(l.date);
+        return d >= new Date(Date.now() - 7 * 86400000);
+      });
+      if (last7.length) {
+        const avgMins = last7.reduce((s,l) => s + (l.duration||0), 0) / last7.length;
+        document.getElementById('stat-avg').textContent = fmtDuration(Math.round(avgMins));
+        const avgColor = avgMins >= 480 ? '#22c55e' : avgMins >= 360 ? '#eab308' : '#ef4444';
+        document.getElementById('stat-avg').style.color = avgColor;
+        const avgQ = (last7.reduce((s,l) => s + (l.quality||3), 0) / last7.length).toFixed(1);
+        document.getElementById('stat-quality').textContent = avgQ + '/5';
+        document.getElementById('stat-quality').style.color = QUALITY_COLOR[Math.round(parseFloat(avgQ))] || '#eef4ff';
+      }
+
+      // Streak badge
+      let streak = 0;
+      const today = new Date();
+      for (let i = 0; i < 60; i++) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        if (allLogs[dateKey(d)]) streak++; else break;
+      }
+      if (streak > 1) {
+        document.getElementById('streak-val').textContent = streak;
+        document.getElementById('streak-badge').style.display = 'inline-flex';
+      }
+    }
+
+    function renderBarChart() {
+      const chart = document.getElementById('bar-chart');
+      chart.innerHTML = '';
+      const today = new Date();
+      const days = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        const k = dateKey(d);
+        days.push({ k, d, log: allLogs[k] || null });
+      }
+      const maxMins = Math.max(...days.map(x => x.log?.duration || 0), 600);
+      const DAY = ['Di','Lu','Ma','Me','Je','Ve','Sa'];
+      days.forEach(({ d, log }) => {
+        const wrap = document.createElement('div'); wrap.className = 'bar-wrap';
+        const bg = document.createElement('div'); bg.className = 'bar-bg';
+        const fill = document.createElement('div'); fill.className = 'bar-fill';
+        const pct = log ? Math.min(100, Math.round((log.duration||0) / maxMins * 100)) : 0;
+        fill.style.height = pct + '%';
+        if (log) fill.style.background = `linear-gradient(180deg, ${QUALITY_COLOR[log.quality||3]}, ${QUALITY_COLOR[log.quality||3]}88)`;
+        fill.title = log ? `${fmtDuration(log.duration)} — ${QUALITY_LABEL[log.quality||3]}` : 'Pas de données';
+        bg.appendChild(fill);
+        const label = document.createElement('div'); label.className = 'bar-day';
+        label.textContent = DAY[d.getDay()];
+        wrap.appendChild(bg); wrap.appendChild(label);
+        chart.appendChild(wrap);
+      });
+    }
+
+    function renderLog() {
+      const list = document.getElementById('log-list');
+      const sorted = Object.values(allLogs).sort((a,b) => b.date.localeCompare(a.date)).slice(0,14);
+      if (!sorted.length) return;
+      list.innerHTML = sorted.map(l => {
+        const color = QUALITY_COLOR[l.quality||3];
+        const [y,m,d] = l.date.split('-');
+        const dateObj = new Date(+y,+m-1,+d);
+        const label = dateObj.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+        return `<div class="log-item" style="--qi-color:${color}">
+          <span class="log-date">${label}</span>
+          <span class="log-hours">${fmtDuration(l.duration)}</span>
+          <span class="log-quality">${QUALITY_EMOJI[l.quality||3]}</span>
+          <span class="log-note">${l.note || '<em style="opacity:.4">Sans note</em>'}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast show';
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>

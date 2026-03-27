@@ -75,6 +75,16 @@
     @keyframes pulse-red { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
     .templates-section { margin-bottom: 8px; }
     .templates-section-title { font-size:0.78rem; color:#7e9ab5; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
+
+    /* ── Mobile ── */
+    @media (max-width:600px) {
+      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
+      .header-bar { flex-direction:column; align-items:flex-start; gap:8px; }
+      .goal-header { flex-wrap:wrap; }
+      .goal-actions { margin-left:auto; }
+      .templates-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+      .modal-content { padding:20px 16px; max-width:100%; }
+    }
   </style>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Définissez et suivez vos objectifs avec l'aide de l'IA. Progression en temps réel et récompenses XP." />

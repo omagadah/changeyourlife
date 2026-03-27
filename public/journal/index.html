@@ -213,6 +213,7 @@
           <div style="font-size:0.7rem;color:#7e9ab5;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
           <div class="mood-chart" id="mood-chart"></div>
         </div>
+        <button id="btn-export" title="Exporter toutes les entrées en JSON" style="margin-top:8px;width:100%;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:#4a6a8a;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center">⬇ Exporter (.json)</button>
       </div>
       <div class="panel-body" id="entry-list"></div>
     </aside>
@@ -730,6 +731,28 @@
       renderList();
     });
     searchClear.addEventListener('click', () => { searchQuery = ''; searchInput.value = ''; searchClear.style.display = 'none'; renderList(); });
+
+    // ── Export JSON ────────────────────────────────────────────────────────────
+    document.getElementById('btn-export').addEventListener('click', () => {
+      if (!entries.length) { showToast('Aucune entrée à exporter.', true); return; }
+      const data = entries.map(e => ({
+        id: e.id,
+        title: e.title || '',
+        content: e.content || '',
+        emotion: e.emotion || '',
+        domain: e.domain || '',
+        createdAt: tsToDate(e.createdAt).toISOString(),
+        updatedAt: e.updatedAt ? tsToDate(e.updatedAt).toISOString() : null,
+      }));
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `journal-cyf-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`${data.length} entrées exportées`);
+    });
 
     // ── Button wiring ──────────────────────────────────────────────────────────
     document.getElementById('btn-new-entry').addEventListener('click', () => { readId = null; openEditor(null); });
