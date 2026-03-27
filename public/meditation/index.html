@@ -123,6 +123,19 @@
     .amb-volume { display:flex; align-items:center; gap:8px; margin-top:10px; }
     .amb-volume label { font-size:0.75rem; color:#7ba3c8; white-space:nowrap; }
     .amb-volume input[type=range] { flex:1; accent-color:#3b82f6; cursor:pointer; }
+
+    /* ── Mobile ── */
+    @media (max-width:600px) {
+      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
+      .sessions-grid { grid-template-columns: 1fr; }
+      .header-bar { flex-direction:column; align-items:flex-start; gap:8px; }
+      .timer-ring { width:130px; height:130px; }
+      .timer-ring svg { width:130px; height:130px; }
+      .timer-display { font-size:1.6rem; }
+      .session-detail { padding:16px; }
+      .breathing-rings { width:180px; height:180px; }
+      .amb-btns { flex-wrap:wrap; }
+    }
   </style>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Méditation guidée avec sessions personnalisées, exercices de respiration et sons d'ambiance pour progresser dans votre bien-être." />

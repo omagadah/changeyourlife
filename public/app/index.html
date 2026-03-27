@@ -55,7 +55,7 @@
         .today-pct { font-size:0.65rem; font-weight:700; opacity:0.7; }
 
         /* ── Quick actions ── */
-        .quick-actions { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:22px; }
+        .quick-actions { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:22px; }
         .qa-btn {
           display:flex; flex-direction:column; align-items:center; gap:6px;
           padding:14px 10px; border-radius:16px; text-decoration:none;
@@ -215,7 +215,7 @@
 
         /* ── Responsive ── */
         @media (max-width: 760px) {
-          .quick-actions { grid-template-columns: repeat(3,1fr); }
+          .quick-actions { grid-template-columns: repeat(4,1fr); gap:8px; }
           .stats-row { grid-template-columns: repeat(3,1fr); }
           .rings-grid { grid-template-columns: repeat(2,1fr); }
           .app-container { padding: 18px 16px 16px; }
@@ -223,6 +223,11 @@
         @media (max-width: 480px) {
           .stats-row { grid-template-columns: repeat(2,1fr); }
           .welcome-left h1 { font-size: 1.25rem; }
+          .quick-actions { grid-template-columns: repeat(4,1fr); }
+          .qa-btn { padding:10px 6px; }
+          .qa-icon { font-size:1.3rem; }
+          .qa-label { font-size:0.62rem; }
+          .qa-xp { font-size:0.56rem; }
         }
 
         /* ── Shepherd ── */
@@ -339,6 +344,16 @@
           <a href="/humeur/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#a78bfa,#7c3aed);--qa-border:rgba(167,139,250,0.3);--qa-glow:0 8px 24px rgba(167,139,250,0.18)">
             <span class="qa-icon">😌</span>
             <span class="qa-label">Humeur</span>
+            <span class="qa-xp">+5 XP</span>
+          </a>
+          <a href="/sommeil/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#0f2a4a,#1e3a6e);--qa-border:rgba(99,102,241,0.3);--qa-glow:0 8px 24px rgba(99,102,241,0.18)">
+            <span class="qa-icon">🌙</span>
+            <span class="qa-label">Sommeil</span>
+            <span class="qa-xp">+5 XP</span>
+          </a>
+          <a href="/gratitude/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#3d2b0a,#5c3d0f);--qa-border:rgba(251,191,36,0.3);--qa-glow:0 8px 24px rgba(251,191,36,0.15)">
+            <span class="qa-icon">🌟</span>
+            <span class="qa-label">Gratitude</span>
             <span class="qa-xp">+5 XP</span>
           </a>
         </div>
@@ -501,6 +516,26 @@
               <h3>Bilan Hebdomadaire</h3>
               <p>Résumé de ta semaine + 4 questions de réflexion pour ancrer ta progression.</p>
               <span class="tool-card-arrow">Faire mon bilan →</span>
+            </div>
+          </a>
+
+          <a href="/sommeil/" class="tool-card" id="card-sommeil"
+             style="--card-gradient:linear-gradient(135deg,#0a1628 0%,#1e2d5c 100%);--card-accent:rgba(99,102,241,0.35);--card-glow:0 0 24px rgba(99,102,241,0.12);--card-accent-text:#a5b4fc">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">🌙</span></div>
+            <div class="tool-card-body">
+              <h3>Sommeil</h3>
+              <p>Enregistre tes nuits, ta qualité de sommeil et identifie tes patterns sur 14 jours.</p>
+              <span class="tool-card-arrow">Suivre →</span>
+            </div>
+          </a>
+
+          <a href="/gratitude/" class="tool-card" id="card-gratitude"
+             style="--card-gradient:linear-gradient(135deg,#1a1208 0%,#3d2b0a 100%);--card-accent:rgba(251,191,36,0.35);--card-glow:0 0 24px rgba(251,191,36,0.12);--card-accent-text:#fde68a">
+            <div class="tool-card-banner"><span class="tool-card-banner-icon">🌟</span></div>
+            <div class="tool-card-body">
+              <h3>Gratitude</h3>
+              <p>3 lignes par jour pour ancrer le positif, développer la résilience et voir la vie autrement.</p>
+              <span class="tool-card-arrow">Écrire →</span>
             </div>
           </a>
 

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gratitude - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell {
+      position:fixed; inset:20px;
+      background:var(--glass-bg); backdrop-filter:blur(15px);
+      border-radius:20px; border:1px solid var(--glass-border);
+      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
+    }
+    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
+    .header-sub { font-size:0.82rem; color:#c4a55a; margin-top:2px; }
+    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(251,191,36,.92); color:#1a1208; padding:10px 20px; border-radius:10px; font-weight:700; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
+    .toast.show { transform:translate(-50%,0); }
+
+    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+
+    /* ── Entry card ── */
+    .entry-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px; padding:22px; position:relative; overflow:hidden;
+    }
+    .entry-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+      background:linear-gradient(180deg,#fbbf24,#f59e0b); border-radius:16px 0 0 16px;
+    }
+
+    /* ── Date row ── */
+    .date-row { display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+    .date-badge {
+      display:inline-flex; align-items:center; gap:6px; padding:6px 14px;
+      background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.25);
+      border-radius:999px; font-size:0.78rem; font-weight:700; color:#fde68a;
+    }
+    .streak-badge {
+      display:inline-flex; align-items:center; gap:5px; padding:5px 12px;
+      background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25);
+      border-radius:999px; font-size:0.75rem; font-weight:700; color:#fca5a5;
+    }
+
+    /* ── Prompt fields ── */
+    .prompt-block { margin-bottom:16px; }
+    .prompt-block:last-child { margin-bottom:0; }
+    .prompt-label {
+      font-size:0.8rem; font-weight:700; color:#fde68a; margin-bottom:8px;
+      display:flex; align-items:center; gap:7px;
+    }
+    .prompt-num {
+      width:22px; height:22px; border-radius:50%;
+      background:rgba(251,191,36,0.2); border:1px solid rgba(251,191,36,0.3);
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:0.7rem; font-weight:800; color:#fbbf24; flex-shrink:0;
+    }
+    .prompt-input {
+      width:100%; box-sizing:border-box;
+      padding:12px 14px; border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
+      color:#e5eef8; font-size:0.9rem; outline:none; resize:none;
+      transition:border-color .2s, background .2s; font-family:inherit; line-height:1.5;
+    }
+    .prompt-input:focus { border-color:rgba(251,191,36,0.45); background:rgba(251,191,36,0.04); }
+    .prompt-input::placeholder { color:#3a4a5a; }
+
+    /* ── Mood row ── */
+    .mood-row { display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+    .mood-label { font-size:0.78rem; color:#7ba3c8; font-weight:600; flex-shrink:0; }
+    .mood-btns { display:flex; gap:6px; }
+    .mood-btn {
+      width:38px; height:38px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04); font-size:1.2rem; cursor:pointer;
+      transition:all .15s; display:flex; align-items:center; justify-content:center;
+    }
+    .mood-btn:hover { background:rgba(255,255,255,0.09); transform:scale(1.1); }
+    .mood-btn.active { border-color:rgba(251,191,36,0.5); background:rgba(251,191,36,0.12); transform:scale(1.15); }
+
+    /* ── Save button ── */
+    .btn-save {
+      width:100%; padding:14px; border-radius:14px; border:none; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit;
+      background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#1a1208;
+      transition:opacity .2s, transform .15s; margin-top:6px;
+    }
+    .btn-save:hover { opacity:.92; transform:translateY(-1px); }
+    .btn-save:active { transform:translateY(0); }
+
+    /* ── Stats grid ── */
+    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .stat-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:14px; padding:16px; text-align:center;
+    }
+    .stat-value { font-size:1.6rem; font-weight:800; color:#fbbf24; }
+    .stat-desc { font-size:0.68rem; color:#4a6a8a; margin-top:3px; text-transform:uppercase; letter-spacing:.5px; }
+
+    /* ── Calendar / heatmap ── */
+    .heatmap-grid {
+      display:grid; grid-template-columns:repeat(7,1fr); gap:5px;
+    }
+    .heatmap-cell {
+      aspect-ratio:1; border-radius:6px;
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.05);
+      position:relative; transition:transform .15s;
+    }
+    .heatmap-cell:hover { transform:scale(1.1); }
+    .heatmap-cell[data-has="1"] { background:rgba(251,191,36,0.18); border-color:rgba(251,191,36,0.3); }
+    .heatmap-cell[data-has="1"]::after { content:'🌟'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.6rem; }
+    .heatmap-cell.today { border-color:rgba(251,191,36,0.6) !important; }
+    .heatmap-day-label { font-size:0.58rem; text-align:center; color:#3a4a5a; margin-bottom:3px; font-weight:700; text-transform:uppercase; }
+
+    /* ── History entries ── */
+    .history-list { display:flex; flex-direction:column; gap:10px; }
+    .history-item {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+      border-radius:14px; padding:16px; border-left:3px solid rgba(251,191,36,0.4);
+    }
+    .history-date { font-size:0.68rem; color:#4a6a8a; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .history-entries { display:flex; flex-direction:column; gap:6px; }
+    .history-entry { font-size:0.82rem; color:#c8d8ee; line-height:1.5; display:flex; gap:8px; align-items:flex-start; }
+    .history-entry-num { font-size:0.7rem; color:#fbbf24; font-weight:700; flex-shrink:0; margin-top:1px; }
+    .history-mood { font-size:1rem; }
+
+    /* ── Prompt suggestions ── */
+    .suggestions { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .suggestion-chip {
+      padding:4px 10px; border-radius:999px; border:1px solid rgba(251,191,36,0.2);
+      background:rgba(251,191,36,0.05); color:#fde68a; font-size:0.72rem; cursor:pointer;
+      transition:all .15s;
+    }
+    .suggestion-chip:hover { background:rgba(251,191,36,0.12); border-color:rgba(251,191,36,0.4); }
+
+    /* ── XP anim ── */
+    @keyframes xpPop { 0%{opacity:0;transform:translateY(0) scale(.8)} 30%{opacity:1;transform:translateY(-24px) scale(1.1)} 100%{opacity:0;transform:translateY(-48px) scale(1)} }
+    .xp-pop { position:fixed; pointer-events:none; font-weight:800; font-size:1rem; color:#fbbf24; animation:xpPop 1.2s ease forwards; z-index:9999; }
+
+    /* ── Responsive ── */
+    @media (max-width:600px) {
+      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
+      .header-bar { flex-direction:column; align-items:flex-start; gap:8px; }
+      .stats-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+      .stat-value { font-size:1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="header-bar">
+      <div class="header-left">
+        <h1>🌟 Gratitude</h1>
+        <p class="header-sub">3 choses pour lesquelles tu es reconnaissant·e aujourd'hui</p>
+      </div>
+      <a href="/app/" class="btn-back">← Retour</a>
+    </header>
+
+    <div class="content-area">
+
+      <!-- ── Today's entry ── -->
+      <div class="entry-card" id="entry-card">
+        <div class="date-row">
+          <span class="date-badge" id="date-badge">📅 Aujourd'hui</span>
+          <span class="streak-badge" id="streak-badge">🔥 0 jour de suite</span>
+        </div>
+
+        <div class="mood-row">
+          <span class="mood-label">Ton humeur en ce moment :</span>
+          <div class="mood-btns" id="mood-btns">
+            <button class="mood-btn" data-mood="1" title="Difficile">😔</button>
+            <button class="mood-btn" data-mood="2" title="Bof">😕</button>
+            <button class="mood-btn" data-mood="3" title="Neutre">😐</button>
+            <button class="mood-btn" data-mood="4" title="Bien">😊</button>
+            <button class="mood-btn" data-mood="5" title="Excellent">😁</button>
+          </div>
+        </div>
+
+        <div class="sec-label">Mes 3 gratitudes du jour</div>
+
+        <div class="prompt-block">
+          <div class="prompt-label"><span class="prompt-num">1</span> Je suis reconnaissant·e pour…</div>
+          <div class="suggestions" data-for="1">
+            <span class="suggestion-chip" data-text="une personne dans ma vie">une personne</span>
+            <span class="suggestion-chip" data-text="un moment qui m'a fait sourire">un moment joyeux</span>
+            <span class="suggestion-chip" data-text="quelque chose que j'ai accompli">un accomplissement</span>
+          </div>
+          <textarea class="prompt-input" id="g1" rows="2" placeholder="Écris librement…"></textarea>
+        </div>
+
+        <div class="prompt-block">
+          <div class="prompt-label"><span class="prompt-num">2</span> Quelque chose de simple qui a rendu ma journée meilleure…</div>
+          <div class="suggestions" data-for="2">
+            <span class="suggestion-chip" data-text="une bonne conversation">une conversation</span>
+            <span class="suggestion-chip" data-text="la nature, la lumière du soleil">la nature</span>
+            <span class="suggestion-chip" data-text="un repas ou un moment de repos">un repas</span>
+          </div>
+          <textarea class="prompt-input" id="g2" rows="2" placeholder="Écris librement…"></textarea>
+        </div>
+
+        <div class="prompt-block">
+          <div class="prompt-label"><span class="prompt-num">3</span> Une qualité en moi dont je suis fier·ère aujourd'hui…</div>
+          <div class="suggestions" data-for="3">
+            <span class="suggestion-chip" data-text="ma persévérance face aux obstacles">ma persévérance</span>
+            <span class="suggestion-chip" data-text="ma gentillesse envers les autres">ma gentillesse</span>
+            <span class="suggestion-chip" data-text="mon courage d'avancer malgré les doutes">mon courage</span>
+          </div>
+          <textarea class="prompt-input" id="g3" rows="2" placeholder="Écris librement…"></textarea>
+        </div>
+
+        <button class="btn-save" id="btn-save">🌟 Enregistrer ma gratitude</button>
+      </div>
+
+      <!-- ── Stats ── -->
+      <div>
+        <div class="sec-label">Mes statistiques</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-streak">—</div>
+            <div class="stat-desc">Série actuelle</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-desc">Jours enregistrés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-month">—</div>
+            <div class="stat-desc">Ce mois-ci</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 30-day calendar ── -->
+      <div>
+        <div class="sec-label">Mes 28 derniers jours</div>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:4px;">
+          <div class="heatmap-day-label">L</div>
+          <div class="heatmap-day-label">M</div>
+          <div class="heatmap-day-label">M</div>
+          <div class="heatmap-day-label">J</div>
+          <div class="heatmap-day-label">V</div>
+          <div class="heatmap-day-label">S</div>
+          <div class="heatmap-day-label">D</div>
+        </div>
+        <div class="heatmap-grid" id="heatmap"></div>
+      </div>
+
+      <!-- ── History ── -->
+      <div>
+        <div class="sec-label">Historique récent</div>
+        <div class="history-list" id="history-list">
+          <div style="color:#3a4a5a; font-size:0.85rem; padding:12px 0;">Aucune entrée pour l'instant.</div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /page-shell -->
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { auth, db } from '/js/firebase.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import {
+      doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, getCountFromServer
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // ── Utils ──
+    function toDateStr(d) {
+      return d.toISOString().slice(0, 10);
+    }
+    function todayStr() { return toDateStr(new Date()); }
+    function formatDate(str) {
+      const [y, m, d] = str.split('-');
+      return new Date(+y, +m - 1, +d).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+    }
+    function showToast(msg, dur = 3000) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), dur);
+    }
+    function showXpPop(x, y) {
+      const el = document.createElement('div');
+      el.className = 'xp-pop';
+      el.textContent = '+5 XP';
+      el.style.cssText = `left:${x}px;top:${y}px;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1200);
+    }
+
+    const MOOD_EMOJIS = { 1:'😔', 2:'😕', 3:'😐', 4:'😊', 5:'😁' };
+
+    let uid = null;
+    let entries = {}; // { dateStr: { g1, g2, g3, mood, savedAt } }
+    let selectedMood = 3;
+    let todayAlreadySaved = false;
+
+    // ── Date badge ──
+    const today = todayStr();
+    document.getElementById('date-badge').textContent =
+      '📅 ' + formatDate(today).replace(/^\w/, c => c.toUpperCase());
+
+    // ── Mood selection ──
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+      if (+btn.dataset.mood === selectedMood) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        selectedMood = +btn.dataset.mood;
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // ── Suggestion chips ──
+    document.querySelectorAll('.suggestion-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const forNum = chip.closest('.prompt-block').querySelector('.prompt-input');
+        const cur = forNum.value.trim();
+        forNum.value = cur ? cur + ', ' + chip.dataset.text : chip.dataset.text;
+        forNum.focus();
+      });
+    });
+
+    // ── Auth ──
+    onAuthStateChanged(auth, async user => {
+      if (!user) { window.location.replace('/login'); return; }
+      uid = user.uid;
+      await loadEntries();
+    });
+
+    async function loadEntries() {
+      const col = collection(db, 'users', uid, 'gratitude');
+      const snap = await getDocs(query(col, orderBy('savedAt', 'desc'), limit(60)));
+      entries = {};
+      snap.forEach(d => { entries[d.id] = d.data(); });
+      renderAll();
+    }
+
+    function renderAll() {
+      renderStats();
+      renderHeatmap();
+      renderHistory();
+      prefillToday();
+    }
+
+    function prefillToday() {
+      const e = entries[today];
+      if (e) {
+        todayAlreadySaved = true;
+        document.getElementById('g1').value = e.g1 || '';
+        document.getElementById('g2').value = e.g2 || '';
+        document.getElementById('g3').value = e.g3 || '';
+        if (e.mood) {
+          selectedMood = e.mood;
+          document.querySelectorAll('.mood-btn').forEach(b => {
+            b.classList.toggle('active', +b.dataset.mood === e.mood);
+          });
+        }
+        document.getElementById('btn-save').textContent = '✏️ Modifier ma gratitude';
+        document.getElementById('btn-save').style.background = 'linear-gradient(135deg,rgba(251,191,36,.4),rgba(245,158,11,.5))';
+        document.getElementById('btn-save').style.color = '#fde68a';
+      }
+    }
+
+    function renderStats() {
+      const dates = Object.keys(entries).sort();
+      const totalDays = dates.length;
+
+      // Streak
+      let streak = 0;
+      const check = new Date();
+      while (true) {
+        const ds = toDateStr(check);
+        if (entries[ds]) { streak++; check.setDate(check.getDate() - 1); }
+        else if (ds === today) { check.setDate(check.getDate() - 1); } // today not saved yet
+        else break;
+      }
+
+      // This month
+      const monthPrefix = today.slice(0, 7);
+      const thisMonth = dates.filter(d => d.startsWith(monthPrefix)).length;
+
+      document.getElementById('stat-streak').textContent = streak;
+      document.getElementById('stat-total').textContent = totalDays;
+      document.getElementById('stat-month').textContent = thisMonth;
+      document.getElementById('streak-badge').textContent = `🔥 ${streak} jour${streak !== 1 ? 's' : ''} de suite`;
+    }
+
+    function renderHeatmap() {
+      const heatmap = document.getElementById('heatmap');
+      heatmap.innerHTML = '';
+
+      // Build 28-day grid starting from Monday 4 weeks ago
+      const end = new Date();
+      const start = new Date(end);
+      start.setDate(end.getDate() - 27);
+      // Go back to the Monday of that week
+      const dow = start.getDay(); // 0=Sun
+      const toMon = (dow === 0 ? -6 : 1 - dow);
+      start.setDate(start.getDate() + toMon);
+
+      const cur = new Date(start);
+      while (cur <= end) {
+        const ds = toDateStr(cur);
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        if (entries[ds]) cell.dataset.has = '1';
+        if (ds === today) cell.classList.add('today');
+        cell.title = formatDate(ds);
+        heatmap.appendChild(cell);
+        cur.setDate(cur.getDate() + 1);
+      }
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('history-list');
+      const sorted = Object.keys(entries).sort().reverse().slice(0, 14);
+      if (!sorted.length) {
+        list.innerHTML = '<div style="color:#3a4a5a;font-size:.85rem;padding:12px 0;">Aucune entrée pour l\'instant.</div>';
+        return;
+      }
+      list.innerHTML = '';
+      sorted.forEach(ds => {
+        const e = entries[ds];
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        const moodEmoji = e.mood ? MOOD_EMOJIS[e.mood] : '';
+        item.innerHTML = `
+          <div class="history-date">
+            <span>${formatDate(ds)}</span>
+            ${moodEmoji ? `<span class="history-mood">${moodEmoji}</span>` : ''}
+          </div>
+          <div class="history-entries">
+            ${e.g1 ? `<div class="history-entry"><span class="history-entry-num">1</span><span>${e.g1}</span></div>` : ''}
+            ${e.g2 ? `<div class="history-entry"><span class="history-entry-num">2</span><span>${e.g2}</span></div>` : ''}
+            ${e.g3 ? `<div class="history-entry"><span class="history-entry-num">3</span><span>${e.g3}</span></div>` : ''}
+          </div>`;
+        list.appendChild(item);
+      });
+    }
+
+    // ── Save ──
+    document.getElementById('btn-save').addEventListener('click', async () => {
+      const g1 = document.getElementById('g1').value.trim();
+      const g2 = document.getElementById('g2').value.trim();
+      const g3 = document.getElementById('g3').value.trim();
+      if (!g1 && !g2 && !g3) { showToast('Écris au moins une gratitude 🌟'); return; }
+
+      const data = {
+        g1, g2, g3,
+        mood: selectedMood,
+        savedAt: new Date().toISOString(),
+      };
+      await setDoc(doc(db, 'users', uid, 'gratitude', today), data);
+      entries[today] = data;
+
+      if (!todayAlreadySaved) {
+        // Award XP
+        const userRef = doc(db, 'users', uid);
+        const snap = await getDoc(userRef);
+        const cur = snap.exists() ? (snap.data().xp || 0) : 0;
+        const lvlBefore = Math.floor(cur / 100);
+        const newXp = cur + 5;
+        await setDoc(userRef, { xp: newXp }, { merge: true });
+        if (Math.floor(newXp / 100) > lvlBefore) {
+          showToast(`🎉 Niveau ${Math.floor(newXp / 100)} atteint !`, 4000);
+        }
+        const btn = document.getElementById('btn-save');
+        const r = btn.getBoundingClientRect();
+        showXpPop(r.left + r.width / 2 - 20, r.top - 10);
+        todayAlreadySaved = true;
+      }
+
+      renderAll();
+      showToast('Gratitude enregistrée 🌟');
+    });
+  </script>
+</body>
+</html>
