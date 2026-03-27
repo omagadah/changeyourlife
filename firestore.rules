@@ -40,6 +40,12 @@ service cloud.firestore {
           && request.resource.data.mood >= 1
           && request.resource.data.mood <= 5;
       }
+
+      // Sous-collection bilans hebdomadaires
+      match /bilans/{weekKey} {
+        allow read: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn() && isOwner(userId);
+      }
     }
 
     // Autoévaluations (Roue de Vie)

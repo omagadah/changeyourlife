@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bilan Hebdomadaire - Change Your Life</title>
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    body { color:#e5eef8; }
+    .page-shell {
+      position:fixed; inset:20px;
+      background:var(--glass-bg); backdrop-filter:blur(15px);
+      border-radius:20px; border:1px solid var(--glass-border);
+      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
+    }
+    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
+    .header-sub { font-size:0.82rem; color:#7ba3c8; margin-top:2px; }
+    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+
+    /* ── Toast ── */
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
+    .toast.show { transform:translate(-50%,0); }
+
+    /* ── Section label ── */
+    .sec-label {
+      font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
+      color:#4a6a8a; font-weight:700; margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+
+    /* ── Week nav ── */
+    .week-nav { display:flex; align-items:center; gap:12px; }
+    .week-btn {
+      width:32px; height:32px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04); color:#7ba3c8; cursor:pointer; font-size:1rem;
+      display:flex; align-items:center; justify-content:center; transition:all .15s;
+      flex-shrink:0;
+    }
+    .week-btn:hover { background:rgba(255,255,255,0.09); color:#eef4ff; }
+    .week-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .week-range { font-size:0.85rem; font-weight:700; color:#eef4ff; flex:1; text-align:center; }
+
+    /* ── Stats grid ── */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .stat-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:14px; padding:16px 14px; text-align:center;
+      border-bottom:2px solid var(--sc-color, rgba(255,255,255,0.08));
+      transition:transform .15s;
+    }
+    .stat-card:hover { transform:translateY(-2px); }
+    .stat-card-icon { font-size:1.3rem; margin-bottom:4px; }
+    .stat-card-value { font-size:1.7rem; font-weight:800; color:#eef4ff; line-height:1.1; }
+    .stat-card-label { font-size:0.63rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+    .stat-card-delta { font-size:0.7rem; margin-top:5px; font-weight:600; }
+    .stat-card-delta.up { color:#22c55e; }
+    .stat-card-delta.down { color:#f87171; }
+    .stat-card-delta.same { color:#4a6a8a; }
+
+    /* ── XP domains bar ── */
+    .xp-domains-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:14px; padding:18px 20px;
+    }
+    .xp-domain-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .xp-domain-row:last-child { margin-bottom:0; }
+    .xp-domain-label { width:52px; font-size:0.76rem; font-weight:700; }
+    .xp-domain-bar-bg { flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; }
+    .xp-domain-bar { height:100%; border-radius:6px; width:0%; transition:width 1s cubic-bezier(.4,0,.2,1); }
+    .xp-domain-val { width:40px; text-align:right; font-size:0.78rem; font-weight:700; }
+
+    /* ── Activity heatmap ── */
+    .activity-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+    .act-cell {
+      aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.05);
+      position:relative; transition:transform .15s; cursor:default;
+    }
+    .act-cell:hover { transform:scale(1.2); z-index:2; }
+    .act-cell.has-activity { background:rgba(59,130,246,0.25); }
+    .act-cell.full-day { background:rgba(59,130,246,0.65); }
+    .act-day-label { font-size:0.6rem; color:#4a6a8a; text-align:center; margin-top:4px; }
+    .act-tooltip {
+      display:none; position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%);
+      background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
+      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:#eef4ff;
+      white-space:nowrap; z-index:10; pointer-events:none;
+    }
+    .act-cell:hover .act-tooltip { display:block; }
+
+    /* ── Reflection questions ── */
+    .reflection-card {
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px; overflow:hidden;
+    }
+    .question-block {
+      padding:18px 20px; border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    .question-block:last-child { border-bottom:none; }
+    .question-num { font-size:0.65rem; font-weight:800; color:rgba(0,112,243,0.5); letter-spacing:1px; margin-bottom:6px; }
+    .question-text { font-size:0.88rem; color:#c8d8ee; margin-bottom:10px; line-height:1.5; font-weight:600; }
+    .question-textarea {
+      width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.07); border-radius:9px;
+      color:#e5eef8; font-size:0.84rem; padding:9px 12px; resize:none;
+      font-family:inherit; line-height:1.6; transition:border-color .2s;
+    }
+    .question-textarea:focus { outline:none; border-color:rgba(96,164,255,0.35); background:rgba(255,255,255,0.05); }
+    .question-textarea::placeholder { color:#4a6a8a; }
+
+    /* ── Highlights ── */
+    .highlights-list { display:flex; flex-direction:column; gap:8px; }
+    .highlight-item {
+      display:flex; align-items:center; gap:12px;
+      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+      border-radius:11px; padding:11px 14px;
+      position:relative; overflow:hidden;
+    }
+    .highlight-item::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+      background:var(--hl-color, rgba(59,130,246,0.5)); border-radius:11px 0 0 11px;
+    }
+    .highlight-icon { font-size:1.3rem; flex-shrink:0; }
+    .highlight-text { font-size:0.85rem; color:#c8d8ee; flex:1; }
+    .highlight-val { font-size:0.9rem; font-weight:800; color:#eef4ff; flex-shrink:0; }
+
+    /* ── Save button ── */
+    .save-btn {
+      width:100%; padding:12px; border-radius:12px; border:none; cursor:pointer;
+      background:linear-gradient(135deg,#1a56a4,#0070f3); color:#fff;
+      font-size:0.92rem; font-weight:700; font-family:inherit;
+      transition:filter .2s, transform .1s;
+    }
+    .save-btn:hover { filter:brightness(1.1); }
+    .save-btn:active { transform:scale(0.98); }
+
+    /* ── Domain score ring mini ── */
+    .domain-score-row { display:flex; gap:12px; flex-wrap:wrap; }
+    .domain-score-chip {
+      flex:1; min-width:80px; background:rgba(255,255,255,0.025);
+      border:1px solid rgba(255,255,255,0.07); border-radius:12px;
+      padding:12px 10px; text-align:center;
+      border-top:2px solid var(--dsc-color, rgba(255,255,255,0.1));
+    }
+    .dsc-emoji { font-size:1.3rem; margin-bottom:4px; }
+    .dsc-value { font-size:1.2rem; font-weight:800; color:var(--dsc-color, #eef4ff); }
+    .dsc-label { font-size:0.62rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.4px; }
+
+    @media (max-width:600px) {
+      .stats-grid { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div id="vanta-bg" style="position:fixed;inset:0;z-index:-1;"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
+        backgroundColor:0x07192f, color1:0x2a3a5a, color2:0xcccccc, quantity:3 });
+    });
+  </script>
+
+  <header class="header">
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
+        <g stroke-width="3">
+          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+        </g>
+      </svg>
+    </button>
+    <nav class="header-nav">
+      <a href="/app" class="nav-link">Accueil</a>
+      <a href="/journal/" class="nav-link">Journal</a>
+      <a href="/habitudes/" class="nav-link">Habitudes</a>
+      <a href="/bilan/" class="nav-link active">Bilan</a>
+    </nav>
+  </header>
+
+  <div class="page-shell">
+    <div class="header-bar">
+      <div class="header-left">
+        <h1>📊 Bilan Hebdomadaire</h1>
+        <div class="header-sub">Réflexion guidée sur ta semaine passée</div>
+      </div>
+      <div class="week-nav">
+        <button class="week-btn" id="prev-week" title="Semaine précédente">‹</button>
+        <span class="week-range" id="week-range">Chargement…</span>
+        <button class="week-btn" id="next-week" title="Semaine suivante" disabled>›</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- Stats de la semaine -->
+      <div>
+        <div class="sec-label">En chiffres</div>
+        <div class="stats-grid">
+          <div class="stat-card" style="--sc-color:#a78bfa">
+            <div class="stat-card-icon">⭐</div>
+            <div class="stat-card-value" id="stat-xp">—</div>
+            <div class="stat-card-label">XP gagnés</div>
+            <div class="stat-card-delta" id="stat-xp-delta"></div>
+          </div>
+          <div class="stat-card" style="--sc-color:#60a5fa">
+            <div class="stat-card-icon">📔</div>
+            <div class="stat-card-value" id="stat-journal">—</div>
+            <div class="stat-card-label">Entrées journal</div>
+            <div class="stat-card-delta" id="stat-journal-delta"></div>
+          </div>
+          <div class="stat-card" style="--sc-color:#2dd4bf">
+            <div class="stat-card-icon">🧘</div>
+            <div class="stat-card-value" id="stat-meditation">—</div>
+            <div class="stat-card-label">Séances méd.</div>
+            <div class="stat-card-delta" id="stat-meditation-delta"></div>
+          </div>
+          <div class="stat-card" style="--sc-color:#22c55e">
+            <div class="stat-card-icon">✅</div>
+            <div class="stat-card-value" id="stat-habits">—</div>
+            <div class="stat-card-label">Habitudes faites</div>
+            <div class="stat-card-delta" id="stat-habits-delta"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activité par domaine -->
+      <div>
+        <div class="sec-label">XP par domaine cette semaine</div>
+        <div class="xp-domains-card" id="xp-domains-card">
+          <div class="xp-domain-row">
+            <span class="xp-domain-label" style="color:#2dd4bf">Corps</span>
+            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-corps" style="background:#2dd4bf"></div></div>
+            <span class="xp-domain-val" style="color:#2dd4bf" id="xp-val-corps">0</span>
+          </div>
+          <div class="xp-domain-row">
+            <span class="xp-domain-label" style="color:#f87171">Cœur</span>
+            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-coeur" style="background:#f87171"></div></div>
+            <span class="xp-domain-val" style="color:#f87171" id="xp-val-coeur">0</span>
+          </div>
+          <div class="xp-domain-row">
+            <span class="xp-domain-label" style="color:#a78bfa">Être</span>
+            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-etre" style="background:#a78bfa"></div></div>
+            <span class="xp-domain-val" style="color:#a78bfa" id="xp-val-etre">0</span>
+          </div>
+          <div class="xp-domain-row">
+            <span class="xp-domain-label" style="color:#fbbf24">Ordre</span>
+            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-ordre" style="background:#fbbf24"></div></div>
+            <span class="xp-domain-val" style="color:#fbbf24" id="xp-val-ordre">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activité quotidienne (7 jours) -->
+      <div>
+        <div class="sec-label">Activité quotidienne</div>
+        <div id="activity-week" style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px 20px;">
+          <div class="activity-grid" id="activity-grid"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;" id="activity-day-labels"></div>
+        </div>
+      </div>
+
+      <!-- Points forts de la semaine -->
+      <div id="highlights-section" style="display:none">
+        <div class="sec-label">Moments clés</div>
+        <div class="highlights-list" id="highlights-list"></div>
+      </div>
+
+      <!-- Réflexion guidée -->
+      <div>
+        <div class="sec-label">Réflexion de la semaine</div>
+        <div class="reflection-card" id="reflection-form">
+          <div class="question-block">
+            <div class="question-num">01</div>
+            <div class="question-text">Quelle est ta plus grande victoire de cette semaine ?</div>
+            <textarea class="question-textarea" id="q1" rows="2" placeholder="Un moment de fierté, une habitude tenue, un objectif franchi…"></textarea>
+          </div>
+          <div class="question-block">
+            <div class="question-num">02</div>
+            <div class="question-text">Qu'est-ce qui t'a le plus challengé ? Comment tu as réagi ?</div>
+            <textarea class="question-textarea" id="q2" rows="2" placeholder="Un obstacle, une émotion difficile, une situation imprévue…"></textarea>
+          </div>
+          <div class="question-block">
+            <div class="question-num">03</div>
+            <div class="question-text">Qu'est-ce que tu veux faire différemment la semaine prochaine ?</div>
+            <textarea class="question-textarea" id="q3" rows="2" placeholder="Une intention, un ajustement, une nouvelle habitude à adopter…"></textarea>
+          </div>
+          <div class="question-block">
+            <div class="question-num">04</div>
+            <div class="question-text">Pour quoi es-tu reconnaissant(e) cette semaine ?</div>
+            <textarea class="question-textarea" id="q4" rows="2" placeholder="Une personne, un événement, un apprentissage, un moment de bonheur…"></textarea>
+          </div>
+          <div style="padding:16px 20px">
+            <button class="save-btn" id="save-btn" onclick="saveBilan()">Sauvegarder mon bilan</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /page-shell -->
+
+  <script type="module">
+    import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initUserMenu } from '/js/userMenu.js?v=16';
+
+    try { initUserMenu(); } catch(e) {}
+
+    let auth, db, currentUser;
+    let weekOffset = 0; // 0 = current week, -1 = last week, etc.
+    let userData = {};
+    let weekBilanData = null;
+
+    window.saveBilan = saveBilan;
+
+    // ── Init Firebase ──
+    if (window._cyfFirebase) {
+      ({ auth, db } = window._cyfFirebase);
+    } else {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(cfg);
+      auth = getAuth(app); db = getFirestore(app);
+      window._cyfFirebase = { app, auth, db };
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.replace('/login'); return; }
+      currentUser = user;
+
+      // Load user doc
+      const uSnap = await getDoc(doc(db, 'users', user.uid));
+      userData = uSnap.exists() ? uSnap.data() : {};
+
+      setupWeekNav();
+      await renderWeek();
+    });
+
+    // ── Week helpers ──
+    function getWeekBounds(offset = 0) {
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0=Sun
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7) + offset * 7);
+      monday.setHours(0, 0, 0, 0);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+      return { monday, sunday };
+    }
+
+    function weekKey(monday) {
+      return `${monday.getFullYear()}-W${String(isoWeek(monday)).padStart(2,'0')}`;
+    }
+
+    function isoWeek(date) {
+      const d = new Date(date);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+      const week1 = new Date(d.getFullYear(), 0, 4);
+      return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    }
+
+    function formatDate(d, short = false) {
+      return d.toLocaleDateString('fr-FR', short ? { day:'numeric', month:'short' } : { day:'numeric', month:'long' });
+    }
+
+    function setupWeekNav() {
+      document.getElementById('prev-week').addEventListener('click', () => {
+        weekOffset--; renderWeek();
+      });
+      document.getElementById('next-week').addEventListener('click', () => {
+        if (weekOffset < 0) { weekOffset++; renderWeek(); }
+      });
+    }
+
+    // ── Main render ──
+    async function renderWeek() {
+      const nextBtn = document.getElementById('next-week');
+      nextBtn.disabled = weekOffset >= 0;
+
+      const { monday, sunday } = getWeekBounds(weekOffset);
+      const wKey = weekKey(monday);
+
+      // Week range label
+      document.getElementById('week-range').textContent =
+        `${formatDate(monday, true)} → ${formatDate(sunday, true)}`;
+
+      // Load bilan if exists
+      weekBilanData = null;
+      try {
+        const bSnap = await getDoc(doc(db, 'users', currentUser.uid, 'bilans', wKey));
+        if (bSnap.exists()) weekBilanData = bSnap.data();
+      } catch(e) {}
+
+      // Restore reflection if saved
+      ['q1','q2','q3','q4'].forEach(k => {
+        const el = document.getElementById(k);
+        if (el) el.value = weekBilanData?.[k] || '';
+      });
+      const saveBtn = document.getElementById('save-btn');
+      if (weekBilanData) saveBtn.textContent = 'Mettre à jour mon bilan';
+
+      // Render activity from user data
+      renderActivityGrid(monday);
+      await renderStats(monday, sunday);
+    }
+
+    // ── Activity grid (7 cells = Mon–Sun) ──
+    function renderActivityGrid(monday) {
+      const grid = document.getElementById('activity-grid');
+      const labels = document.getElementById('activity-day-labels');
+      const DAY_LABELS = ['Lu','Ma','Me','Je','Ve','Sa','Di'];
+      grid.innerHTML = '';
+      labels.innerHTML = '';
+      const habits = Array.isArray(userData.habits) ? userData.habits : [];
+      const medLog = userData.meditation?.sessions || [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const ds = d.toDateString();
+
+        const medDone = medLog.some ? medLog.some(s => new Date(s).toDateString() === ds) : false;
+        const habitsDone = habits.filter(h => h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === ds).length;
+        const total = (medDone ? 1 : 0) + habitsDone;
+        const full = total >= (habits.length || 1) + 1;
+
+        const cell = document.createElement('div');
+        cell.className = `act-cell${total > 0 ? (full ? ' full-day' : ' has-activity') : ''}`;
+        cell.innerHTML = `<span class="act-tooltip">${DAY_LABELS[i]} ${d.getDate()}/${d.getMonth()+1}${total > 0 ? ` · ${total} activité${total>1?'s':''}` : ''}</span>`;
+        grid.appendChild(cell);
+
+        const lbl = document.createElement('div');
+        lbl.className = 'act-day-label';
+        lbl.textContent = DAY_LABELS[i];
+        labels.appendChild(lbl);
+      }
+    }
+
+    // ── Stats ──
+    async function renderStats(monday, sunday) {
+      const uid = currentUser.uid;
+
+      // Journal entries this week
+      let journalCount = 0;
+      try {
+        const jSnap = await getDocs(query(collection(db, 'users', uid, 'journal'), orderBy('createdAt', 'desc'), limit(100)));
+        jSnap.forEach(d => {
+          const ts = d.data().createdAt;
+          const date = ts?.toDate ? ts.toDate() : (ts ? new Date(ts) : null);
+          if (date && date >= monday && date <= sunday) journalCount++;
+        });
+      } catch(e) {}
+
+      // Habits done this week
+      const habits = Array.isArray(userData.habits) ? userData.habits : [];
+      let habitsDoneCount = 0;
+      habits.forEach(h => {
+        if (!h.lastDoneAt) return;
+        const d = new Date(h.lastDoneAt);
+        if (d >= monday && d <= sunday) habitsDoneCount++;
+      });
+
+      // Meditation sessions this week
+      let medCount = 0;
+      const medLog = userData.meditation?.sessions;
+      if (Array.isArray(medLog)) {
+        medCount = medLog.filter(s => { const d = new Date(s); return d >= monday && d <= sunday; }).length;
+      } else if (userData.meditation?.lastSessionAt) {
+        const d = new Date(userData.meditation.lastSessionAt);
+        if (d >= monday && d <= sunday) medCount = 1;
+      }
+
+      // Mood entries this week
+      let moodEntries = [];
+      try {
+        const mSnap = await getDocs(query(collection(db, 'users', uid, 'moods'), limit(14)));
+        mSnap.forEach(d => {
+          const [y,m,day] = d.id.split('-').map(Number);
+          const date = new Date(y, m-1, day);
+          if (date >= monday && date <= sunday) moodEntries.push(d.data());
+        });
+      } catch(e) {}
+
+      // XP this week — estimate from journal*10 + habits*5 + med*15 + moods*5
+      const xpEstimate = journalCount * 10 + habitsDoneCount * 5 + medCount * 15 + moodEntries.length * 5;
+
+      // Display stats
+      document.getElementById('stat-xp').textContent = xpEstimate;
+      document.getElementById('stat-journal').textContent = journalCount;
+      document.getElementById('stat-meditation').textContent = medCount;
+      document.getElementById('stat-habits').textContent = habitsDoneCount;
+
+      // XP by domain (current totals, just show them in bars)
+      const xpCorps = userData.xp_body || 0;
+      const xpCoeur = userData.xp_heart || 0;
+      const xpEtre  = userData.xp_etre || 0;
+      const xpOrdre = userData.xp_order || 0;
+      const maxXp = Math.max(xpCorps, xpCoeur, xpEtre, xpOrdre, 1);
+
+      setTimeout(() => {
+        setBar('xp-bar-corps', 'xp-val-corps', xpCorps, maxXp);
+        setBar('xp-bar-coeur', 'xp-val-coeur', xpCoeur, maxXp);
+        setBar('xp-bar-etre', 'xp-val-etre', xpEtre, maxXp);
+        setBar('xp-bar-ordre', 'xp-val-ordre', xpOrdre, maxXp);
+      }, 100);
+
+      // Highlights
+      buildHighlights(journalCount, medCount, habitsDoneCount, moodEntries, habits.length);
+    }
+
+    function setBar(barId, valId, val, max) {
+      const pct = max > 0 ? Math.min(100, Math.round(val / max * 100)) : 0;
+      document.getElementById(barId).style.width = pct + '%';
+      document.getElementById(valId).textContent = val + ' XP';
+    }
+
+    function buildHighlights(journal, med, habits, moods, totalHabits) {
+      const list = [];
+      if (journal > 0) list.push({ icon:'📔', text:`${journal} entrée${journal>1?'s':''} de journal écrite${journal>1?'s':''}`, val:journal, color:'#a78bfa' });
+      if (med > 0) list.push({ icon:'🧘', text:`${med} séance${med>1?'s':''} de méditation`, val:med, color:'#2dd4bf' });
+      if (habits > 0) list.push({ icon:'✅', text:`${habits} habitude${habits>1?'s':''} complétée${habits>1?'s':''}`, val:`${habits}${totalHabits ? '/'+totalHabits : ''}`, color:'#22c55e' });
+      if (moods.length > 0) {
+        const avg = (moods.reduce((a,b) => a + b.mood, 0) / moods.length).toFixed(1);
+        const avgEmoji = avg >= 4 ? '😄' : avg >= 3 ? '😐' : '😟';
+        list.push({ icon:avgEmoji, text:`Humeur moyenne : ${avg}/5`, val:moods.length + ' jours', color:'#f87171' });
+      }
+
+      const section = document.getElementById('highlights-section');
+      const listEl = document.getElementById('highlights-list');
+      if (!list.length) { section.style.display = 'none'; return; }
+
+      section.style.display = 'block';
+      listEl.innerHTML = list.map(h => `
+        <div class="highlight-item" style="--hl-color:${h.color}">
+          <span class="highlight-icon">${h.icon}</span>
+          <span class="highlight-text">${h.text}</span>
+          <span class="highlight-val">${h.val}</span>
+        </div>
+      `).join('');
+    }
+
+    // ── Save bilan ──
+    async function saveBilan() {
+      const btn = document.getElementById('save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Sauvegarde…';
+
+      const { monday } = getWeekBounds(weekOffset);
+      const wKey = weekKey(monday);
+
+      const data = {
+        q1: document.getElementById('q1').value.trim(),
+        q2: document.getElementById('q2').value.trim(),
+        q3: document.getElementById('q3').value.trim(),
+        q4: document.getElementById('q4').value.trim(),
+        weekKey: wKey,
+        savedAt: Date.now(),
+      };
+
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid, 'bilans', wKey), data);
+        weekBilanData = data;
+        btn.textContent = '✓ Bilan sauvegardé';
+        showToast('Bilan de la semaine enregistré !');
+        setTimeout(() => { btn.disabled = false; btn.textContent = 'Mettre à jour mon bilan'; }, 2000);
+      } catch(e) {
+        console.error(e);
+        btn.disabled = false;
+        btn.textContent = 'Sauvegarder mon bilan';
+        showToast('Erreur, réessaie.');
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show';
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>
