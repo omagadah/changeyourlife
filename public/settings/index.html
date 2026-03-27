@@ -943,7 +943,28 @@ function bindAdminHandlers() {
                     docsRes = (await getDocs(q2)).docs;
                 }
                 if (!docsRes.length) { resultsEl.textContent = 'Aucun résultat.'; return; }
-                resultsEl.innerHTML = docsRes.map(d => { const u=d.data()||{}; const uid=d.id; return `<div data-user-uid="${uid}" class="admin-user-row" style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer"><strong>${u.displayName || '(sans nom)'} </strong><span style=\"color:#6b7280\">${u.email || ''}</span><br><small>UID: ${uid}</small></div>`; }).join('');
+                resultsEl.innerHTML = '';
+                docsRes.forEach(d => {
+                    const u = d.data() || {};
+                    const uid = d.id;
+                    const row = document.createElement('div');
+                    row.dataset.userUid = uid;
+                    row.className = 'admin-user-row';
+                    row.style.cssText = 'padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer';
+                    const strong = document.createElement('strong');
+                    strong.textContent = u.displayName || '(sans nom)';
+                    const emailSpan = document.createElement('span');
+                    emailSpan.style.color = '#6b7280';
+                    emailSpan.textContent = u.email || '';
+                    const uidSmall = document.createElement('small');
+                    uidSmall.textContent = 'UID: ' + uid;
+                    row.appendChild(strong);
+                    row.appendChild(document.createTextNode(' '));
+                    row.appendChild(emailSpan);
+                    row.appendChild(document.createElement('br'));
+                    row.appendChild(uidSmall);
+                    resultsEl.appendChild(row);
+                });
                 // open detail modal
                 resultsEl.querySelectorAll('.admin-user-row').forEach(row => {
                     row.addEventListener('click', () => {

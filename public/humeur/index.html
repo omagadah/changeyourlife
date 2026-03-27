@@ -307,8 +307,9 @@
   </div><!-- /page-shell -->
 
   <script type="module">
-    import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { auth, db } from '/js/firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { initUserMenu } from '/js/userMenu.js?v=16';
     import { showXpFloat, showLevelUp } from '/js/xp.js';
 
@@ -320,7 +321,7 @@
     const DOMAIN_COLORS = { corps:'#2dd4bf', coeur:'#f87171', etre:'#a78bfa', ordre:'#fbbf24' };
     const DOMAIN_LABELS = { corps:'Corps', coeur:'Cœur', etre:'Être', ordre:'Ordre' };
 
-    let auth, db, currentUser;
+    let currentUser;
     let selectedMood = null;
     let selectedDomain = null;
     let allEntries = {}; // dateStr → {mood, note, domain, timestamp}
@@ -330,17 +331,6 @@
     window.selectMood = selectMood;
     window.selectDomain = selectDomain;
     window.saveMood = saveMood;
-
-    // ── Init Firebase ──
-    if (window._cyfFirebase) {
-      ({ auth, db } = window._cyfFirebase);
-    } else {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
-      const app = initializeApp(cfg);
-      auth = getAuth(app); db = getFirestore(app);
-      window._cyfFirebase = { app, auth, db };
-    }
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.replace('/login'); return; }
