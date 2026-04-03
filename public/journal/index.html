@@ -183,6 +183,62 @@
     .toast { position: fixed; top: 22px; left: 50%; transform: translate(-50%, -130px); background: rgba(16,185,129,0.92); color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; z-index: 99999; transition: transform .3s ease; font-size: 0.9rem; }
     .toast.show { transform: translate(-50%, 0); }
     .toast.error { background: rgba(239,68,68,0.92); }
+
+    /* ── Domain filter pills ── */
+    .filter-section-label { font-size:0.66rem; color:#3a5570; text-transform:uppercase; letter-spacing:.5px; margin: 7px 0 3px; font-weight:700; }
+    .filter-pill.dom-body   { border-color:rgba(45,212,191,.4); color:#2dd4bf; }
+    .filter-pill.dom-body.active   { background:rgba(45,212,191,.15);   border-color:#2dd4bf; }
+    .filter-pill.dom-heart  { border-color:rgba(239,68,68,.4);   color:#f87171; }
+    .filter-pill.dom-heart.active  { background:rgba(239,68,68,.15);    border-color:#f87171; }
+    .filter-pill.dom-etre   { border-color:rgba(167,139,250,.4); color:#a78bfa; }
+    .filter-pill.dom-etre.active   { background:rgba(167,139,250,.15);  border-color:#a78bfa; }
+    .filter-pill.dom-order  { border-color:rgba(251,191,36,.4);  color:#fbbf24; }
+    .filter-pill.dom-order.active  { background:rgba(251,191,36,.15);   border-color:#fbbf24; }
+
+    /* ── Stats view ── */
+    .stats-panel { display:none; flex-direction:column; height:100%; overflow:hidden; }
+    .stats-panel.active { display:flex; }
+    .stats-scroll { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:20px; }
+    .stats-section-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:.6px; color:#4a6a8a; font-weight:700; margin-bottom:10px; }
+
+    .stats-kpi-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
+    .kpi-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; }
+    .kpi-val { font-size:1.6rem; font-weight:800; color:#fff; line-height:1; }
+    .kpi-label { font-size:0.72rem; color:#7e9ab5; margin-top:3px; }
+
+    .months-chart { display:flex; gap:6px; align-items:flex-end; height:80px; }
+    .month-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .month-bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:6px; overflow:hidden; flex:1; display:flex; align-items:flex-end; min-height:8px; }
+    .month-bar-fill { width:100%; background:linear-gradient(180deg,#3b82f6,#1d4ed8); border-radius:6px; transition:height .4s; }
+    .month-label { font-size:0.65rem; color:#4a6a8a; font-weight:700; }
+    .month-count { font-size:0.65rem; color:#7e9ab5; }
+
+    .emo-stat-list { display:flex; flex-direction:column; gap:7px; }
+    .emo-stat-row { display:flex; align-items:center; gap:8px; }
+    .emo-stat-bar-bg { flex:1; height:6px; background:rgba(255,255,255,0.07); border-radius:10px; overflow:hidden; }
+    .emo-stat-bar-fill { height:100%; border-radius:10px; background:#3b82f6; transition:width .4s; }
+    .emo-stat-label { font-size:0.8rem; min-width:80px; }
+    .emo-stat-count { font-size:0.75rem; color:#7e9ab5; min-width:22px; text-align:right; }
+
+    .domain-stat-list { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .domain-stat-pill {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+      border-radius:10px; padding:8px 12px;
+    }
+    .domain-stat-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .domain-stat-name { font-size:0.8rem; color:#c8d9f0; flex:1; }
+    .domain-stat-cnt { font-size:0.8rem; font-weight:700; color:#fff; }
+
+    /* ── Stats toggle btn ── */
+    .btn-stats-toggle {
+      margin-top:6px; width:100%; padding:6px; border-radius:8px;
+      border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03);
+      color:#4a6a8a; font-size:0.72rem; font-weight:600; cursor:pointer;
+      transition:all .15s; text-align:center;
+    }
+    .btn-stats-toggle:hover { background:rgba(255,255,255,0.07); color:#9fb5ff; }
+    .btn-stats-toggle.active { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:#93c5fd; }
   </style>
 </head>
 <body>
@@ -208,12 +264,16 @@
           <input type="text" id="journal-search" placeholder="Rechercher…" autocomplete="off" />
           <button class="search-clear" id="search-clear" aria-label="Effacer">×</button>
         </div>
+        <div class="filter-section-label">Humeur</div>
         <div class="filter-pills" id="filter-pills"></div>
+        <div class="filter-section-label" id="domain-filter-label">Domaine</div>
+        <div class="filter-pills" id="domain-filter-pills"></div>
         <div class="mood-chart-wrap" id="mood-chart-wrap" style="display:none">
           <div style="font-size:0.7rem;color:#7e9ab5;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
           <div class="mood-chart" id="mood-chart"></div>
         </div>
         <button id="btn-export" title="Exporter toutes les entrées en JSON" style="margin-top:8px;width:100%;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:#4a6a8a;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center">⬇ Exporter (.json)</button>
+        <button class="btn-stats-toggle" id="btn-stats-toggle">📊 Statistiques</button>
       </div>
       <div class="panel-body" id="entry-list"></div>
     </aside>
@@ -256,6 +316,15 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Stats view -->
+      <div class="stats-panel" id="view-stats">
+        <div class="panel-header" style="flex-shrink:0">
+          <div style="font-size:1.05rem;font-weight:700">📊 Statistiques du journal</div>
+          <div style="font-size:0.78rem;color:#7e9ab5;margin-top:2px" id="stats-sub">Analyse de tes entrées</div>
+        </div>
+        <div class="stats-scroll" id="stats-content"></div>
       </div>
 
       <!-- Read view -->
@@ -364,18 +433,39 @@
     }
 
     // ── Render: filter pills ────────────────────────────────────────────────────
+    const DOMAIN_FILTER_CFG = [
+      { key:'body',  label:'🏃 Corps',  cls:'dom-body'  },
+      { key:'heart', label:'❤️ Cœur',  cls:'dom-heart' },
+      { key:'etre',  label:'✨ Être',   cls:'dom-etre'  },
+      { key:'order', label:'📋 Ordre',  cls:'dom-order' },
+    ];
+
     function renderFilterPills() {
+      // Emotion pills
       const fp = document.getElementById('filter-pills'); fp.innerHTML = '';
-      const hasFilter = filterEmotion || filterDomain;
       EMOTIONS.forEach(({ key, emoji }) => {
         const p = document.createElement('button'); p.className = `filter-pill${filterEmotion===key?' active':''}`;
         p.textContent = emoji; p.title = EMOTION_MAP[key].label;
         p.addEventListener('click', () => { filterEmotion = filterEmotion===key ? null : key; renderFilterPills(); renderList(); });
         fp.appendChild(p);
       });
-      if (hasFilter) {
+
+      // Domain pills
+      const dp = document.getElementById('domain-filter-pills'); dp.innerHTML = '';
+      DOMAIN_FILTER_CFG.forEach(({ key, label, cls }) => {
+        const p = document.createElement('button');
+        p.className = `filter-pill ${cls}${filterDomain===key?' active':''}`;
+        p.textContent = label;
+        p.addEventListener('click', () => { filterDomain = filterDomain===key ? null : key; renderFilterPills(); renderList(); });
+        dp.appendChild(p);
+      });
+
+      // Clear all filters
+      const hasFilter = filterEmotion || filterDomain || searchQuery;
+      const existingClear = fp.querySelector('.clear-btn');
+      if (hasFilter && !existingClear) {
         const c = document.createElement('button'); c.className = 'filter-pill clear-btn'; c.textContent = '× Tout';
-        c.addEventListener('click', () => { filterEmotion=null; filterDomain=null; renderFilterPills(); renderList(); });
+        c.addEventListener('click', () => { filterEmotion=null; filterDomain=null; searchQuery=''; document.getElementById('journal-search').value=''; document.getElementById('search-clear').style.display='none'; renderFilterPills(); renderList(); });
         fp.appendChild(c);
       }
     }
@@ -525,6 +615,125 @@
         const el = document.getElementById(`view-${v}`);
         el.style.display = (name===v) ? 'flex' : 'none';
       });
+      const statsPanel = document.getElementById('view-stats');
+      statsPanel.classList.toggle('active', name === 'stats');
+      const statsBtn = document.getElementById('btn-stats-toggle');
+      if (statsBtn) statsBtn.classList.toggle('active', name === 'stats');
+    }
+
+    // ── Stats view ────────────────────────────────────────────────────────────
+    function renderStatsView() {
+      const content = document.getElementById('stats-content');
+      const sub     = document.getElementById('stats-sub');
+      if (!entries.length) {
+        content.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#4a6a8a">Aucune entrée pour analyser</div>';
+        return;
+      }
+      sub.textContent = `Analyse de ${entries.length} entrée${entries.length>1?'s':''}`;
+
+      // ── KPIs ──
+      const totalWords = entries.reduce((s,e)=>(s + (e.content||'').trim().split(/\s+/).filter(Boolean).length),0);
+      const avgWords   = Math.round(totalWords / entries.length);
+      const daySet     = new Set(entries.map(e=>tsToDate(e.createdAt).toDateString()));
+      let streak=0, d=new Date();
+      while (daySet.has(d.toDateString())) { streak++; d.setDate(d.getDate()-1); }
+      const longestStreak = calcLongestStreak();
+
+      // ── Monthly chart (last 6 months) ──
+      const monthData = [];
+      for (let i=5; i>=0; i--) {
+        const ref = new Date(); ref.setDate(1); ref.setMonth(ref.getMonth()-i);
+        const key = `${ref.getFullYear()}-${String(ref.getMonth()+1).padStart(2,'0')}`;
+        const count = entries.filter(e => {
+          const dd = tsToDate(e.createdAt);
+          return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}` === key;
+        }).length;
+        monthData.push({ lbl: ref.toLocaleDateString('fr-FR',{month:'short'}), count });
+      }
+      const maxM = Math.max(...monthData.map(m=>m.count), 1);
+
+      // ── Emotion breakdown ──
+      const emoCount = {};
+      entries.forEach(e => { const k=e.emotion||'neutral'; emoCount[k]=(emoCount[k]||0)+1; });
+      const emoSorted = Object.entries(emoCount).sort((a,b)=>b[1]-a[1]);
+      const maxEmo = Math.max(...Object.values(emoCount), 1);
+
+      // ── Domain breakdown ──
+      const domCount = {};
+      entries.forEach(e => { const k=e.domain||'none'; domCount[k]=(domCount[k]||0)+1; });
+
+      const domColors  = { body:'#2dd4bf', heart:'#f87171', etre:'#a78bfa', order:'#fbbf24', none:'#6b7280' };
+      const domLabels  = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre', none:'Général' };
+
+      content.innerHTML = `
+        <!-- KPIs -->
+        <div>
+          <div class="stats-section-title">Vue d'ensemble</div>
+          <div class="stats-kpi-row">
+            <div class="kpi-card"><div class="kpi-val">${entries.length}</div><div class="kpi-label">Entrées totales</div></div>
+            <div class="kpi-card"><div class="kpi-val">${streak}</div><div class="kpi-label">Série actuelle</div></div>
+            <div class="kpi-card"><div class="kpi-val">${longestStreak}</div><div class="kpi-label">Meilleure série</div></div>
+            <div class="kpi-card"><div class="kpi-val">${avgWords}</div><div class="kpi-label">Mots / entrée</div></div>
+            <div class="kpi-card"><div class="kpi-val">${totalWords}</div><div class="kpi-label">Mots écrits</div></div>
+          </div>
+        </div>
+
+        <!-- Monthly activity -->
+        <div>
+          <div class="stats-section-title">Activité · 6 derniers mois</div>
+          <div class="months-chart">
+            ${monthData.map(m=>`
+              <div class="month-col">
+                <div class="month-bar-bg">
+                  <div class="month-bar-fill" style="height:${Math.round(m.count/maxM*100)}%"></div>
+                </div>
+                <div class="month-label">${m.lbl}</div>
+                <div class="month-count">${m.count||''}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Emotions -->
+        <div>
+          <div class="stats-section-title">Émotions dominantes</div>
+          <div class="emo-stat-list">
+            ${emoSorted.slice(0,6).map(([key,cnt])=>{
+              const em = EMOTION_MAP[key] || EMOTION_MAP.neutral;
+              return `<div class="emo-stat-row">
+                <span class="emo-stat-label">${em.emoji} ${em.label}</span>
+                <div class="emo-stat-bar-bg"><div class="emo-stat-bar-fill" style="width:${Math.round(cnt/maxEmo*100)}%"></div></div>
+                <span class="emo-stat-count">${cnt}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Domains -->
+        <div>
+          <div class="stats-section-title">Répartition par domaine</div>
+          <div class="domain-stat-list">
+            ${Object.entries(domCount).sort((a,b)=>b[1]-a[1]).map(([k,cnt])=>`
+              <div class="domain-stat-pill">
+                <div class="domain-stat-dot" style="background:${domColors[k]||'#6b7280'}"></div>
+                <span class="domain-stat-name">${domLabels[k]||k}</span>
+                <span class="domain-stat-cnt">${cnt}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function calcLongestStreak() {
+      if (!entries.length) return 0;
+      const days = [...new Set(entries.map(e => tsToDate(e.createdAt).toDateString()))].map(s=>new Date(s)).sort((a,b)=>a-b);
+      let best=1, cur=1;
+      for (let i=1;i<days.length;i++) {
+        const diff = (days[i]-days[i-1])/(1000*60*60*24);
+        if (diff===1) { cur++; best=Math.max(best,cur); } else { cur=1; }
+      }
+      return best;
     }
 
     const PROMPTS = [
@@ -767,6 +976,17 @@
       t.className = `toast${err?' error':''} show`;
       setTimeout(() => t.classList.remove('show'), 2800);
     }
+
+    // ── Stats toggle ──────────────────────────────────────────────────────────
+    document.getElementById('btn-stats-toggle').addEventListener('click', () => {
+      const isActive = document.getElementById('view-stats').classList.contains('active');
+      if (isActive) {
+        showView(readId ? 'read' : 'empty');
+      } else {
+        renderStatsView();
+        showView('stats');
+      }
+    });
 
     // ── Init: show empty state ─────────────────────────────────────────────────
     showView('empty');

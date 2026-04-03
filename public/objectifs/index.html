@@ -5,16 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Objectifs & Progrès - Change Your Life</title>
   <link rel="stylesheet" href="/css/main.min.css" />
+  <meta name="robots" content="index,follow" />
+  <meta name="description" content="Définissez et suivez vos objectifs avec sous-tâches et progression détaillée." />
   <style>
     body { color:#e5eef8; }
-    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: grid; grid-template-rows: auto 1fr; gap: 16px; overflow: hidden; }
+
+    .page-shell {
+      position: fixed; inset: 20px;
+      background: var(--glass-bg); backdrop-filter: blur(15px);
+      border-radius: 20px; border: 1px solid var(--glass-border);
+      padding: 20px; display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 14px; overflow: hidden;
+    }
+
+    /* ── Header ── */
     .header-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .header-bar h1 { margin: 0; font-size: 1.4rem; }
-    .content-area { overflow-y: auto; display: grid; gap: 20px; }
-    .goals-grid { display: grid; gap: 16px; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .stat-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 12px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.78rem; font-weight: 600; color: #9fb5ff;
+      transition: all .2s;
+    }
+    .stat-pill .sp-val { font-size: 1rem; font-weight: 800; color: #fff; }
+    .stat-pill.green { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.2); color: #6ee7b7; }
+    .stat-pill.green .sp-val { color: #34d399; }
+    .stat-pill.amber { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); color: #fde68a; }
+    .stat-pill.amber .sp-val { color: #fbbf24; }
+    .stat-pill.red { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
+    .stat-pill.red .sp-val { color: #f87171; }
+
+    /* ── Domain filter tabs ── */
+    .domain-tabs {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .domain-tab {
+      padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: rgba(255,255,255,0.45);
+      font-size: 0.78rem; font-weight: 700; cursor: pointer;
+      transition: all .18s; letter-spacing: .2px;
+    }
+    .domain-tab:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
+    .domain-tab.active {
+      color: #fff;
+      background: color-mix(in srgb, var(--tab-color, #3b82f6) 18%, transparent);
+      border-color: color-mix(in srgb, var(--tab-color, #3b82f6) 55%, transparent);
+    }
+
+    /* ── Goals grid ── */
+    .content-area { overflow-y: auto; display: grid; gap: 14px; align-content: start; }
+    .goals-grid { display: grid; gap: 14px; }
+
+    /* ── Goal card ── */
     .goal-card {
       background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 18px 18px 16px 22px;
+      border-radius: 16px; padding: 18px 18px 14px 22px;
       transition: all 0.22s var(--ease); position: relative; overflow: hidden;
     }
     .goal-card::before {
@@ -22,11 +74,13 @@
       background: var(--goal-color, rgba(255,255,255,0.2)); border-radius:16px 0 0 16px;
       opacity: 0.7; transition: opacity 0.2s, width 0.2s;
     }
-    .goal-card:hover { background: rgba(255,255,255,0.06); box-shadow: 0 8px 24px rgba(0,0,0,0.2); transform: translateY(-1px); }
+    .goal-card:hover { background: rgba(255,255,255,0.05); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
     .goal-card:hover::before { opacity: 1; width: 5px; }
     .goal-card.completed { opacity: 0.55; }
     .goal-card.completed .goal-title { text-decoration: line-through; }
-    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 10px; }
+    .goal-card.overdue { border-color: rgba(239,68,68,0.3); }
+
+    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 10px; }
     .goal-title { font-weight: 700; font-size: 1.05rem; flex: 1; letter-spacing: -0.2px; }
     .goal-domain {
       display: inline-flex; align-items: center; gap: 4px;
@@ -36,92 +90,189 @@
       border: 1px solid color-mix(in srgb, var(--goal-color) 40%, transparent);
       color: var(--goal-color);
     }
-    .goal-desc { font-size: 0.86rem; color: var(--text-2); line-height: 1.5; margin-bottom: 14px; }
-    .progress-bar { background: rgba(255,255,255,0.07); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 7px; }
-    .progress-fill {
-      background: linear-gradient(90deg, var(--goal-color), color-mix(in srgb, var(--goal-color) 70%, white));
-      height: 100%; transition: width 0.5s var(--ease);
-    }
-    .progress-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .goal-desc { font-size: 0.86rem; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
+
+    /* ── Progress ── */
+    .progress-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
     .progress-text { font-size: 0.78rem; color: var(--text-2); font-weight: 600; }
     .progress-pct { font-size:0.78rem; font-weight:700; color: var(--goal-color); }
-    .goal-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .btn-icon { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-    .btn-icon:hover { background: rgba(255,255,255,0.12); transform: scale(1.05); }
-    .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-    .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: #3b82f6; border-color: #2c60b8; }
-    .btn.primary:hover { background: #2563eb; }
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal.active { display: flex; }
-    .modal-content { background: rgba(30,30,30,0.95); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; }
-    .modal-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 16px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.9rem; color: #aab7cf; margin-bottom: 6px; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 10px; color: #e5eef8; font-family: inherit; }
-    .form-group textarea { resize: vertical; min-height: 80px; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-    .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
-    .template-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .overdue-tag { font-size:0.72rem; color:#ef4444; font-weight:700; }
+
+    .progress-bar { background: rgba(255,255,255,0.07); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 10px; position: relative; }
+    .progress-fill { background: linear-gradient(90deg, var(--goal-color), color-mix(in srgb, var(--goal-color) 70%, white)); height: 100%; transition: width 0.5s var(--ease); }
+
+    /* ── Slider ── */
+    .progress-slider-wrap { margin-bottom: 10px; display: none; }
+    .progress-slider-wrap.open { display: flex; align-items: center; gap: 10px; }
+    .progress-slider {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 4px; outline: none; cursor: pointer;
+      background: linear-gradient(90deg, var(--goal-color, #3b82f6) var(--pct, 0%), rgba(255,255,255,0.12) var(--pct, 0%));
+    }
+    .progress-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--goal-color, #3b82f6); cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.4);
+    }
+    .progress-slider::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%; border: none;
+      background: var(--goal-color, #3b82f6); cursor: pointer;
+    }
+    .slider-pct-label { font-size:0.8rem; font-weight:700; min-width:36px; text-align:right; color: var(--goal-color); }
+
+    /* ── Sub-tasks ── */
+    .subtasks-section { margin: 8px 0 12px; }
+    .subtasks-toggle {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size:0.75rem; font-weight:700; color:#7e9ab5;
+      background:none; border:none; cursor:pointer; padding:0;
+      transition: color .15s;
+    }
+    .subtasks-toggle:hover { color:#9fb5ff; }
+    .subtasks-toggle .arrow { transition: transform .2s; display:inline-block; }
+    .subtasks-toggle.open .arrow { transform: rotate(90deg); }
+
+    .subtasks-list { margin-top: 8px; display: none; flex-direction: column; gap: 5px; }
+    .subtasks-list.open { display: flex; }
+
+    .subtask-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px; border-radius: 8px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+      transition: background .15s;
+    }
+    .subtask-item:hover { background: rgba(255,255,255,0.06); }
+    .subtask-check {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 1.5px solid rgba(255,255,255,0.25); background: transparent;
+      cursor: pointer; flex-shrink: 0; display:flex; align-items:center; justify-content:center;
+      transition: all .15s;
+    }
+    .subtask-check.done {
+      background: var(--goal-color, #3b82f6);
+      border-color: var(--goal-color, #3b82f6);
+    }
+    .subtask-check.done::after { content: '✓'; color: #fff; font-size: 10px; font-weight:800; }
+    .subtask-label { flex: 1; font-size: 0.83rem; color: #c8d9f0; cursor: pointer; }
+    .subtask-label.done { text-decoration: line-through; color: #5a7a9a; }
+    .subtask-del { background:none; border:none; color:rgba(255,255,255,0.2); cursor:pointer; font-size:1rem; padding:0 2px; transition:color .15s; }
+    .subtask-del:hover { color: #ef4444; }
+
+    .subtask-add-row { display:flex; gap:6px; margin-top:4px; }
+    .subtask-add-input {
+      flex:1; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.15);
+      border-radius: 7px; padding: 5px 10px; color: #e5eef8; font-size:0.82rem;
+      outline:none; transition:border-color .2s;
+    }
+    .subtask-add-input:focus { border-color: rgba(59,130,246,.5); }
+    .subtask-add-input::placeholder { color:#3a5570; }
+    .subtask-add-btn {
+      padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06); color: #e5eef8; cursor:pointer; font-size:0.82rem;
+      transition: all .15s;
+    }
+    .subtask-add-btn:hover { background: rgba(255,255,255,0.12); }
+
+    /* ── Actions ── */
+    .goal-actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+    .btn-icon { padding: 7px 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-size: 0.82rem; transition: all 0.2s; font-weight:600; }
+    .btn-icon:hover { background: rgba(255,255,255,0.12); transform: scale(1.03); }
+    .btn-icon.danger-confirm { background:rgba(239,68,68,.15); border-color:#ef4444; color:#ef4444; }
+    .btn-icon.active-slider { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.5); color:#93c5fd; }
+
+    /* ── Templates ── */
+    .templates-section { margin-bottom: 0; }
+    .templates-section-title { font-size:0.78rem; color:#7e9ab5; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
+    .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .template-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; cursor: pointer; text-align: center; transition: all 0.2s; }
     .template-card:hover { background: rgba(255,255,255,0.1); transform: scale(1.03); }
-    .template-icon { font-size: 2rem; margin-bottom: 6px; }
-    .template-name { font-size: 0.85rem; font-weight: 600; }
+    .template-icon { font-size: 1.6rem; margin-bottom: 4px; }
+    .template-name { font-size: 0.82rem; font-weight: 600; }
+
+    /* ── Shared btns ── */
+    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size:0.88rem; }
+    .btn:hover { background: rgba(255,255,255,0.12); }
+    .btn.primary { background: #3b82f6; border-color: #2c60b8; box-shadow:0 4px 14px rgba(59,130,246,.3); }
+    .btn.primary:hover { background: #2563eb; }
+
+    /* ── Modal ── */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal.active { display: flex; }
+    .modal-content { background: rgba(18,26,40,0.98); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 26px; max-width: 520px; width: 94%; max-height: 90vh; overflow-y:auto; }
+    .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.85rem; color: #aab7cf; margin-bottom: 5px; font-weight:600; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px; padding: 10px 12px; color: #e5eef8; font-family: inherit; font-size:0.9rem;
+      outline:none; transition:border-color .2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: rgba(59,130,246,.5); }
+    .form-group textarea { resize: vertical; min-height: 76px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+    /* ── Empty state ── */
+    #empty-state { text-align:center; padding:60px 20px; color:#aab7cf; display:none; }
+
+    /* ── Toast ── */
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
     .toast.show { transform:translate(-50%,0); }
-    .goal-card.overdue { border-color:rgba(239,68,68,0.4); }
-    .overdue-tag { font-size:0.72rem; color:#ef4444; font-weight:700; }
-    .btn-icon.danger { border-color:rgba(239,68,68,.4); color:#ef4444; }
-    .btn-icon.danger-confirm { background:rgba(239,68,68,.15); border-color:#ef4444; color:#ef4444; animation: pulse-red 0.4s ease; }
-    @keyframes pulse-red { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
-    .templates-section { margin-bottom: 8px; }
-    .templates-section-title { font-size:0.78rem; color:#7e9ab5; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
+    .toast.error { background:rgba(239,68,68,.92); }
 
     /* ── Mobile ── */
     @media (max-width:600px) {
       .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
-      .header-bar { flex-direction:column; align-items:flex-start; gap:8px; }
-      .goal-header { flex-wrap:wrap; }
-      .goal-actions { margin-left:auto; }
-      .templates-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-      .modal-content { padding:20px 16px; max-width:100%; }
+      .header-bar { flex-direction:column; align-items:flex-start; }
+      .goal-actions { margin-left:0; }
+      .templates-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+      .modal-content { padding:18px 14px; }
     }
   </style>
-  <meta name="robots" content="index,follow" />
-  <meta name="description" content="Définissez et suivez vos objectifs avec l'aide de l'IA. Progression en temps réel et récompenses XP." />
 </head>
 <body>
   <div id="vanta-birds-bg"></div>
   <div id="toast" class="toast"></div>
+
   <nav class="site-nav">
     <a href="/app/" class="site-nav__back">← Mon Espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
       <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
     </button>
   </nav>
+
   <main class="page-shell page-shell-nav">
+
+    <!-- Header -->
     <div class="header-bar">
       <div>
         <h1>🎯 Objectifs & Progrès</h1>
-        <div style="font-size:0.85rem;color:#aab7cf">Transforme tes intentions en actions</div>
+        <div style="font-size:0.82rem;color:#7e9ab5;margin-top:2px">Transforme tes intentions en actions concrètes</div>
       </div>
-      <div style="display:flex;gap:10px">
-        <button class="btn primary" id="btn-new-goal">+ Nouvel objectif</button>
-      </div>
+      <button class="btn primary" id="btn-new-goal">+ Nouvel objectif</button>
     </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <!-- Domain filter tabs -->
+    <div class="domain-tabs" id="domain-tabs"></div>
+
+    <!-- Content -->
     <div class="content-area">
       <div class="templates-section" id="templates-section">
         <div class="templates-section-title">⚡ Démarrage rapide</div>
         <div class="templates-grid" id="templates-grid"></div>
       </div>
       <div class="goals-grid" id="goals-grid"></div>
-      <div id="empty-state" style="text-align:center;padding:60px 20px;color:#aab7cf;display:none">
+      <div id="empty-state">
         <div style="font-size:3rem;margin-bottom:12px">🎯</div>
-        <div style="font-size:1.1rem;margin-bottom:8px">Aucun objectif défini</div>
-        <div style="font-size:0.9rem">Clique sur "+ Nouvel objectif" pour commencer</div>
+        <div style="font-size:1.1rem;margin-bottom:8px">Aucun objectif dans ce domaine</div>
+        <div style="font-size:0.88rem">Clique sur "+ Nouvel objectif" pour commencer</div>
       </div>
     </div>
   </main>
 
+  <!-- Modal -->
   <div class="modal" id="modal-goal">
     <div class="modal-content">
       <div class="modal-title" id="modal-title">Nouvel objectif</div>
@@ -131,15 +282,15 @@
       </div>
       <div class="form-group">
         <label>Description (optionnel)</label>
-        <textarea id="input-desc" placeholder="Détails, motivation, étapes..."></textarea>
+        <textarea id="input-desc" placeholder="Détails, motivation, contexte…"></textarea>
       </div>
       <div class="form-group">
         <label>Domaine</label>
         <select id="input-domain">
-          <option value="body">Body (Corps)</option>
-          <option value="heart">Heart (Relations)</option>
-          <option value="etre">Être (Identité)</option>
-          <option value="order">Order (Organisation)</option>
+          <option value="body">🏃 Corps</option>
+          <option value="heart">❤️ Cœur</option>
+          <option value="etre">✨ Être</option>
+          <option value="order">📋 Ordre</option>
         </select>
       </div>
       <div class="form-group">
@@ -160,61 +311,38 @@
     import { initUserMenu } from '/js/userMenu.js';
     import { showXpFloat } from '/js/xp.js';
     import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-    let auth, db, uid, goals = [], editingId = null;
+    // ── Firebase ──────────────────────────────────────────────────────────────
+    let auth, db, uid, goals = [], editingId = null, activeFilter = 'all';
+
+    const DOMAIN_COLORS = { body:'#2dd4bf', heart:'#f87171', etre:'#a78bfa', order:'#fbbf24' };
+    const DOMAIN_LABELS = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre' };
+    const DOMAIN_ICONS  = { body:'🏃', heart:'❤️', etre:'✨', order:'📋' };
 
     const TEMPLATES = [
-      { icon:'🏃', name:'Sport',       title:'Courir 5km',                    domain:'body',  desc:'Courir 5km sans s\'arrêter' },
-      { icon:'📚', name:'Lecture',     title:'Lire 12 livres cette année',     domain:'etre',  desc:'1 livre par mois' },
-      { icon:'💰', name:'Épargne',     title:'Épargner 10% de mes revenus',    domain:'order', desc:'Mettre de côté chaque mois' },
-      { icon:'🧘', name:'Méditation',  title:'Méditer tous les jours',         domain:'etre',  desc:'Session quotidienne de 10 min' },
-      { icon:'❤️', name:'Relations',   title:'Appeler un proche par semaine',  domain:'heart', desc:'Maintenir des liens forts' },
-      { icon:'💪', name:'Force',       title:'3 séances de sport/semaine',     domain:'body',  desc:'Musculation ou cardio' },
+      { icon:'🏃', name:'Sport',      title:'Courir 5km',               domain:'body',  desc:'Courir 5km sans s\'arrêter' },
+      { icon:'📚', name:'Lecture',    title:'Lire 12 livres cette année',domain:'etre',  desc:'1 livre par mois' },
+      { icon:'💰', name:'Épargne',    title:'Épargner 10% de mes revenus',domain:'order',desc:'Mettre de côté chaque mois' },
+      { icon:'🧘', name:'Méditation', title:'Méditer tous les jours',    domain:'etre',  desc:'Session quotidienne de 10 min' },
+      { icon:'❤️', name:'Relations',  title:'Appeler un proche/semaine', domain:'heart', desc:'Maintenir des liens forts' },
+      { icon:'💪', name:'Force',      title:'3 séances de sport/semaine',domain:'body',  desc:'Musculation ou cardio' },
     ];
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.className = 'toast show';
-      setTimeout(() => t.classList.remove('show'), 2800);
-    }
-
-    function renderTemplates() {
-      const tg = document.getElementById('templates-grid');
-      const ts = document.getElementById('templates-section');
-      if (!tg) return;
-      // Hide templates if user already has 3+ goals
-      if (goals.length >= 3) { ts.style.display = 'none'; return; }
-      ts.style.display = 'block';
-      tg.innerHTML = '';
-      TEMPLATES.forEach(tpl => {
-        const card = document.createElement('div');
-        card.className = 'template-card';
-        card.innerHTML = `<div class="template-icon">${tpl.icon}</div><div class="template-name">${tpl.name}</div>`;
-        card.title = tpl.title;
-        card.addEventListener('click', async () => {
-          goals.push({ id: Date.now(), title: tpl.title, desc: tpl.desc, domain: tpl.domain, deadline: null, progress: 0, completed: false, createdAt: Date.now() });
-          try { await setDoc(doc(db, 'users', uid), { goals }, { merge: true }); renderGoals(); renderTemplates(); showToast(`✓ "${tpl.title}" ajouté`); } catch(e) {}
-        });
-        tg.appendChild(card);
-      });
-    }
     if (window._cyfFirebase) {
       ({ auth, db } = window._cyfFirebase);
     } else {
       const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-      const config = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-      const app = initializeApp(config);
-      auth = getAuth(app);
-      db = getFirestore(app);
+      const cfg = { apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain:"changeyourlife-cc210.firebaseapp.com", projectId:"changeyourlife-cc210", storageBucket:"changeyourlife-cc210.appspot.com", messagingSenderId:"801720080785", appId:"1:801720080785:web:1a74aadba5755ea26c2230" };
+      const app = initializeApp(cfg);
+      auth = getAuth(app); db = getFirestore(app);
       window._cyfFirebase = { app, auth, db };
     }
 
     try { initUserMenu(); } catch(e) {}
-
     window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
-      try { updateGlobalAvatar(); } catch(e){}
+      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:true, touchControls:true, backgroundColor:0x07192f, quantity:4.0 });
+      try { updateGlobalAvatar(); } catch(e) {}
     });
 
     onAuthStateChanged(auth, async (user) => {
@@ -226,106 +354,324 @@
     async function loadGoals() {
       try {
         const snap = await getDoc(doc(db, 'users', uid));
-        if (snap.exists()) {
-          goals = snap.data().goals || [];
-        }
-        renderGoals();
-        renderTemplates();
-      } catch(e) { renderGoals(); renderTemplates(); }
+        if (snap.exists()) goals = snap.data().goals || [];
+      } catch(e) {}
+      renderAll();
     }
 
-    function renderGoals() {
-      const grid = document.getElementById('goals-grid');
-      const empty = document.getElementById('empty-state');
-      if (goals.length === 0) {
-        grid.style.display = 'none';
-        empty.style.display = 'block';
-        return;
+    async function persistGoals() {
+      try { await setDoc(doc(db, 'users', uid), { goals }, { merge: true }); } catch(e) { console.error(e); }
+    }
+
+    // ── Render everything ─────────────────────────────────────────────────────
+    function renderAll() {
+      renderStats();
+      renderDomainTabs();
+      renderTemplates();
+      renderGoals();
+    }
+
+    // ── Stats bar ─────────────────────────────────────────────────────────────
+    function renderStats() {
+      const active    = goals.filter(g => !g.completed).length;
+      const completed = goals.filter(g => g.completed).length;
+      const overdue   = goals.filter(g => !g.completed && g.deadline && new Date(g.deadline) < new Date()).length;
+      const avgPct    = goals.length ? Math.round(goals.reduce((s,g) => s + (g.progress||0), 0) / goals.length) : 0;
+
+      const bar = document.getElementById('stats-bar');
+      bar.innerHTML = `
+        <div class="stat-pill"><span class="sp-val">${active}</span> en cours</div>
+        <div class="stat-pill green"><span class="sp-val">${completed}</span> complétés</div>
+        <div class="stat-pill amber"><span class="sp-val">${avgPct}%</span> progression moy.</div>
+        ${overdue ? `<div class="stat-pill red"><span class="sp-val">${overdue}</span> en retard</div>` : ''}
+      `;
+    }
+
+    // ── Domain filter tabs ────────────────────────────────────────────────────
+    function renderDomainTabs() {
+      const tabs = document.getElementById('domain-tabs');
+      const allCount = goals.length;
+      const filters = [
+        { key:'all', label:`Tous (${allCount})`, color:'#3b82f6' },
+        ...Object.entries(DOMAIN_LABELS).map(([k,l]) => ({
+          key:k, label:`${DOMAIN_ICONS[k]} ${l} (${goals.filter(g=>g.domain===k).length})`, color:DOMAIN_COLORS[k]
+        }))
+      ];
+      tabs.innerHTML = '';
+      filters.forEach(f => {
+        const btn = document.createElement('button');
+        btn.className = `domain-tab${activeFilter===f.key?' active':''}`;
+        btn.style.setProperty('--tab-color', f.color);
+        btn.textContent = f.label;
+        btn.addEventListener('click', () => { activeFilter = f.key; renderDomainTabs(); renderGoals(); renderTemplates(); });
+        tabs.appendChild(btn);
+      });
+    }
+
+    // ── Templates ─────────────────────────────────────────────────────────────
+    function renderTemplates() {
+      const ts  = document.getElementById('templates-section');
+      const tg  = document.getElementById('templates-grid');
+      if (!tg) return;
+      const visibleGoals = activeFilter === 'all' ? goals : goals.filter(g => g.domain === activeFilter);
+      if (visibleGoals.length >= 3 || (activeFilter !== 'all' && activeFilter !== 'all')) {
+        ts.style.display = 'none'; return;
       }
-      grid.style.display = 'grid';
-      empty.style.display = 'none';
-      // Sort: active goals first (overdue first among active), then completed
-      const sorted = goals.map((g, idx) => ({ g, idx })).sort((a, b) => {
-        if (a.g.completed !== b.g.completed) return a.g.completed ? 1 : -1;
-        // Among active: overdue first
-        const aOver = a.g.deadline && !a.g.completed && new Date(a.g.deadline) < new Date();
-        const bOver = b.g.deadline && !b.g.completed && new Date(b.g.deadline) < new Date();
-        if (aOver !== bOver) return aOver ? -1 : 1;
-        return 0;
-      });
-      const DOMAIN_COLORS = { body:'#2dd4bf', heart:'#f87171', etre:'#a78bfa', order:'#fbbf24' };
-      const DOMAIN_LABELS = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre' };
-      grid.innerHTML = sorted.map(() => `<div class="goal-card"></div>`).join('');
-      sorted.forEach(({ g, idx }, sortedPos) => {
-        const card = grid.children[sortedPos];
-        const goalColor = DOMAIN_COLORS[g.domain] || '#6b7280';
-        card.className = `goal-card${g.completed ? ' completed' : ''}`;
-        card.style.setProperty('--goal-color', goalColor);
-        const titleRow = document.createElement('div'); titleRow.className = 'goal-header';
-        const titleText = document.createElement('div'); titleText.className = 'goal-title'; titleText.textContent = g.title;
-        const domain = document.createElement('div'); domain.className = 'goal-domain'; domain.textContent = DOMAIN_LABELS[g.domain] || g.domain;
-        titleRow.appendChild(titleText); titleRow.appendChild(domain); card.appendChild(titleRow);
-        if (g.desc) { const desc = document.createElement('div'); desc.className = 'goal-desc'; desc.textContent = g.desc; card.appendChild(desc); }
-        const isOverdue = g.deadline && !g.completed && new Date(g.deadline) < new Date();
-        if (isOverdue) card.classList.add('overdue');
-        const pct = g.progress || 0;
-        // Progress row: label + pct
-        const progRow = document.createElement('div'); progRow.className = 'progress-row';
-        const progText = document.createElement('span'); progText.className = 'progress-text';
-        progText.textContent = g.deadline ? `Cible: ${new Date(g.deadline).toLocaleDateString('fr-FR')}` : 'En cours';
-        if (isOverdue) { const tag = document.createElement('span'); tag.className = 'overdue-tag'; tag.textContent = ' ⚠ En retard'; progText.appendChild(tag); }
-        const progPct = document.createElement('span'); progPct.className = 'progress-pct'; progPct.textContent = `${pct}%`;
-        progRow.appendChild(progText); progRow.appendChild(progPct); card.appendChild(progRow);
-        const bar = document.createElement('div'); bar.className = 'progress-bar';
-        const fill = document.createElement('div'); fill.className = 'progress-fill'; fill.style.width = `${pct}%`; bar.appendChild(fill); card.appendChild(bar);
-        const actions = document.createElement('div'); actions.className = 'goal-actions';
-        const btnP = document.createElement('button'); btnP.className = 'btn-icon'; btnP.textContent = '+ 10%'; btnP.addEventListener('click', () => window.updateProgress(idx));
-        const btnT = document.createElement('button'); btnT.className = 'btn-icon'; btnT.textContent = g.completed ? '↻ Réactiver' : '✓ Compléter'; btnT.addEventListener('click', () => window.toggleComplete(idx));
-        const btnE = document.createElement('button'); btnE.className = 'btn-icon'; btnE.textContent = '✏️'; btnE.addEventListener('click', () => openModal(idx));
-        const btnD = document.createElement('button'); btnD.className = 'btn-icon'; btnD.dataset.confirmPending = '0'; btnD.textContent = '🗑️';
-        btnD.addEventListener('click', () => {
-          if (btnD.dataset.confirmPending === '1') { window.deleteGoal(idx); return; }
-          btnD.dataset.confirmPending = '1'; btnD.classList.add('danger-confirm'); btnD.textContent = '🗑️ Confirmer?';
-          setTimeout(() => { if (btnD.dataset.confirmPending === '1') { btnD.dataset.confirmPending = '0'; btnD.classList.remove('danger-confirm'); btnD.textContent = '🗑️'; } }, 3000);
+      const filtered = activeFilter === 'all' ? TEMPLATES : TEMPLATES.filter(t => t.domain === activeFilter);
+      if (!filtered.length) { ts.style.display = 'none'; return; }
+      ts.style.display = 'block'; tg.innerHTML = '';
+      filtered.forEach(tpl => {
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.innerHTML = `<div class="template-icon">${tpl.icon}</div><div class="template-name">${tpl.name}</div>`;
+        card.title = tpl.title;
+        card.addEventListener('click', async () => {
+          goals.push({ id:Date.now(), title:tpl.title, desc:tpl.desc, domain:tpl.domain, deadline:null, progress:0, completed:false, createdAt:Date.now(), subtasks:[] });
+          await persistGoals(); renderAll(); showToast(`✓ "${tpl.title}" ajouté`);
         });
-        actions.append(btnP, btnT, btnE, btnD); card.appendChild(actions);
+        tg.appendChild(card);
       });
     }
 
+    // ── Goals list ────────────────────────────────────────────────────────────
+    function renderGoals() {
+      const grid  = document.getElementById('goals-grid');
+      const empty = document.getElementById('empty-state');
+
+      let visible = activeFilter === 'all' ? goals : goals.filter(g => g.domain === activeFilter);
+      // sort: active overdue first, then active, then completed
+      visible = [...visible].sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        const aO = a.deadline && !a.completed && new Date(a.deadline) < new Date();
+        const bO = b.deadline && !b.completed && new Date(b.deadline) < new Date();
+        if (aO !== bO) return aO ? -1 : 1;
+        return (b.createdAt||0) - (a.createdAt||0);
+      });
+
+      if (!visible.length) {
+        grid.style.display = 'none'; empty.style.display = 'block'; return;
+      }
+      grid.style.display = 'grid'; empty.style.display = 'none';
+      grid.innerHTML = '';
+
+      visible.forEach(g => {
+        const realIdx = goals.indexOf(g);
+        const card = buildGoalCard(g, realIdx);
+        grid.appendChild(card);
+      });
+    }
+
+    function buildGoalCard(g, idx) {
+      const card = document.createElement('div');
+      const goalColor = DOMAIN_COLORS[g.domain] || '#6b7280';
+      card.className = `goal-card${g.completed?' completed':''}`;
+      card.style.setProperty('--goal-color', goalColor);
+      if (!g.completed && g.deadline && new Date(g.deadline) < new Date()) card.classList.add('overdue');
+
+      // ── Header ──
+      const header = document.createElement('div'); header.className = 'goal-header';
+      const titleEl = document.createElement('div'); titleEl.className = 'goal-title'; titleEl.textContent = g.title;
+      const domEl   = document.createElement('div'); domEl.className = 'goal-domain';
+      domEl.textContent = `${DOMAIN_ICONS[g.domain]||''} ${DOMAIN_LABELS[g.domain]||g.domain}`;
+      header.append(titleEl, domEl); card.appendChild(header);
+
+      // ── Description ──
+      if (g.desc) {
+        const desc = document.createElement('div'); desc.className = 'goal-desc'; desc.textContent = g.desc;
+        card.appendChild(desc);
+      }
+
+      // ── Progress row ──
+      const progRow = document.createElement('div'); progRow.className = 'progress-row';
+      const progText = document.createElement('span'); progText.className = 'progress-text';
+      if (g.deadline) {
+        const isOverdue = !g.completed && new Date(g.deadline) < new Date();
+        progText.innerHTML = `Cible : ${new Date(g.deadline).toLocaleDateString('fr-FR')}${isOverdue ? ' <span class="overdue-tag">⚠ En retard</span>' : ''}`;
+      } else {
+        progText.textContent = 'En cours';
+      }
+      const progPct = document.createElement('span'); progPct.className = 'progress-pct'; progPct.textContent = `${g.progress||0}%`;
+      progRow.append(progText, progPct); card.appendChild(progRow);
+
+      // ── Progress bar ──
+      const bar = document.createElement('div'); bar.className = 'progress-bar';
+      const fill = document.createElement('div'); fill.className = 'progress-fill'; fill.style.width = `${g.progress||0}%`;
+      bar.appendChild(fill); card.appendChild(bar);
+
+      // ── Slider (hidden by default) ──
+      const sliderWrap = document.createElement('div');
+      sliderWrap.className = 'progress-slider-wrap';
+      const slider = document.createElement('input');
+      slider.type = 'range'; slider.min = 0; slider.max = 100; slider.value = g.progress||0;
+      slider.className = 'progress-slider';
+      slider.style.setProperty('--pct', `${g.progress||0}%`);
+      const sliderLabel = document.createElement('span'); sliderLabel.className = 'slider-pct-label'; sliderLabel.textContent = `${g.progress||0}%`;
+      slider.addEventListener('input', () => {
+        const v = parseInt(slider.value);
+        sliderLabel.textContent = `${v}%`;
+        slider.style.setProperty('--pct', `${v}%`);
+        progPct.textContent = `${v}%`;
+        fill.style.width = `${v}%`;
+      });
+      slider.addEventListener('change', async () => {
+        const v = parseInt(slider.value);
+        const wasCompleted = g.completed;
+        g.progress = v;
+        if (v >= 100 && !wasCompleted) {
+          g.completed = true; showToast('🏆 Objectif complété ! +25 XP');
+          try { await updateDoc(doc(db,'users',uid), { [`levels.${g.domain||'etre'}.xp`]: increment(25) }); showXpFloat(25); } catch(_){}
+        }
+        await persistGoals(); renderAll();
+      });
+      sliderWrap.append(slider, sliderLabel);
+      card.appendChild(sliderWrap);
+
+      // ── Sub-tasks ──
+      const subtasks = g.subtasks || [];
+      const stSection = document.createElement('div'); stSection.className = 'subtasks-section';
+
+      const stToggle = document.createElement('button'); stToggle.className = 'subtasks-toggle';
+      const doneCount = subtasks.filter(s=>s.done).length;
+      stToggle.innerHTML = `<span class="arrow">▶</span> Étapes <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${subtasks.length ? `${doneCount}/${subtasks.length}` : '+ ajouter'}</span>`;
+      stToggle.addEventListener('click', () => {
+        stToggle.classList.toggle('open');
+        stList.classList.toggle('open');
+      });
+      stSection.appendChild(stToggle);
+
+      const stList = document.createElement('div'); stList.className = 'subtasks-list';
+      subtasks.forEach((st, si) => {
+        stList.appendChild(buildSubtaskItem(g, idx, st, si, card, stToggle, goalColor));
+      });
+
+      // Add subtask row
+      const addRow = document.createElement('div'); addRow.className = 'subtask-add-row';
+      const addInput = document.createElement('input');
+      addInput.type = 'text'; addInput.className = 'subtask-add-input'; addInput.placeholder = 'Nouvelle étape…'; addInput.maxLength = 80;
+      const addBtn = document.createElement('button'); addBtn.className = 'subtask-add-btn'; addBtn.textContent = '+ Ajouter';
+      const addSubtask = async () => {
+        const val = addInput.value.trim(); if (!val) return;
+        if (!g.subtasks) g.subtasks = [];
+        g.subtasks.push({ id:`st_${Date.now()}`, label:val, done:false });
+        addInput.value = '';
+        await persistGoals(); renderAll();
+      };
+      addBtn.addEventListener('click', addSubtask);
+      addInput.addEventListener('keydown', e => { if (e.key==='Enter') addSubtask(); });
+      addRow.append(addInput, addBtn);
+      stList.appendChild(addRow);
+
+      stSection.appendChild(stList);
+      card.appendChild(stSection);
+
+      // ── Action buttons ──
+      const actions = document.createElement('div'); actions.className = 'goal-actions';
+
+      // Slider toggle
+      const btnSlider = document.createElement('button'); btnSlider.className = 'btn-icon'; btnSlider.textContent = '📊 Progression';
+      btnSlider.addEventListener('click', () => {
+        const open = sliderWrap.classList.toggle('open');
+        btnSlider.classList.toggle('active-slider', open);
+      });
+
+      // Toggle complete
+      const btnT = document.createElement('button'); btnT.className = 'btn-icon';
+      btnT.textContent = g.completed ? '↻ Réactiver' : '✓ Compléter';
+      btnT.addEventListener('click', async () => {
+        const was = g.completed;
+        g.completed = !was;
+        if (g.completed) { g.progress = 100; showToast('✅ Objectif complété ! +25 XP'); }
+        else { showToast('↻ Objectif réactivé'); }
+        await persistGoals();
+        if (!was) {
+          try { await updateDoc(doc(db,'users',uid), { [`levels.${g.domain||'etre'}.xp`]: increment(25) }); showXpFloat(25); } catch(_){}
+        }
+        renderAll();
+      });
+
+      // Edit
+      const btnE = document.createElement('button'); btnE.className = 'btn-icon'; btnE.textContent = '✏️ Modifier';
+      btnE.addEventListener('click', () => openModal(idx));
+
+      // Delete (2-step)
+      const btnD = document.createElement('button'); btnD.className = 'btn-icon'; btnD.dataset.pending='0'; btnD.textContent = '🗑️';
+      btnD.addEventListener('click', async () => {
+        if (btnD.dataset.pending==='1') {
+          goals.splice(idx, 1); await persistGoals(); renderAll(); showToast('Objectif supprimé'); return;
+        }
+        btnD.dataset.pending='1'; btnD.classList.add('danger-confirm'); btnD.textContent='🗑️ Confirmer ?';
+        setTimeout(()=>{ if(btnD.dataset.pending==='1'){btnD.dataset.pending='0';btnD.classList.remove('danger-confirm');btnD.textContent='🗑️';} }, 3000);
+      });
+
+      actions.append(btnSlider, btnT, btnE, btnD);
+      card.appendChild(actions);
+
+      return card;
+    }
+
+    function buildSubtaskItem(g, goalIdx, st, stIdx, card, toggle, goalColor) {
+      const item = document.createElement('div'); item.className = 'subtask-item';
+      const check = document.createElement('div');
+      check.className = `subtask-check${st.done?' done':''}`;
+      check.style.setProperty('--goal-color', goalColor);
+      const label = document.createElement('span');
+      label.className = `subtask-label${st.done?' done':''}`;
+      label.textContent = st.label;
+      const del = document.createElement('button'); del.className = 'subtask-del'; del.textContent = '×';
+
+      const toggle2 = async () => {
+        st.done = !st.done;
+        // Update toggle badge
+        const doneCount = (g.subtasks||[]).filter(s=>s.done).length;
+        const total = (g.subtasks||[]).length;
+        toggle.innerHTML = `<span class="arrow${toggle.classList.contains('open')?'':''}" style="transition:transform .2s;display:inline-block${toggle.classList.contains('open')?';transform:rotate(90deg)':''}">▶</span> Étapes <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${total?`${doneCount}/${total}`:' + ajouter'}</span>`;
+        // Auto-update goal progress from subtasks
+        if (total > 0) {
+          g.progress = Math.round(doneCount / total * 100);
+        }
+        await persistGoals(); renderAll();
+      };
+
+      check.addEventListener('click', toggle2);
+      label.addEventListener('click', toggle2);
+      del.addEventListener('click', async () => {
+        g.subtasks.splice(stIdx, 1);
+        await persistGoals(); renderAll();
+      });
+
+      item.append(check, label, del);
+      return item;
+    }
+
+    // ── Modal ─────────────────────────────────────────────────────────────────
     document.getElementById('btn-new-goal').addEventListener('click', () => openModal());
     document.getElementById('btn-cancel-modal').addEventListener('click', closeModal);
     document.getElementById('btn-save-goal').addEventListener('click', saveGoal);
-    document.getElementById('modal-goal').addEventListener('click', (e) => { if (e.target.id === 'modal-goal') closeModal(); });
+    document.getElementById('modal-goal').addEventListener('click', e => { if (e.target.id==='modal-goal') closeModal(); });
 
-    // ── Auto-open modal if ?domain= is in URL (from autoévaluation bridge) ──
     const urlDomain = new URLSearchParams(window.location.search).get('domain');
-    const domainMap = {corps:'body', coeur:'heart', etre:'etre', ordre:'order'};
+    const domainMap = { corps:'body', coeur:'heart', etre:'etre', ordre:'order' };
     if (urlDomain && domainMap[urlDomain]) {
-      setTimeout(() => {
-        openModal();
-        const sel = document.getElementById('input-domain');
-        if (sel) sel.value = domainMap[urlDomain];
-      }, 600);
+      setTimeout(() => { openModal(); const sel = document.getElementById('input-domain'); if (sel) sel.value = domainMap[urlDomain]; }, 600);
     }
 
     function openModal(idx = null) {
       editingId = idx;
-      const modal = document.getElementById('modal-goal');
       if (idx !== null) {
         const g = goals[idx];
         document.getElementById('modal-title').textContent = 'Modifier l\'objectif';
-        document.getElementById('input-title').value = g.title;
-        document.getElementById('input-desc').value = g.desc || '';
-        document.getElementById('input-domain').value = g.domain;
-        document.getElementById('input-deadline').value = g.deadline || '';
+        document.getElementById('input-title').value   = g.title;
+        document.getElementById('input-desc').value    = g.desc || '';
+        document.getElementById('input-domain').value  = g.domain;
+        document.getElementById('input-deadline').value= g.deadline || '';
       } else {
         document.getElementById('modal-title').textContent = 'Nouvel objectif';
-        document.getElementById('input-title').value = '';
-        document.getElementById('input-desc').value = '';
-        document.getElementById('input-domain').value = 'body';
+        ['input-title','input-desc'].forEach(id => document.getElementById(id).value='');
+        document.getElementById('input-domain').value   = activeFilter !== 'all' ? activeFilter : 'body';
         document.getElementById('input-deadline').value = '';
       }
-      modal.classList.add('active');
+      document.getElementById('modal-goal').classList.add('active');
+      setTimeout(() => document.getElementById('input-title').focus(), 80);
     }
 
     function closeModal() {
@@ -335,77 +681,32 @@
 
     async function saveGoal() {
       const title = document.getElementById('input-title').value.trim();
-      if (!title) return;
+      if (!title) { document.getElementById('input-title').focus(); return; }
       const goal = {
-        id: editingId !== null ? goals[editingId].id : Date.now(),
+        id:       editingId !== null ? goals[editingId].id : Date.now(),
         title,
-        desc: document.getElementById('input-desc').value.trim(),
-        domain: document.getElementById('input-domain').value,
+        desc:     document.getElementById('input-desc').value.trim(),
+        domain:   document.getElementById('input-domain').value,
         deadline: document.getElementById('input-deadline').value || null,
         progress: editingId !== null ? goals[editingId].progress : 0,
-        completed: editingId !== null ? goals[editingId].completed : false,
-        createdAt: editingId !== null ? goals[editingId].createdAt : Date.now()
+        completed:editingId !== null ? goals[editingId].completed : false,
+        createdAt:editingId !== null ? goals[editingId].createdAt : Date.now(),
+        subtasks: editingId !== null ? (goals[editingId].subtasks||[]) : [],
       };
-      if (editingId !== null) {
-        goals[editingId] = goal;
-      } else {
-        goals.push(goal);
-      }
-      try {
-        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        renderGoals(); renderTemplates();
-        showToast(editingId !== null ? '✏️ Objectif modifié' : '✅ Objectif ajouté');
-        closeModal();
-      } catch(e) { console.error(e); }
+      if (editingId !== null) goals[editingId] = goal;
+      else goals.push(goal);
+      await persistGoals();
+      renderAll();
+      showToast(editingId !== null ? '✏️ Objectif modifié' : '✅ Objectif ajouté');
+      closeModal();
     }
 
-    window.updateProgress = async (idx) => {
-      const g = goals[idx];
-      const wasDone = g.progress >= 100;
-      g.progress = Math.min(100, (g.progress || 0) + 10);
-      const justCompleted = !wasDone && g.progress >= 100;
-      if (justCompleted) { g.completed = true; showToast('🏆 Objectif complété ! +25 XP'); }
-      else showToast(`+10% — ${g.progress}% complété`);
-      try {
-        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        if (justCompleted) {
-          const xpKey = g.domain || 'etre';
-          try {
-            await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) });
-            try { showXpFloat(25); } catch(e) {}
-          } catch(_) {}
-        }
-        renderGoals(); renderTemplates();
-      } catch(e) {}
-    };
-
-    window.toggleComplete = async (idx) => {
-      const wasCompleted = goals[idx].completed;
-      goals[idx].completed = !wasCompleted;
-      if (goals[idx].completed) { goals[idx].progress = 100; showToast('✅ Objectif complété ! +25 XP'); }
-      else showToast('↻ Objectif réactivé');
-      try {
-        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        if (!wasCompleted) {
-          const xpKey = goals[idx].domain || 'etre';
-          try {
-            await updateDoc(doc(db, 'users', uid), { [`levels.${xpKey}.xp`]: increment(25) });
-            try { showXpFloat(25); } catch(e) {}
-          } catch(_) {}
-        }
-        renderGoals(); renderTemplates();
-      } catch(e) {}
-    };
-
-    window.deleteGoal = async (idx) => {
-      const title = goals[idx].title;
-      goals.splice(idx, 1);
-      try {
-        await setDoc(doc(db, 'users', uid), { goals }, { merge: true });
-        renderGoals(); renderTemplates();
-        showToast(`🗑️ "${title}" supprimé`);
-      } catch(e) {}
-    };
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    function showToast(msg, err=false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast${err?' error':''} show`;
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
   </script>
 </body>
 </html>

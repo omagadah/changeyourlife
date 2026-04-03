@@ -386,6 +386,16 @@
             <div class="stat-chip-value" id="stat-habits" style="color:#86efac">—</div>
             <div class="stat-chip-label">Habitudes aujourd'hui</div>
           </div>
+          <div class="stat-chip" style="--chip-color:#0ea5e9">
+            <div class="stat-chip-icon">🧘</div>
+            <div class="stat-chip-value" id="stat-med-sessions" style="color:#7dd3fc">—</div>
+            <div class="stat-chip-label">Sessions méditation</div>
+          </div>
+          <div class="stat-chip" style="--chip-color:#6366f1">
+            <div class="stat-chip-icon">🌳</div>
+            <div class="stat-chip-value" id="stat-mylife" style="color:#a5b4fc">—</div>
+            <div class="stat-chip-label">Score Ma Vie</div>
+          </div>
         </div>
 
         <!-- ── Domain XP rings ── -->
@@ -434,6 +444,7 @@
               <h3>Your Life</h3>
               <p>Pyramide de Maslow interactive et carte de ta progression.</p>
               <span class="tool-card-arrow">Explorer →</span>
+              <span id="card-stat-mylife" style="display:none;font-size:0.72rem;font-weight:700;color:#a5b4fc;margin-top:6px;display:block"></span>
             </div>
           </a>
 
@@ -444,6 +455,7 @@
               <h3>Méditation Guidée</h3>
               <p>Séances guidées, sons ambiants, streak et bien-être quotidien.</p>
               <span class="tool-card-arrow">Commencer →</span>
+              <span id="card-stat-med" style="font-size:0.72rem;font-weight:700;color:#7dd3fc;margin-top:6px;display:block"></span>
             </div>
           </a>
 
@@ -454,6 +466,7 @@
               <h3>Objectifs & Progrès</h3>
               <p>Crée tes objectifs, fixe des deadlines et suis ta progression.</p>
               <span class="tool-card-arrow">Mes objectifs →</span>
+              <span id="card-stat-goals" style="font-size:0.72rem;font-weight:700;color:#fdba74;margin-top:6px;display:block"></span>
             </div>
           </a>
 
@@ -464,6 +477,7 @@
               <h3>Journal</h3>
               <p>Réflexions, émotions, insights — ton espace intime quotidien.</p>
               <span class="tool-card-arrow">Écrire →</span>
+              <span id="card-stat-journal" style="font-size:0.72rem;font-weight:700;color:#f9a8d4;margin-top:6px;display:block"></span>
             </div>
           </a>
 
@@ -669,37 +683,65 @@
         // ── Dashboard stats loader ─────────────────────────────────────────────
         async function loadDashboardStats(db, uid, userData) {
             try {
-                // XP stats handled by loadXPRings
-
-                // Goals (active = not completed)
+                // ── Goals ──
                 const goals = userData.goals || [];
-                const activeGoals = goals.filter(g => !g.completed).length;
+                const activeGoals  = goals.filter(g => !g.completed).length;
+                const doneGoals    = goals.filter(g => g.completed).length;
+                const avgPct       = goals.length ? Math.round(goals.reduce((s,g)=>s+(g.progress||0),0)/goals.length) : 0;
                 const gEl = document.getElementById('stat-goals');
                 if (gEl) gEl.textContent = activeGoals;
+                const cgEl = document.getElementById('card-stat-goals');
+                if (cgEl) cgEl.textContent = goals.length ? `${activeGoals} actifs · ${doneGoals} complétés · ${avgPct}% moy.` : '';
 
-                // Habits done today
+                // ── Habits ──
                 const habits = Array.isArray(userData.habits) ? userData.habits : [];
                 const todayStr = new Date().toDateString();
                 const habitsDoneToday = habits.filter(h => h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === todayStr).length;
                 const hEl = document.getElementById('stat-habits');
                 if (hEl) hEl.textContent = habits.length ? `${habitsDoneToday}/${habits.length}` : '—';
 
-                // Streak: use meditation streak (properly tracked)
+                // ── Meditation streak + sessions ──
+                const med = userData.meditation || {};
+                const today = new Date().toDateString();
+                const yesterday = new Date(Date.now() - 86400000).toDateString();
+                const lastDay = med.lastSessionAt ? new Date(med.lastSessionAt).toDateString() : null;
+                const streak = (lastDay === today || lastDay === yesterday) ? (med.streak || 1) : 0;
                 const streakEl = document.getElementById('stat-streak');
-                if (streakEl) {
-                    const med = userData.meditation || {};
-                    const today = new Date().toDateString();
-                    const yesterday = new Date(Date.now() - 86400000).toDateString();
-                    const lastDay = med.lastSessionAt ? new Date(med.lastSessionAt).toDateString() : null;
-                    const streak = (lastDay === today || lastDay === yesterday) ? (med.streak || 1) : 0;
-                    streakEl.textContent = streak;
+                if (streakEl) streakEl.textContent = streak;
+                const medSessEl = document.getElementById('stat-med-sessions');
+                if (medSessEl) medSessEl.textContent = med.totalSessions || '—';
+                const cardMed = document.getElementById('card-stat-med');
+                if (cardMed) {
+                    const mins = med.totalMinutes || 0;
+                    const timeStr = mins >= 60 ? `${Math.floor(mins/60)}h${mins%60?` ${mins%60}m`:''}` : `${mins} min`;
+                    cardMed.textContent = med.totalSessions ? `${med.totalSessions} sessions · ${timeStr} · ${streak} jours de suite` : '';
                 }
 
-                // Journal entries count (from subcollection)
+                // ── My Life score (yourlife skills) ──
+                try {
+                    const ylSnap = await getDoc(doc(db,'users',uid));
+                    if (ylSnap.exists()) {
+                        const ylData = ylSnap.data().yourlife || {};
+                        let total=0, done=0;
+                        ['self-actualization','esteem','love','safety','physiological'].forEach(lvl => {
+                            const s = ylData[lvl] || [];
+                            total += s.length; done += s.filter(x=>x.done).length;
+                        });
+                        const pct = total ? Math.round(done/total*100) : 0;
+                        const mlEl = document.getElementById('stat-mylife');
+                        if (mlEl) mlEl.textContent = total ? `${pct}%` : '—';
+                        const cardMl = document.getElementById('card-stat-mylife');
+                        if (cardMl) cardMl.textContent = total ? `Score : ${pct}% — ${done}/${total} compétences` : '';
+                    }
+                } catch(e) {}
+
+                // ── Journal entries count ──
                 try {
                     const jSnap = await getDocs(query(collection(db,'users',uid,'journal'), limit(300)));
                     const jEl = document.getElementById('stat-journal');
                     if (jEl) jEl.textContent = jSnap.size;
+                    const cardJ = document.getElementById('card-stat-journal');
+                    if (cardJ) cardJ.textContent = jSnap.size ? `${jSnap.size} entrée${jSnap.size>1?'s':''} · Journal actif` : '';
                 } catch(e) {
                     const jEl = document.getElementById('stat-journal'); if (jEl) jEl.textContent = '—';
                 }
