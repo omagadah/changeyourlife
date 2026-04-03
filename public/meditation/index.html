@@ -124,6 +124,34 @@
     .amb-volume label { font-size:0.75rem; color:#7ba3c8; white-space:nowrap; }
     .amb-volume input[type=range] { flex:1; accent-color:#3b82f6; cursor:pointer; }
 
+    /* ── Custom duration card ── */
+    .custom-duration-wrap { display:none; margin-top:10px; align-items:center; gap:10px; flex-wrap:wrap; }
+    .custom-duration-wrap.open { display:flex; }
+    .custom-duration-input {
+      width:80px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);
+      border-radius:8px; padding:7px 10px; color:#e5eef8; font-size:0.9rem; text-align:center; outline:none;
+      transition: border-color .2s;
+    }
+    .custom-duration-input:focus { border-color: rgba(59,130,246,.5); }
+
+    /* ── Session history ── */
+    .history-section { margin-top:8px; }
+    .history-title {
+      font-size:0.72rem; text-transform:uppercase; letter-spacing:.6px; color:#4a6a8a;
+      font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px;
+    }
+    .history-list { display:flex; flex-direction:column; gap:6px; }
+    .history-item {
+      display:flex; align-items:center; gap:10px;
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+      border-radius:10px; padding:9px 14px;
+    }
+    .history-icon { font-size:1.3rem; flex-shrink:0; }
+    .history-info { flex:1; min-width:0; }
+    .history-name { font-size:0.85rem; font-weight:600; color:#c8d9f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .history-date { font-size:0.72rem; color:#4a6a8a; margin-top:1px; }
+    .history-dur { font-size:0.8rem; font-weight:700; color:#3b82f6; flex-shrink:0; }
+
     /* ── Mobile ── */
     @media (max-width:600px) {
       .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
@@ -213,6 +241,13 @@
         </div>
       </div>
       <div class="sessions-grid" id="sessions-grid"></div>
+      <!-- Custom duration -->
+      <div class="custom-duration-wrap" id="custom-dur-wrap">
+        <span style="font-size:0.85rem;color:#9fb5ff;font-weight:600">Durée :</span>
+        <input type="number" class="custom-duration-input" id="custom-dur-input" min="1" max="120" value="20" />
+        <span style="font-size:0.85rem;color:#7e9ab5">min</span>
+        <button class="btn primary" id="custom-dur-confirm" style="padding:7px 16px;font-size:0.85rem">Commencer →</button>
+      </div>
       <div class="stats-bar">
         <div class="stat-card">
           <div class="stat-value" id="stat-total">0</div>
@@ -226,6 +261,11 @@
           <div class="stat-value" id="stat-streak">0</div>
           <div class="stat-label">Série actuelle (jours)</div>
         </div>
+      </div>
+      <!-- Session history -->
+      <div class="history-section" id="history-section" style="display:none">
+        <div class="history-title">🕐 Sessions récentes</div>
+        <div class="history-list" id="history-list"></div>
       </div>
     </div>
   </main>
@@ -258,12 +298,13 @@
     });
 
     const sessions = [
-      { id:'calm', title:'Calme & Sérénité', desc:'Apaise ton esprit, relâche les tensions', duration:5, icon:'🌊', type:'guided', color:'#2dd4bf' },
-      { id:'focus', title:'Focus & Concentration', desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', type:'guided', color:'#0070f3' },
-      { id:'sleep', title:'Sommeil profond', desc:'Prépare-toi à une nuit réparatrice', duration:15, icon:'🌙', type:'guided', color:'#a78bfa' },
-      { id:'gratitude', title:'Gratitude & Positivité', desc:'Cultive la reconnaissance et la joie', duration:7, icon:'✨', type:'guided', color:'#fbbf24' },
-      { id:'breathing', title:'Respiration 4-7-8', desc:'Technique rapide pour réduire le stress', duration:5, icon:'💨', type:'breathing', color:'#60a5fa' },
-      { id:'body-scan', title:'Body Scan', desc:'Relaxe chaque partie de ton corps', duration:12, icon:'🧘', type:'guided', color:'#f87171' }
+      { id:'calm',      title:'Calme & Sérénité',       desc:'Apaise ton esprit, relâche les tensions',       duration:5,  icon:'🌊', type:'guided',    color:'#2dd4bf' },
+      { id:'focus',     title:'Focus & Concentration',   desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', type:'guided',    color:'#0070f3' },
+      { id:'sleep',     title:'Sommeil profond',          desc:'Prépare-toi à une nuit réparatrice',           duration:15, icon:'🌙', type:'guided',    color:'#a78bfa' },
+      { id:'gratitude', title:'Gratitude & Positivité',  desc:'Cultive la reconnaissance et la joie',          duration:7,  icon:'✨', type:'guided',    color:'#fbbf24' },
+      { id:'breathing', title:'Respiration 4-7-8',       desc:'Technique rapide pour réduire le stress',       duration:5,  icon:'💨', type:'breathing', color:'#60a5fa' },
+      { id:'body-scan', title:'Body Scan',                desc:'Relaxe chaque partie de ton corps',             duration:12, icon:'🧘', type:'guided',    color:'#f87171' },
+      { id:'custom',    title:'Durée personnalisée',      desc:'Choisis ton propre rythme',                     duration:20, icon:'⏱️', type:'guided',    color:'#34d399' },
     ];
 
     let currentSession = null;
@@ -388,16 +429,40 @@
       const grid = document.getElementById('sessions-grid');
       grid.innerHTML = sessions.map(s => `
         <div class="session-card" data-id="${s.id}" style="--card-color:${s.color}">
-          <div class="session-duration">${s.duration} min</div>
+          <div class="session-duration">${s.id === 'custom' ? '?' : s.duration} min</div>
           <div class="session-icon">${s.icon}</div>
           <div class="session-title">${s.title}</div>
           <div class="session-desc">${s.desc}</div>
         </div>
       `).join('');
       grid.querySelectorAll('.session-card').forEach(card => {
-        card.addEventListener('click', () => selectSession(sessions.find(s => s.id === card.dataset.id)));
+        card.addEventListener('click', () => {
+          const s = sessions.find(x => x.id === card.dataset.id);
+          if (s.id === 'custom') {
+            // Toggle custom duration panel
+            document.querySelectorAll('.session-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            const wrap = document.getElementById('custom-dur-wrap');
+            wrap.classList.toggle('open');
+          } else {
+            document.getElementById('custom-dur-wrap').classList.remove('open');
+            selectSession(s);
+          }
+        });
       });
     }
+
+    // Custom duration confirm
+    document.getElementById('custom-dur-confirm').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('custom-dur-input').value) || 20;
+      const clamped = Math.max(1, Math.min(120, val));
+      const customSession = { ...sessions.find(s => s.id === 'custom'), duration: clamped, title: `Session ${clamped} min` };
+      document.getElementById('custom-dur-wrap').classList.remove('open');
+      selectSession(customSession);
+    });
+    document.getElementById('custom-dur-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('custom-dur-confirm').click();
+    });
 
     function selectSession(session) {
       // Stop any running session first
@@ -503,29 +568,35 @@
 
       try {
         const userRef = doc(db, 'users', uid);
-        // Calculate streak
         const snap = await getDoc(doc(db, 'users', uid));
         const med = snap.exists() ? (snap.data().meditation || {}) : {};
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         const lastDay = med.lastSessionAt ? new Date(med.lastSessionAt).toDateString() : null;
         let streak = med.streak || 0;
-        if (lastDay === today) { /* already practiced today — keep streak */ }
+        if (lastDay === today) { /* already practiced today */ }
         else if (lastDay === yesterday) { streak += 1; }
         else { streak = 1; }
+
+        // Save to history (keep last 20)
+        const historyEntry = { title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
+        const history = (med.history || []).slice(0, 19);
+        history.unshift(historyEntry);
 
         await updateDoc(userRef, {
           'meditation.totalSessions': increment(1),
           'meditation.totalMinutes': increment(currentSession.duration),
           'meditation.lastSessionAt': Date.now(),
           'meditation.streak': streak,
+          'meditation.history': history,
           'levels.body.xp': increment(15)
         });
         await loadStats();
       } catch(e) {
         try {
           const userRef = doc(db, 'users', uid);
-          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1 }, levels: { body: { xp: 15 } }}, {merge:true});
+          const historyEntry = { title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
+          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1, history:[historyEntry] }, levels: { body: { xp: 15 } }}, {merge:true});
           await loadStats();
         } catch(e2) {}
       }
@@ -537,10 +608,33 @@
         if (snap.exists()) {
           const med = snap.data().meditation || {};
           document.getElementById('stat-total').textContent = med.totalSessions || 0;
-          document.getElementById('stat-time').textContent = `${med.totalMinutes || 0} min`;
+          const mins = med.totalMinutes || 0;
+          document.getElementById('stat-time').textContent = mins >= 60 ? `${Math.floor(mins/60)}h${mins%60?` ${mins%60}m`:''}` : `${mins} min`;
           document.getElementById('stat-streak').textContent = calculateStreak(med);
+          renderHistory(med.history || []);
         }
       } catch(e) {}
+    }
+
+    function renderHistory(history) {
+      const section = document.getElementById('history-section');
+      const list    = document.getElementById('history-list');
+      if (!history.length) { section.style.display='none'; return; }
+      section.style.display = 'block';
+      list.innerHTML = history.slice(0,8).map(h => {
+        const d = new Date(h.completedAt);
+        const isToday = d.toDateString() === new Date().toDateString();
+        const isYesterday = d.toDateString() === new Date(Date.now()-86400000).toDateString();
+        const dateStr = isToday ? `Aujourd'hui · ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}` : isYesterday ? `Hier · ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}` : d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+        return `<div class="history-item">
+          <div class="history-icon">${h.icon||'🧘'}</div>
+          <div class="history-info">
+            <div class="history-name">${h.title}</div>
+            <div class="history-date">${dateStr}</div>
+          </div>
+          <div class="history-dur">${h.duration} min</div>
+        </div>`;
+      }).join('');
     }
 
     function calculateStreak(med) {

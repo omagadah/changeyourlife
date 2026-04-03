@@ -224,11 +224,41 @@
     }
     .toast.show { transform: translate(-50%, 0); }
 
+    /* ── Global score banner ── */
+    .global-score-banner {
+      display: flex; align-items: center; gap: 18px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px; padding: 16px 20px; margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+    .gsb-ring {
+      position: relative; width: 72px; height: 72px; flex-shrink: 0;
+    }
+    .gsb-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+    .gsb-ring-bg  { stroke: rgba(255,255,255,0.07); fill: none; stroke-width: 5; }
+    .gsb-ring-fill { stroke: #3b82f6; fill: none; stroke-width: 5; stroke-linecap: round;
+                     stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset .8s ease; }
+    .gsb-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .gsb-pct { font-size: 1.1rem; font-weight: 800; color: #fff; line-height: 1; }
+    .gsb-details { flex: 1; min-width: 140px; }
+    .gsb-title { font-size: 1rem; font-weight: 700; color: #e5eef8; margin-bottom: 4px; }
+    .gsb-sub { font-size: 0.8rem; color: #7e9ab5; line-height: 1.4; }
+    .gsb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .gsb-btn {
+      padding: 8px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05); color: #c8d9f0; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+    }
+    .gsb-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .gsb-btn.primary { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #93c5fd; }
+    .gsb-btn.primary:hover { background: rgba(59,130,246,0.25); }
+
     @media (max-width: 720px) {
       .level-row[data-level] { max-width: 100% !important; }
       .page-wrap { padding: 68px 12px 48px; }
       .stats-row { grid-template-columns: 1fr 1fr; }
       .view-btn { padding: 7px 10px; font-size: 0.76rem; }
+      .global-score-banner { gap: 12px; }
     }
   </style>
 </head>
@@ -254,6 +284,26 @@
     <div class="page-header">
       <div class="page-title">🌳 Ma Vie</div>
       <div class="page-sub">Pyramide de Maslow · Coche tes compétences au fil de ta progression</div>
+    </div>
+
+    <!-- Global score banner -->
+    <div class="global-score-banner" id="global-score-banner">
+      <div class="gsb-ring">
+        <svg viewBox="0 0 72 72" width="72" height="72">
+          <circle class="gsb-ring-bg" cx="36" cy="36" r="31.5"/>
+          <circle class="gsb-ring-fill" id="gsb-ring-fill" cx="36" cy="36" r="31.5"/>
+        </svg>
+        <div class="gsb-inner">
+          <div class="gsb-pct" id="gsb-pct">0%</div>
+        </div>
+      </div>
+      <div class="gsb-details">
+        <div class="gsb-title" id="gsb-title">Ma progression de vie</div>
+        <div class="gsb-sub" id="gsb-sub">Charge en cours…</div>
+      </div>
+      <div class="gsb-actions">
+        <button class="gsb-btn primary" id="btn-export-life">⬇ Exporter</button>
+      </div>
     </div>
 
     <!-- View switcher -->
@@ -384,10 +434,60 @@
 
     // ── Render dispatcher ─────────────────────────────────────────────────────
     function render() {
+      renderGlobalScore();
       if (currentView === 'pyramid') { renderPyramid(); renderStats('stats-row', 'level-prog-list'); }
       else if (currentView === 'mindmap') { renderMindmap(); renderStats('stats-row-mm', null); }
       else if (currentView === 'timeline') { renderTimeline(); renderStats('stats-row-tl', null); }
     }
+
+    // ── Global score banner ───────────────────────────────────────────────────
+    function renderGlobalScore() {
+      let total = 0, done = 0;
+      LEVELS.forEach(lvl => {
+        const s = skillData[lvl.id] || [];
+        total += s.length;
+        done  += s.filter(x => x.done).length;
+      });
+      const pct = total ? Math.round(done / total * 100) : 0;
+      const complete = LEVELS.filter(lvl => { const s=skillData[lvl.id]||[]; return s.length>0 && s.every(x=>x.done); }).length;
+
+      document.getElementById('gsb-pct').textContent = `${pct}%`;
+
+      // Ring stroke: circumference ≈ 2π×31.5 ≈ 198
+      const C = 198;
+      document.getElementById('gsb-ring-fill').style.strokeDashoffset = C * (1 - pct / 100);
+
+      // Color by progress
+      const color = pct >= 80 ? '#10b981' : pct >= 50 ? '#3b82f6' : pct >= 25 ? '#f59e0b' : '#6366f1';
+      document.getElementById('gsb-ring-fill').style.stroke = color;
+
+      // Title
+      const titles = ['Début du voyage 🌱', 'En progression 🚀', 'Belle avancée ⭐', 'Presque au sommet 🏆', 'Maître de ta vie ✨'];
+      const ti = Math.min(4, Math.floor(pct / 20));
+      document.getElementById('gsb-title').textContent = titles[ti];
+      document.getElementById('gsb-sub').textContent = `${done}/${total} compétences · ${complete}/${LEVELS.length} niveaux complets`;
+    }
+
+    // ── Export progression ────────────────────────────────────────────────────
+    document.getElementById('btn-export-life').addEventListener('click', () => {
+      let total=0, done=0;
+      const lines = [`# Ma Progression — Change Your Life\nDate : ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}\n`];
+      LEVELS.forEach(lvl => {
+        const skills = skillData[lvl.id] || [];
+        const lvlDone = skills.filter(s=>s.done).length;
+        total += skills.length; done += lvlDone;
+        lines.push(`\n## ${lvl.emoji} ${lvl.label} (${lvlDone}/${skills.length})`);
+        skills.forEach(s => lines.push(`- [${s.done?'x':' '}] ${s.label}${s.doneAt ? ` (${new Date(s.doneAt).toLocaleDateString('fr-FR')})` : ''}`));
+      });
+      const pct = total ? Math.round(done/total*100) : 0;
+      lines.unshift(`**Score global : ${pct}% — ${done}/${total} compétences acquises**\n`);
+      const blob = new Blob([lines.join('\n')], { type:'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `ma-vie-cyf-${new Date().toISOString().slice(0,10)}.md`;
+      a.click(); URL.revokeObjectURL(url);
+      showToast('✅ Progression exportée !');
+    });
 
     // ════════════════════════════════════════════════════════════════════════
     // PYRAMID VIEW
