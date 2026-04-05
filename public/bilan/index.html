@@ -176,12 +176,6 @@
         </g>
       </svg>
     </button>
-    <nav class="header-nav">
-      <a href="/app" class="nav-link">Accueil</a>
-      <a href="/journal/" class="nav-link">Journal</a>
-      <a href="/habitudes/" class="nav-link">Habitudes</a>
-      <a href="/bilan/" class="nav-link active">Bilan</a>
-    </nav>
   </header>
 
   <div class="page-shell">
@@ -309,8 +303,14 @@
     import { auth, db } from '/js/firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { initUserMenu } from '/js/userMenu.js?v=16';
+    import { initUserMenu } from '/js/userMenu.js';
 
+    window.CYF_NAV_LINKS = [
+      { href: '/journal/',   label: '📔 Journal' },
+      { href: '/habitudes/', label: '⚡ Habitudes' },
+      { href: '/humeur/',    label: '🌡️ Humeur' },
+      { href: '/bilan/',     label: '📊 Bilan Hebdo' },
+    ];
     try { initUserMenu(); } catch(e) {}
 
     let currentUser;

@@ -18,6 +18,15 @@ export function initUserMenu() {
     // also normalize Vanta/header stacking to avoid z-index issues
     try { normalizeVantaAndHeader(); } catch (e) { /* ignore */ }
 
+    // ── Contextual nav links (defined per-page via window.CYF_NAV_LINKS) ──
+    // Format: [{ href: '/journal/', label: '📔 Journal' }, ...]
+    const ctxLinks = Array.isArray(window.CYF_NAV_LINKS) ? window.CYF_NAV_LINKS : [];
+
+    const ctxHtml = ctxLinks.length
+        ? ctxLinks.map(l => `<div class="cyf-menu-item cyf-ctx-item"><a href="${l.href}">${l.label}</a></div>`).join('')
+          + '<div class="cyf-menu-sep cyf-ctx-sep"></div>'
+        : '';
+
     // Build a minimal menu DOM (inserted once)
     let menu = document.getElementById('cyf-user-menu');
     if (!menu) {
@@ -25,9 +34,10 @@ export function initUserMenu() {
         menu.id = 'cyf-user-menu';
         menu.innerHTML = `
             <div class="cyf-menu-card">
-                <div class="cyf-menu-item"><a href="/app">Mon Espace</a></div>
-                <div class="cyf-menu-item"><a href="/profile">Mon Profil</a></div>
-                <div class="cyf-menu-item"><a href="/settings">Paramètres</a></div>
+                ${ctxHtml}
+                <div class="cyf-menu-item"><a href="/app">🏠 Mon Espace</a></div>
+                <div class="cyf-menu-item"><a href="/profile">👤 Mon Profil</a></div>
+                <div class="cyf-menu-item"><a href="/settings">⚙️ Paramètres</a></div>
                 <div class="cyf-menu-sep"></div>
                 <div class="cyf-menu-item"><a href="#" id="cyf-signout" class="cyf-signout">Se déconnecter <span class="cyf-door"> </span></a></div>
             </div>
@@ -50,6 +60,10 @@ export function initUserMenu() {
             .cyf-menu-sep { height: 1px; background: rgba(255,255,255,0.03); margin: 8px 0; }
             .cyf-signout { color: #ffdddd; }
             .cyf-door { display:inline-block; width:20px; height:20px; vertical-align:middle; margin-left:8px; }
+            /* Contextual links styling */
+            .cyf-ctx-item a { color: #93c5fd !important; }
+            .cyf-ctx-item a:hover { color: #bfdbfe !important; }
+            .cyf-ctx-sep { background: rgba(59,130,246,0.15) !important; height: 1px; }
         `;
         document.head.appendChild(s);
     }
