@@ -571,7 +571,7 @@
         import { onAuthStateChanged, signOut, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { updateGlobalAvatar } from '/js/common.js?v=16';
-        import { initUserMenu } from '/js/userMenu.js?v=16';
+        import { initUserMenu } from '/js/userMenu.js';
 
         // Early initialization of the user menu so the button responds immediately even before auth state fires.
         try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }
