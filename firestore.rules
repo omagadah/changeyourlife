@@ -1,15 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Fonctions d'aide
+    // ── Helpers ─────────────────────────────────────────────────────────────
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-    
+
     function isValidJournalEntry() {
       let data = request.resource.data;
       return data.content is string
@@ -18,67 +18,87 @@ service cloud.firestore {
         && data.userId == request.auth.uid;
     }
 
-    // Collection utilisateurs
-    match /users/{userId} {
-      allow read: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
+    // Empêche le client de modifier directement le champ `levels` ou les anciens
+    // champs plats `xp_*` du document utilisateur. Les écritures XP doivent
+    // passer par la Cloud Function `addXp` (admin SDK = bypass des rules).
+    function noXpTampering() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let forbidden = ['levels', 'xp_body', 'xp_heart', 'xp_etre', 'xp_order', 'xp_mind'];
+      return !changed.hasAny(forbidden);
+    }
 
-      // Sous-collection journal
+    // ── Collection utilisateurs ─────────────────────────────────────────────
+    match /users/{userId} {
+      allow read:   if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && noXpTampering();
+      // (no delete — préférable de garder l'historique)
+
       match /journal/{entryId} {
-        allow read: if isSignedIn() && isOwner(userId);
+        allow read:   if isSignedIn() && isOwner(userId);
         allow create: if isSignedIn() && isOwner(userId) && isValidJournalEntry();
         allow update: if isSignedIn() && isOwner(userId) && isValidJournalEntry();
         allow delete: if isSignedIn() && isOwner(userId);
       }
 
-      // Sous-collection humeur
       match /moods/{dateStr} {
-        allow read: if isSignedIn() && isOwner(userId);
+        allow read:  if isSignedIn() && isOwner(userId);
         allow write: if isSignedIn() && isOwner(userId)
           && request.resource.data.mood is int
           && request.resource.data.mood >= 1
           && request.resource.data.mood <= 5;
       }
 
-      // Sous-collection bilans hebdomadaires
       match /bilans/{weekKey} {
-        allow read: if isSignedIn() && isOwner(userId);
+        allow read:  if isSignedIn() && isOwner(userId);
         allow write: if isSignedIn() && isOwner(userId);
       }
 
-      // Sous-collection sommeil
       match /sleep/{dateStr} {
-        allow read: if isSignedIn() && isOwner(userId);
+        allow read:  if isSignedIn() && isOwner(userId);
         allow write: if isSignedIn() && isOwner(userId)
           && request.resource.data.quality is int
           && request.resource.data.quality >= 1
           && request.resource.data.quality <= 5;
       }
 
-      // Sous-collection gratitude
       match /gratitude/{dateStr} {
-        allow read: if isSignedIn() && isOwner(userId);
+        allow read:  if isSignedIn() && isOwner(userId);
         allow write: if isSignedIn() && isOwner(userId);
       }
     }
 
-    // Autoévaluations (Roue de Vie)
+    // ── Autoévaluations (Roue de Vie) ──────────────────────────────────────
     match /assessments/{docId} {
-      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow read:   if isSignedIn() && resource.data.uid == request.auth.uid;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Codex — notes personnelles
+    // ── Codex — notes personnelles ─────────────────────────────────────────
     match /codexNotes/{docId} {
-      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow read:   if isSignedIn() && resource.data.uid == request.auth.uid;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Codes OTP (écriture/lecture par Firebase Admin uniquement via serverless)
+    // ── Collections backend-only (admin SDK exclusif) ──────────────────────
+    // OTP de vérification email
     match /verificationCodes/{uid} {
+      allow read, write: if false;
+    }
+    // Rate-limit IA Coach (api/coach.js)
+    match /coachRate/{uid} {
+      allow read, write: if false;
+    }
+    // Rôles (modérateur, admin) — réservé Custom Claims serveur
+    match /roles/{uid} {
+      allow read:  if isSignedIn() && isOwner(uid);
+      allow write: if false;
+    }
+
+    // Tout le reste est bloqué par défaut
+    match /{document=**} {
       allow read, write: if false;
     }
   }

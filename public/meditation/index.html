@@ -592,14 +592,15 @@
           'meditation.lastSessionAt': Date.now(),
           'meditation.streak': streak,
           'meditation.history': history,
-          'levels.body.xp': increment(15)
         });
+        try { await window._cyfFirebase.awardXp('body', 15); } catch(_){}
         await loadStats();
       } catch(e) {
         try {
           const userRef = doc(db, 'users', uid);
           const historyEntry = { title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
-          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1, history:[historyEntry] }, levels: { body: { xp: 15 } }}, {merge:true});
+          await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1, history:[historyEntry] }}, {merge:true});
+          try { await window._cyfFirebase.awardXp('body', 15); } catch(_){}
           await loadStats();
         } catch(e2) {}
       }

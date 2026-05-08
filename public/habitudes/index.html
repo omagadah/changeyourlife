@@ -364,10 +364,9 @@
         const newStreak = lastDayStr === yesterday ? (h.streak || 0) + 1 : 1;
         habits[idx] = { ...h, lastDoneAt: Date.now(), streak: newStreak };
         await saveHabits();
-        // Award XP
-        const xpKey = h.domain || 'etre';
+        // Award XP via Cloud Function (validation + level-up server-side)
         try {
-          await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(5) });
+          await window._cyfFirebase.awardXp(h.domain || 'etre', 5);
           try { showXpFloat(5); } catch(e) {}
         } catch(_) {}
         showToast(`+5 XP · Habitude complétée ! 🔥 ${newStreak} jour${newStreak!==1?'s':''}`, 'xp');

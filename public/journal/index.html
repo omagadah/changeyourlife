@@ -890,10 +890,10 @@
         await setDoc(doc(journalCol(), id), data, { merge: true });
         if (!editingId) {
           entries.unshift({ ...data, createdAt: { toDate: () => new Date() } });
-          // Award XP for journaling (10 XP to matching domain)
+          // Award XP for journaling (10 XP to matching domain) via Cloud Function
           try {
             const xpKey = selDomain === 'none' ? 'etre' : selDomain;
-            await updateDoc(doc(db,'users',uid), { [`levels.${xpKey}.xp`]: increment(10) });
+            await window._cyfFirebase.awardXp(xpKey, 10);
             try { showXpFloat(10, document.getElementById('btn-save-entry')); } catch(e) {}
           } catch(_) {}
         } else {

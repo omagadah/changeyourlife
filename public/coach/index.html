@@ -530,17 +530,26 @@
       appendMsg('assistant', '', true);
 
       try {
+        if (!auth.currentUser) {
+          removeTyping();
+          appendMsg('assistant', 'Tu dois être connecté pour parler avec le coach.');
+          window.location.href = '/login';
+          return;
+        }
+        const idToken = await auth.currentUser.getIdToken();
         const res = await fetch('/api/coach', {
           method: 'POST',
           headers: { 'Content-Type':'application/json' },
-          body: JSON.stringify({ messages: state.messages.slice(-10), userProfile: state.userProfile })
+          body: JSON.stringify({ idToken, messages: state.messages.slice(-10), userProfile: state.userProfile })
         });
 
         removeTyping();
 
         if (!res.ok) {
           const err = await res.json().catch(()=>({error:'Erreur réseau'}));
-          if (err.setup) {
+          if (res.status === 429) {
+            appendMsg('assistant', `Tu as atteint la limite d'appels. Réessaie dans ${err.retryAfter || 60}s.`);
+          } else if (err.setup) {
             appendMsg('assistant', '⚙️ La clé API Gemini n\'est pas encore configurée. Ajoute GEMINI_API_KEY dans tes variables Vercel (gratuit sur aistudio.google.com/apikey).');
           } else {
             appendMsg('assistant', 'Une erreur est survenue. Réessaie dans un moment.');

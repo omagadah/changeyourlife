@@ -428,24 +428,9 @@
       try {
         await setDoc(doc(db, 'users', currentUser.uid, 'moods', dateStr), entry);
 
-        // Award XP
-        const userRef = doc(db, 'users', currentUser.uid);
-        const snap = await getDoc(userRef);
-        const userData = snap.exists() ? snap.data() : {};
+        // Award XP via Cloud Function (validation + level-up server-side)
         const domainKey = selectedDomain === 'corps' ? 'body' : selectedDomain === 'coeur' ? 'heart' : selectedDomain === 'etre' ? 'etre' : selectedDomain === 'ordre' ? 'order' : 'heart';
-        const xpField = `xp_${domainKey}`;
-        const curXp = (userData[xpField] || 0) + 5;
-        await updateDoc(userRef, { [xpField]: increment(5) });
-
-        // Check level up
-        const THRESHOLDS = [0,100,250,500,1000,2000,4000,8000,Infinity];
-        const TITLES = ['Novice','Apprenti','Initié','Pratiquant','Avancé','Expert','Maître','Légende'];
-        const prevLevel = THRESHOLDS.findIndex((t,i) => (userData[xpField]||0) < THRESHOLDS[i+1]);
-        const newLevel  = THRESHOLDS.findIndex((t,i) => curXp < THRESHOLDS[i+1]);
-        if (newLevel > prevLevel) {
-          const domLabel = DOMAIN_LABELS[selectedDomain] || 'Humeur';
-          showLevelUp(domLabel, newLevel + 1);
-        }
+        try { await window._cyfFirebase.awardXp(domainKey, 5); } catch(_){}
 
         allEntries[dateStr] = entry;
         todayAlreadyLogged = true;

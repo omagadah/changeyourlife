@@ -1033,32 +1033,37 @@ async function openUserDetailModal(uid) {
         const lv = u.levels || {};
         const lvn = { body: lv.body?.level || 0, etre: (lv.etre?.level || (lv.mind?.level || 0)), heart: lv.heart?.level || 0, order: lv.order?.level || 0 };
         const badges = Array.isArray(u.badges) ? u.badges : [];
+        const escAdmin = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        const safeName = escAdmin(u.displayName || '(sans nom)');
+        const safeEmail = escAdmin(u.email || '');
+        const safeUid = escAdmin(uid);
+        const safeBadges = badges.map(b => `<span class="pill">${escAdmin(b)}</span>`).join('') || '<span class="subtle">Aucun badge</span>';
         content.innerHTML = `
             <div class="grid-2">
                 <div>
-                    <div class="input-group"><div class="input-label">Nom</div><div>${u.displayName||'(sans nom)'}</div></div>
-                    <div class="input-group"><div class="input-label">Email</div><div>${u.email||''}</div></div>
-                    <div class="input-group"><div class="input-label">UID</div><div><code>${uid}</code></div></div>
+                    <div class="input-group"><div class="input-label">Nom</div><div>${safeName}</div></div>
+                    <div class="input-group"><div class="input-label">Email</div><div>${safeEmail}</div></div>
+                    <div class="input-group"><div class="input-label">UID</div><div><code>${safeUid}</code></div></div>
                 </div>
                 <div>
                     <div class="input-group"><div class="input-label">Rôle Modérateur</div>
                         <button id="toggle-mod" class="btn ${isMod? 'btn-secondary':'btn-primary'}">${isMod?'Retirer Modérateur':'Ajouter Modérateur'}</button>
                     </div>
-                    <div class="note">Les admins restent gérés via la constante côté client pour le moment.</div>
+                    <div class="note">Les rôles sont écrits dans <code>roles/{uid}</code>. Réservé aux admins (Custom Claims requis côté serveur pour activer l'écriture).</div>
                 </div>
             </div>
             <div class="settings-group" style="margin-top:12px">
                 <h3 class="settings-group-title">Niveaux</h3>
                 <div class="grid-2">
-                    <div>Corps: <strong>${lvn.body}</strong></div>
-                    <div>Être: <strong>${lvn.etre}</strong></div>
-                    <div>Cœur: <strong>${lvn.heart}</strong></div>
-                    <div>Ordre: <strong>${lvn.order}</strong></div>
+                    <div>Corps: <strong>${Number(lvn.body)||0}</strong></div>
+                    <div>Être: <strong>${Number(lvn.etre)||0}</strong></div>
+                    <div>Cœur: <strong>${Number(lvn.heart)||0}</strong></div>
+                    <div>Ordre: <strong>${Number(lvn.order)||0}</strong></div>
                 </div>
             </div>
             <div class="settings-group">
                 <h3 class="settings-group-title">Badges (${badges.length})</h3>
-                <div style="display:flex;flex-wrap:wrap;gap:8px;">${badges.map(b => `<span class="pill">${b}</span>`).join('') || '<span class="subtle">Aucun badge</span>'}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">${safeBadges}</div>
             </div>
         `;
         const btn = root.querySelector('#toggle-mod');

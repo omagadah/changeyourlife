@@ -523,7 +523,7 @@
         g.progress = v;
         if (v >= 100 && !wasCompleted) {
           g.completed = true; showToast('🏆 Objectif complété ! +25 XP');
-          try { await updateDoc(doc(db,'users',uid), { [`levels.${g.domain||'etre'}.xp`]: increment(25) }); showXpFloat(25); } catch(_){}
+          try { await window._cyfFirebase.awardXp(g.domain || 'etre', 25); showXpFloat(25); } catch(_){}
         }
         await persistGoals(); renderAll();
       });
@@ -588,7 +588,7 @@
         else { showToast('↻ Objectif réactivé'); }
         await persistGoals();
         if (!was) {
-          try { await updateDoc(doc(db,'users',uid), { [`levels.${g.domain||'etre'}.xp`]: increment(25) }); showXpFloat(25); } catch(_){}
+          try { await window._cyfFirebase.awardXp(g.domain || 'etre', 25); showXpFloat(25); } catch(_){}
         }
         renderAll();
       });
