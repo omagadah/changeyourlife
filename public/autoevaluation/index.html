@@ -121,6 +121,21 @@
 </head>
 <body>
 <div id="vanta-bg"></div>
+<header class="header" style="position:fixed;top:16px;right:24px;z-index:10000;">
+  <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu" style="background:transparent;border:none;cursor:pointer;width:40px;height:40px;padding:0;">
+    <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
+      <g stroke-width="3">
+        <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+        <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+        <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+        <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+        <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+        <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+        <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
+      </g>
+    </svg>
+  </button>
+</header>
 <div class="page">
   <nav class="nav">
     <a href="/app" class="nav-back">← Tableau de bord</a>
@@ -224,9 +239,12 @@
 <script type="module">
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { updateGlobalAvatar } from '/js/common.js';
+import { initUserMenu } from '/js/userMenu.js';
 
 if(!window._cyfFirebase){await import('/js/firebase.js');}
 let {app,auth,db}=window._cyfFirebase;
+try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 
 const DOMAINS=[
   {key:'corps',label:'Corps',color:'#2dd4bf',emoji:'💪',questions:[

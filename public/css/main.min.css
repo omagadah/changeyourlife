@@ -143,6 +143,16 @@ html, body {
   inset:72px 20px 20px !important;
 }
 
+/* ── Floating Header (logo top-right on pages without site-nav) ── */
+.header {
+  position:fixed; top:16px; right:24px; z-index:10000;
+  display:inline-flex; align-items:center; justify-content:flex-end;
+  pointer-events:auto;
+}
+@media (max-width: 600px) {
+  .header { top:12px; right:14px; }
+}
+
 /* ── User Panel Trigger ─────────────────────────────────────── */
 .user-panel-trigger {
   width:40px; height:40px;
