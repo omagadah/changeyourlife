@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060e1a"/>
+      <stop offset="100%" stop-color="#0a2540"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="20%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#0070f3" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#0070f3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="85%" cy="75%" r="45%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#9bb3d0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.05">
+    <line x1="0" y1="100" x2="1200" y2="100" stroke="#ffffff" stroke-width="1"/>
+    <line x1="0" y1="200" x2="1200" y2="200" stroke="#ffffff" stroke-width="1"/>
+    <line x1="0" y1="300" x2="1200" y2="300" stroke="#ffffff" stroke-width="1"/>
+    <line x1="0" y1="400" x2="1200" y2="400" stroke="#ffffff" stroke-width="1"/>
+    <line x1="0" y1="500" x2="1200" y2="500" stroke="#ffffff" stroke-width="1"/>
+  </g>
+
+  <!-- Logo CYL (left side, scaled up) -->
+  <g transform="translate(80, 220) scale(1.2)">
+    <g stroke-width="3">
+      <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+      <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+      <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+      <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+      <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+      <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+      <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
+      <g fill="none" stroke="white" stroke-linecap="round">
+        <circle cx="145" cy="30" r="3"/>
+        <circle cx="155" cy="30" r="3"/>
+        <line x1="145" y1="30" x2="155" y2="30"/>
+        <path d="M 150 52 l 6 10 h -12 z"/>
+        <circle cx="150" cy="85" r="3"/>
+        <circle cx="144" cy="95" r="3"/>
+        <circle cx="156" cy="95" r="3"/>
+        <line x1="150" y1="85" x2="144" y2="95"/>
+        <line x1="150" y1="85" x2="156" y2="95"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Brand name -->
+  <text x="80" y="170" fill="#60a5fa" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="22" font-weight="700" letter-spacing="3">
+    CHANGEYOURLIFE.AI
+  </text>
+
+  <!-- Title -->
+  <text x="380" y="240" fill="url(#title)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="62" font-weight="800" letter-spacing="-1.5">
+    Une base saine
+  </text>
+  <text x="380" y="312" fill="url(#title)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="62" font-weight="800" letter-spacing="-1.5">
+    pour construire
+  </text>
+  <text x="380" y="384" fill="url(#title)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="62" font-weight="800" letter-spacing="-1.5">
+    de grandes choses.
+  </text>
+
+  <!-- Subtitle -->
+  <text x="380" y="445" fill="#8ba4c8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="26" font-weight="500">
+    Outils de santé mentale optimisés par l'IA — gratuit.
+  </text>
+
+  <!-- Feature pills -->
+  <g transform="translate(380, 490)">
+    <!-- Pill 1: Méditation -->
+    <rect x="0" y="0" width="160" height="42" rx="21" fill="rgba(45,212,191,0.12)" stroke="rgba(45,212,191,0.35)" stroke-width="1"/>
+    <text x="80" y="27" fill="#5eead4" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">🧘 Méditation</text>
+
+    <!-- Pill 2: Journal -->
+    <rect x="175" y="0" width="135" height="42" rx="21" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.35)" stroke-width="1"/>
+    <text x="242" y="27" fill="#c4b5fd" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">📔 Journal</text>
+
+    <!-- Pill 3: Coach IA -->
+    <rect x="325" y="0" width="145" height="42" rx="21" fill="rgba(0,112,243,0.12)" stroke="rgba(0,112,243,0.4)" stroke-width="1"/>
+    <text x="397" y="27" fill="#60a5fa" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">🤖 Coach IA</text>
+
+    <!-- Pill 4: Trackers -->
+    <rect x="485" y="0" width="155" height="42" rx="21" fill="rgba(251,191,36,0.12)" stroke="rgba(251,191,36,0.35)" stroke-width="1"/>
+    <text x="562" y="27" fill="#fde68a" font-family="-apple-system, sans-serif" font-size="15" font-weight="600" text-anchor="middle">📊 Trackers</text>
+  </g>
+
+  <!-- Footer URL -->
+  <text x="600" y="600" fill="#4a6a8a" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="18" font-weight="600" text-anchor="middle">
+    changeyourlife.ai
+  </text>
+</svg>
