@@ -11,8 +11,8 @@
 - **Auto-deploy** : push sur `main` → Vercel deploy en production (≈40 sec)
 
 ## Identité
-- **Owner** : Romain (FR)
-- **Git author** : `Romain <romain@changeyourlife.ai>` — utiliser cette identité pour tous les commits
+- **Owner** : anonyme (FR), tutoiement OK
+- **Git author** : `Omagadah <noreply@changeyourlife.ai>` — toujours signer avec cette identité (l'owner souhaite rester anonyme)
 - **Email Resend** : `noreply@changeyourlife.ai`
 
 ## Structure du repo
@@ -101,7 +101,7 @@ Deux patterns valides :
 | `npm run logs:functions` | Tail logs Cloud Functions |
 
 ### Tests
-Pas de suite automatisée. Validation = redeploy Vercel + smoke test manuel par Romain.
+Pas de suite automatisée. Validation = redeploy Vercel + smoke test manuel par l'owner.
 
 ## Workflow Claude Code
 
@@ -112,7 +112,7 @@ Pas de suite automatisée. Validation = redeploy Vercel + smoke test manuel par 
 | Fin session | Slash command `/session-end` — crée/MAJ `docs/sessions/YYYY-MM-DD.md` |
 | Audit | Slash command `/audit` — relance un scan complet et MAJ `AUDIT.md` |
 
-## Préférences Romain
+## Préférences communication
 - Réponses en **français**, format **court**, pas de blabla
 - Pas de blocs de code longs sauf nécessaire
 - Pas d'emoji (sauf si demandé)

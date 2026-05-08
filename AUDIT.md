@@ -86,7 +86,7 @@ Pour le retirer :
 
 À faire dans une session dédiée. Risque modéré de régression visuelle.
 
-### ⚠️ Action manuelle requise (Romain)
+### ⚠️ Action manuelle requise
 
 1. **Deploy des nouvelles règles Firestore** :
    ```bash

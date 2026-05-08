@@ -104,7 +104,7 @@ Le repo intègre [Claude Code](https://claude.com/claude-code) :
 
 ## License
 
-Code propriétaire. © Romain — `romain@changeyourlife.ai`
+Code propriétaire. © ChangeYourLife.ai — contact : `noreply@changeyourlife.ai`
 
 ## Urgence
 
