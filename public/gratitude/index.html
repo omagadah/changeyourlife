@@ -14,7 +14,7 @@
   <meta name="msapplication-TileColor" content="#07192f">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    body { color:#e5eef8; }
+    body { color:var(--text-1); }
     .page-shell {
       position:fixed; inset:20px;
       background:var(--glass-bg); backdrop-filter:blur(15px);
@@ -29,7 +29,7 @@
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(251,191,36,.92); color:#1a1208; padding:10px 20px; border-radius:10px; font-weight:700; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
     .toast.show { transform:translate(-50%,0); }
 
-    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
     .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
 
     /* ── Entry card ── */
@@ -72,15 +72,15 @@
       width:100%; box-sizing:border-box;
       padding:12px 14px; border-radius:12px;
       border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
-      color:#e5eef8; font-size:0.9rem; outline:none; resize:none;
+      color:var(--text-1); font-size:0.9rem; outline:none; resize:none;
       transition:border-color .2s, background .2s; font-family:inherit; line-height:1.5;
     }
     .prompt-input:focus { border-color:rgba(251,191,36,0.45); background:rgba(251,191,36,0.04); }
-    .prompt-input::placeholder { color:#3a4a5a; }
+    .prompt-input::placeholder { color:var(--text-3); }
 
     /* ── Mood row ── */
     .mood-row { display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
-    .mood-label { font-size:0.78rem; color:#7ba3c8; font-weight:600; flex-shrink:0; }
+    .mood-label { font-size:0.78rem; color:var(--text-2); font-weight:600; flex-shrink:0; }
     .mood-btns { display:flex; gap:6px; }
     .mood-btn {
       width:38px; height:38px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);
@@ -106,7 +106,7 @@
       border-radius:14px; padding:16px; text-align:center;
     }
     .stat-value { font-size:1.6rem; font-weight:800; color:#fbbf24; }
-    .stat-desc { font-size:0.68rem; color:#4a6a8a; margin-top:3px; text-transform:uppercase; letter-spacing:.5px; }
+    .stat-desc { font-size:0.68rem; color:var(--text-3); margin-top:3px; text-transform:uppercase; letter-spacing:.5px; }
 
     /* ── Calendar / heatmap ── */
     .heatmap-grid {
@@ -121,7 +121,7 @@
     .heatmap-cell[data-has="1"] { background:rgba(251,191,36,0.18); border-color:rgba(251,191,36,0.3); }
     .heatmap-cell[data-has="1"]::after { content:'🌟'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.6rem; }
     .heatmap-cell.today { border-color:rgba(251,191,36,0.6) !important; }
-    .heatmap-day-label { font-size:0.58rem; text-align:center; color:#3a4a5a; margin-bottom:3px; font-weight:700; text-transform:uppercase; }
+    .heatmap-day-label { font-size:0.58rem; text-align:center; color:var(--text-3); margin-bottom:3px; font-weight:700; text-transform:uppercase; }
 
     /* ── History entries ── */
     .history-list { display:flex; flex-direction:column; gap:10px; }
@@ -129,7 +129,7 @@
       background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
       border-radius:14px; padding:16px; border-left:3px solid rgba(251,191,36,0.4);
     }
-    .history-date { font-size:0.68rem; color:#4a6a8a; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .history-date { font-size:0.68rem; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
     .history-entries { display:flex; flex-direction:column; gap:6px; }
     .history-entry { font-size:0.82rem; color:#c8d8ee; line-height:1.5; display:flex; gap:8px; align-items:flex-start; }
     .history-entry-num { font-size:0.7rem; color:#fbbf24; font-weight:700; flex-shrink:0; margin-top:1px; }

@@ -14,7 +14,7 @@
   <meta name="msapplication-TileColor" content="#07192f">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    body { color:#e5eef8; }
+    body { color:var(--text-1); }
     .page-shell {
       position:fixed; inset:20px;
       background:var(--glass-bg); backdrop-filter:blur(15px);
@@ -23,13 +23,13 @@
     }
     .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
     .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
-    .header-sub { font-size:0.82rem; color:#7ba3c8; margin-top:2px; }
+    .header-sub { font-size:0.82rem; color:var(--text-2); margin-top:2px; }
     .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
 
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
     .toast.show { transform:translate(-50%,0); }
 
-    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
     .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
 
     /* ── Sleep entry card ── */
@@ -44,10 +44,10 @@
 
     .time-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
     .time-field { flex:1; min-width:120px; display:flex; flex-direction:column; gap:6px; }
-    .time-label { font-size:0.72rem; font-weight:700; color:#7ba3c8; text-transform:uppercase; letter-spacing:.5px; }
+    .time-label { font-size:0.72rem; font-weight:700; color:var(--text-2); text-transform:uppercase; letter-spacing:.5px; }
     .time-input {
       padding:10px 13px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.05); color:#e5eef8; font-size:1rem; font-weight:700;
+      background:rgba(255,255,255,0.05); color:var(--text-1); font-size:1rem; font-weight:700;
       outline:none; transition:border-color .2s; width:100%; box-sizing:border-box;
       font-family:inherit;
     }
@@ -59,11 +59,11 @@
       border:1px solid rgba(99,102,241,0.2); border-radius:10px; margin-bottom:16px;
     }
     .duration-value { font-size:1.6rem; font-weight:800; color:#a5b4fc; }
-    .duration-label { font-size:0.7rem; color:#4a6a8a; margin-top:2px; }
+    .duration-label { font-size:0.7rem; color:var(--text-3); margin-top:2px; }
 
     /* ── Quality slider ── */
     .quality-row { margin-bottom:16px; }
-    .quality-labels { display:flex; justify-content:space-between; font-size:0.68rem; color:#4a6a8a; margin-top:4px; }
+    .quality-labels { display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-3); margin-top:4px; }
     .quality-slider { width:100%; accent-color:#6366f1; cursor:pointer; margin-top:6px; }
     .quality-emojis { display:flex; justify-content:space-between; font-size:1.1rem; margin-top:6px; }
 
@@ -71,12 +71,12 @@
     .sleep-note {
       width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.08); border-radius:10px;
-      color:#e5eef8; font-size:0.84rem; padding:9px 12px; resize:none;
+      color:var(--text-1); font-size:0.84rem; padding:9px 12px; resize:none;
       font-family:inherit; line-height:1.5; transition:border-color .2s;
       margin-bottom:14px;
     }
     .sleep-note:focus { outline:none; border-color:rgba(99,102,241,0.35); }
-    .sleep-note::placeholder { color:#4a6a8a; }
+    .sleep-note::placeholder { color:var(--text-3); }
 
     .save-sleep-btn {
       width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
@@ -92,8 +92,8 @@
     .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
     .stat-block { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px 14px; text-align:center; border-bottom:2px solid var(--sb-color, rgba(255,255,255,0.08)); }
     .stat-block-icon { font-size:1.2rem; margin-bottom:4px; }
-    .stat-block-value { font-size:1.6rem; font-weight:800; color:#eef4ff; line-height:1.1; }
-    .stat-block-label { font-size:0.63rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+    .stat-block-value { font-size:1.6rem; font-weight:800; color:var(--text-1); line-height:1.1; }
+    .stat-block-label { font-size:0.63rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
 
     /* ── 14-day chart ── */
     .chart-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:18px 20px; }
@@ -101,16 +101,16 @@
     .bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
     .bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:4px 4px 0 0; overflow:hidden; flex:1; position:relative; display:flex; align-items:flex-end; }
     .bar-fill { width:100%; background:linear-gradient(180deg,#6366f1,#4f46e5); border-radius:4px 4px 0 0; transition:height .8s cubic-bezier(.4,0,.2,1); }
-    .bar-day { font-size:0.58rem; color:#4a6a8a; white-space:nowrap; }
+    .bar-day { font-size:0.58rem; color:var(--text-3); white-space:nowrap; }
 
     /* ── Log ── */
     .log-list { display:flex; flex-direction:column; gap:8px; }
     .log-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:11px; padding:11px 14px; position:relative; overflow:hidden; }
     .log-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--qi-color, #6366f1); border-radius:11px 0 0 11px; }
-    .log-date { font-size:0.72rem; color:#4a6a8a; font-weight:600; width:60px; flex-shrink:0; }
-    .log-hours { font-size:1rem; font-weight:800; color:#eef4ff; flex-shrink:0; width:48px; }
+    .log-date { font-size:0.72rem; color:var(--text-3); font-weight:600; width:60px; flex-shrink:0; }
+    .log-hours { font-size:1rem; font-weight:800; color:var(--text-1); flex-shrink:0; width:48px; }
     .log-quality { font-size:1.1rem; flex-shrink:0; }
-    .log-note { font-size:0.8rem; color:#7ba3c8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+    .log-note { font-size:0.8rem; color:var(--text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
 
     @media (max-width:600px) {
       .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
