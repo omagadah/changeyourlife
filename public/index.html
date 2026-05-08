@@ -735,65 +735,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
-    <script>
-        VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00, backgroundColor: 0x0, color1: 0x7192ff, color2: 0xd1ff, colorMode: "varianceGradient", quantity: 5.00, birdSize: 1.00, wingSpan: 30.00, speedLimit: 5.00, separation: 20.00, alignment: 20.00, cohesion: 20.00 })
-    </script>
-    <!-- Lazy load Tidio chat après 3s pour performances -->
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const tidio = document.createElement('script');
-                tidio.src = '//code.tidio.co/cm488cf0vfaocd3agpjnan7ywxkq3q2t.js';
-                tidio.async = true;
-                document.body.appendChild(tidio);
-            }, 3000);
-        });
-        // Supprimer console.log en production
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            console.log = console.warn = console.error = () => {};
-        }
-    </script>
-
-    <!-- Scroll reveal -->
-    <script>
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
-        }, { threshold: 0.12 });
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-        // ── Animated counters ──
-        // Compteurs animés retirés — les valeurs affichées sont désormais des
-        // garanties statiques honnêtes (100%, 16 modules, PWA, EU).
-    </script>
-
-    <script type="module">
-        import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { updateGlobalAvatar } from '/js/common.js';
-
-        let auth;
-        if (window._cyfFirebase) {
-            ({ auth } = window._cyfFirebase);
-        } else {
-            await import('/js/firebase.js');
-            ({ auth } = window._cyfFirebase);
-        }
-
-        const ctaButton = document.getElementById('cta-button');
-        const ctaTop = document.getElementById('cta-top');
-        const ctaLogin = document.getElementById('cta-login');
-        const ctaFinal = document.getElementById('cta-final');
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                if (ctaButton) { ctaButton.href = '/app'; ctaButton.textContent = 'Accéder à mon espace →'; }
-                if (ctaTop) { ctaTop.href = '/app'; ctaTop.textContent = 'Mon espace'; }
-                if (ctaLogin) ctaLogin.style.display = 'none';
-                if (ctaFinal) { ctaFinal.href = '/app'; ctaFinal.textContent = 'Accéder à mon espace →'; }
-            } else {
-                if (ctaButton) { ctaButton.href = '/login'; ctaButton.textContent = 'Commencer l\'aventure →'; }
-                if (ctaTop) { ctaTop.href = '/login'; ctaTop.textContent = 'Commencer'; }
-            }
-        });
-    </script>
+    <script type="module" src="/js/landing.js"></script>
 </body>
 </html>
