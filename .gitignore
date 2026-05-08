@@ -8,3 +8,6 @@ node_modules
 
 # Audit exports (binaires Word)
 *.docx
+
+# Permissions locales Claude Code (per-machine, pas partagé)
+.claude/settings.local.json

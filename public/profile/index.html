@@ -12,132 +12,413 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <meta name="theme-color" content="#00aaff">
     <meta name="msapplication-TileColor" content="#07192f">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
     <link rel="stylesheet" href="/css/main.min.css"/>
     <style>
-        :root {
-          --background-color:#07192f; --glass-bg:rgba(14,26,50,0.75);
-          --glass-border:rgba(255,255,255,0.09); --text-primary:#e5eef8;
-          --text-secondary:#7e9ab5; --accent-color:#0070f3;
-          --ok:#10b981; --warn:#f59e0b; --danger:#ef4444;
-        }
-        *{margin:0;padding:0;box-sizing:border-box}
-        html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text-primary);background:var(--background-color)}
+      /* ── Layout ──────────────────────────────────────────────── */
+      html, body { overflow: auto; }
+      body { min-height: 100vh; background: var(--bg); }
+      .profile-page {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 86px 24px 64px;
+        animation: fadeUp 0.5s var(--ease) both;
+      }
+      @media (max-width: 600px) {
+        .profile-page { padding: 76px 14px 40px; }
+      }
 
-        /* ── Layout ── */
-        .app-container {
-          position:absolute; top:72px; bottom:16px; left:16px; right:16px;
-          display:grid; grid-template-columns:300px 1fr; gap:16px;
-          z-index:1; overflow:hidden;
-        }
-        .left-card {
-          background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-          border:1px solid var(--glass-border); border-radius:20px;
-          padding:20px; display:flex; flex-direction:column; gap:14px; overflow-y:auto;
-        }
-        .right-panel {
-          background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-          border:1px solid var(--glass-border); border-radius:20px;
-          padding:20px; display:flex; flex-direction:column; overflow:hidden;
-        }
+      /* ── Hero card (banner + avatar overlay) ─────────────────── */
+      .hero-card {
+        position: relative;
+        background: var(--bg-surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r-xl);
+        overflow: hidden;
+        margin-bottom: 28px;
+        box-shadow: var(--shadow);
+      }
+      .hero-banner {
+        height: 120px;
+        background:
+          radial-gradient(circle at 20% 30%, rgba(0,112,243,0.45), transparent 55%),
+          radial-gradient(circle at 80% 70%, rgba(167,139,250,0.35), transparent 55%),
+          linear-gradient(135deg, #0a2540 0%, #0f2240 100%);
+      }
+      .hero-body {
+        position: relative;
+        padding: 0 28px 24px;
+        display: flex; flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      .hero-avatar {
+        width: 112px; height: 112px;
+        border-radius: 50%;
+        margin-top: -56px;
+        background: var(--bg-elevated);
+        border: 4px solid var(--bg-surface);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+        font-size: 2.4rem; font-weight: 800;
+        color: var(--text-1);
+      }
+      .hero-avatar img,
+      .hero-avatar svg {
+        width: 100%; height: 100%;
+        display: block; object-fit: cover;
+      }
+      .hero-info {
+        display: flex; flex-direction: column; gap: 6px;
+      }
+      .hero-name {
+        font-size: 1.4rem; font-weight: 800;
+        color: var(--text-1); letter-spacing: -0.4px;
+        line-height: 1.1;
+      }
+      .hero-meta {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      }
+      .hero-title {
+        font-size: 0.85rem; color: var(--blue-light);
+        font-style: italic;
+      }
+      .hero-handle {
+        font-size: 0.78rem; color: var(--text-3);
+        padding: 3px 10px; border-radius: 999px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--glass-border);
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      .hero-stats {
+        display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px;
+      }
+      .hero-stat {
+        font-size: 0.78rem; color: var(--text-2);
+        display: inline-flex; align-items: center; gap: 6px;
+      }
+      .hero-stat strong { color: var(--text-1); font-weight: 700; }
 
-        /* ── Avatar left ── */
-        .profile-avatar-wrap {
-          display:flex; flex-direction:column; align-items:center; gap:10px;
-          padding:16px 12px; background:rgba(255,255,255,0.03);
-          border:1px solid var(--glass-border); border-radius:16px;
-        }
-        .avatar-preview {
-          width:88px; height:88px; border-radius:50%;
-          background:rgba(0,112,243,0.15);
-          border:2px solid rgba(0,112,243,0.35);
-          display:flex; align-items:center; justify-content:center;
-          overflow:hidden;
-        }
-        .profile-name { font-weight:800; font-size:1rem; color:#e5eef8; text-align:center; }
-        .profile-title-display { font-size:0.76rem; color:#7bbfff; font-style:italic; text-align:center; }
-        .player-badge {
-          display:inline-flex; align-items:center; gap:5px;
-          padding:4px 12px; border-radius:999px;
-          background:rgba(255,255,255,0.05); border:1px solid var(--glass-border);
-          font-size:0.72rem; color:var(--text-secondary);
-        }
+      /* ── Tabs ────────────────────────────────────────────────── */
+      .tabs {
+        display: flex; gap: 4px;
+        background: var(--bg-surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r);
+        padding: 4px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+      }
+      .tab {
+        flex-shrink: 0;
+        padding: 9px 18px; border-radius: var(--r-sm);
+        background: transparent; border: none;
+        color: var(--text-2); font-size: 0.86rem; font-weight: 600;
+        cursor: pointer;
+        transition: var(--duration) var(--ease);
+        font-family: inherit;
+        display: inline-flex; align-items: center; gap: 7px;
+      }
+      .tab:hover { color: var(--text-1); background: rgba(255,255,255,0.04); }
+      .tab.active {
+        background: var(--blue);
+        color: #fff;
+        box-shadow: 0 4px 14px var(--blue-glow);
+      }
 
-        /* ── Form elements ── */
-        .field-group { display:flex; flex-direction:column; gap:5px; }
-        .field-label { font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.4px; }
-        .input, .textarea {
-          width:100%; padding:10px 13px; border-radius:10px;
-          border:1px solid rgba(255,255,255,0.1);
-          background:rgba(255,255,255,0.06);
-          color:var(--text-primary); font-size:0.88rem;
-          outline:none; transition:border-color .2s, background .2s;
-          font-family:inherit;
-        }
-        .input:focus, .textarea:focus { border-color:var(--accent-color); background:rgba(0,112,243,0.08); }
-        .input:disabled { opacity:.45; cursor:not-allowed; }
-        .textarea { min-height:80px; resize:vertical; }
+      /* ── Sections ────────────────────────────────────────────── */
+      .section { display: none; animation: fadeUp 0.35s var(--ease) both; }
+      .section.active { display: flex; flex-direction: column; gap: 18px; }
 
-        /* ── Buttons ── */
-        .btn {
-          padding:10px 18px; border-radius:10px; border:none;
-          background:var(--accent-color); color:#fff; font-weight:700;
-          cursor:pointer; font-size:0.87rem; transition:all .2s;
-        }
-        .btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
-        .btn.secondary { background:rgba(255,255,255,0.08); color:var(--text-primary); border:1px solid var(--glass-border); }
-        .btn.secondary:hover { background:rgba(255,255,255,0.14); }
-        .btn.save-main {
-          background:linear-gradient(135deg,#0070f3,#0050d0);
-          box-shadow:0 4px 14px rgba(0,112,243,.35);
-        }
-        .btn.save-main:hover { box-shadow:0 6px 20px rgba(0,112,243,.5); }
+      /* ── Card (réutilisable) ─────────────────────────────────── */
+      .card {
+        background: var(--bg-surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r-lg);
+        padding: 24px;
+        transition: border-color var(--duration);
+      }
+      .card:hover { border-color: var(--glass-border-hover); }
+      .card-header {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--glass-border);
+      }
+      .card-header__title {
+        display: flex; align-items: center; gap: 10px;
+      }
+      .card-header__icon {
+        width: 32px; height: 32px;
+        border-radius: var(--r-sm);
+        background: rgba(0,112,243,0.12);
+        color: var(--blue-light);
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+      }
+      .card-title {
+        font-size: 1rem; font-weight: 700;
+        color: var(--text-1); letter-spacing: -0.2px;
+      }
+      .card-subtitle {
+        font-size: 0.82rem; color: var(--text-2);
+        margin-top: 2px;
+      }
 
-        /* ── Tabs ── */
-        .tabs {
-          display:inline-flex; gap:4px;
-          background:rgba(255,255,255,0.04);
-          border:1px solid var(--glass-border);
-          border-radius:11px; padding:4px; margin-bottom:16px; flex-shrink:0;
-        }
-        .tab {
-          padding:7px 16px; border-radius:8px; cursor:pointer;
-          color:var(--text-secondary); font-size:0.83rem; font-weight:600;
-          transition:all .2s; border:none; background:none;
-        }
-        .tab.active { background:rgba(255,255,255,0.1); color:#fff; }
-        .tab-content { flex:1; overflow-y:auto; }
-        .section { display:none; }
-        .section.active { display:block; }
+      /* ── Form fields ─────────────────────────────────────────── */
+      .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      @media (max-width: 600px) { .field-grid { grid-template-columns: 1fr; } }
 
-        /* ── Cards ── */
-        .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
-        .card {
-          background:rgba(255,255,255,0.04); border:1px solid var(--glass-border);
-          border-radius:14px; padding:14px;
-        }
-        .row { display:flex; gap:10px; align-items:center; }
-        .stack { display:flex; flex-direction:column; gap:8px; }
-        .kv { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-        .subtle { color:var(--text-secondary); font-size:0.82rem; }
+      .field { display: flex; flex-direction: column; gap: 7px; }
+      .field-label {
+        font-size: 0.78rem; font-weight: 600;
+        color: var(--text-2);
+        text-transform: uppercase; letter-spacing: 0.5px;
+      }
+      .field-help {
+        font-size: 0.74rem; color: var(--text-3);
+        margin-top: -2px;
+      }
+      .field-input,
+      .field-textarea {
+        width: 100%; padding: 11px 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.03);
+        color: var(--text-1); font-size: 0.92rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color var(--duration), background var(--duration), box-shadow var(--duration);
+      }
+      .field-input:focus,
+      .field-textarea:focus {
+        border-color: rgba(0,112,243,0.5);
+        background: rgba(0,112,243,0.06);
+        box-shadow: 0 0 0 3px rgba(0,112,243,0.12);
+      }
+      .field-input:disabled {
+        opacity: 0.5; cursor: not-allowed;
+        background: rgba(255,255,255,0.02);
+      }
+      .field-input::placeholder,
+      .field-textarea::placeholder { color: var(--text-3); }
+      .field-textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
 
-        /* ── Level progress bars ── */
-        .progress { height:6px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden; margin-top:6px; }
-        .bar { height:100%; background:linear-gradient(90deg,#3b82f6,#06b6d4); width:0%; border-radius:10px; transition:width .7s ease; }
-        .bar.body  { background:linear-gradient(90deg,#ef4444,#f97316); }
-        .bar.etre  { background:linear-gradient(90deg,#6366f1,#8b5cf6); }
-        .bar.heart { background:linear-gradient(90deg,#ec4899,#f43f5e); }
-        .bar.order { background:linear-gradient(90deg,#10b981,#14b8a6); }
+      .field-counter {
+        font-size: 0.72rem; color: var(--text-3);
+        text-align: right; font-variant-numeric: tabular-nums;
+      }
 
-        /* ── Toast ── */
-        .toast { position:fixed;top:20px;left:50%;transform:translate(-50%,-150%);background:rgba(16,185,129,.92);color:#fff;padding:11px 22px;border-radius:10px;font-weight:600;z-index:99999;transition:transform .4s ease;font-size:.88rem;pointer-events:none; }
-        .toast.show { transform:translate(-50%,0); }
+      /* ── Avatar editor ───────────────────────────────────────── */
+      .avatar-tools {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      }
+      @media (max-width: 600px) { .avatar-tools { grid-template-columns: 1fr; } }
+      .file-drop {
+        border: 1px dashed var(--glass-border);
+        border-radius: var(--r);
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color var(--duration), background var(--duration);
+        background: rgba(255,255,255,0.02);
+      }
+      .file-drop:hover {
+        border-color: rgba(0,112,243,0.45);
+        background: rgba(0,112,243,0.06);
+      }
+      .file-drop input[type="file"] {
+        position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
+      }
+      .file-drop__icon {
+        font-size: 1.6rem; opacity: 0.6;
+        margin-bottom: 6px;
+      }
+      .file-drop__title {
+        font-size: 0.88rem; font-weight: 600; color: var(--text-1);
+      }
+      .file-drop__hint {
+        font-size: 0.74rem; color: var(--text-3); margin-top: 2px;
+      }
+      .initial-row {
+        display: flex; gap: 10px; align-items: stretch;
+      }
+      .initial-input {
+        flex: 0 0 64px;
+        text-align: center;
+        font-size: 1.2rem; font-weight: 700;
+      }
 
-        @media (max-width:900px) { .app-container { grid-template-columns:1fr; } }
+      /* ── Buttons ─────────────────────────────────────────────── */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: 8px;
+        padding: 10px 18px; border-radius: var(--r-sm); border: none;
+        font-size: 0.88rem; font-weight: 700;
+        cursor: pointer; font-family: inherit;
+        transition: var(--duration) var(--ease);
+        letter-spacing: -0.1px;
+      }
+      .btn--primary {
+        background: var(--blue); color: #fff;
+        box-shadow: 0 4px 14px var(--blue-glow);
+      }
+      .btn--primary:hover {
+        background: #0080ff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0,112,243,0.45);
+      }
+      .btn--ghost {
+        background: rgba(255,255,255,0.04);
+        color: var(--text-2);
+        border: 1px solid var(--glass-border);
+      }
+      .btn--ghost:hover {
+        background: rgba(255,255,255,0.08);
+        color: var(--text-1);
+        border-color: var(--glass-border-hover);
+      }
+      .btn--block { width: 100%; }
+      .btn:active { transform: translateY(0) scale(0.98); }
+
+      /* ── Save bar (sticky) ───────────────────────────────────── */
+      .save-bar {
+        position: sticky; bottom: 16px;
+        margin-top: 24px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r-lg);
+        padding: 14px 20px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 14px;
+        box-shadow: var(--shadow);
+        z-index: 10;
+      }
+      .save-bar__hint { font-size: 0.84rem; color: var(--text-2); }
+
+      /* ── Levels & XP ─────────────────────────────────────────── */
+      .levels-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      }
+      @media (max-width: 600px) { .levels-grid { grid-template-columns: 1fr; } }
+      .level-card {
+        background: rgba(255,255,255,0.025);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r);
+        padding: 16px;
+        transition: var(--duration);
+      }
+      .level-card:hover {
+        background: rgba(255,255,255,0.04);
+        border-color: var(--glass-border-hover);
+      }
+      .level-head {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .level-name {
+        font-size: 0.92rem; font-weight: 700; color: var(--text-1);
+        display: inline-flex; align-items: center; gap: 8px;
+      }
+      .level-emoji { font-size: 1.1rem; }
+      .level-meta {
+        font-size: 0.76rem; color: var(--text-2);
+        font-variant-numeric: tabular-nums;
+      }
+      .progress { height: 6px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+      .progress > .bar {
+        height: 100%; width: 0%; border-radius: 99px;
+        transition: width 0.7s var(--ease);
+      }
+      .bar.body  { background: linear-gradient(90deg, var(--corps), #0ea5e9); }
+      .bar.etre  { background: linear-gradient(90deg, var(--etre),  #6366f1); }
+      .bar.heart { background: linear-gradient(90deg, var(--coeur), #f43f5e); }
+      .bar.order { background: linear-gradient(90deg, var(--ordre), #f59e0b); }
+
+      .total-xp-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 12px; border-radius: 999px;
+        background: rgba(0,112,243,0.12);
+        border: 1px solid rgba(0,112,243,0.25);
+        color: var(--blue-light);
+        font-size: 0.78rem; font-weight: 600;
+      }
+
+      .badges-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 10px;
+      }
+      .badge-cell {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 4px; padding: 12px 8px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r);
+        text-align: center;
+        transition: var(--duration);
+      }
+      .badge-cell.unlocked {
+        background: rgba(251,191,36,0.08);
+        border-color: rgba(251,191,36,0.3);
+      }
+      .badge-cell.locked { opacity: 0.4; }
+      .badge-cell__emoji { font-size: 1.5rem; }
+      .badge-cell__label { font-size: 0.7rem; color: var(--text-2); font-weight: 600; }
+
+      .titles-grid {
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+
+      /* ── Preferences (CTA card) ──────────────────────────────── */
+      .cta-card {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; padding: 22px 24px;
+        background:
+          linear-gradient(135deg, rgba(0,112,243,0.1), rgba(167,139,250,0.06));
+        border: 1px solid rgba(0,112,243,0.2);
+      }
+      .cta-card h3 {
+        font-size: 1rem; font-weight: 700; color: var(--text-1);
+        margin-bottom: 4px;
+      }
+      .cta-card p {
+        font-size: 0.85rem; color: var(--text-2);
+      }
+
+      /* ── Toast (unifié) ──────────────────────────────────────── */
+      .toast {
+        position: fixed; top: 80px; left: 50%;
+        transform: translate(-50%, -150%);
+        background: var(--bg-elevated);
+        border: 1px solid var(--glass-border);
+        color: var(--text-1);
+        padding: 12px 22px; border-radius: var(--r);
+        font-weight: 600; font-size: 0.88rem;
+        z-index: 99999;
+        transition: transform 0.45s var(--ease-spring);
+        box-shadow: var(--shadow);
+        pointer-events: none;
+      }
+      .toast.show { transform: translate(-50%, 0); }
+      .toast.toast--success { border-color: rgba(34,197,94,0.4); }
+      .toast.toast--error   { border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+
+      /* ── Dev mode hint ───────────────────────────────────────── */
+      .dev-note {
+        font-size: 0.74rem; color: var(--text-3);
+        margin-top: 10px; padding: 8px 12px;
+        border-radius: var(--r-sm);
+        background: rgba(251,191,36,0.06);
+        border: 1px solid rgba(251,191,36,0.2);
+      }
     </style>
 </head>
 <body>
     <script>(function(){ if(localStorage.getItem('theme')==='light') document.body.classList.add('light-mode'); })();</script>
+
     <nav class="site-nav">
       <a href="/app/" class="site-nav__back">← Mon Espace</a>
       <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
@@ -152,134 +433,255 @@
       </button>
     </nav>
 
-    <div class="app-container">
-      <!-- Left: Avatar Card -->
-      <aside class="left-card">
-        <div class="profile-avatar-wrap">
-          <div class="avatar-preview" id="avatar-preview-container"></div>
-          <div class="profile-name" id="username-display">—</div>
-          <div class="profile-title-display" id="title-display"></div>
-          <span class="player-badge" id="player-pill"><span id="player-id">Player #—</span></span>
-        </div>
+    <main class="profile-page">
 
-        <div class="stack">
-          <div class="field-label">Photo de profil</div>
-          <input type="file" id="avatar-file-input" accept="image/*" style="font-size:.82rem;color:var(--text-secondary)"/>
-        </div>
-
-        <div class="stack">
-          <div class="field-label">Avatar par initiale</div>
-          <div class="row">
-            <input id="avatar-initial-input" class="input" placeholder="A" style="max-width:64px;text-align:center;font-size:1.1rem;font-weight:700"/>
-            <button id="generate-initial-avatar" class="btn secondary" style="flex:1;font-size:.82rem">Générer</button>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:4px">
-          <button id="random-avatar-btn" class="btn secondary" style="flex:1">🎲 Aléatoire</button>
-          <button id="save-profile-button" class="btn save-main" style="flex:2">Enregistrer</button>
-        </div>
-      </aside>
-
-      <!-- Right: Tabs -->
-      <section class="right-panel">
-        <div class="tabs">
-          <button class="tab active" data-tab="identity">Identité</button>
-          <button class="tab" data-tab="preferences">Préférences</button>
-          <button class="tab" data-tab="levels">Niveaux & XP</button>
-        </div>
-
-        <div class="tab-content">
-          <!-- Identity -->
-          <div id="tab-identity" class="section active">
-            <div class="grid-2">
-              <div class="card">
-                <div class="field-group">
-                  <div class="field-label">Nom d'utilisateur</div>
-                  <input type="text" id="username" class="input" placeholder="Ton nom public"/>
-                </div>
-              </div>
-              <div class="card">
-                <div class="field-group">
-                  <div class="field-label">Titre affiché <span style="color:var(--text-secondary);font-weight:400">(12 car. max)</span></div>
-                  <input type="text" id="profile-title" class="input" maxlength="12" placeholder="Ex: Explorateur"/>
-                </div>
-              </div>
+      <!-- HERO -->
+      <section class="hero-card">
+        <div class="hero-banner"></div>
+        <div class="hero-body">
+          <div class="hero-avatar" id="avatar-preview-container">A</div>
+          <div class="hero-info">
+            <div class="hero-name" id="username-display">—</div>
+            <div class="hero-meta">
+              <span class="hero-title" id="title-display"></span>
+              <span class="hero-handle" id="player-id">Player #—</span>
             </div>
-            <div class="card" style="margin-top:12px">
-              <div class="field-group">
-                <div class="field-label">Bio</div>
-                <textarea id="profile-bio" class="textarea" placeholder="Présente-toi en quelques mots..."></textarea>
-              </div>
-            </div>
-            <div class="grid-2" style="margin-top:12px">
-              <div class="card">
-                <div class="field-group">
-                  <div class="field-label">Site / Lien</div>
-                  <input type="url" id="profile-website" class="input" placeholder="https://..."/>
-                </div>
-              </div>
-              <div class="card">
-                <div class="field-group">
-                  <div class="field-label">Email (lecture seule)</div>
-                  <input type="text" id="profile-email" class="input" disabled/>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Preferences -->
-          <div id="tab-preferences" class="section">
-            <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;">
-              <div>
-                <div style="font-weight:700;margin-bottom:6px">Paramètres & Préférences</div>
-                <div class="subtle">Thème, animations, notifications — tout est centralisé dans les Paramètres.</div>
-              </div>
-              <a href="/settings/" class="btn save-main" style="white-space:nowrap;text-decoration:none;flex-shrink:0">Ouvrir les Paramètres →</a>
-            </div>
-          </div>
-
-          <!-- Levels -->
-          <div id="tab-levels" class="section">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-              <div style="font-size:0.88rem;font-weight:700;color:#e5eef8">⚡ Progression globale</div>
-              <div id="profile-total-xp" style="font-size:0.78rem;color:#60aeff;font-weight:600;padding:4px 12px;border-radius:999px;background:rgba(0,112,243,0.1);border:1px solid rgba(0,112,243,0.2)">0 XP total</div>
-            </div>
-            <div class="grid-2">
-              <div class="card">
-                <div class="kv"><strong>💪 Corps</strong><span id="lvl-body-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                <div class="progress"><div id="lvl-body" class="bar body"></div></div>
-                <div class="row" id="dev-body" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="body" style="font-size:.78rem">+10 XP (dev)</button></div>
-              </div>
-              <div class="card">
-                <div class="kv"><strong>🌌 Être</strong><span id="lvl-etre-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                <div class="progress"><div id="lvl-etre" class="bar etre"></div></div>
-                <div class="row" id="dev-etre" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="etre" style="font-size:.78rem">+10 XP (dev)</button></div>
-              </div>
-              <div class="card">
-                <div class="kv"><strong>❤️ Cœur</strong><span id="lvl-heart-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                <div class="progress"><div id="lvl-heart" class="bar heart"></div></div>
-                <div class="row" id="dev-heart" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="heart" style="font-size:.78rem">+10 XP (dev)</button></div>
-              </div>
-              <div class="card">
-                <div class="kv"><strong>📐 Ordre</strong><span id="lvl-order-label" class="subtle">Niv. 0 · 0 XP</span></div>
-                <div class="progress"><div id="lvl-order" class="bar order"></div></div>
-                <div class="row" id="dev-order" style="margin-top:8px;display:none"><button class="btn secondary" data-xp-domain="order" style="font-size:.78rem">+10 XP (dev)</button></div>
-              </div>
-            </div>
-            <div class="subtle" id="dev-note" style="margin-top:10px;display:none;font-size:.75rem">Mode dev actif — boutons XP visibles.</div>
-            <div class="card" style="margin-top:14px">
-              <div class="kv"><strong>Badges débloqués</strong><span class="subtle" id="badges-count">0</span></div>
-              <div id="badges-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:10px"></div>
-            </div>
-            <div class="card" style="margin-top:12px">
-              <div class="kv"><strong>Titres</strong><span class="subtle">Sélectionne ton titre</span></div>
-              <div id="titles-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+            <div class="hero-stats">
+              <span class="hero-stat">⚡ <strong id="hero-stat-xp">0</strong> XP total</span>
+              <span class="hero-stat">🏆 <strong id="hero-stat-badges">0</strong> badges</span>
+              <span class="hero-stat">🌳 Niv. <strong id="hero-stat-avg">0</strong> moyen</span>
             </div>
           </div>
         </div>
       </section>
-    </div>
+
+      <!-- TABS -->
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="identity" role="tab" aria-selected="true">
+          <span>👤</span> Identité
+        </button>
+        <button class="tab" data-tab="levels" role="tab" aria-selected="false">
+          <span>⚡</span> Niveaux & badges
+        </button>
+        <button class="tab" data-tab="preferences" role="tab" aria-selected="false">
+          <span>⚙️</span> Préférences
+        </button>
+      </div>
+
+      <!-- ─────────── IDENTITÉ ─────────── -->
+      <div id="tab-identity" class="section active" role="tabpanel">
+
+        <!-- Informations publiques -->
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">👤</span>
+              <div>
+                <div class="card-title">Informations publiques</div>
+                <div class="card-subtitle">Visibles par les autres utilisateurs.</div>
+              </div>
+            </div>
+          </header>
+          <div class="field-grid">
+            <div class="field">
+              <label class="field-label" for="username">Nom d'utilisateur</label>
+              <input type="text" id="username" class="field-input" placeholder="Ton nom public" autocomplete="username"/>
+              <span class="field-help">3-20 caractères. Modifiable à tout moment.</span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="profile-title">Titre affiché</label>
+              <input type="text" id="profile-title" class="field-input" maxlength="12" placeholder="Ex: Explorateur"/>
+              <span class="field-help">12 caractères max. Affiché à côté de ton nom.</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Bio -->
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">📝</span>
+              <div>
+                <div class="card-title">Bio</div>
+                <div class="card-subtitle">Présente-toi en quelques mots.</div>
+              </div>
+            </div>
+          </header>
+          <div class="field">
+            <textarea id="profile-bio" class="field-textarea" placeholder="Ce que tu fais, ce qui te passionne, où tu en es..." maxlength="280"></textarea>
+            <span class="field-counter"><span id="bio-counter">0</span>/280</span>
+          </div>
+        </article>
+
+        <!-- Liens -->
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">🔗</span>
+              <div>
+                <div class="card-title">Coordonnées</div>
+                <div class="card-subtitle">Email lecture seule. Le site est optionnel et public.</div>
+              </div>
+            </div>
+          </header>
+          <div class="field-grid">
+            <div class="field">
+              <label class="field-label" for="profile-website">Site web</label>
+              <input type="url" id="profile-website" class="field-input" placeholder="https://..."/>
+            </div>
+            <div class="field">
+              <label class="field-label" for="profile-email">Email</label>
+              <input type="text" id="profile-email" class="field-input" disabled/>
+              <span class="field-help">Géré dans <a href="/settings/" style="color:var(--blue-light)">Paramètres → Sécurité</a>.</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Avatar -->
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">🎨</span>
+              <div>
+                <div class="card-title">Avatar</div>
+                <div class="card-subtitle">Image, initiale ou avatar généré aléatoirement.</div>
+              </div>
+            </div>
+            <button id="random-avatar-btn" class="btn btn--ghost" type="button">🎲 Aléatoire</button>
+          </header>
+
+          <div class="avatar-tools">
+            <label class="file-drop" for="avatar-file-input">
+              <div class="file-drop__icon">🖼️</div>
+              <div class="file-drop__title">Importer une photo</div>
+              <div class="file-drop__hint">PNG, JPG ou WebP — max 2 Mo</div>
+              <input type="file" id="avatar-file-input" accept="image/*"/>
+            </label>
+
+            <div class="field">
+              <label class="field-label" for="avatar-initial-input">Avatar par initiale</label>
+              <div class="initial-row">
+                <input id="avatar-initial-input" class="field-input initial-input" placeholder="A" maxlength="2"/>
+                <button id="generate-initial-avatar" class="btn btn--ghost" type="button" style="flex:1">Générer</button>
+              </div>
+              <span class="field-help">1 ou 2 lettres. Couleur de fond générée automatiquement.</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sticky save bar -->
+        <div class="save-bar">
+          <div class="save-bar__hint">Modifications non sauvegardées</div>
+          <button id="save-profile-button" class="btn btn--primary" type="button">Enregistrer le profil</button>
+        </div>
+      </div>
+
+      <!-- ─────────── NIVEAUX & XP ─────────── -->
+      <div id="tab-levels" class="section" role="tabpanel">
+
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">⚡</span>
+              <div>
+                <div class="card-title">Progression par domaine</div>
+                <div class="card-subtitle">XP gagné dans chaque axe de Change Your Life.</div>
+              </div>
+            </div>
+            <div id="profile-total-xp" class="total-xp-pill">⚡ 0 XP total</div>
+          </header>
+
+          <div class="levels-grid">
+            <div class="level-card">
+              <div class="level-head">
+                <span class="level-name"><span class="level-emoji">💪</span> Corps</span>
+                <span class="level-meta" id="lvl-body-label">Niv. 0 · 0 XP</span>
+              </div>
+              <div class="progress"><div id="lvl-body" class="bar body"></div></div>
+              <div id="dev-body" style="display:none;margin-top:10px">
+                <button class="btn btn--ghost" data-xp-domain="body" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
+              </div>
+            </div>
+            <div class="level-card">
+              <div class="level-head">
+                <span class="level-name"><span class="level-emoji">🌌</span> Être</span>
+                <span class="level-meta" id="lvl-etre-label">Niv. 0 · 0 XP</span>
+              </div>
+              <div class="progress"><div id="lvl-etre" class="bar etre"></div></div>
+              <div id="dev-etre" style="display:none;margin-top:10px">
+                <button class="btn btn--ghost" data-xp-domain="etre" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
+              </div>
+            </div>
+            <div class="level-card">
+              <div class="level-head">
+                <span class="level-name"><span class="level-emoji">❤️</span> Cœur</span>
+                <span class="level-meta" id="lvl-heart-label">Niv. 0 · 0 XP</span>
+              </div>
+              <div class="progress"><div id="lvl-heart" class="bar heart"></div></div>
+              <div id="dev-heart" style="display:none;margin-top:10px">
+                <button class="btn btn--ghost" data-xp-domain="heart" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
+              </div>
+            </div>
+            <div class="level-card">
+              <div class="level-head">
+                <span class="level-name"><span class="level-emoji">📐</span> Ordre</span>
+                <span class="level-meta" id="lvl-order-label">Niv. 0 · 0 XP</span>
+              </div>
+              <div class="progress"><div id="lvl-order" class="bar order"></div></div>
+              <div id="dev-order" style="display:none;margin-top:10px">
+                <button class="btn btn--ghost" data-xp-domain="order" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
+              </div>
+            </div>
+          </div>
+          <div class="dev-note" id="dev-note" style="display:none">Mode dev actif — boutons XP visibles uniquement sur localhost.</div>
+        </article>
+
+        <!-- Badges -->
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">🏆</span>
+              <div>
+                <div class="card-title">Badges débloqués</div>
+                <div class="card-subtitle">Récompenses à débloquer en utilisant les modules.</div>
+              </div>
+            </div>
+            <div class="total-xp-pill" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.25);color:#fde68a">
+              <span id="badges-count">0</span> obtenus
+            </div>
+          </header>
+          <div id="badges-grid" class="badges-grid"></div>
+        </article>
+
+        <!-- Titles -->
+        <article class="card">
+          <header class="card-header">
+            <div class="card-header__title">
+              <span class="card-header__icon">🎖️</span>
+              <div>
+                <div class="card-title">Titres</div>
+                <div class="card-subtitle">Sélectionne le titre affiché à côté de ton nom.</div>
+              </div>
+            </div>
+          </header>
+          <div id="titles-grid" class="titles-grid"></div>
+        </article>
+      </div>
+
+      <!-- ─────────── PRÉFÉRENCES ─────────── -->
+      <div id="tab-preferences" class="section" role="tabpanel">
+        <article class="card cta-card">
+          <div>
+            <h3>Paramètres &amp; Préférences</h3>
+            <p>Thème, animations, notifications, sécurité du compte, données privées — tout est centralisé dans la page Paramètres.</p>
+          </div>
+          <a href="/settings/" class="btn btn--primary" style="white-space:nowrap;text-decoration:none;flex-shrink:0">
+            Ouvrir les Paramètres →
+          </a>
+        </article>
+      </div>
+
+    </main>
 
     <div id="toast" class="toast">Profil mis à jour</div>
 
@@ -287,14 +689,43 @@
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
     <div id="vanta-birds-bg"></div>
     <script>
-        VANTA.BIRDS({ el: "#vanta-birds-bg", mouseControls: true, touchControls: true, gyroControls: false, backgroundColor: 0x07192f, color1: 0x4a3a3a, color2: 0xcccccc, quantity: 4.00 });
+        try {
+          VANTA.BIRDS({
+            el: "#vanta-birds-bg",
+            mouseControls: true, touchControls: true, gyroControls: false,
+            backgroundColor: 0x060e1a,
+            color1: 0x4a3a3a, color2: 0xcccccc,
+            quantity: 3.0
+          });
+        } catch(e) {}
+
+        // Tabs handling
+        document.querySelectorAll('.tab').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const t = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab').forEach(b => {
+              b.classList.toggle('active', b === btn);
+              b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+            });
+            document.querySelectorAll('.section').forEach(s => {
+              s.classList.toggle('active', s.id === 'tab-' + t);
+            });
+          });
+        });
+
+        // Bio character counter
+        const bio = document.getElementById('profile-bio');
+        const bioCounter = document.getElementById('bio-counter');
+        if (bio && bioCounter) {
+          const updateCounter = () => { bioCounter.textContent = String(bio.value.length); };
+          bio.addEventListener('input', updateCounter);
+          updateCounter();
+        }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
     <script type="module" src="/js/profile.js"></script>
     <script type="module">
         import { updateGlobalAvatar } from '/js/common.js';
         import { initUserMenu } from '/js/userMenu.js';
-        // Run at module-load time (modules are deferred, DOM is ready)
         try { updateGlobalAvatar(); } catch(e) {}
         try { initUserMenu(); } catch(e) {}
     </script>

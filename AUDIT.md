@@ -67,6 +67,13 @@ Repo en **excellent état**. Tous les critiques + high + la plupart des mineurs 
 
 ## 3 · Restants (pour les prochaines sessions)
 
+### 🟡 Cohérence visuelle restante (effort 2-4h)
+
+`/profile/` et `/settings/` sont désormais alignés sur le design system v2. Mais **8 autres pages** ont encore des CSS inline locaux qui dévient du design system :
+- `/codex/`, `/autoevaluation/`, `/gratitude/`, `/humeur/`, `/sommeil/`, `/habitudes/`, `/bilan/`, `/coach/`
+
+Pour chaque : remplacer les variables CSS locales (`--bg:#07192f`, `--card:rgba(...)`, etc.) par les tokens du design system (`var(--bg)`, `var(--bg-surface)`, etc.). Petit gain visuel, gros gain cohérence.
+
 ### 🟡 Gros chantier (effort 4-6h)
 
 **CSP `'unsafe-inline'` dans `script-src`** — toujours présent. Annule théoriquement la protection CSP contre XSS injecté en HTML. **Mitigations actuelles** : pas d'`innerHTML` user-controlled (Codex + admin escapent), Firestore rules strictes, OTP CSPRNG.

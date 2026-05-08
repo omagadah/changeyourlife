@@ -136,9 +136,16 @@ function renderLevels(levels) {
         }
     }
     // Update global stats row
-    const totalXP = ['body','etre','heart','order'].reduce((s,k) => s + (xpToLevel(l[k]).xp), 0);
+    const cfgs = ['body','etre','heart','order'].map(k => xpToLevel(l[k]));
+    const totalXP = cfgs.reduce((s, c) => s + c.xp, 0);
+    const avgLevel = Math.round(cfgs.reduce((s, c) => s + c.level, 0) / cfgs.length);
     const el = document.getElementById('profile-total-xp');
-    if (el) el.textContent = totalXP.toLocaleString('fr-FR') + ' XP total';
+    if (el) el.textContent = '⚡ ' + totalXP.toLocaleString('fr-FR') + ' XP total';
+    // Hero stats (new pro layout)
+    const heroXp = document.getElementById('hero-stat-xp');
+    if (heroXp) heroXp.textContent = totalXP.toLocaleString('fr-FR');
+    const heroAvg = document.getElementById('hero-stat-avg');
+    if (heroAvg) heroAvg.textContent = String(avgLevel);
 }
 
 // Badge definitions: { id, emoji, name, desc, check(userData) }
@@ -240,6 +247,8 @@ function renderBadges(badgeIds) {
     badgesGrid.innerHTML = '';
     const list = Array.isArray(badgeIds) ? badgeIds : [];
     if (badgesCountEl) badgesCountEl.textContent = `${list.length} / ${BADGE_DEFS.length}`;
+    const heroBadges = document.getElementById('hero-stat-badges');
+    if (heroBadges) heroBadges.textContent = String(list.length);
     // Show all badges, greyed out if not earned
     BADGE_DEFS.forEach(def => {
         const earned = list.includes(def.id);
