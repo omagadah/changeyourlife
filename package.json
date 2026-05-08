@@ -1,7 +1,28 @@
 {
+  "name": "changeyourlife",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PWA santé mentale optimisée par l'IA — méditation, journal, objectifs, coach IA, trackers.",
+  "homepage": "https://changeyourlife.ai",
+  "repository": "github:omagadah/changeyourlife",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step — frontend statique'",
+    "format": "prettier --write \"**/*.{js,ts,html,css,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,html,css,json,md}\"",
+    "deploy:functions": "cd functions && npm run deploy",
+    "deploy:firestore": "firebase deploy --only firestore:rules,firestore:indexes",
+    "deploy:firebase": "firebase deploy --only functions,firestore:rules,firestore:indexes",
+    "audit:security": "npm audit --audit-level=high && cd functions && npm audit --audit-level=high",
+    "logs:functions": "cd functions && npm run logs"
+  },
   "dependencies": {
     "firebase": "^12.4.0",
     "firebase-admin": "^12.6.0",
     "resend": "^3.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.0"
   }
 }

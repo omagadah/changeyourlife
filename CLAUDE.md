@@ -82,6 +82,24 @@ Deux patterns valides :
 - `<nav class="site-nav">` avec back button + trigger (flex space-between)
 - `<header class="header">` avec juste le trigger (CSS global le place top-right fixed)
 
+### Rôles & permissions
+- Auth via Firebase Custom Claims (`role: 'admin' | 'mod' | 'user'`)
+- Cloud Function `setUserRole({ uid, role })` — réservée aux admins
+- Cloud Function `getMyRole()` — récupère le rôle courant
+- Bootstrap : env var `ROOT_ADMIN_UID` côté Cloud Functions (à retirer une fois un admin créé via custom claim)
+- Miroir Firestore `roles/{uid}` en read-only client (pour cache UI)
+
+### Scripts npm utiles
+| Commande | Effet |
+|---|---|
+| `npm run dev` | Vercel dev local avec /api/* simulé |
+| `npm run format` | Prettier sur tout le projet |
+| `npm run deploy:functions` | Deploy Cloud Functions Firebase |
+| `npm run deploy:firestore` | Deploy `firestore.rules` + indexes |
+| `npm run deploy:firebase` | Deploy functions + firestore (tout sauf hosting) |
+| `npm run audit:security` | npm audit racine + functions |
+| `npm run logs:functions` | Tail logs Cloud Functions |
+
 ### Tests
 Pas de suite automatisée. Validation = redeploy Vercel + smoke test manuel par Romain.
 

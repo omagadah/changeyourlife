@@ -1,6 +1,6 @@
 # Audit changeyourlife.ai
 
-> **Dernière MAJ :** 2026-05-08 (post audit profond + fixes)
+> **Dernière MAJ :** 2026-05-08 (post Custom Claims + DX improvements)
 > **Branche :** `main`
 > **Type :** profond — sécurité, code mort, anomalies, perf, cohérence
 
@@ -8,15 +8,15 @@
 
 ## 1 · Verdict global
 
-Repo en **bon état post-cleanup**. Les 3 critiques + 9 high de l'audit profond ont été corrigés ce 2026-05-08. Reste des éléments mineurs et des décisions long terme.
+Repo en **excellent état**. Tous les critiques + high + la plupart des mineurs sont fixés. Reste un seul gros chantier optionnel (externaliser scripts inline pour CSP plus stricte) et des décisions business.
 
 | Axe | Note | Évolution |
 |---|:---:|---|
-| Architecture | **B+** | ↗ — code mort supprimé (~2 000 LOC), singleton Firebase enrichi |
-| Sécurité | **A−** | ↗↗ — XP server-side, Coach authentifié, Firestore rules durcies |
-| Qualité code | **A−** | ↗ — XSS Codex + admin fixés, doublons supprimés |
+| Architecture | **A−** | ↗ — singleton Firebase enrichi (auth+db+functions+awardXp) |
+| Sécurité | **A** | ↗↗ — Custom Claims, XP server-side, Coach auth, Firestore rules strictes |
+| Qualité code | **A−** | = — XSS Codex + admin fixés, doublons supprimés |
 | PWA / SEO | **A** | = |
-| Maintenabilité | **A−** | ↗ — workflow CLAUDE.md + sessions + slash commands |
+| Maintenabilité | **A** | ↗ — Prettier + EditorConfig + scripts npm + workflow Claude |
 
 ---
 
@@ -43,35 +43,71 @@ Repo en **bon état post-cleanup**. Les 3 critiques + 9 high de l'audit profond 
 ### ✅ Mineurs fixés
 - ~~XSS modéré panneau admin Settings~~ → `escAdmin()` sur tous les champs user
 - ~~`document.write` dans 404.html~~ → `appendChild` style
-- ~~Compteurs landing inventés (12 400 / 84 000 / 43 000 / 98%)~~ → remplacés par garanties honnêtes (100% gratuit / 16 modules / PWA / EU)
+- ~~Compteurs landing inventés~~ → garanties honnêtes (100% gratuit / 16 modules / PWA / EU)
 - ~~ld+json `aggregateRating: 4.8 / 127`~~ → retiré
-- ~~`api/coach.js` leak Gemini error~~ → message générique côté client, log côté serveur
+- ~~`api/coach.js` leak Gemini error~~ → message générique côté client
 - ~~Sitemap entrée `/signup/` redondante~~ → retirée
 - ~~README.md obsolète~~ → réécrit selon réalité
-- ~~Collection `roles/{uid}` sans rules~~ → rule ajoutée (read owner, write blocked → Custom Claims serveur)
 - ~~Collection `coachRate/{uid}` non protégée~~ → rule `if false` (admin SDK only)
 - ~~`@dataconnect/generated` dans package.json~~ → retiré
+- ~~Firebase Functions versions divergentes~~ → alignées sur `^12.6.0`
+- ~~`vercel.json` `frame-src https://v0.app`~~ → retiré (vestige)
+- ~~`assessments` / `codexNotes` `allow update` manquant~~ → ajouté avec validation uid stable
+- ~~UID admin en dur + collection `roles` sans rules~~ → migré vers **Custom Claims** Firebase Auth (Cloud Functions `setUserRole` + `getMyRole`, ROOT_ADMIN_UID env var pour bootstrap, miroir Firestore en read-only client)
+
+### ✅ DX & Workflow ajoutés ce 2026-05-08
+- `CLAUDE.md` (contexte permanent), `docs/sessions/` (logs incrémentaux par jour)
+- `.vscode/{settings,extensions}.json` — config workspace + 9 extensions recommandées
+- `.claude/commands/{audit,session-end}.md` — slash commands custom
+- `.claude/settings.json` — auto-permissions git/rm/mkdir/mv/npm/Vercel MCP
+- `.prettierrc` + `.prettierignore` + `.editorconfig` — formatage cohérent
+- `package.json` enrichi : `npm run dev|format|deploy:functions|deploy:firestore|deploy:firebase|audit:security|logs:functions`
 
 ---
 
 ## 3 · Restants (pour les prochaines sessions)
 
-### 🟡 À traiter quand possible
+### 🟡 Gros chantier (effort 4-6h)
 
-- **CSP `'unsafe-inline'` dans `script-src`** — nécessaire à court terme (scripts inline partout) mais annule la protection XSS HTML. Plan long terme : extraire les scripts inline + nonces CSP. Effort : 4-6h.
-- **UID admin en dur côté client** ([public/settings/index.html:390](public/settings/index.html#L390)) — `ADMIN_UIDS` constante. Le bouton "Toggle Mod" écrit dans `roles/{uid}` mais la rule bloque désormais (correct). Pour réactiver les boutons admin, il faut implémenter Firebase Custom Claims + une Cloud Function callable `setRole(uid, role)`. Effort : 2h.
-- **Firebase Functions `firebase-admin` versions divergentes** : `^12.0.0` racine vs `^12.6.0` dans `functions/`. Aligner.
-- **Tidio chat externe** chargé dynamiquement après 3s sur landing. Décision business : garder ou retirer (perte d'autonomie côté UX).
+**CSP `'unsafe-inline'` dans `script-src`** — toujours présent. Annule théoriquement la protection CSP contre XSS injecté en HTML. **Mitigations actuelles** : pas d'`innerHTML` user-controlled (Codex + admin escapent), Firestore rules strictes, OTP CSPRNG.
 
-### 🔵 Curiosités à valider côté UX
-- `firestore.rules` : `assessments` et `codexNotes` ont `allow create` mais pas `allow update`. Donc impossible de modifier une note Codex (seulement supprimer + recréer). Confirmer si intentionnel.
-- `vercel.json` autorise `frame-src https://v0.app` — vestige sans usage repéré, à enlever quand on est sûr que rien n'en dépend.
-- `console.log` dans `service-worker.js` non muté par l'override `console.log = () => {}` de `index.html` (hors scope window). Logs SW visibles dans DevTools.
+Pour le retirer :
+1. Extraire chaque `<script>` inline des HTML vers des fichiers `/js/page-X.js` (~20 pages)
+2. Pour les bootstraps Vanta/Firebase qui dépendent du timing, garder en module
+3. Calculer les hashes SHA256 des inline scripts restants (logique conditionnelle minime) et les ajouter à la CSP
+4. Tester chaque page après extraction (pas de tests automatisés → smoke test manuel)
 
-### ⏸ Décisions business (à toi Romain)
-- Re-câbler les compteurs landing à des vraies stats Firestore (vs garanties statiques actuelles) ?
-- Ajouter un programme de témoignages / avis vérifiés pour utiliser à nouveau le ld+json `aggregateRating` honnêtement ?
-- Implémenter `allow update` sur `codexNotes` pour permettre l'édition des notes ?
+À faire dans une session dédiée. Risque modéré de régression visuelle.
+
+### ⚠️ Action manuelle requise (Romain)
+
+1. **Bootstrap Custom Claims** :
+   ```bash
+   firebase functions:secrets:set ROOT_ADMIN_UID
+   # entrer l'UID Firebase Auth de romainruiz31@gmail.com
+   firebase deploy --only functions
+   # ou: npm run deploy:functions
+   ```
+   Une fois admin créé via le custom claim, le `ROOT_ADMIN_UID` peut être retiré pour réduire la surface.
+
+2. **Deploy des nouvelles règles Firestore** :
+   ```bash
+   npm run deploy:firestore
+   ```
+   Sans ça, `noXpTampering()` et le verrouillage `coachRate`/`roles` ne sont pas actifs.
+
+3. **Révoquer le token v0** sur l'interface v0.app (était commité dans `external/v0-app/`, supprimé du HEAD mais reste dans l'historique git public).
+
+### ⏸ Décisions business (à toi)
+
+- **Tidio chat externe** chargé après 3s sur landing — garder ou retirer ?
+- Re-câbler les compteurs landing à de vraies stats Firestore (vs garanties statiques) ?
+- Programme de témoignages / avis vérifiés pour ré-activer un `aggregateRating` honnête ?
+
+### 🔵 Curiosités sans gravité
+
+- `console.log` dans `service-worker.js` reste visible (override `console.log = () => {}` de `index.html` est scope window, pas worker). À nettoyer un jour ou ignorer.
+- `firebase-admin@^12.6.0` désormais aligné racine ↔ `functions/`
 
 ---
 
@@ -99,7 +135,7 @@ Repo en **bon état post-cleanup**. Les 3 critiques + 9 high de l'audit profond 
 
 ---
 
-## 5 · Stats du repo (post-cleanup)
+## 5 · Stats du repo (post-cleanup + DX)
 
 | Métrique | Avant | Après |
 |---|---|---|
@@ -109,6 +145,9 @@ Repo en **bon état post-cleanup**. Les 3 critiques + 9 high de l'audit profond 
 | `package.json` racine deps | 4 | 3 |
 | `.md` à la racine | 17 | 3 (README, CLAUDE, AUDIT) |
 | Code mort identifié restant | ~2 000 LOC | 0 |
+| Cloud Functions exportées | 1 (`addXp`) | 3 (`addXp`, `setUserRole`, `getMyRole`) |
+| Custom Claims Auth | non | oui (`role: admin\|mod\|user`) |
+| Scripts npm utiles | 0 | 7 (dev, format, deploy:*, audit:security, logs) |
 
 **Top 5 fichiers (hors lock & images) :**
 1. `public/settings/index.html` — 60 KB / 1 087 LOC
@@ -121,11 +160,11 @@ Repo en **bon état post-cleanup**. Les 3 critiques + 9 high de l'audit profond 
 
 ## 6 · Prochains chantiers recommandés
 
-1. **Custom Claims pour admins** (effort 2h) — pour réactiver les boutons "Toggle Mod" du panneau Settings
-2. **Aligner versions firebase-admin** (effort 5 min)
-3. **Extraire scripts inline** (effort 4-6h) — supprime le besoin d'`unsafe-inline` dans la CSP, gain XSS
+1. **Bootstrap Custom Claims** (5 min, manuel) — `firebase functions:secrets:set ROOT_ADMIN_UID` puis `npm run deploy:functions`
+2. **Deploy règles Firestore** (1 min, manuel) — `npm run deploy:firestore`
+3. **Extraire scripts inline** (4-6h, optionnel) — pour CSP plus stricte sans `'unsafe-inline'`
 
-Aucun n'est bloquant.
+Le 1 et 2 sont les seuls bloquants pour activer 100% des fixes de sécurité de cette session.
 
 ---
 

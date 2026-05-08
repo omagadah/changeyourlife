@@ -4,7 +4,7 @@ Log incrémental du travail effectué session par session sur changeyourlife.ai.
 
 | Date | Récap | Commits |
 |---|---|---|
-| [2026-05-08](2026-05-08.md) | Audit initial → fixes complets (PWA, XSS, OTP, nav) + setup workflow durable + audit profond → cleanup ~2000 LOC + sécurité (Coach auth, XP server-side, Firestore rules) + landing honnête | `3959e82` `4ca0dba` `e7a34ea` `067261a` `2a2a6c3` `628afa6` |
+| [2026-05-08](2026-05-08.md) | Session marathon : audit initial → fixes (PWA, XSS, OTP, nav) + setup workflow + audit profond → cleanup ~2000 LOC + sécurité (Coach auth, XP server-side, Firestore rules durcies) + landing honnête + **Custom Claims** + **DX (Prettier, EditorConfig, scripts npm)** | 9 commits |
 
 ---
 

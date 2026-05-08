@@ -1,0 +1,25 @@
+# Lock files
+package-lock.json
+**/package-lock.json
+
+# Generated / cache
+.firebase/
+.vercel/
+node_modules/
+**/node_modules/
+
+# Build outputs
+functions/lib/
+
+# Données générées
+public/sitemap.xml
+
+# Minifiés
+**/*.min.js
+**/*.min.css
+
+# Doc historique (préservé tel quel)
+docs/AUDIT_FINAL.md
+docs/COMPLETION_REPORT.md
+docs/IMPROVEMENTS_SUMMARY.md
+docs/SUMMARY.txt
