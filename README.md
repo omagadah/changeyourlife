@@ -1,218 +1,111 @@
-# 🚀 Change Your Life - Application Web Progressive
+# Change Your Life
 
-Une application web progressive (PWA) de santé mentale conçue pour vous aider à transformer votre vie en la voyant comme un jeu avec des quêtes et des succès à débloquer.
+> Une PWA gratuite de santé mentale optimisée par l'IA — méditation, journal, objectifs, coach IA, trackers de bien-être.
 
-## ✨ Caractéristiques
+🔗 **Live :** [changeyourlife.ai](https://changeyourlife.ai)
 
-### 🎮 Gamification
-- **Arbre de compétences** : Construisez votre modèle de vie avec un éditeur interactif
-- **Système XP** : Gagnez des points en accomplissant vos objectifs
-- **Catégories** : Body, Heart, Être, Order
-- **Priorités** : Gérez vos tâches par niveau d'urgence
+## Stack
 
-### 🧘 Bien-être
-- **Méditation guidée** : Séances personnalisées avec guidage vocal IA
-- **Journal** : Enregistrez vos pensées et émotions
-- **Objectifs** : Définissez et suivez vos objectifs avec l'aide de l'IA
+- **Frontend** : HTML/CSS/JS vanilla, ESM modules, **aucun build step**
+- **Hosting** : Vercel (auto-deploy sur push `main`)
+- **Backend** : Firebase Authentication + Firestore + Cloud Functions (TypeScript)
+- **API serverless** : Vercel Functions Node dans `/api/`
+- **IA Coach** : Google Gemini 2.0 Flash
+- **Email** : Resend (`noreply@changeyourlife.ai`)
+- **PWA** : Service Worker + Manifest, fonctionne hors-ligne, installable mobile/desktop
 
-### 📱 Technologie
-- **PWA** : Fonctionne hors ligne avec Service Worker
-- **Responsive** : Optimisé pour tous les appareils
-- **Sécurisé** : Authentification Firebase avec OAuth
-- **Rapide** : Cache intelligent et optimisations de performance
+## Modules (16 pages)
 
-## 🛠️ Stack Technologique
+| Catégorie | Modules |
+|---|---|
+| Réflexion | Journal · Coach IA · Codex de connaissance · Autoévaluation (Roue de Vie) · Bilan hebdo |
+| Action | Objectifs · Habitudes · Méditation guidée · Your Life (Pyramide de Maslow) |
+| Trackers | Humeur · Sommeil · Gratitude |
+| Compte | Login · Verify-email · Profile · Settings (incl. panneau admin) |
 
-- **Frontend** : HTML5, CSS3, JavaScript ES6+
-- **Backend** : Firebase (Auth, Firestore, Functions)
-- **Déploiement** : Vercel + Firebase
-- **Monitoring** : Sentry (optionnel)
-- **Graphe** : Cytoscape.js
+## Structure du repo
 
-## 📋 Prérequis
+```
+.
+├── api/                   Serverless functions Vercel (Node)
+├── public/                Frontend statique servi par Vercel
+│   ├── index.html         Landing
+│   ├── app/               Dashboard logged-in
+│   ├── {module}/          1 dossier par module
+│   ├── js/firebase.js     Singleton Firebase + helper awardXp
+│   ├── css/main.min.css   Design system v2
+│   └── service-worker.js  PWA offline
+├── functions/             Firebase Functions (TS)
+├── firestore.rules        Règles Firestore
+├── vercel.json            Headers + CSP + redirects
+├── AUDIT.md               État courant du code (mis à jour à chaque audit)
+├── CLAUDE.md              Contexte permanent pour Claude Code
+└── docs/sessions/         Log incrémental session par session
+```
 
-- Node.js 16+
-- npm ou yarn
-- Compte Firebase
-- Compte Vercel (optionnel)
+## Développement local
 
-## 🚀 Installation
-
-### 1. Cloner le repository
+Pas de build step — il suffit de servir `public/` statiquement.
 
 ```bash
-git clone https://github.com/yourusername/changeyourlife.git
-cd changeyourlife
+# Option 1 : avec Vercel CLI (recommandé, simule les /api/)
+npx vercel dev
+
+# Option 2 : avec n'importe quel serveur statique
+npx serve public/
 ```
 
-### 2. Installer les dépendances
+## Déploiement
 
 ```bash
-npm install
+git push origin main
 ```
 
-### 3. Configurer les variables d'environnement
+Vercel auto-deploy en ~40s. Vérifier le déploiement sur le dashboard Vercel ou via l'extension VSCode officielle.
 
-Créez un fichier `.env.local` à la racine du projet :
-
+Pour les Firebase Functions :
 ```bash
-cp .env.example .env.local
+cd functions
+npm run deploy
 ```
 
-Remplissez les variables avec vos clés Firebase :
+## Variables d'environnement
 
-```
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_ENV=development
-```
+À configurer dans Vercel → Project → Settings → Environment Variables :
 
-### 4. Démarrer le serveur de développement
+| Variable | Usage |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT` | JSON service account (pour `/api/send-verification`, `/api/coach`) |
+| `RESEND_API_KEY` | Envoi des emails OTP |
+| `GEMINI_API_KEY` | Clé Gemini API (gratuit sur [aistudio.google.com/apikey](https://aistudio.google.com/apikey)) |
 
-```bash
-npm run dev
-```
+## Sécurité
 
-L'application sera disponible à `http://localhost:3000`
+- Firebase apiKey publique (web standard, sécurité = Firestore rules + App Check)
+- OTP 6 chiffres via `crypto.randomInt` (CSPRNG), expire en 15 min, rate-limit 60s
+- IA Coach authentifié (idToken) + rate-limit 10 req/min/uid
+- XP via Cloud Function `addXp` uniquement (impossible de tricher en console)
+- CSP stricte dans `vercel.json` (frame-ancestors none, etc.)
+- Firestore rules restrictives par défaut, voir [firestore.rules](firestore.rules)
 
-## 📚 Documentation
+Cf. [docs/SECURITY.md](docs/SECURITY.md) pour la politique complète.
 
-Consultez la [documentation complète](./DOCUMENTATION.md) pour :
+## Audit & qualité
 
-- Architecture du projet
-- Guide des modules
-- API Firestore
-- Règles de sécurité
-- Guide de déploiement
-- Dépannage
+- [AUDIT.md](AUDIT.md) — état des lieux courant (tenu à jour à chaque scan)
+- [docs/sessions/](docs/sessions/) — log chronologique des sessions de développement
 
-## 🔐 Sécurité
+## Workflow Claude Code
 
-### Authentification
+Le repo intègre [Claude Code](https://claude.com/claude-code) :
+- [CLAUDE.md](CLAUDE.md) — contexte permanent (lu auto à chaque session)
+- `/audit` — relance un audit profond
+- `/session-end` — clôture une session avec log
 
-- ✅ Authentification par email/mot de passe
-- ✅ Connexion OAuth (Google, GitHub)
-- ✅ Validation robuste des données
-- ✅ Protection contre les injections XSS
-- ✅ Règles Firestore strictes
+## License
 
-### Bonnes pratiques
+Code propriétaire. © Romain — `romain@changeyourlife.ai`
 
-- ✅ Variables d'environnement pour les clés sensibles
-- ✅ Validation côté client ET serveur
-- ✅ Logging centralisé avec Sentry
-- ✅ Retry automatique avec backoff exponentiel
-- ✅ Gestion des erreurs complète
+## Urgence
 
-## 📊 Monitoring
-
-### Sentry
-
-Pour activer le monitoring avec Sentry :
-
-1. Créer un compte [Sentry](https://sentry.io)
-2. Créer un projet JavaScript
-3. Ajouter le DSN à `.env.local` :
-
-```
-VITE_SENTRY_DSN=your_sentry_dsn
-```
-
-### Logs
-
-Accéder aux logs via la console du navigateur :
-
-```javascript
-import { logger } from './js/logger.js';
-
-logger.info('Message');
-logger.error('Erreur', error);
-```
-
-## 🧪 Tests
-
-### Tests unitaires (à implémenter)
-
-```bash
-npm run test
-```
-
-### Tests E2E (à implémenter)
-
-```bash
-npm run test:e2e
-```
-
-## 📦 Déploiement
-
-### Vercel
-
-1. Connecter le repository GitHub à Vercel
-2. Ajouter les variables d'environnement
-3. Déployer automatiquement
-
-```bash
-vercel deploy
-```
-
-### Firebase
-
-```bash
-firebase deploy
-```
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Veuillez :
-
-1. Fork le repository
-2. Créer une branche (`git checkout -b feature/amazing-feature`)
-3. Commit vos changements (`git commit -m 'Add amazing feature'`)
-4. Push vers la branche (`git push origin feature/amazing-feature`)
-5. Ouvrir une Pull Request
-
-## 📝 Licence
-
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus de détails.
-
-## 🙏 Remerciements
-
-- [Firebase](https://firebase.google.com) pour le backend
-- [Vercel](https://vercel.com) pour l'hébergement
-- [Cytoscape.js](https://cytoscape.org) pour le graphe interactif
-- [Vanta.js](https://www.vantajs.com) pour les animations de fond
-
-## 📞 Support
-
-Pour toute question ou problème :
-
-- 📧 Email : support@changeyourlife.ai
-- 🐛 Issues : [GitHub Issues](https://github.com/yourusername/changeyourlife/issues)
-- 💬 Discussions : [GitHub Discussions](https://github.com/yourusername/changeyourlife/discussions)
-
-## 🗺️ Roadmap
-
-- [ ] Tests unitaires et E2E
-- [ ] Système de notifications push
-- [ ] Partage de graphes avec d'autres utilisateurs
-- [ ] Intégration avec des APIs de santé (Apple Health, Google Fit)
-- [ ] Application mobile native (React Native)
-- [ ] Système de coaching IA avancé
-- [ ] Communauté et défis collectifs
-
-## 📈 Statistiques
-
-- ⭐ Stars : [GitHub](https://github.com/yourusername/changeyourlife)
-- 📥 Forks : [GitHub](https://github.com/yourusername/changeyourlife)
-- 👥 Contributeurs : [GitHub](https://github.com/yourusername/changeyourlife/graphs/contributors)
-
----
-
-**Faites de votre vie une aventure épique ! 🎮✨**
-
-Dernière mise à jour : 2025-01-16  
-Version : 1.4.0
+Si toi ou un proche est en détresse psychologique, appelle le **3114** (numéro national de prévention du suicide, 24/7, gratuit, anonyme).

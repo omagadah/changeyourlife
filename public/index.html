@@ -580,24 +580,24 @@
       </div>
     </section>
 
-    <!-- ── STATS COUNTERS ── -->
+    <!-- ── GARANTIES (anciennement compteurs — chiffres concrets vérifiables) ── -->
     <div class="stats-counter-section reveal">
       <div class="stats-counter-grid">
         <div class="counter-item">
-          <span class="counter-value" data-target="12400" id="cnt-users">0</span>
-          <span class="counter-label">utilisateurs actifs</span>
+          <span class="counter-value">100%</span>
+          <span class="counter-label">gratuit, sans pub, sans carte bancaire</span>
         </div>
         <div class="counter-item">
-          <span class="counter-value" data-target="84000" id="cnt-entries">0</span>
-          <span class="counter-label">entrées de journal écrites</span>
+          <span class="counter-value">16</span>
+          <span class="counter-label">modules pour explorer ta vie</span>
         </div>
         <div class="counter-item">
-          <span class="counter-value" data-target="43000" id="cnt-sessions">0</span>
-          <span class="counter-label">séances de méditation</span>
+          <span class="counter-value">PWA</span>
+          <span class="counter-label">installable, fonctionne hors-ligne</span>
         </div>
         <div class="counter-item">
-          <span class="counter-value" data-target="98" id="cnt-pct">0</span>
-          <span class="counter-label">% gratuit, pour toujours</span>
+          <span class="counter-value">EU</span>
+          <span class="counter-label">données privées hébergées en Europe</span>
         </div>
       </div>
     </div>
@@ -699,7 +699,7 @@
     <div class="section-divider"></div>
     <div class="final-cta-section reveal">
       <h2>Prêt(e) à changer ta vie ?</h2>
-      <p>Rejoins des milliers de personnes qui construisent leur meilleure version, chaque jour.</p>
+      <p>Prends quelques minutes pour toi — tous les outils sont gratuits, accessibles immédiatement.</p>
       <a href="/login" id="cta-final" class="cta-big">
         Commencer gratuitement →
       </a>
@@ -718,19 +718,15 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "ChangeYourLife.ai",
-      "description": "Outils de santé mentale optimisés par l'IA",
+      "description": "Outils de santé mentale optimisés par l'IA — méditation, journal, objectifs, coach IA, trackers.",
       "url": "https://changeyourlife.ai",
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Web",
+      "inLanguage": "fr-FR",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "EUR"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "127"
       }
     }
     </script>
@@ -766,34 +762,8 @@
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
         // ── Animated counters ──
-        function animateCounter(el, target, suffix) {
-            const dur = 1800;
-            const start = performance.now();
-            function step(now) {
-                const p = Math.min((now - start) / dur, 1);
-                const ease = 1 - Math.pow(1 - p, 3);
-                const val = Math.round(ease * target);
-                el.textContent = val >= 1000
-                    ? (val >= 10000 ? Math.round(val/1000) + 'k+' : (val/1000).toFixed(1) + 'k+')
-                    : val + (suffix || '');
-                if (p < 1) requestAnimationFrame(step);
-                else el.textContent = target >= 1000
-                    ? (target >= 10000 ? Math.round(target/1000) + 'k+' : (target/1000).toFixed(1) + 'k+')
-                    : target + (suffix || '');
-            }
-            requestAnimationFrame(step);
-        }
-        const counterSection = document.querySelector('.stats-counter-section');
-        let countersDone = false;
-        new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !countersDone) {
-                countersDone = true;
-                animateCounter(document.getElementById('cnt-users'), 12400, '');
-                animateCounter(document.getElementById('cnt-entries'), 84000, '');
-                animateCounter(document.getElementById('cnt-sessions'), 43000, '');
-                animateCounter(document.getElementById('cnt-pct'), 98, '%');
-            }
-        }, { threshold: 0.3 }).observe(counterSection);
+        // Compteurs animés retirés — les valeurs affichées sont désormais des
+        // garanties statiques honnêtes (100%, 16 modules, PWA, EU).
     </script>
 
     <script type="module">

@@ -4,7 +4,7 @@ Log incrémental du travail effectué session par session sur changeyourlife.ai.
 
 | Date | Récap | Commits |
 |---|---|---|
-| [2026-05-08](2026-05-08.md) | Audit initial (PWA, XSS, OTP) + cleanup repo + setup workflow + audit profond | `3959e82`, `4ca0dba`, … |
+| [2026-05-08](2026-05-08.md) | Audit initial (PWA, XSS, OTP) + cleanup repo + setup workflow + audit profond + cleanup ~2000 LOC + sécurité APIs/Firestore | `3959e82` `4ca0dba` `e7a34ea` + 3 à venir |
 
 ---
 

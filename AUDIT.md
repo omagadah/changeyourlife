@@ -1,275 +1,141 @@
-# Audit technique — changeyourlife.ai
+# Audit changeyourlife.ai
 
-> **Date :** 8 mai 2026
-> **Repo :** [omagadah/changeyourlife](https://github.com/omagadah/changeyourlife)
-> **Commit audité :** `9667516` — *feat(nav): menu déroulant dynamique par section*
-> **Périmètre :** 114 fichiers · 3.3 Mo · 20 modules
-
----
-
-## 1. Vérification : code local ↔ production
-
-Le code dans ton dossier `ChangeYourLife.ai` est **strictement identique** à celui qui tourne en production sur `changeyourlife.ai`.
-
-| Élément | Statut |
-|---|---|
-| SHA HEAD local | `9667516f09832985db48376dbf7fde3139298ea8` |
-| SHA dernier deploy Vercel | `9667516f09832985db48376dbf7fde3139298ea8` |
-| **Match** | ✅ **Identique — code local = production** |
-| Branche | `main` (à jour avec `origin/main`) |
-| Dernier commit | *feat(nav): menu déroulant dynamique par section* — 5 avr. 2026 |
-| État deployment | `READY` · production · target=main |
-
-> Le check par fetch HTTP du HTML rendu n'a pas été possible (`changeyourlife.ai` pas dans l'allowlist réseau du sandbox), mais comme le hash de commit du dernier déploiement Vercel est strictement égal au HEAD local, c'est la garantie la plus forte possible que les deux sont identiques.
+> **Dernière MAJ :** 2026-05-08 (post audit profond + fixes)
+> **Branche :** `main`
+> **Type :** profond — sécurité, code mort, anomalies, perf, cohérence
 
 ---
 
-## 2. Verdict global
+## 1 · Verdict global
 
-Bon projet, structure claire, design system propre, sécurité de fond correcte côté backend. Quelques points qui méritent un coup de torchon — surtout côté **PWA (bug bloquant)**, centralisation **Firebase config**, **XSS modéré** sur le Codex, et la double-pile de fichiers obsolètes (CSS et docs).
+Repo en **bon état post-cleanup**. Les 3 critiques + 9 high de l'audit profond ont été corrigés ce 2026-05-08. Reste des éléments mineurs et des décisions long terme.
 
-### Score par axe
-
-| Axe | Note | Commentaire |
+| Axe | Note | Évolution |
 |---|:---:|---|
-| Architecture | **B+** | Modules bien séparés. Quelques duplications (Firebase config × 14, deux dossiers Firebase Functions). |
-| Sécurité | **B** | Headers + CSP + Firestore rules OK. XSS modéré sur Codex. `Math.random` pour OTP. |
-| Qualité code | **B+** | Pas de TODO, pas d'eval. Beaucoup d'`innerHTML` mais user content correctement échappé partout sauf Codex. |
-| **PWA** | **D** | **Bug bloquant** : `index.html` charge `site.webmanifest` (générique « MyWebSite ») au lieu de `manifest.json`. |
-| SEO | **C** | 13 pages sans `<meta description>`. Sitemap incomplet (manque modules récents). |
-| Perf | **B** | Cache headers Vercel solides. Service Worker incomplet. |
-| Maintenabilité | **C+** | 17 fichiers `.md` à la racine, deux dossiers functions, CSS doublonné. |
+| Architecture | **B+** | ↗ — code mort supprimé (~2 000 LOC), singleton Firebase enrichi |
+| Sécurité | **A−** | ↗↗ — XP server-side, Coach authentifié, Firestore rules durcies |
+| Qualité code | **A−** | ↗ — XSS Codex + admin fixés, doublons supprimés |
+| PWA / SEO | **A** | = |
+| Maintenabilité | **A−** | ↗ — workflow CLAUDE.md + sessions + slash commands |
 
 ---
 
-## 3. À corriger en priorité (CRITIQUES)
+## 2 · État courant des findings
 
-### 3.1 — 🔴 CRITIQUE — Bug PWA : mauvais manifest chargé
+### ✅ Critiques fixés
+- ~~`/api/coach` non authentifié~~ → idToken vérifié + rate-limit Firestore 10 req/min/uid
+- ~~Clé Gemini en query string~~ → header `x-goog-api-key`
+- ~~Code orphelin top-level dans `yourlife-editor.js`~~ → fichier entier supprimé (mort)
 
-**Impact :** UX directe sur mobile
+### ✅ Importants fixés
+- ~~`api/proxy.js` mort~~ → supprimé
+- ~~`external/v0-app/` + token v0~~ → dossier supprimé (⚠️ **token v0 à révoquer manuellement** sur l'interface v0.app)
+- ~~`dataconnect/` + `src/dataconnect-generated/`~~ → supprimés + dépendance retirée du `package.json`
+- ~~`.firebase/` cache committé~~ → supprimé + ajouté à `.gitignore`
+- ~~9 JS morts (~1 750 LOC)~~ → supprimés
+- ~~`common.min.js` désynchronisé~~ → supprimé
+- ~~`vanta-global.css` mort~~ → supprimé
+- ~~`firestore.indexes.json` JSON invalide~~ → propre
+- ~~Désync version SW~~ → aligné sur `?v=21`
+- ~~Pas de validation XP server-side~~ → tous les `levels.*.xp` passent par Cloud Function `addXp` ; rule Firestore `noXpTampering()` bloque les écritures directes
+- ~~`functions/src/genkit-sample.ts`~~ → supprimé
 
-**Fichier :** `public/index.html`, ligne 36
-
-```html
-<link rel="manifest" href="/site.webmanifest">
-```
-
-Or `/site.webmanifest` contient un placeholder générique :
-
-```json
-{ "name": "MyWebSite", "short_name": "MySite", "theme_color": "#000000" ... }
-```
-
-Le vrai manifest avec le branding correct (Change Your Life, theme `#00aaff`, shortcuts vers `/yourlife` et `/meditation`) est dans `/manifest.json` mais **n'est jamais chargé**.
-
-**Conséquences :**
-
-- Quand un user installe la PWA sur mobile, l'icône s'appelle « MySite » avec couleur noire.
-- Pas de shortcuts (Your Life / Méditation).
-- Pas de catégories app-store (`health`, `lifestyle`, `education`) → moins discoverable.
-- Pas de description, pas de screenshots PWA.
-
-**Fix recommandé :**
-
-- Soit pointer `index.html` vers `/manifest.json` (et supprimer `site.webmanifest`).
-- Soit fusionner les deux fichiers en un seul (à privilégier — décision : garder `manifest.json` comme source de vérité).
-- Ajouter `<link rel="manifest">` sur **toutes les pages** (actuellement présent uniquement sur `index.html`).
-
----
-
-### 3.2 — 🟠 ÉLEVÉ — XSS modéré sur le module Codex
-
-**Impact :** self-XSS exploitable via URL params / partage / import JSON
-
-**Fichier :** `public/codex/index.html`, lignes 373-393 et 410-417
-
-Les notes utilisateur (`item.title`, `item.summary`, `item.body`, `item.tags`) sont injectées dans le DOM via `innerHTML` sans échappement :
-
-```js
-cont.innerHTML = items.map((item, i) => `
-  ...
-  <h3>${item.title}</h3>
-  <p>${item.summary}</p>
-  ...`).join('');
-```
-
-Un utilisateur qui crée une note avec `<img src=x onerror=alert(1)>` dans le titre exécute du JS dans son propre navigateur. Comme les Firestore rules limitent l'écriture au propriétaire (`codexNotes.uid == auth.uid`), c'est techniquement du **self-XSS** — mais devient exploitable si :
-
-- Tu ouvres un partage de note (feature future).
-- Un attaquant te fait cliquer sur un lien avec des paramètres URL qui pré-remplissent une note.
-- Tu importes du JSON contenant des notes.
-
-**Fix recommandé :**
-
-- Remplacer la construction par `innerHTML` par un `createElement` + `textContent` (comme c'est déjà fait dans Journal et Objectifs).
-- Alternative rapide : passer chaque champ user dans une fonction `escapeHtml()` avant insertion.
+### ✅ Mineurs fixés
+- ~~XSS modéré panneau admin Settings~~ → `escAdmin()` sur tous les champs user
+- ~~`document.write` dans 404.html~~ → `appendChild` style
+- ~~Compteurs landing inventés (12 400 / 84 000 / 43 000 / 98%)~~ → remplacés par garanties honnêtes (100% gratuit / 16 modules / PWA / EU)
+- ~~ld+json `aggregateRating: 4.8 / 127`~~ → retiré
+- ~~`api/coach.js` leak Gemini error~~ → message générique côté client, log côté serveur
+- ~~Sitemap entrée `/signup/` redondante~~ → retirée
+- ~~README.md obsolète~~ → réécrit selon réalité
+- ~~Collection `roles/{uid}` sans rules~~ → rule ajoutée (read owner, write blocked → Custom Claims serveur)
+- ~~Collection `coachRate/{uid}` non protégée~~ → rule `if false` (admin SDK only)
+- ~~`@dataconnect/generated` dans package.json~~ → retiré
 
 ---
 
-### 3.3 — 🟡 MOYEN — OTP généré avec `Math.random()`
+## 3 · Restants (pour les prochaines sessions)
 
-**Impact :** théoriquement prédictible
+### 🟡 À traiter quand possible
 
-**Fichier :** `api/send-verification.js`, ligne 134
+- **CSP `'unsafe-inline'` dans `script-src`** — nécessaire à court terme (scripts inline partout) mais annule la protection XSS HTML. Plan long terme : extraire les scripts inline + nonces CSP. Effort : 4-6h.
+- **UID admin en dur côté client** ([public/settings/index.html:390](public/settings/index.html#L390)) — `ADMIN_UIDS` constante. Le bouton "Toggle Mod" écrit dans `roles/{uid}` mais la rule bloque désormais (correct). Pour réactiver les boutons admin, il faut implémenter Firebase Custom Claims + une Cloud Function callable `setRole(uid, role)`. Effort : 2h.
+- **Firebase Functions `firebase-admin` versions divergentes** : `^12.0.0` racine vs `^12.6.0` dans `functions/`. Aligner.
+- **Tidio chat externe** chargé dynamiquement après 3s sur landing. Décision business : garder ou retirer (perte d'autonomie côté UX).
 
-```js
-const code = String(Math.floor(100000 + Math.random() * 900000));
-```
+### 🔵 Curiosités à valider côté UX
+- `firestore.rules` : `assessments` et `codexNotes` ont `allow create` mais pas `allow update`. Donc impossible de modifier une note Codex (seulement supprimer + recréer). Confirmer si intentionnel.
+- `vercel.json` autorise `frame-src https://v0.app` — vestige sans usage repéré, à enlever quand on est sûr que rien n'en dépend.
+- `console.log` dans `service-worker.js` non muté par l'override `console.log = () => {}` de `index.html` (hors scope window). Logs SW visibles dans DevTools.
 
-`Math.random()` n'est pas cryptographiquement sûr. En pratique, vu :
-
-- Le rate limit de 60s côté serveur (ligne 122).
-- Les 5 tentatives max côté verify.
-- L'expiration en 15min.
-
-Le risque réel d'exploitation est très faible. Mais un OTP doit utiliser `crypto.randomInt` :
-
-```js
-const { randomInt } = require('node:crypto');
-const code = String(randomInt(100000, 1000000));
-```
+### ⏸ Décisions business (à toi Romain)
+- Re-câbler les compteurs landing à des vraies stats Firestore (vs garanties statiques actuelles) ?
+- Ajouter un programme de témoignages / avis vérifiés pour utiliser à nouveau le ld+json `aggregateRating` honnêtement ?
+- Implémenter `allow update` sur `codexNotes` pour permettre l'édition des notes ?
 
 ---
 
-## 4. À nettoyer ensuite (IMPORTANT)
+## 4 · Architecture courante (post-fix)
 
-### 4.1 — 🟠 ÉLEVÉ — Firebase config dupliquée dans 14+ fichiers
+### Frontend
+- 18 pages HTML statiques, vanilla JS via ESM
+- Singleton Firebase via [public/js/firebase.js](public/js/firebase.js) — exporte `auth`, `db`, `functions`, `awardXp`
+- Logo Mon Compte fixed top-right sur les 16 pages module (CSS global `.header` + back button via `.site-nav`)
+- Service Worker v21 cache 18 routes + assets statiques
+- Manifest PWA propre avec shortcuts YourLife/Méditation/Coach
 
-**Impact :** cauchemar de maintenance
+### Backend
+- `/api/send-verification.js` — OTP 6 chiffres CSPRNG, Resend, rate-limit 60s
+- `/api/verify-code.js` — vérif OTP, 5 tentatives max
+- `/api/coach.js` — Coach IA Gemini, idToken vérifié, rate-limit 10/min/uid
+- `functions/src/index.ts` — Cloud Function `addXp` (transactional, cap 10 000)
 
-La config Firebase (`apiKey`, `projectId`, etc.) est répétée à l'identique dans :
-
-- `public/index.html`, `app/index.html`, `autoevaluation/`, `coach/`, `codex/`, `habitudes/`, `journal/`, `meditation/`, `objectifs/`, `settings/`, `verify-email/`, `yourlife/`
-- `public/js/firebase.js`, `config.js`, `agent-builder.js`, `inscription.js`, `profile.js`, `yourlife-editor.js`, `yourlife.js`
-
-> ⚠️ **Note importante :** ce n'est **PAS** une fuite de secret — l'`apiKey` Firebase web est publique par design (sécurité = Firestore rules + App Check). Le problème est qu'au prochain renouvellement de projet ou changement de config, il faudra modifier 20 endroits.
-
-**Fix recommandé :**
-
-- Centraliser dans `/js/firebase.js` (déjà fait à 90%).
-- Importer depuis chaque page : `import { getFirebaseApp } from '/js/firebase.js'`
-- Supprimer toutes les copies inline.
-
----
-
-### 4.2 — 🟠 ÉLEVÉ — Service Worker incomplet
-
-**Impact :** pages récentes pas en cache offline
-
-**Fichier :** `public/service-worker.js`, lignes 4-19
-
-```js
-const urlsToCache = [
-  '/', '/app/', '/login/', '/verify-email/', '/journal/',
-  '/settings/', '/profile/', '/yourlife/', '/meditation/', '/objectifs/',
-  '/css/main.min.css', ...
-];
-```
-
-**Manquent :** `/coach/`, `/codex/`, `/autoevaluation/`, `/bilan/`, `/humeur/`, `/habitudes/`, `/sommeil/`, `/gratitude/`. Ces pages **ne fonctionnent pas en offline**.
+### Firestore
+- Rules par défaut **deny all** + matches explicites par collection
+- `users/{uid}` → owner only, no `levels`/`xp_*` tampering (force passage par `addXp`)
+- `users/{uid}/{journal,moods,bilans,sleep,gratitude}` → owner only avec validation
+- `assessments`, `codexNotes` → owner only, create + delete
+- `verificationCodes`, `coachRate`, `roles` → backend-only (admin SDK)
 
 ---
 
-### 4.3 — 🟠 ÉLEVÉ — Métadonnées SEO manquantes
+## 5 · Stats du repo (post-cleanup)
 
-**Impact :** référencement Google
+| Métrique | Avant | Après |
+|---|---|---|
+| Code source total | ~14 700 LOC | ~12 700 LOC (−14%) |
+| Fichiers JS dans `public/js/` | 16 | 6 |
+| Dossiers de generated code | 2 | 0 |
+| `package.json` racine deps | 4 | 3 |
+| `.md` à la racine | 17 | 3 (README, CLAUDE, AUDIT) |
+| Code mort identifié restant | ~2 000 LOC | 0 |
 
-**13 pages n'ont pas de `<meta name="description">` :**
-
-`app`, `autoevaluation`, `bilan`, `codex`, `gratitude`, `habitudes`, `humeur`, `login`, `profile`, `settings`, `signup`, `sommeil`, `verify-email`, `404`
-
-**Aussi :** `sitemap.xml` liste 10 URLs, mais le projet en compte 20. Manquent : `bilan`, `coach`, `gratitude`, `habitudes`, `humeur`, `signup`, `sommeil`, `verify-email`.
-
----
-
-### 4.4 — 🟡 MOYEN — Doublon `main.css` vs `main.min.css` désynchronisé
-
-**Fichier :** `public/css/`
-
-`main.css` (101 lignes) et `main.min.css` (332 lignes) sont **deux design systems différents** :
-
-- `main.css` = ancien (variables `--background-color`, `--glass-bg`, etc.)
-- `main.min.css` = nouveau « Design System v2 » (variables `--bg`, `--bg-surface`, etc.)
-
-Toutes les pages utilisent `main.min.css`. `main.css` peut être supprimé (ou renommé en `main.legacy.css` si tu veux garder en référence).
+**Top 5 fichiers (hors lock & images) :**
+1. `public/settings/index.html` — 60 KB / 1 087 LOC
+2. `public/app/index.html` — 66 KB / 1 053 LOC
+3. `public/index.html` — 41 KB / 815 LOC
+4. `public/coach/index.html` — 31 KB / 695 LOC
+5. `public/codex/index.html` — 36 KB / 504 LOC
 
 ---
 
-### 4.5 — 🟡 MOYEN — Doublon `functions/` vs `changeyourlife-database/`
+## 6 · Prochains chantiers recommandés
 
-Deux dossiers Firebase Functions :
+1. **Custom Claims pour admins** (effort 2h) — pour réactiver les boutons "Toggle Mod" du panneau Settings
+2. **Aligner versions firebase-admin** (effort 5 min)
+3. **Extraire scripts inline** (effort 4-6h) — supprime le besoin d'`unsafe-inline` dans la CSP, gain XSS
 
-- `functions/` — version TypeScript avec genkit + express
-- `changeyourlife-database/` — version JS classique
-
-`firebase.json` pointe sur `"functions"` (le bon). `changeyourlife-database/` est probablement un vestige à supprimer.
-
----
-
-## 5. Améliorations conseillées (NICE TO HAVE)
-
-### 5.1 — 🔵 FAIBLE — `firestore.indexes.json` contient des commentaires JSON invalides
-
-Le fichier contient des `//` commentaires de template au début. Firebase CLI les tolère, mais c'est techniquement du JSON invalide qui peut casser un parser tiers.
-
-### 5.2 — 🔵 FAIBLE — 17 fichiers `.md`/`.txt` à la racine
-
-`ACCESSIBILITY.md`, `AUDIT_FINAL.md`, `CHANGELOG.md`, `COMPLETION_REPORT.md`, `CONTRIBUTING.md`, `DEPLOYMENT_CHECKLIST.md`, `DOCUMENTATION.md`, `FAQ.md`, `IMPROVEMENTS_SUMMARY.md`, `INDEX.md`, `QUICKSTART.md`, `README.md`, `README_IMPROVED.md`, `SECURITY.md`, `SUMMARY.txt`, `TESTING.md`, `VANTA_IMPLEMENTATION.md`.
-
-**Recommandation :** déplacer dans `/docs/`, garder seulement `README.md` à la racine. `README.md` actuel ne fait que 1 ligne — il faudrait soit le compléter, soit utiliser `README_IMPROVED.md` à la place.
-
-### 5.3 — 🔵 FAIBLE — `public/_cleanup_note.txt`
-
-Fichier de note interne qui se retrouve dans le bundle servi en prod. À supprimer.
-
-### 5.4 — 🔵 FAIBLE — `innerHTML` extensif (95+ occurrences)
-
-Beaucoup d'`innerHTML`, mais pour les pages qui touchent du contenu utilisateur (Journal, Objectifs, Coach), le code utilise correctement `textContent`. Seul Codex est problématique (cf. 3.2). Sur le long terme, migrer vers une lib légère (lit-html, ou juste `createElement` + DOM API) limiterait la surface d'attaque.
-
-### 5.5 — 🔵 FAIBLE — `console.log` encore présents
-
-`public/index.html` écrase `console.log` en prod (ligne 757) — bonne idée. Mais `yourlife-editor.js` a encore des `console.debug` actifs, et le `service-worker.js` a des `console.log`. À nettoyer ou centraliser via le `logger.js` existant.
-
-### 5.6 — 🔵 FAIBLE — Open Graph / Twitter image trop petite
-
-`og:image` et `twitter:image` pointent vers `/apple-touch-icon.png` (180×180). LinkedIn/X recommandent **1200×630** pour un meilleur preview de partage.
+Aucun n'est bloquant.
 
 ---
 
-## 6. Ce qui est très bien fait ✅
+## Méthode de l'audit
 
-- **Headers HTTP solides** : CSP correctement configurée, `X-Frame-Options DENY`, `X-Content-Type-Options`, `Permissions-Policy` strictes (geolocation/microphone/camera bloqués).
-- **Cache strategy Vercel** : CSS et images en cache 1 an immutable, JS en `stale-while-revalidate`, `service-worker.js` `no-cache`. Très propre.
-- **Redirects propres** pour les anciennes URLs (`.html` → routes propres).
-- **Firestore rules correctement scopées** : `isOwner` check, validation des emotions du journal, range check pour `quality`/`mood`, `verificationCodes` verrouillé en read/write.
-- **Backend OTP** : token verification, rate limit 60s, 5 tentatives max, expiration 15min, code clearing après succès. Solide.
-- **PWA service-worker** : network-first pour navigation, cache-first pour assets, fallback offline.
-- **Design system v2 cohérent** : variables CSS centralisées, palette unifiée (`#060e1a`, `#0b1829`).
-- **0 TODO, 0 FIXME, 0 HACK** dans le code — discipline impressionnante.
-- **Aucun `eval` / `new Function`** — pas de surface d'attaque côté JS dynamique.
-- Toutes les pages ont l'attribut `lang="fr"`, toutes les `<img>` ont un `alt`.
-- L'API `send-verification` utilise un beau template HTML responsive pour l'email avec brand cohérent.
+Audit lancé via Claude Agent en read-only, scan complet du codebase :
+- Recherche patterns dangereux (`eval`, `document.write`, `innerHTML` user-controlled, secrets en clair)
+- Détection imports inutilisés, code mort, doublons désynchronisés
+- Lecture intégrale `firestore.rules`, `vercel.json`, `package.json`, `.gitignore`
+- `npm audit` racine + functions
+- Cross-référence service-worker / sitemap / pages réelles
 
----
-
-## 7. Plan d'action recommandé
-
-Si tu veux tout fixer, je propose cet ordre — du plus payant au moins urgent :
-
-| # | Sévérité | Action | Effort |
-|:---:|:---:|---|---|
-| 1 | 🔴 **CRIT** | Fixer le manifest PWA (pointer vers `manifest.json` sur toutes les pages) | 15 min · 1 commit |
-| 2 | 🟠 HIGH | Centraliser la config Firebase dans `/js/firebase.js` + supprimer les 14 copies | 1h · 1 commit |
-| 3 | 🟠 HIGH | Sécuriser le module Codex (`escapeHtml` ou refactor `textContent`) | 30 min · 1 commit |
-| 4 | 🟠 HIGH | Ajouter les modules manquants au Service Worker | 10 min · 1 commit |
-| 5 | 🟠 HIGH | Ajouter `<meta description>` aux 13 pages manquantes + compléter `sitemap.xml` | 30 min · 1 commit |
-| 6 | 🟡 MED | Remplacer `Math.random()` par `crypto.randomInt()` dans `send-verification.js` | 5 min · 1 commit |
-| 7 | 🟡 MED | Supprimer `main.css` obsolète + dossier `changeyourlife-database/` | 10 min · 1 commit |
-| 8 | 🔵 LOW | Ranger `/docs/`, supprimer `_cleanup_note.txt`, nettoyer `console.log` | 20 min · 1 commit |
-| 9 | 🔵 LOW | Créer une vraie OG image 1200×630 | 15 min + 1 image |
-
-**Total estimé :** ~3h pour tout corriger + 9 commits propres → redeploy auto Vercel.
-
----
-
-**Dis-moi par où tu veux commencer et on enchaîne.** 🚀
+Refaire un audit : taper `/audit` dans Claude Code.
