@@ -38,6 +38,10 @@ if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
   console.log = console.warn = console.error = () => {};
 }
 
+// ── Footer year (auto) ────────────────────────────────────────────────────
+const footerYear = document.getElementById('footer-year');
+if (footerYear) footerYear.textContent = String(new Date().getFullYear());
+
 // ── Scroll reveal (.reveal → .visible quand on scroll dessus) ─────────────
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((e) => {
