@@ -74,17 +74,27 @@ Repo en **excellent état**. Tous les critiques + high + la plupart des mineurs 
 
 Pour chaque : remplacer les variables CSS locales (`--bg:#07192f`, `--card:rgba(...)`, etc.) par les tokens du design system (`var(--bg)`, `var(--bg-surface)`, etc.). Petit gain visuel, gros gain cohérence.
 
-### 🟡 Gros chantier (effort 4-6h)
+### ✅ Externalisation des `<script>` inline (fait — commits 6383cfd + 2a7d482)
 
-**CSP `'unsafe-inline'` dans `script-src`** — toujours présent. Annule théoriquement la protection CSP contre XSS injecté en HTML. **Mitigations actuelles** : pas d'`innerHTML` user-controlled (Codex + admin escapent), Firestore rules strictes, OTP CSPRNG.
+Les **20 pages HTML** ont leurs `<script>` inline (modules ESM ou non) externalisés vers `/public/js/`. Plus aucun bloc `<script>...</script>` dans le repo. Un attaquant qui injecterait du HTML ne peut plus exécuter de JS via `<script>` inline.
 
-Pour le retirer :
-1. Extraire chaque `<script>` inline des HTML vers des fichiers `/js/page-X.js` (~20 pages)
-2. Pour les bootstraps Vanta/Firebase qui dépendent du timing, garder en module
-3. Calculer les hashes SHA256 des inline scripts restants (logique conditionnelle minime) et les ajouter à la CSP
-4. Tester chaque page après extraction (pas de tests automatisés → smoke test manuel)
+### 🟡 Chantier restant : convertir `onclick=` HTML en `addEventListener` (~2-3h)
 
-À faire dans une session dédiée. Risque modéré de régression visuelle.
+Pour pouvoir **réellement retirer `'unsafe-inline'` de la CSP `script-src`**, il faut encore convertir les attributs handler inline restants en HTML :
+- `public/codex/index.html` : 15 `onclick=` + 1 `oninput=` (+ onclick injectés via innerHTML dans codex.js)
+- `public/autoevaluation/index.html` : 9 `onclick=` + onmouseover/onmouseout injectés
+- `public/humeur/index.html` : 10 `onclick=`
+- `public/app/index.html` : 4 handlers divers
+- `public/bilan/index.html` : 1 `onclick=`
+
+Pour chacun :
+1. Remplacer `<button onclick="fn()">` par `<button id="...">` ou `<button data-action="fn">`
+2. Ajouter `document.getElementById('...').addEventListener('click', fn)` dans le .js
+3. Pour les onclick injectés via innerHTML (codex, autoevaluation) : refactor avec event delegation (un seul listener sur le parent qui dispatch selon `event.target.dataset.action`)
+
+Une fois fait → modifier `vercel.json` pour retirer `'unsafe-inline'` de `script-src` (CSP plus stricte). **Mitigations actuelles** rendent le risque faible : les `innerHTML` qui touchent du user content sont escapés (Codex `esc()`, admin Settings `escAdmin()`), Firestore rules strictes, OTP CSPRNG.
+
+`'unsafe-inline'` reste aussi sur `style-src` (beaucoup de styles inline `style="..."`, refonte distincte si on veut le retirer aussi).
 
 ### ⚠️ Action manuelle requise
 
