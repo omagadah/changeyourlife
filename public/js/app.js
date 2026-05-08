@@ -491,3 +491,18 @@ function bootVanta() {
   } catch (e) { /* ignore */ }
 }
 window.addEventListener("DOMContentLoaded", bootVanta);
+
+// ── Event listeners (remplacent les onmouseover/onmouseout inline pour CSP stricte) ──
+const linkProfile = document.getElementById('link-profile');
+if (linkProfile) {
+  linkProfile.addEventListener('mouseover', () => { linkProfile.style.color = '#8ba4c8'; });
+  linkProfile.addEventListener('mouseout',  () => { linkProfile.style.color = '#4a6a8a'; });
+}
+
+const linkCoach = document.getElementById('link-coach');
+if (linkCoach) {
+  const coachBgHover = 'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15))';
+  const coachBgRest  = 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.08))';
+  linkCoach.addEventListener('mouseover', () => { linkCoach.style.background = coachBgHover; });
+  linkCoach.addEventListener('mouseout',  () => { linkCoach.style.background = coachBgRest; });
+}

@@ -14,7 +14,7 @@
   <meta name="msapplication-TileColor" content="#07192f">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    body { color:#e5eef8; }
+    body { color:var(--text-1); }
     .page-shell {
       position:fixed; inset:20px;
       background:var(--glass-bg); backdrop-filter:blur(15px);
@@ -23,7 +23,7 @@
     }
     .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
     .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
-    .header-sub { font-size:0.82rem; color:#7ba3c8; margin-top:2px; }
+    .header-sub { font-size:0.82rem; color:var(--text-2); margin-top:2px; }
     .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
 
     /* ── Toast ── */
@@ -34,7 +34,7 @@
     /* ── Section titles ── */
     .section-title {
       font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
-      color:#4a6a8a; font-weight:700; margin-bottom:12px;
+      color:var(--text-3); font-weight:700; margin-bottom:12px;
       display:flex; align-items:center; gap:8px;
     }
     .section-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
@@ -47,10 +47,10 @@
     }
     .today-mood-card::before {
       content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
-      background:var(--mood-accent, #4a6a8a); border-radius:16px 0 0 16px;
+      background:var(--mood-accent, var(--text-3)); border-radius:16px 0 0 16px;
       transition:background .4s;
     }
-    .mood-question { font-size:1rem; font-weight:700; color:#eef4ff; margin-bottom:16px; }
+    .mood-question { font-size:1rem; font-weight:700; color:var(--text-1); margin-bottom:16px; }
     .mood-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:18px; }
     .mood-btn {
       display:flex; flex-direction:column; align-items:center; gap:5px;
@@ -61,32 +61,32 @@
     }
     .mood-btn:hover { transform:translateY(-3px); background:rgba(255,255,255,0.07); }
     .mood-btn.selected {
-      border-color:var(--mbcolor, #4a6a8a);
-      background:color-mix(in srgb, var(--mbcolor, #4a6a8a) 12%, transparent);
+      border-color:var(--mbcolor, var(--text-3));
+      background:color-mix(in srgb, var(--mbcolor, var(--text-3)) 12%, transparent);
       transform:translateY(-4px);
-      box-shadow:0 4px 18px color-mix(in srgb, var(--mbcolor, #4a6a8a) 30%, transparent);
+      box-shadow:0 4px 18px color-mix(in srgb, var(--mbcolor, var(--text-3)) 30%, transparent);
     }
     .mood-emoji { font-size:1.8rem; line-height:1; }
-    .mood-label { font-size:0.62rem; font-weight:700; color:#4a6a8a; text-align:center; white-space:nowrap; }
-    .mood-btn.selected .mood-label { color:var(--mbcolor, #eef4ff); }
+    .mood-label { font-size:0.62rem; font-weight:700; color:var(--text-3); text-align:center; white-space:nowrap; }
+    .mood-btn.selected .mood-label { color:var(--mbcolor, var(--text-1)); }
 
     /* ── Note input ── */
     .mood-note-wrap { margin-bottom:14px; }
     .mood-note {
       width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.08); border-radius:10px;
-      color:#e5eef8; font-size:0.86rem; padding:10px 13px; resize:none;
+      color:var(--text-1); font-size:0.86rem; padding:10px 13px; resize:none;
       font-family:inherit; line-height:1.5; transition:border-color .2s;
     }
     .mood-note:focus { outline:none; border-color:rgba(96,164,255,0.35); background:rgba(255,255,255,0.05); }
-    .mood-note::placeholder { color:#4a6a8a; }
+    .mood-note::placeholder { color:var(--text-3); }
 
     /* ── Domain selector ── */
     .domain-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
     .domain-pill {
       padding:5px 13px; border-radius:999px; font-size:0.73rem; font-weight:700;
       border:1.5px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);
-      color:#7ba3c8; cursor:pointer; transition:all .15s;
+      color:var(--text-2); cursor:pointer; transition:all .15s;
     }
     .domain-pill:hover { background:rgba(255,255,255,0.07); }
     .domain-pill.selected {
@@ -97,7 +97,7 @@
 
     .save-mood-btn {
       width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#1a56a4,#0070f3); color:#fff;
+      background:linear-gradient(135deg,#1a56a4,var(--blue)); color:#fff;
       font-size:0.9rem; font-weight:700; font-family:inherit;
       transition:filter .2s, transform .1s;
     }
@@ -111,7 +111,7 @@
       border-radius:16px; padding:20px;
     }
     .heatmap-legend { display:flex; align-items:center; gap:6px; margin-bottom:14px; justify-content:flex-end; }
-    .heatmap-legend-label { font-size:0.65rem; color:#4a6a8a; }
+    .heatmap-legend-label { font-size:0.65rem; color:var(--text-3); }
     .legend-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
     .heatmap-grid {
       display:grid; grid-template-columns:repeat(10,1fr); gap:5px;
@@ -130,7 +130,7 @@
     .heatmap-cell .cell-tooltip {
       display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
       background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
-      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:#eef4ff;
+      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:var(--text-1);
       white-space:nowrap; z-index:10; pointer-events:none;
     }
     .heatmap-cell:hover .cell-tooltip { display:block; }
@@ -145,8 +145,8 @@
       border-bottom:2px solid var(--sb-color, rgba(255,255,255,0.08));
     }
     .stat-block-icon { font-size:1.2rem; margin-bottom:4px; }
-    .stat-block-value { font-size:1.6rem; font-weight:800; color:#eef4ff; line-height:1.1; }
-    .stat-block-label { font-size:0.63rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+    .stat-block-value { font-size:1.6rem; font-weight:800; color:var(--text-1); line-height:1.1; }
+    .stat-block-label { font-size:0.63rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
 
     /* ── Recent entries ── */
     .entries-list { display:flex; flex-direction:column; gap:9px; }
@@ -164,12 +164,12 @@
     .entry-row:hover { background:rgba(255,255,255,0.04); }
     .entry-emoji { font-size:1.5rem; flex-shrink:0; }
     .entry-meta { flex:1; min-width:0; }
-    .entry-date { font-size:0.7rem; color:#4a6a8a; font-weight:600; margin-bottom:2px; }
+    .entry-date { font-size:0.7rem; color:var(--text-3); font-weight:600; margin-bottom:2px; }
     .entry-note { font-size:0.83rem; color:#c8d8ee; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .entry-domain { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:999px; flex-shrink:0; background:rgba(255,255,255,0.06); color:#7ba3c8; }
+    .entry-domain { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:999px; flex-shrink:0; background:rgba(255,255,255,0.06); color:var(--text-2); }
 
     /* ── Empty state ── */
-    .empty-entries { text-align:center; padding:28px 20px; color:#4a6a8a; font-size:0.85rem; }
+    .empty-entries { text-align:center; padding:28px 20px; color:var(--text-3); font-size:0.85rem; }
 
     /* ── Responsive ── */
     @media (max-width:600px) {
@@ -217,23 +217,23 @@
       <div class="today-mood-card" id="today-mood-card">
         <div class="mood-question" id="mood-question">Comment tu te sens aujourd'hui ?</div>
         <div class="mood-row" id="mood-row">
-          <div class="mood-btn" data-mood="1" style="--mbcolor:#ef4444" onclick="selectMood(1, this)">
+          <div class="mood-btn" data-mood="1" style="--mbcolor:#ef4444">
             <span class="mood-emoji">😞</span>
             <span class="mood-label">Difficile</span>
           </div>
-          <div class="mood-btn" data-mood="2" style="--mbcolor:#f97316" onclick="selectMood(2, this)">
+          <div class="mood-btn" data-mood="2" style="--mbcolor:#f97316">
             <span class="mood-emoji">😟</span>
             <span class="mood-label">Bas</span>
           </div>
-          <div class="mood-btn" data-mood="3" style="--mbcolor:#eab308" onclick="selectMood(3, this)">
+          <div class="mood-btn" data-mood="3" style="--mbcolor:#eab308">
             <span class="mood-emoji">😐</span>
             <span class="mood-label">Neutre</span>
           </div>
-          <div class="mood-btn" data-mood="4" style="--mbcolor:#22c55e" onclick="selectMood(4, this)">
+          <div class="mood-btn" data-mood="4" style="--mbcolor:#22c55e">
             <span class="mood-emoji">🙂</span>
             <span class="mood-label">Bien</span>
           </div>
-          <div class="mood-btn" data-mood="5" style="--mbcolor:#2dd4bf" onclick="selectMood(5, this)">
+          <div class="mood-btn" data-mood="5" style="--mbcolor:#2dd4bf">
             <span class="mood-emoji">😄</span>
             <span class="mood-label">Excellent</span>
           </div>
@@ -244,13 +244,13 @@
         </div>
 
         <div class="domain-row" id="domain-row">
-          <div class="domain-pill" data-domain="corps" style="--dpcolor:#2dd4bf" onclick="selectDomain('corps', this)">Corps</div>
-          <div class="domain-pill" data-domain="coeur" style="--dpcolor:#f87171" onclick="selectDomain('coeur', this)">Cœur</div>
-          <div class="domain-pill" data-domain="etre" style="--dpcolor:#a78bfa" onclick="selectDomain('etre', this)">Être</div>
-          <div class="domain-pill" data-domain="ordre" style="--dpcolor:#fbbf24" onclick="selectDomain('ordre', this)">Ordre</div>
+          <div class="domain-pill" data-domain="corps" style="--dpcolor:#2dd4bf">Corps</div>
+          <div class="domain-pill" data-domain="coeur" style="--dpcolor:#f87171">Cœur</div>
+          <div class="domain-pill" data-domain="etre" style="--dpcolor:#a78bfa">Être</div>
+          <div class="domain-pill" data-domain="ordre" style="--dpcolor:#fbbf24">Ordre</div>
         </div>
 
-        <button class="save-mood-btn" id="save-mood-btn" onclick="saveMood()" disabled>Enregistrer mon humeur</button>
+        <button class="save-mood-btn" id="save-mood-btn" disabled>Enregistrer mon humeur</button>
       </div>
 
       <!-- Stats -->

@@ -182,7 +182,7 @@ function renderCards(){
     const summary=esc(item.summary||'');
     const catLabel=safeCat(item.cat);
     if(currentView==='list'){
-      return `<div class="ccard ccard-list" style="border-color:${c}22;" onclick="openConcept(${i})" data-idx="${i}">
+      return `<div class="ccard ccard-list" style="border-color:${c}22;" data-idx="${i}">
         <div class="ccard-emoji">${emoji}</div>
         <div class="cl-body">
           <h3>${title}</h3>
@@ -192,7 +192,7 @@ function renderCards(){
         ${userBadge}
       </div>`;
     }
-    return `<div class="ccard" style="--c:${c};" onclick="openConcept(${i})" data-idx="${i}">
+    return `<div class="ccard" style="--c:${c};" data-idx="${i}">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${c};border-radius:16px 16px 0 0;"></div>
       <div class="ccard-top">
         <div class="ccard-emoji">${emoji}</div>
@@ -254,3 +254,52 @@ window.saveNote=async()=>{
   document.getElementById('add-modal').classList.remove('open');
   ['note-title','note-summary','note-body','note-tags'].forEach(id=>{document.getElementById(id).value='';});
 };
+
+// ── Event listeners (remplacent les onclick/oninput inline pour CSP stricte) ──
+// Search input
+const searchInput = document.getElementById('search-input');
+if (searchInput) searchInput.addEventListener('input', () => window.applyFilters());
+
+// Category buttons (sidebar)
+document.querySelectorAll('.cat-btn[data-cat]').forEach(btn => {
+  btn.addEventListener('click', () => window.filterCat(btn.dataset.cat, btn));
+});
+
+// View toggle (grille/liste)
+document.querySelectorAll('.vt-btn[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => window.setView(btn.dataset.view));
+});
+
+// Add note button
+const btnAddNote = document.getElementById('btn-add-note');
+if (btnAddNote) btnAddNote.addEventListener('click', () => window.openAddModal());
+
+// Concept modal (overlay click + close button)
+const conceptModal = document.getElementById('concept-modal');
+if (conceptModal) conceptModal.addEventListener('click', (e) => window.closeModal(e));
+
+// Add modal (overlay click + close button + cancel)
+const addModal = document.getElementById('add-modal');
+if (addModal) addModal.addEventListener('click', (e) => window.closeAddModal(e));
+
+// Modal action buttons (delegated via data-action)
+document.querySelectorAll('[data-action="close-concept"]').forEach(el => {
+  el.addEventListener('click', (e) => { e.stopPropagation(); window.closeConceptModal(); });
+});
+document.querySelectorAll('[data-action="close-add"]').forEach(el => {
+  el.addEventListener('click', (e) => { e.stopPropagation(); window.closeAddModal(); });
+});
+document.querySelectorAll('[data-action="save-note"]').forEach(el => {
+  el.addEventListener('click', () => window.saveNote());
+});
+
+// Cards container — event delegation pour openConcept (cards générées dynamiquement)
+const cardsContainer = document.getElementById('cards-container');
+if (cardsContainer) {
+  cardsContainer.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-idx]');
+    if (!card) return;
+    const idx = Number(card.dataset.idx);
+    if (!Number.isNaN(idx)) window.openConcept(idx);
+  });
+}

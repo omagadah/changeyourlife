@@ -186,7 +186,7 @@ function showResults(){
         <p>Tu as obtenu un score très élevé partout. Si c'est sincère, c'est remarquable ! Mais souviens-toi : <strong>tricher ici, c'est te tromper toi-même</strong>. Cette évaluation n'est vue que par toi. Plus tes réponses sont honnêtes, plus les insights t'aident vraiment. Tu peux refaire le questionnaire en prenant le temps de réfléchir à chaque réponse.</p>
       </div>
       <div style="margin-top:10px;">
-        <button class="btn-prev" onclick="startQuiz()" style="width:100%;justify-content:center;">↺ Refaire honnêtement</button>
+        <button class="btn-prev" data-action="start-quiz" style="width:100%;justify-content:center;">↺ Refaire honnêtement</button>
       </div>`;
   } else if(allSame){
     insightsHtml=`
@@ -217,7 +217,7 @@ function showResults(){
         <div style="margin-top:16px;padding:16px 18px;background:rgba(0,112,243,0.06);border:1px solid rgba(0,112,243,0.2);border-radius:12px">
           <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:8px">💡 Passe à l'action maintenant</div>
           <p style="font-size:0.85rem;color:#9bb3d0;margin-bottom:12px">Ton domaine <strong style="color:${target.color}">${target.emoji} ${target.label}</strong> a le plus besoin d'attention. Crée un objectif concret cette semaine.</p>
-          <a href="/objectifs/?domain=${target.key}" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0070f3,#0056cc);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,112,243,0.5)'" onmouseout="this.style.boxShadow='none'">
+          <a href="/objectifs/?domain=${target.key}" data-action="hover-shadow" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0070f3,#0056cc);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s">
             🎯 Créer un objectif ${target.label} →
           </a>
         </div>`;
@@ -330,7 +330,7 @@ async function loadHistory(){
       const d=doc.data();
       const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
       const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'—'}</div>`).join('');
-      return `<div class="hist-item" onclick="showHistDetail(${i})" title="Voir le détail">
+      return `<div class="hist-item" data-hist-idx="${i}" title="Voir le détail">
         <div class="hist-date">${date}</div>
         <div class="hist-chips">${chips}</div>
         <div class="hist-global">${d.globalScore??'—'}/10</div>
@@ -341,4 +341,43 @@ async function loadHistory(){
     console.error('loadHistory error:',e);
     cont.innerHTML='<div class="empty"><div class="ei">📊</div><p>Aucune évaluation effectuée pour l\'instant.<br>Lance ta première évaluation !</p></div>';
   }
+}
+
+// ── Event listeners (remplacent les onclick/onmouseover inline pour CSP stricte) ──
+// Boutons statiques avec data-action — délégation sur le document pour gérer aussi les boutons injectés (insight refaire honnêtement)
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('[data-action]');
+  if (!target) return;
+  const action = target.dataset.action;
+  switch (action) {
+    case 'start-quiz': window.startQuiz(); break;
+    case 'go-history': window.goHistory(); break;
+    case 'go-intro': window.goIntro(); break;
+    case 'prev-q': window.prevQ(); break;
+    case 'next-q': window.nextQ(); break;
+  }
+});
+
+// Hist list — délégation pour showHistDetail (items injectés via innerHTML)
+const histList = document.getElementById('hist-list');
+if (histList) {
+  histList.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-hist-idx]');
+    if (!item) return;
+    const idx = Number(item.dataset.histIdx);
+    if (!Number.isNaN(idx)) window.showHistDetail(idx);
+  });
+}
+
+// Hover shadow effect (remplace onmouseover/onmouseout sur le CTA injecté) — délégation sur action-bridge
+const actionBridge = document.getElementById('action-bridge');
+if (actionBridge) {
+  actionBridge.addEventListener('mouseover', (e) => {
+    const el = e.target.closest('[data-action="hover-shadow"]');
+    if (el) el.style.boxShadow = '0 4px 20px rgba(0,112,243,0.5)';
+  });
+  actionBridge.addEventListener('mouseout', (e) => {
+    const el = e.target.closest('[data-action="hover-shadow"]');
+    if (el) el.style.boxShadow = 'none';
+  });
 }

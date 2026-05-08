@@ -259,3 +259,18 @@ function showToast(msg, cls) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
+
+// ── Event listeners (remplacent les onclick inline pour CSP stricte) ──
+document.querySelectorAll('.mood-btn[data-mood]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const level = Number(btn.dataset.mood);
+    if (!Number.isNaN(level)) selectMood(level, btn);
+  });
+});
+
+document.querySelectorAll('.domain-pill[data-domain]').forEach(pill => {
+  pill.addEventListener('click', () => selectDomain(pill.dataset.domain, pill));
+});
+
+const saveBtn = document.getElementById('save-mood-btn');
+if (saveBtn) saveBtn.addEventListener('click', () => saveMood());

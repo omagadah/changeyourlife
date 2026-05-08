@@ -14,7 +14,7 @@
   <meta name="msapplication-TileColor" content="#07192f">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    body { color:#e5eef8; }
+    body { color:var(--text-1); }
     .page-shell {
       position:fixed; inset:20px;
       background:var(--glass-bg); backdrop-filter:blur(15px);
@@ -23,7 +23,7 @@
     }
     .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
     .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
-    .header-sub { font-size:0.82rem; color:#7ba3c8; margin-top:2px; }
+    .header-sub { font-size:0.82rem; color:var(--text-2); margin-top:2px; }
     .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
 
     /* ── Toast ── */
@@ -33,7 +33,7 @@
     /* ── Section label ── */
     .sec-label {
       font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
-      color:#4a6a8a; font-weight:700; margin-bottom:12px;
+      color:var(--text-3); font-weight:700; margin-bottom:12px;
       display:flex; align-items:center; gap:8px;
     }
     .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
@@ -42,13 +42,13 @@
     .week-nav { display:flex; align-items:center; gap:12px; }
     .week-btn {
       width:32px; height:32px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.04); color:#7ba3c8; cursor:pointer; font-size:1rem;
+      background:rgba(255,255,255,0.04); color:var(--text-2); cursor:pointer; font-size:1rem;
       display:flex; align-items:center; justify-content:center; transition:all .15s;
       flex-shrink:0;
     }
-    .week-btn:hover { background:rgba(255,255,255,0.09); color:#eef4ff; }
+    .week-btn:hover { background:rgba(255,255,255,0.09); color:var(--text-1); }
     .week-btn:disabled { opacity:0.3; cursor:not-allowed; }
-    .week-range { font-size:0.85rem; font-weight:700; color:#eef4ff; flex:1; text-align:center; }
+    .week-range { font-size:0.85rem; font-weight:700; color:var(--text-1); flex:1; text-align:center; }
 
     /* ── Stats grid ── */
     .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
@@ -60,12 +60,12 @@
     }
     .stat-card:hover { transform:translateY(-2px); }
     .stat-card-icon { font-size:1.3rem; margin-bottom:4px; }
-    .stat-card-value { font-size:1.7rem; font-weight:800; color:#eef4ff; line-height:1.1; }
-    .stat-card-label { font-size:0.63rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+    .stat-card-value { font-size:1.7rem; font-weight:800; color:var(--text-1); line-height:1.1; }
+    .stat-card-label { font-size:0.63rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
     .stat-card-delta { font-size:0.7rem; margin-top:5px; font-weight:600; }
     .stat-card-delta.up { color:#22c55e; }
     .stat-card-delta.down { color:#f87171; }
-    .stat-card-delta.same { color:#4a6a8a; }
+    .stat-card-delta.same { color:var(--text-3); }
 
     /* ── XP domains bar ── */
     .xp-domains-card {
@@ -88,11 +88,11 @@
     .act-cell:hover { transform:scale(1.2); z-index:2; }
     .act-cell.has-activity { background:rgba(59,130,246,0.25); }
     .act-cell.full-day { background:rgba(59,130,246,0.65); }
-    .act-day-label { font-size:0.6rem; color:#4a6a8a; text-align:center; margin-top:4px; }
+    .act-day-label { font-size:0.6rem; color:var(--text-3); text-align:center; margin-top:4px; }
     .act-tooltip {
       display:none; position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%);
       background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
-      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:#eef4ff;
+      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:var(--text-1);
       white-space:nowrap; z-index:10; pointer-events:none;
     }
     .act-cell:hover .act-tooltip { display:block; }
@@ -111,11 +111,11 @@
     .question-textarea {
       width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.07); border-radius:9px;
-      color:#e5eef8; font-size:0.84rem; padding:9px 12px; resize:none;
+      color:var(--text-1); font-size:0.84rem; padding:9px 12px; resize:none;
       font-family:inherit; line-height:1.6; transition:border-color .2s;
     }
     .question-textarea:focus { outline:none; border-color:rgba(96,164,255,0.35); background:rgba(255,255,255,0.05); }
-    .question-textarea::placeholder { color:#4a6a8a; }
+    .question-textarea::placeholder { color:var(--text-3); }
 
     /* ── Highlights ── */
     .highlights-list { display:flex; flex-direction:column; gap:8px; }
@@ -131,12 +131,12 @@
     }
     .highlight-icon { font-size:1.3rem; flex-shrink:0; }
     .highlight-text { font-size:0.85rem; color:#c8d8ee; flex:1; }
-    .highlight-val { font-size:0.9rem; font-weight:800; color:#eef4ff; flex-shrink:0; }
+    .highlight-val { font-size:0.9rem; font-weight:800; color:var(--text-1); flex-shrink:0; }
 
     /* ── Save button ── */
     .save-btn {
       width:100%; padding:12px; border-radius:12px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#1a56a4,#0070f3); color:#fff;
+      background:linear-gradient(135deg,#1a56a4,var(--blue)); color:#fff;
       font-size:0.92rem; font-weight:700; font-family:inherit;
       transition:filter .2s, transform .1s;
     }
@@ -152,8 +152,8 @@
       border-top:2px solid var(--dsc-color, rgba(255,255,255,0.1));
     }
     .dsc-emoji { font-size:1.3rem; margin-bottom:4px; }
-    .dsc-value { font-size:1.2rem; font-weight:800; color:var(--dsc-color, #eef4ff); }
-    .dsc-label { font-size:0.62rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.4px; }
+    .dsc-value { font-size:1.2rem; font-weight:800; color:var(--dsc-color, var(--text-1)); }
+    .dsc-label { font-size:0.62rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
 
     @media (max-width:600px) {
       .stats-grid { grid-template-columns:repeat(2,1fr); }
@@ -294,7 +294,7 @@
             <textarea class="question-textarea" id="q4" rows="2" placeholder="Une personne, un événement, un apprentissage, un moment de bonheur…"></textarea>
           </div>
           <div style="padding:16px 20px">
-            <button class="save-btn" id="save-btn" onclick="saveBilan()">Sauvegarder mon bilan</button>
+            <button class="save-btn" id="save-btn">Sauvegarder mon bilan</button>
           </div>
         </div>
       </div>

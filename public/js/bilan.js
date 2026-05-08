@@ -290,3 +290,7 @@ function showToast(msg) {
   t.className = 'toast show';
   setTimeout(() => t.classList.remove('show'), 2800);
 }
+
+// ── Event listener save-btn (remplace onclick inline pour CSP stricte) ──
+const saveBtnEl = document.getElementById('save-btn');
+if (saveBtnEl) saveBtnEl.addEventListener('click', () => saveBilan());
