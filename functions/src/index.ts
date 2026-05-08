@@ -1,37 +1,24 @@
 /**
- * Import function triggers from their respective submodules:
+ * Cloud Functions — Change Your Life
+ * Callable functions: addXp, setUserRole, getMyRole
  *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Bootstrap : la première fois, ajouter `ROOT_ADMIN_UID` dans les env vars
+ * Firebase (`firebase functions:config:set admin.root_uid="..."` ou via
+ * variables d'environnement Cloud Functions). Ce UID a automatiquement
+ * accès à `setUserRole` même sans custom claim.
  */
 
 import {setGlobalOptions} from "firebase-functions";
-import {onCall} from "firebase-functions/v2/https";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 try { admin.initializeApp(); } catch (e) { /* already initialized */ }
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
-
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
 setGlobalOptions({ maxInstances: 10 });
 
-// helloWorld example removed; using callable functions below
-
-type Domain = "body" | "etre" | "heart" | "order" | "mind"; // accept legacy 'mind' input too
+// ── XP ─────────────────────────────────────────────────────────────────────
+type Domain = "body" | "etre" | "heart" | "order" | "mind";
 interface LevelState { level: number; xp: number; nextXp: number }
 interface Levels { body: LevelState; etre?: LevelState; mind?: LevelState; heart: LevelState; order: LevelState }
 
@@ -47,7 +34,6 @@ function defaultLevels(): Levels {
 function normalizeLevels(l: any): Levels {
 	const base = defaultLevels();
 	const levels = (l || {}) as Levels;
-	// Map legacy 'mind' -> 'etre' if needed
 	if (!levels.etre && levels.mind) {
 		levels.etre = levels.mind;
 	}
@@ -55,7 +41,6 @@ function normalizeLevels(l: any): Levels {
 }
 
 function nextThreshold(currentLevel: number): number {
-	// Simple curve: 100 + 20*level (tune later)
 	return 100 + currentLevel * 20;
 }
 
@@ -63,16 +48,16 @@ export const addXp = onCall({ cors: true }, async (req) => {
 	const uid = req.auth?.uid;
 	if (!uid) {
 		logger.warn("addXp called without auth");
-		throw new Error("unauthenticated");
+		throw new HttpsError("unauthenticated", "Auth required");
 	}
 	const { domain, amount } = req.data || {};
-	const validDomains: Domain[] = ["body","etre","heart","order","mind"]; // accept 'mind' for backward compatibility
+	const validDomains: Domain[] = ["body", "etre", "heart", "order", "mind"];
 	if (!validDomains.includes(domain)) {
-		throw new Error("invalid-domain");
+		throw new HttpsError("invalid-argument", "invalid-domain");
 	}
 	const inc = Number(amount || 0);
 	if (!Number.isFinite(inc) || inc <= 0 || inc > 10000) {
-		throw new Error("invalid-amount");
+		throw new HttpsError("invalid-argument", "invalid-amount");
 	}
 
 	const db = admin.firestore();
@@ -81,14 +66,12 @@ export const addXp = onCall({ cors: true }, async (req) => {
 		const snap = await tx.get(ref);
 		const data = snap.exists ? (snap.data() as any) : {};
 		const levels: Levels = normalizeLevels(data.levels || defaultLevels());
-		// Map requested domain: if legacy 'mind' was sent, use 'etre'
-		const key: "body"|"etre"|"heart"|"order" = (domain === 'mind' ? 'etre' : domain);
+		const key: "body" | "etre" | "heart" | "order" = (domain === "mind" ? "etre" : domain);
 		const cur = (levels as any)[key] || { level: 0, xp: 0, nextXp: 100 };
 		let xp = cur.xp + inc;
 		let level = cur.level;
 		let nextXp = cur.nextXp || nextThreshold(level);
 
-		// handle multiple level-ups if a big amount
 		while (xp >= nextXp) {
 			xp -= nextXp;
 			level += 1;
@@ -100,4 +83,72 @@ export const addXp = onCall({ cors: true }, async (req) => {
 	});
 
 	return { ok: true };
+});
+
+// ── Roles & Custom Claims ──────────────────────────────────────────────────
+
+type Role = "admin" | "mod" | "user";
+const VALID_ROLES: Role[] = ["admin", "mod", "user"];
+
+/** UID du super-admin bootstrap. Configuré via env var `ROOT_ADMIN_UID`.
+ *  Permet de démarrer le système sans œuf-et-poule. À retirer/transférer
+ *  une fois qu'un autre admin a été créé via custom claim. */
+function getRootAdminUid(): string | null {
+	return (process.env.ROOT_ADMIN_UID || "").trim() || null;
+}
+
+function isCallerAdmin(req: any): boolean {
+	if (!req.auth?.uid) return false;
+	const root = getRootAdminUid();
+	if (root && req.auth.uid === root) return true;
+	return req.auth.token?.role === "admin";
+}
+
+/** Lecture du rôle courant — utile pour la UI client (cache du custom claim).
+ *  Toujours autorisé pour l'utilisateur lui-même. */
+export const getMyRole = onCall({ cors: true }, async (req) => {
+	const uid = req.auth?.uid;
+	if (!uid) {
+		throw new HttpsError("unauthenticated", "Auth required");
+	}
+	const claims = req.auth?.token || {};
+	const root = getRootAdminUid();
+	const role: Role = (root && uid === root) ? "admin" : (claims.role as Role) || "user";
+	return { role, uid };
+});
+
+/** Définit le rôle d'un user (custom claim + miroir Firestore pour read).
+ *  Réservé aux admins (ou au ROOT_ADMIN_UID bootstrap). */
+export const setUserRole = onCall({ cors: true }, async (req) => {
+	if (!isCallerAdmin(req)) {
+		logger.warn("setUserRole denied", { caller: req.auth?.uid });
+		throw new HttpsError("permission-denied", "Admin requis");
+	}
+	const { uid: targetUid, role } = req.data || {};
+	if (typeof targetUid !== "string" || !targetUid.length) {
+		throw new HttpsError("invalid-argument", "uid manquant");
+	}
+	if (!VALID_ROLES.includes(role)) {
+		throw new HttpsError("invalid-argument", "role invalide (admin|mod|user)");
+	}
+
+	// Refuse de retirer le rôle du ROOT_ADMIN
+	const root = getRootAdminUid();
+	if (root && targetUid === root && role !== "admin") {
+		throw new HttpsError("failed-precondition", "Le ROOT_ADMIN_UID ne peut pas être déclassé");
+	}
+
+	// 1. Custom claim (source de vérité pour l'auth)
+	const newClaims: any = role === "user" ? {} : { role };
+	await admin.auth().setCustomUserClaims(targetUid, newClaims);
+
+	// 2. Miroir Firestore (pour lecture côté client par l'owner)
+	const db = admin.firestore();
+	await db.collection("roles").doc(targetUid).set(
+		{ role, updatedAt: admin.firestore.FieldValue.serverTimestamp(), updatedBy: req.auth?.uid },
+		{ merge: true },
+	);
+
+	logger.info("setUserRole", { caller: req.auth?.uid, target: targetUid, role });
+	return { ok: true, uid: targetUid, role };
 });

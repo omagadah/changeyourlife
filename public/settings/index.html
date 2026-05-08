@@ -367,7 +367,7 @@
             </div>
         </div>
         <div>
-            <div class="note">Rôles stockés dans Firestore: <code>roles/{uid}</code> avec <code>mod: true</code>. Les admins sont gérés via la constante <code>ADMIN_UIDS</code> côté client pour l’instant.</div>
+            <div class="note">Rôles gérés via Firebase Custom Claims (Cloud Function <code>setUserRole</code>). Le miroir <code>roles/{uid}</code> est en lecture seule côté client. Pour bootstrap le 1er admin, configurer <code>ROOT_ADMIN_UID</code> dans les env vars Firebase Functions.</div>
         </div>
     </div>
     <div id="admin-roles-feedback" style="margin-top:12px;padding:10px;border-radius:8px;display:none;"></div>
@@ -381,13 +381,12 @@
 <script type="module">
 import { onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { updateGlobalAvatar } from "/js/common.js";
 import { initUserMenu } from "/js/userMenu.js";
 
-let auth, db;
-
-// Liste des UIDs admin - AJOUTEZ ICI LES UIDs DES ADMINS
-const ADMIN_UIDS = ["PvDinfGc2hRribdPE4JW9Bv5Ip42"]; // Ajoute l'UID de romainruiz31@gmail.com ici
+let auth, db, functions;
+let myRole = "user"; // résolu via getMyRole callable au début de la session
 
 // Affiche les informations de l'utilisateur admin
 function showAdminInfo(user) {
@@ -495,12 +494,17 @@ function initAuth() {
             initUserMenu();
             updateGlobalAvatar((user.email || "U").charAt(0).toUpperCase());
             
-            // Vérifie si l'utilisateur est admin
-            let isAdmin = ADMIN_UIDS.includes(user.uid);
-            let isMod = false;
-            if (!isAdmin) {
-                try { const r = await getDoc(doc(db, 'roles', user.uid)); isMod = !!(r.exists() && r.data().mod === true); } catch(e) {}
+            // Récupère le rôle via Cloud Function getMyRole (custom claims)
+            // Fallback sur le miroir Firestore roles/{uid} en cas d'erreur callable.
+            try {
+                const getMyRole = httpsCallable(functions, 'getMyRole');
+                const res = await getMyRole();
+                myRole = (res?.data?.role) || 'user';
+            } catch (e) {
+                try { const r = await getDoc(doc(db, 'roles', user.uid)); myRole = (r.exists() && r.data().role) || 'user'; } catch(_) { myRole = 'user'; }
             }
+            const isAdmin = myRole === 'admin';
+            const isMod   = myRole === 'mod' || isAdmin;
             if (isAdmin || isMod) {
                 document.getElementById("admin-nav-section").style.display = "block";
                 showAdminInfo(user);
@@ -755,11 +759,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initialisation de Firebase via singleton centralisé
 if (window._cyfFirebase) {
-    ({ auth, db } = window._cyfFirebase);
+    ({ auth, db, functions } = window._cyfFirebase);
     initAuth();
 } else {
     import("/js/firebase.js").then(() => {
-        ({ auth, db } = window._cyfFirebase);
+        ({ auth, db, functions } = window._cyfFirebase);
         initAuth();
     });
 }
@@ -1029,7 +1033,9 @@ async function openUserDetailModal(uid) {
         const rref = doc(db,'roles',uid);
         const [usnap, rsnap] = await Promise.all([getDoc(uref), getDoc(rref)]);
         const u = usnap.exists() ? usnap.data() : {};
-        const isMod = rsnap.exists() && rsnap.data().mod === true;
+        const targetRole = (rsnap.exists() && rsnap.data().role) || 'user';
+        const isMod = targetRole === 'mod' || targetRole === 'admin';
+        const isAdminTarget = targetRole === 'admin';
         const lv = u.levels || {};
         const lvn = { body: lv.body?.level || 0, etre: (lv.etre?.level || (lv.mind?.level || 0)), heart: lv.heart?.level || 0, order: lv.order?.level || 0 };
         const badges = Array.isArray(u.badges) ? u.badges : [];
@@ -1046,10 +1052,13 @@ async function openUserDetailModal(uid) {
                     <div class="input-group"><div class="input-label">UID</div><div><code>${safeUid}</code></div></div>
                 </div>
                 <div>
-                    <div class="input-group"><div class="input-label">Rôle Modérateur</div>
-                        <button id="toggle-mod" class="btn ${isMod? 'btn-secondary':'btn-primary'}">${isMod?'Retirer Modérateur':'Ajouter Modérateur'}</button>
+                    <div class="input-group"><div class="input-label">Rôle actuel</div>
+                        <div><span class="pill">${isAdminTarget ? 'admin' : (isMod ? 'mod' : 'user')}</span></div>
                     </div>
-                    <div class="note">Les rôles sont écrits dans <code>roles/{uid}</code>. Réservé aux admins (Custom Claims requis côté serveur pour activer l'écriture).</div>
+                    <div class="input-group"><div class="input-label">Modifier</div>
+                        <button id="toggle-mod" class="btn ${isMod? 'btn-secondary':'btn-primary'}" ${isAdminTarget ? 'disabled' : ''}>${isMod?'Retirer modérateur':'Promouvoir modérateur'}</button>
+                    </div>
+                    <div class="note">Les rôles sont gérés via Custom Claims (Cloud Function <code>setUserRole</code>). Le miroir <code>roles/{uid}</code> est en lecture seule côté client.</div>
                 </div>
             </div>
             <div class="settings-group" style="margin-top:12px">
@@ -1067,10 +1076,17 @@ async function openUserDetailModal(uid) {
             </div>
         `;
         const btn = root.querySelector('#toggle-mod');
-        if (btn) {
+        if (btn && !isAdminTarget) {
             btn.addEventListener('click', async () => {
-                try { await setDoc(doc(db,'roles',uid), { mod: !isMod }, { merge: true }); showAdminFeedback(!isMod? 'Mod ajouté' : 'Mod retiré'); root.style.display = 'none'; }
-                catch (e) { showAdminFeedback('Action rôle échouée', false); }
+                try {
+                    const setUserRole = httpsCallable(functions, 'setUserRole');
+                    const newRole = isMod ? 'user' : 'mod';
+                    await setUserRole({ uid, role: newRole });
+                    showAdminFeedback(isMod ? 'Modérateur retiré' : 'Modérateur promu');
+                    root.style.display = 'none';
+                } catch (e) {
+                    showAdminFeedback('Action rôle refusée (admin requis)', false);
+                }
             });
         }
     } catch (e) {
@@ -1082,8 +1098,16 @@ async function openUserDetailModal(uid) {
     const uidInput = document.getElementById('mod-uid');
     const fb = document.getElementById('admin-roles-feedback');
     function setFB(msg, ok=true){ if(!fb) return; fb.style.display='block'; fb.textContent=msg; fb.style.background= ok? 'rgba(16,185,129,0.12)':'rgba(239,68,68,0.12)'; fb.style.border= ok? '1px solid rgba(16,185,129,0.35)':'1px solid rgba(239,68,68,0.35)'; fb.style.color= ok? '#10b981':'#ef4444'; setTimeout(()=>{fb.style.display='none';},3500); }
-    if (addBtn && uidInput) addBtn.addEventListener('click', async () => { const target=(uidInput.value||'').trim(); if(!target) return; try { await setDoc(doc(db,'roles',target), { mod: true }, { merge: true }); setFB('Modérateur ajouté.'); } catch(e){ setFB('Échec ajout modérateur', false); } });
-    if (remBtn && uidInput) remBtn.addEventListener('click', async () => { const target=(uidInput.value||'').trim(); if(!target) return; try { await setDoc(doc(db,'roles',target), { mod: false }, { merge: true }); setFB('Modérateur retiré.'); } catch(e){ setFB('Échec retrait modérateur', false); } });
+    if (addBtn && uidInput) addBtn.addEventListener('click', async () => {
+        const target=(uidInput.value||'').trim(); if(!target) return;
+        try { const setUserRole = httpsCallable(functions, 'setUserRole'); await setUserRole({ uid: target, role: 'mod' }); setFB('Modérateur promu.'); }
+        catch(e){ setFB('Refus : admin requis (' + (e?.message||'') + ')', false); }
+    });
+    if (remBtn && uidInput) remBtn.addEventListener('click', async () => {
+        const target=(uidInput.value||'').trim(); if(!target) return;
+        try { const setUserRole = httpsCallable(functions, 'setUserRole'); await setUserRole({ uid: target, role: 'user' }); setFB('Modérateur rétrogradé.'); }
+        catch(e){ setFB('Refus : admin requis', false); }
+    });
 }
 </script>
 </body>
