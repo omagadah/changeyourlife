@@ -5,6 +5,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 const { Resend } = require('resend');
+const { randomInt } = require('node:crypto');
 
 // ── Firebase Admin singleton ──────────────────────────────────────────────────
 function getAdminApp() {
@@ -130,8 +131,8 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Generate 6-digit code
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    // Generate 6-digit code (CSPRNG)
+    const code = String(randomInt(100000, 1000000));
 
     // Store in Firestore with 15min expiry
     await codeRef.set({

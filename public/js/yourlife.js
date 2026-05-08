@@ -1,28 +1,12 @@
 // Your Life: static skill tree UI (beta)
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { httpsCallable, getFunctions } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
+import '/js/firebase.js';
 
-let app, auth, db, functions;
-if (!window._cyfFirebase) {
-  const firebaseConfig = {
-    apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
-    authDomain: "changeyourlife-cc210.firebaseapp.com",
-    projectId: "changeyourlife-cc210",
-    storageBucket: "changeyourlife-cc210.appspot.com",
-    messagingSenderId: "801720080785",
-    appId: "1:801720080785:web:1a74aadba5755ea26c2230"
-  };
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  functions = getFunctions(app);
-  window._cyfFirebase = { app, auth, db };
-} else {
-  ({ app, auth, db } = window._cyfFirebase);
-  try { functions = getFunctions(app); } catch (e) {}
-}
+const { app, auth, db } = window._cyfFirebase;
+let functions;
+try { functions = getFunctions(app); } catch (e) {}
 
 const $ = (s) => document.querySelector(s);
 

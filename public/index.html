@@ -33,9 +33,9 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
     <link rel="icon" href="/favicon.ico">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="manifest" href="/site.webmanifest">
-    <meta name="msapplication-TileColor" content="#262626">
-    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#07192f">
+    <meta name="theme-color" content="#00aaff">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -804,13 +804,8 @@
         if (window._cyfFirebase) {
             ({ auth } = window._cyfFirebase);
         } else {
-            // If auth is not available yet, import and initialize quickly (rare)
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-            const { getAuth: _getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-            const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-            const app = initializeApp(firebaseConfig);
-            auth = _getAuth(app);
-            window._cyfFirebase = { app, auth };
+            await import('/js/firebase.js');
+            ({ auth } = window._cyfFirebase);
         }
 
         const ctaButton = document.getElementById('cta-button');

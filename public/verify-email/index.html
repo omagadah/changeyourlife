@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vérification email - Change Your Life</title>
+  <meta name="description" content="Vérifiez votre adresse email pour finaliser la création de votre compte Change Your Life.">
+  <meta name="robots" content="noindex">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#00aaff">
+  <meta name="msapplication-TileColor" content="#07192f">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; display: flex; justify-content: center; align-items: center; background: #07192f; overflow: hidden; }
@@ -155,19 +164,10 @@
   </script>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut, reload } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { onAuthStateChanged, signOut, reload } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
-    const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-
-    let app, auth;
-    if (window._cyfFirebase) {
-      ({ app, auth } = window._cyfFirebase);
-    } else {
-      app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      window._cyfFirebase = { app, auth };
-    }
+    if (!window._cyfFirebase) { await import('/js/firebase.js'); }
+    const { app, auth } = window._cyfFirebase;
 
     // ── DOM refs ───────────────────────────────────────────────────────────────
     const emailDisplay  = document.getElementById('user-email-display');

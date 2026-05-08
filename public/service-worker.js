@@ -1,9 +1,10 @@
-// service-worker.js - v20
-const CACHE_NAME = 'changeyourlife-v20';
+// service-worker.js - v21
+const CACHE_NAME = 'changeyourlife-v21';
 const urlsToCache = [
   '/',
   '/app/',
   '/login/',
+  '/signup/',
   '/verify-email/',
   '/journal/',
   '/settings/',
@@ -11,42 +12,37 @@ const urlsToCache = [
   '/yourlife/',
   '/meditation/',
   '/objectifs/',
+  '/coach/',
+  '/codex/',
+  '/autoevaluation/',
+  '/bilan/',
+  '/humeur/',
+  '/habitudes/',
+  '/sommeil/',
+  '/gratitude/',
+  '/manifest.json',
   '/css/main.min.css',
   '/js/common.js',
   '/js/userMenu.js',
   '/js/inscription.js',
+  '/js/firebase.js',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
   'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js'
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Installing v20...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[SW] Cache opened');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('[SW] All URLs cached');
-        return caches.keys();
-      })
-      .then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('[SW] Removing old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
+      .then(cache => cache.addAll(urlsToCache))
+      .then(() => caches.keys())
+      .then(cacheNames => Promise.all(
+        cacheNames.map(name => name !== CACHE_NAME ? caches.delete(name) : null)
+      ))
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating v20...');
   event.waitUntil(clients.claim());
 });
 

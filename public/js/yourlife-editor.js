@@ -1,47 +1,22 @@
 // Your Life Editor: interactive graph with drag, edit, categories, sleep branches, XP on completion
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { httpsCallable, getFunctions } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
+import '/js/firebase.js';
 
-let app, auth, db, functions;
-if (!window._cyfFirebase) {
-  const firebaseConfig = {
-    apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
-    authDomain: "changeyourlife-cc210.firebaseapp.com",
-    projectId: "changeyourlife-cc210",
-    storageBucket: "changeyourlife-cc210.appspot.com",
-    messagingSenderId: "801720080785",
-    appId: "1:801720080785:web:1a74aadba5755ea26c2230"
-  };
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  // Use long polling to avoid environments that block WebChannel; enable durable local cache
-  try {
-    db = initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-      experimentalForceLongPolling: true,
-      useFetchStreams: false
-    });
-  } catch(e) {
-    db = getFirestore(app);
-  }
-  functions = getFunctions(app);
-  window._cyfFirebase = { app, auth, db };
-} else {
-  ({ app, auth } = window._cyfFirebase);
-  try {
-    db = initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-      experimentalForceLongPolling: true,
-      useFetchStreams: false
-    });
-  } catch(e) {
-    db = getFirestore(app);
-  }
-  try { functions = getFunctions(app); } catch (e) {}
-  window._cyfFirebase.db = db;
+const { app, auth } = window._cyfFirebase;
+let db, functions;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    experimentalForceLongPolling: true,
+    useFetchStreams: false
+  });
+} catch(e) {
+  db = getFirestore(app);
 }
+try { functions = getFunctions(app); } catch (e) {}
+window._cyfFirebase.db = db;
     const code = (e && (e.code || e.message)) ? String(e.code || e.message) : 'unknown';
     if (badge) { badge.textContent = `Erreur sauvegarde (${code})`; badge.style.color = '#ff9aa2'; }
 

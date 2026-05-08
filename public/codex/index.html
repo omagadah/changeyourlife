@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Codex de Connaissance — ChangeYourLife</title>
+  <meta name="description" content="Votre Codex de connaissance personnel — capturez idées, citations, apprentissages et notes pour construire votre savoir au fil du temps.">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#00aaff">
+  <meta name="msapplication-TileColor" content="#07192f">
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     :root{
@@ -218,18 +226,23 @@
 <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
 <script>VANTA.BIRDS({el:"#vanta-bg",mouseControls:true,touchControls:true,backgroundColor:0x07192f,color1:0x7192ff,color2:0xd1ff,colorMode:"varianceGradient",quantity:3});</script>
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-const FC={apiKey:"AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",authDomain:"changeyourlife-cc210.firebaseapp.com",projectId:"changeyourlife-cc210",storageBucket:"changeyourlife-cc210.appspot.com",messagingSenderId:"801720080785",appId:"1:801720080785:web:1a74aadba5755ea26c2230"};
-let app,auth,db,currentUser=null;
-if(!window._cyfFirebase){app=initializeApp(FC);auth=getAuth(app);db=getFirestore(app);window._cyfFirebase={app,auth,db};}
-else{({app,auth,db}=window._cyfFirebase);}
+if(!window._cyfFirebase){await import('/js/firebase.js');}
+let {app,auth,db}=window._cyfFirebase;
+let currentUser=null;
 onAuthStateChanged(auth,u=>{currentUser=u;if(u)loadUserNotes();});
 
 const COLORS={corps:'#2dd4bf',coeur:'#f87171',etre:'#a78bfa',ordre:'#fbbf24',gen:'#60aeff'};
 const CAT_LABELS={corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
+const HTML_ESCAPES={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+const esc=(s)=>String(s==null?'':s).replace(/[&<>"']/g,ch=>HTML_ESCAPES[ch]);
+// User-supplied bodies are escaped then wrapped; built-in bodies are trusted hardcoded HTML.
+const renderBody=(item)=>item.isUser
+  ? '<p>'+esc(item.body||item.summary||'').replace(/\n+/g,'</p><p>')+'</p>'
+  : (item.body||'<p>'+esc(item.summary||'')+'</p>');
+const safeCat=(c)=>CAT_LABELS[c]||esc(c||'');
 
 // ── BUILT-IN KNOWLEDGE BASE ───────────────────────────────────────────────────
 const BUILT_IN=[
@@ -373,27 +386,31 @@ function renderCards(){
   cont.innerHTML=items.map((item,i)=>{
     const c=catColor(item.cat);
     const badgeStyle=`color:${c};border-color:${c}44;`;
-    const tags=(item.tags||[]).slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('');
+    const tags=(item.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
     const userBadge=item.isUser?'<span class="user-badge">Ma note</span>':'';
+    const emoji=esc(item.emoji||'📌');
+    const title=esc(item.title||'');
+    const summary=esc(item.summary||'');
+    const catLabel=safeCat(item.cat);
     if(currentView==='list'){
       return `<div class="ccard ccard-list" style="border-color:${c}22;" onclick="openConcept(${i})" data-idx="${i}">
-        <div class="ccard-emoji">${item.emoji||'📌'}</div>
+        <div class="ccard-emoji">${emoji}</div>
         <div class="cl-body">
-          <h3>${item.title}</h3>
-          <p style="color:var(--muted);font-size:0.8rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${item.summary}</p>
+          <h3>${title}</h3>
+          <p style="color:var(--muted);font-size:0.8rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${summary}</p>
         </div>
-        <div class="ccard-badge" style="${badgeStyle}">${CAT_LABELS[item.cat]||item.cat}</div>
+        <div class="ccard-badge" style="${badgeStyle}">${catLabel}</div>
         ${userBadge}
       </div>`;
     }
     return `<div class="ccard" style="--c:${c};" onclick="openConcept(${i})" data-idx="${i}">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${c};border-radius:16px 16px 0 0;"></div>
       <div class="ccard-top">
-        <div class="ccard-emoji">${item.emoji||'📌'}</div>
-        <div class="ccard-badge" style="${badgeStyle}">${CAT_LABELS[item.cat]||item.cat}</div>
+        <div class="ccard-emoji">${emoji}</div>
+        <div class="ccard-badge" style="${badgeStyle}">${catLabel}</div>
       </div>
-      <h3>${item.title}</h3>
-      <p>${item.summary}</p>
+      <h3>${title}</h3>
+      <p>${summary}</p>
       <div class="ccard-tags">${tags}${item.isUser?'<span class="tag" style="color:#60aeff;border-color:#60aeff33;">Ma note</span>':''}</div>
     </div>`;
   }).join('');
@@ -408,12 +425,12 @@ window.openConcept=(idx)=>{
   activeItem=item;
   const c=catColor(item.cat);
   document.getElementById('modal-content').innerHTML=`
-    <div class="modal-emoji">${item.emoji||'📌'}</div>
-    <div class="modal-cat" style="color:${c};border-color:${c}44;">${CAT_LABELS[item.cat]||item.cat}</div>
-    <h2>${item.title}</h2>
-    <div class="modal-tagline">${item.tagline||item.summary}</div>
-    <div class="modal-body">${item.body||'<p>'+item.summary+'</p>'}</div>
-    <div class="modal-tags">${(item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>`;
+    <div class="modal-emoji">${esc(item.emoji||'📌')}</div>
+    <div class="modal-cat" style="color:${c};border-color:${c}44;">${safeCat(item.cat)}</div>
+    <h2>${esc(item.title||'')}</h2>
+    <div class="modal-tagline">${esc(item.tagline||item.summary||'')}</div>
+    <div class="modal-body">${renderBody(item)}</div>
+    <div class="modal-tags">${(item.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`;
   document.getElementById('concept-modal').classList.add('open');
 };
 

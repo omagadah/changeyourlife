@@ -1,23 +1,13 @@
 // Fichier : public/js/profile.js
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { setupThemeToggle, updateGlobalAvatar } from './common.js';
 import { initUserMenu } from './userMenu.js';
+import './firebase.js';
 
-// Reuse singleton firebase init if present (inscription.js already creates window._cyfFirebase)
-let app, auth, db;
-if (window._cyfFirebase) {
-    ({ app, auth, db } = window._cyfFirebase);
-} else {
-    const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    window._cyfFirebase = { app, auth, db };
-}
+const { app, auth, db } = window._cyfFirebase;
 let functions;
 try { functions = getFunctions(app); } catch (e) { /* optional */ }
 

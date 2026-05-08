@@ -5,6 +5,14 @@
     <!-- Deploy trigger: force Vercel rebuild 2025-11-12T11:30 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Espace - Change Your Life</title>
+    <meta name="description" content="Votre espace personnel sur Change Your Life — accédez à tous vos outils de santé mentale, suivez votre progression et atteignez vos objectifs.">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#00aaff">
+    <meta name="msapplication-TileColor" content="#07192f">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css"/>
     <link rel="stylesheet" href="/css/main.min.css"/>
     <style>
@@ -581,13 +589,8 @@
         if (window._cyfFirebase) {
             ({ auth, db } = window._cyfFirebase);
         } else {
-            // Fallback to create app if not present (rare)
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-            const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            window._cyfFirebase = { app, auth, db };
+            await import('/js/firebase.js');
+            ({ auth, db } = window._cyfFirebase);
         }
 
     const userPanelTrigger = document.querySelector('.user-panel-trigger');

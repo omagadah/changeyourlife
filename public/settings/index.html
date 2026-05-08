@@ -5,6 +5,14 @@
     <!-- Deploy test: Vérification connexion Vercel - 2025-11-12T10:00:00Z | Ce commentaire sert à déclencher un build -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard & Paramètres - Change Your Life</title>
+    <meta name="description" content="Tableau de bord et paramètres de votre compte Change Your Life — préférences, notifications, données personnelles.">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#00aaff">
+    <meta name="msapplication-TileColor" content="#07192f">
     <link rel="stylesheet" href="/css/main.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -371,19 +379,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
 <script type="module">
-import { getAuth, onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { updateGlobalAvatar } from "/js/common.js";
 import { initUserMenu } from "/js/userMenu.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg",
-    authDomain: "changeyourlife-cc210.firebaseapp.com",
-    projectId: "changeyourlife-cc210",
-    storageBucket: "changeyourlife-cc210.appspot.com",
-    messagingSenderId: "801720080785",
-    appId: "1:801720080785:web:1a74aadba5755ea26c2230"
-};
 
 let auth, db;
 
@@ -754,16 +753,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Initialisation de Firebase
+// Initialisation de Firebase via singleton centralisé
 if (window._cyfFirebase) {
     ({ auth, db } = window._cyfFirebase);
     initAuth();
 } else {
-    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(({ initializeApp }) => {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-        window._cyfFirebase = { app, auth, db };
+    import("/js/firebase.js").then(() => {
+        ({ auth, db } = window._cyfFirebase);
         initAuth();
     });
 }

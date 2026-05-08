@@ -1,27 +1,17 @@
 // public/js/inscription.js — v17
 // Gestion de l'authentification : connexion / inscription / vérification email
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
-  getAuth, onAuthStateChanged,
+  onAuthStateChanged,
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider, GithubAuthProvider,
   signInWithPopup, signInWithRedirect, getRedirectResult
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import './firebase.js';
 
-// ─── Firebase singleton ───────────────────────────────────────────────────────
-let app, auth;
-if (!window._cyfFirebase) {
-  const firebaseConfig = { apiKey: "AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg", authDomain: "changeyourlife-cc210.firebaseapp.com", projectId: "changeyourlife-cc210", storageBucket: "changeyourlife-cc210.appspot.com", messagingSenderId: "801720080785", appId: "1:801720080785:web:1a74aadba5755ea26c2230" };
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  const db = getFirestore(app);
-  window._cyfFirebase = { app, auth, db };
-} else {
-  ({ app, auth } = window._cyfFirebase);
-}
+// ─── Firebase singleton (centralisé dans /js/firebase.js) ────────────────────
+const { app, auth } = window._cyfFirebase;
 
 // ─── Auth guard: redirect logged-in users away from /login ───────────────────
 onAuthStateChanged(auth, (user) => {
