@@ -781,10 +781,13 @@ function initAuth() {
             initUserMenu();
             updateGlobalAvatar((user.email || "U").charAt(0).toUpperCase());
             
-            // ⚠️ TEMPORAIRE — bootstrap UIDs admin tant que les Cloud Functions
-            // (setUserRole + getMyRole) ne sont pas déployées et que ROOT_ADMIN_UID
-            // n'est pas configuré. À retirer une fois `firebase deploy --only functions`
-            // exécuté + custom claim `role: admin` posé sur l'UID ci-dessous.
+            // ── Fallback admin (CHOIX INTENTIONNEL — pas une dette technique) ──
+            // Firebase est en plan Spark (gratuit), donc Secret Manager indisponible.
+            // Plutôt que de payer Blaze pour stocker ROOT_ADMIN_UID côté serveur,
+            // on garde la liste ici. Un UID Firebase n'est pas un secret (inutile
+            // sans le mot de passe Google associé). Pour ajouter un admin :
+            // ajouter son UID ici + redeploy Vercel.
+            // Cf. AUDIT.md section "Stratégie admin" et docs/sessions/.
             const BOOTSTRAP_ADMIN_UIDS = ["PvDinfGc2hRribdPE4JW9Bv5Ip42"];
 
             // Récupère le rôle via Cloud Function getMyRole (custom claims)

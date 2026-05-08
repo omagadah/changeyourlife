@@ -88,22 +88,27 @@ Pour le retirer :
 
 ### ⚠️ Action manuelle requise (Romain)
 
-1. **Bootstrap Custom Claims** :
-   ```bash
-   firebase functions:secrets:set ROOT_ADMIN_UID
-   # entrer l'UID Firebase Auth de romainruiz31@gmail.com
-   firebase deploy --only functions
-   # ou: npm run deploy:functions
-   ```
-   Une fois admin créé via le custom claim, le `ROOT_ADMIN_UID` peut être retiré pour réduire la surface.
-
-2. **Deploy des nouvelles règles Firestore** :
+1. **Deploy des nouvelles règles Firestore** :
    ```bash
    npm run deploy:firestore
    ```
    Sans ça, `noXpTampering()` et le verrouillage `coachRate`/`roles` ne sont pas actifs.
 
-3. **Révoquer le token v0** sur l'interface v0.app (était commité dans `external/v0-app/`, supprimé du HEAD mais reste dans l'historique git public).
+2. **Révoquer le token v0** sur l'interface v0.app (était commité dans `external/v0-app/`, supprimé du HEAD mais reste dans l'historique git public).
+
+### ✅ Stratégie admin (décision figée 2026-05-08)
+
+Firebase reste en **plan Spark (gratuit)**, donc Secret Manager indisponible.
+
+**Choix retenu** : fallback `BOOTSTRAP_ADMIN_UIDS` hardcoded dans [public/settings/index.html](public/settings/index.html). Le commentaire dans le code rend le choix explicite (pas une dette technique).
+
+**Pourquoi pas la Cloud Function setUserRole serveur** : exigerait soit Secret Manager (= Blaze payant) soit `defineString()` (= un re-deploy interactif). Pour un solo dev avec 1 admin (lui-même), le fallback client est largement suffisant.
+
+**Pour promouvoir un nouvel admin un jour** : ajouter son UID à la liste + push (Vercel auto-redeploy). Aucun deploy Firebase requis.
+
+**Pourquoi pas un risque** : un UID Firebase Auth n'est pas un secret. Inutile sans le mot de passe Google associé. Beaucoup de devs solo laissent ces UIDs en clair sans souci.
+
+**Cloud Functions `setUserRole` + `getMyRole`** restent dans `functions/src/index.ts` — utilisables si besoin d'évoluer plus tard, mais pas obligatoires pour le fonctionnement actuel.
 
 ### ⏸ Décisions business (à toi)
 
