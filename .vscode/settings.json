@@ -1,3 +1,70 @@
 {
-    "codium.codeCompletion.enable": false
+  "codium.codeCompletion.enable": false,
+
+  "// — Apparence & édition —": "",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.linkedEditing": true,
+
+  "// — Fichiers —": "",
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.firebase": true,
+    "**/node_modules": true,
+    "**/.DS_Store": true
+  },
+
+  "// — Search —": "",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.firebase": true,
+    "**/dist": true,
+    "**/*.min.js": true,
+    "**/package-lock.json": true
+  },
+
+  "// — Git —": "",
+  "git.confirmSync": false,
+  "git.autofetch": true,
+
+  "// — Prettier (si installé) —": "",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "on",
+    "editor.formatOnSave": false
+  },
+
+  "// — Error Lens (si installé) —": "",
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+  "errorLens.excludeBySource": ["cSpell"],
+
+  "// — Live Preview (si installé) —": "",
+  "livePreview.defaultPreviewPath": "/public/index.html",
+
+  "// — Spell check FR (optionnel) —": "",
+  "cSpell.language": "en,fr",
+
+  "// — Telemetry off —": "",
+  "telemetry.telemetryLevel": "off"
 }

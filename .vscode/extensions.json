@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "christian-kohler.path-intellisense",
+    "ms-vscode.live-server",
+    "vercel.vercel-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-french",
+    "anthropic.claude-code"
+  ]
+}
