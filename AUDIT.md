@@ -67,34 +67,38 @@ Repo en **excellent état**. Tous les critiques + high + la plupart des mineurs 
 
 ## 3 · Restants (pour les prochaines sessions)
 
-### 🟡 Cohérence visuelle restante (effort 2-4h)
+### ✅ Cohérence visuelle 8 pages (fait — commits f542a43 + 40f337c)
 
-`/profile/` et `/settings/` sont désormais alignés sur le design system v2. Mais **8 autres pages** ont encore des CSS inline locaux qui dévient du design system :
-- `/codex/`, `/autoevaluation/`, `/gratitude/`, `/humeur/`, `/sommeil/`, `/habitudes/`, `/bilan/`, `/coach/`
+Les 8 pages avec CSS local (`/codex/`, `/autoevaluation/`, `/gratitude/`, `/humeur/`, `/sommeil/`, `/habitudes/`, `/bilan/`, `/coach/`) ont leurs **103 couleurs hardcodées remplacées par les variables du design system v2** :
+- `#e5eef8`, `#eef4ff` → `var(--text-1)`
+- `#7ba3c8`, `#7e9ab5`, `#9fb5ff` → `var(--text-2)`
+- `#4a6a8a`, `#3a4a5a` → `var(--text-3)`
+- `#3b82f6`, `#0070f3` → `var(--blue)`
+- `#60a5fa`, `#60aeff` → `var(--blue-light)`
 
-Pour chaque : remplacer les variables CSS locales (`--bg:#07192f`, `--card:rgba(...)`, etc.) par les tokens du design system (`var(--bg)`, `var(--bg-surface)`, etc.). Petit gain visuel, gros gain cohérence.
+Conséquence : un futur changement de palette (mode clair, refonte couleurs) suffit à modifier `main.min.css`, plus besoin d'éditer 20+ fichiers HTML.
 
-### ✅ Externalisation des `<script>` inline (fait — commits 6383cfd + 2a7d482)
+Les couleurs accent thématiques (gratitude=jaune, sommeil=indigo, habitudes=vert) sont conservées intentionnellement comme identité visuelle de chaque module.
 
-Les **20 pages HTML** ont leurs `<script>` inline (modules ESM ou non) externalisés vers `/public/js/`. Plus aucun bloc `<script>...</script>` dans le repo. Un attaquant qui injecterait du HTML ne peut plus exécuter de JS via `<script>` inline.
+### ✅ CSP `script-src` durcie (fait — commits 6383cfd + 2a7d482 + 40f337c)
 
-### 🟡 Chantier restant : convertir `onclick=` HTML en `addEventListener` (~2-3h)
+**Résultat final** : `'unsafe-inline'` est désormais **RETIRÉ** de `script-src` dans `vercel.json`. C'est l'aboutissement de 3 commits :
+1. Externalisation de tous les `<script>` inline → 20 fichiers `/js/page-*.js` créés
+2. Conversion de tous les `onclick=` / `oninput=` / `onmouseover=` HTML inline en `addEventListener` JavaScript (40 conversions sur 5 pages : codex, autoevaluation, humeur, app, bilan)
+3. Retrait de `'unsafe-inline'` de la directive `script-src` du `vercel.json`
 
-Pour pouvoir **réellement retirer `'unsafe-inline'` de la CSP `script-src`**, il faut encore convertir les attributs handler inline restants en HTML :
-- `public/codex/index.html` : 15 `onclick=` + 1 `oninput=` (+ onclick injectés via innerHTML dans codex.js)
-- `public/autoevaluation/index.html` : 9 `onclick=` + onmouseover/onmouseout injectés
-- `public/humeur/index.html` : 10 `onclick=`
-- `public/app/index.html` : 4 handlers divers
-- `public/bilan/index.html` : 1 `onclick=`
+**Conséquence sécurité** : un attaquant qui injecterait du HTML sur le site (via une faille XSS hypothétique) ne peut **plus** exécuter de JS. Les seules exécutions JS autorisées sont :
+- Scripts servis depuis notre origine (`'self'`)
+- Scripts depuis les CDNs allowlistés (cdnjs.cloudflare.com, cdn.jsdelivr.net, www.gstatic.com, apis.google.com, code.tidio.co, unpkg.com)
 
-Pour chacun :
-1. Remplacer `<button onclick="fn()">` par `<button id="...">` ou `<button data-action="fn">`
-2. Ajouter `document.getElementById('...').addEventListener('click', fn)` dans le .js
-3. Pour les onclick injectés via innerHTML (codex, autoevaluation) : refactor avec event delegation (un seul listener sur le parent qui dispatch selon `event.target.dataset.action`)
+Combiné avec :
+- L'escape de tout user content dans innerHTML (Codex `esc()`, admin Settings `escAdmin()`)
+- Firestore rules strictes (noXpTampering, locks coachRate/roles)
+- OTP CSPRNG (crypto.randomInt)
 
-Une fois fait → modifier `vercel.json` pour retirer `'unsafe-inline'` de `script-src` (CSP plus stricte). **Mitigations actuelles** rendent le risque faible : les `innerHTML` qui touchent du user content sont escapés (Codex `esc()`, admin Settings `escAdmin()`), Firestore rules strictes, OTP CSPRNG.
+→ La surface d'attaque XSS est très réduite.
 
-`'unsafe-inline'` reste aussi sur `style-src` (beaucoup de styles inline `style="..."`, refonte distincte si on veut le retirer aussi).
+`'unsafe-inline'` reste sur `style-src` (~50 styles inline `style="..."` à travers le code). Moins critique car les styles CSS ne peuvent pas exécuter du JS — refonte distincte si on veut le retirer aussi.
 
 ### ⚠️ Action manuelle requise
 
