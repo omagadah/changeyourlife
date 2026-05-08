@@ -104,7 +104,13 @@ Le repo intègre [Claude Code](https://claude.com/claude-code) :
 
 ## License
 
-Code propriétaire. © ChangeYourLife.ai — contact : `noreply@changeyourlife.ai`
+Code propriétaire. © ChangeYourLife.ai
+
+## Contact
+
+- **Support / contact public** : [contact@changeyourlife.ai](mailto:contact@changeyourlife.ai)
+- **Emails transactionnels** (OTP, notifications) : `noreply@changeyourlife.ai`
+- **Admin** : `admin@changeyourlife.ai` (interne)
 
 ## Urgence
 
