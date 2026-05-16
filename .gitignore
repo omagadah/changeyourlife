@@ -9,5 +9,10 @@ node_modules
 # Audit exports (binaires Word)
 *.docx
 
+# Logs Firebase CLI (générés au deploy)
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
 # Permissions locales Claude Code (per-machine, pas partagé)
 .claude/settings.local.json
