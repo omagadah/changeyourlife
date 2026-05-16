@@ -27,6 +27,11 @@
 
     const todayStr = () => new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
     function isDoneToday(h) {
       return h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === new Date().toDateString();
     }
@@ -126,9 +131,9 @@
       const hColor = HABIT_DOMAIN_COLORS[h.domain] || 'rgba(255,255,255,0.2)';
       return `<div class="habit-card ${done ? 'done-today' : ''}" style="--habit-color:${hColor}">
         <button class="habit-check" data-idx="${idx}" title="${done ? 'Décocher' : 'Marquer comme fait'}">✓</button>
-        <span class="habit-emoji">${h.emoji || '✅'}</span>
+        <span class="habit-emoji">${escapeHtml(h.emoji || '✅')}</span>
         <div class="habit-body">
-          <div class="habit-name">${h.name}</div>
+          <div class="habit-name">${escapeHtml(h.name)}</div>
           <div class="habit-meta">
             <span class="habit-streak">🔥 ${streak} jour${streak !== 1 ? 's' : ''}</span>
             ${done ? '<span style="color:#22c55e">✓ Fait aujourd\'hui</span>' : ''}

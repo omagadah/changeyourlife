@@ -32,6 +32,11 @@
       setTimeout(() => el.remove(), 1200);
     }
 
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
     const MOOD_EMOJIS = { 1:'😔', 2:'😕', 3:'😐', 4:'😊', 5:'😁' };
 
     let uid = null;
@@ -174,9 +179,9 @@
             ${moodEmoji ? `<span class="history-mood">${moodEmoji}</span>` : ''}
           </div>
           <div class="history-entries">
-            ${e.g1 ? `<div class="history-entry"><span class="history-entry-num">1</span><span>${e.g1}</span></div>` : ''}
-            ${e.g2 ? `<div class="history-entry"><span class="history-entry-num">2</span><span>${e.g2}</span></div>` : ''}
-            ${e.g3 ? `<div class="history-entry"><span class="history-entry-num">3</span><span>${e.g3}</span></div>` : ''}
+            ${e.g1 ? `<div class="history-entry"><span class="history-entry-num">1</span><span>${escapeHtml(e.g1)}</span></div>` : ''}
+            ${e.g2 ? `<div class="history-entry"><span class="history-entry-num">2</span><span>${escapeHtml(e.g2)}</span></div>` : ''}
+            ${e.g3 ? `<div class="history-entry"><span class="history-entry-num">3</span><span>${escapeHtml(e.g3)}</span></div>` : ''}
           </div>`;
         list.appendChild(item);
       });

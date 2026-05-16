@@ -35,6 +35,11 @@ const MOOD_LABELS = { 1:'Difficile', 2:'Bas', 3:'Neutre', 4:'Bien', 5:'Excellent
 const DOMAIN_COLORS = { corps:'#2dd4bf', coeur:'#f87171', etre:'#a78bfa', ordre:'#fbbf24' };
 const DOMAIN_LABELS = { corps:'Corps', coeur:'Cœur', etre:'Être', ordre:'Ordre' };
 
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
 let currentUser;
 let selectedMood = null;
 let selectedDomain = null;
@@ -201,7 +206,7 @@ function renderEntries() {
         <span class="entry-emoji">${MOOD_EMOJIS[e.mood]}</span>
         <div class="entry-meta">
           <div class="entry-date">${dateLabel} · ${MOOD_LABELS[e.mood]}</div>
-          <div class="entry-note">${e.note || '<em style="opacity:.5">Sans note</em>'}</div>
+          <div class="entry-note">${e.note ? escapeHtml(e.note) : '<em style="opacity:.5">Sans note</em>'}</div>
         </div>
         ${domLabel ? `<span class="entry-domain" style="${domStyle}">${domLabel}</span>` : ''}
       </div>`;

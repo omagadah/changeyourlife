@@ -29,6 +29,11 @@
     const QUALITY_LABEL = { 1:'Mauvaise', 2:'Passable', 3:'Bonne', 4:'Excellente', 5:'Parfaite' };
     const QUALITY_COLOR = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#6366f1' };
 
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
     let currentUser, allLogs = {}; // dateStr → {bedtime, waketime, quality, note, duration}
 
     // ── Set today's date ──
@@ -200,7 +205,7 @@
           <span class="log-date">${label}</span>
           <span class="log-hours">${fmtDuration(l.duration)}</span>
           <span class="log-quality">${QUALITY_EMOJI[l.quality||3]}</span>
-          <span class="log-note">${l.note || '<em style="opacity:.4">Sans note</em>'}</span>
+          <span class="log-note">${l.note ? escapeHtml(l.note) : '<em style="opacity:.4">Sans note</em>'}</span>
         </div>`;
       }).join('');
     }
