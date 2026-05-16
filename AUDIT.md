@@ -1,206 +1,123 @@
 # Audit changeyourlife.ai
 
-> **Dernière MAJ :** 2026-05-08 (post Custom Claims + DX improvements)
-> **Branche :** `main`
-> **Type :** profond — sécurité, code mort, anomalies, perf, cohérence
+> **Dernière MAJ :** 2026-05-16 (reprise projet — toolchain réparé + audit complet)
+> **Branche :** `main` (synchro avec `origin/main`, commit `2747816`)
+> **Type :** profond — sécurité, code mort, anomalies, cohérence, deps
 
 ---
 
 ## 1 · Verdict global
 
-Repo en **excellent état**. Tous les critiques + high + la plupart des mineurs sont fixés. Reste un seul gros chantier optionnel (externaliser scripts inline pour CSP plus stricte) et des décisions business.
+Repo en **bon état**, backend solide. Mais l'audit révèle une **régression XSS** (4 modules trackers injectent du contenu utilisateur non échappé) et une **vuln npm critique** (`protobufjs`). Aucun bloquant fonctionnel, mais 6 chantiers prioritaires à traiter.
 
 | Axe | Note | Évolution |
 |---|:---:|---|
-| Architecture | **A−** | ↗ — singleton Firebase enrichi (auth+db+functions+awardXp) |
-| Sécurité | **A** | ↗↗ — Custom Claims, XP server-side, Coach auth, Firestore rules strictes |
-| Qualité code | **A−** | = — XSS Codex + admin fixés, doublons supprimés |
+| Architecture | **A−** | = |
+| Sécurité | **B+** | ↘ — régression XSS 4 trackers + vuln npm critique |
+| Qualité code | **B+** | ↘ — imports morts, deps inutiles, docs obsolètes |
 | PWA / SEO | **A** | = |
-| Maintenabilité | **A** | ↗ — Prettier + EditorConfig + scripts npm + workflow Claude |
+| Maintenabilité | **A−** | = |
 
 ---
 
-## 2 · État courant des findings
+## 2 · Findings
 
-### ✅ Critiques fixés
-- ~~`/api/coach` non authentifié~~ → idToken vérifié + rate-limit Firestore 10 req/min/uid
-- ~~Clé Gemini en query string~~ → header `x-goog-api-key`
-- ~~Code orphelin top-level dans `yourlife-editor.js`~~ → fichier entier supprimé (mort)
+### 🔴 Critique
 
-### ✅ Importants fixés
-- ~~`api/proxy.js` mort~~ → supprimé
-- ~~`external/v0-app/` + token v0~~ → dossier supprimé (⚠️ **token v0 à révoquer manuellement** sur l'interface v0.app)
-- ~~`dataconnect/` + `src/dataconnect-generated/`~~ → supprimés + dépendance retirée du `package.json`
-- ~~`.firebase/` cache committé~~ → supprimé + ajouté à `.gitignore`
-- ~~9 JS morts (~1 750 LOC)~~ → supprimés
-- ~~`common.min.js` désynchronisé~~ → supprimé
-- ~~`vanta-global.css` mort~~ → supprimé
-- ~~`firestore.indexes.json` JSON invalide~~ → propre
-- ~~Désync version SW~~ → aligné sur `?v=21`
-- ~~Pas de validation XP server-side~~ → tous les `levels.*.xp` passent par Cloud Function `addXp` ; rule Firestore `noXpTampering()` bloque les écritures directes
-- ~~`functions/src/genkit-sample.ts`~~ → supprimé
+- **`protobufjs` — vuln critique (npm)** — `npm audit` racine : `protobufjs <=7.5.5`, code execution + prototype pollution + DoS (GHSA-xq3m-2v4x-88gg & al.). Dépendance transitive (via `firebase` / `firebase-admin`). Fix : `npm audit fix`. Voir aussi le retrait de la dep `firebase` (inutilisée, §Mineur).
 
-### ✅ Mineurs fixés
-- ~~XSS modéré panneau admin Settings~~ → `escAdmin()` sur tous les champs user
-- ~~`document.write` dans 404.html~~ → `appendChild` style
-- ~~Compteurs landing inventés~~ → garanties honnêtes (100% gratuit / 16 modules / PWA / EU)
-- ~~ld+json `aggregateRating: 4.8 / 127`~~ → retiré
-- ~~`api/coach.js` leak Gemini error~~ → message générique côté client
-- ~~Sitemap entrée `/signup/` redondante~~ → retirée
-- ~~README.md obsolète~~ → réécrit selon réalité
-- ~~Collection `coachRate/{uid}` non protégée~~ → rule `if false` (admin SDK only)
-- ~~`@dataconnect/generated` dans package.json~~ → retiré
-- ~~Firebase Functions versions divergentes~~ → alignées sur `^12.6.0`
-- ~~`vercel.json` `frame-src https://v0.app`~~ → retiré (vestige)
-- ~~`assessments` / `codexNotes` `allow update` manquant~~ → ajouté avec validation uid stable
-- ~~UID admin en dur + collection `roles` sans rules~~ → migré vers **Custom Claims** Firebase Auth (Cloud Functions `setUserRole` + `getMyRole`, ROOT_ADMIN_UID env var pour bootstrap, miroir Firestore en read-only client)
+### 🟠 Important
 
-### ✅ DX & Workflow ajoutés ce 2026-05-08
-- `CLAUDE.md` (contexte permanent), `docs/sessions/` (logs incrémentaux par jour)
-- `.vscode/{settings,extensions}.json` — config workspace + 9 extensions recommandées
-- `.claude/commands/{audit,session-end}.md` — slash commands custom
-- `.claude/settings.json` — auto-permissions git/rm/mkdir/mv/npm/Vercel MCP
-- `.prettierrc` + `.prettierignore` + `.editorconfig` — formatage cohérent
-- `package.json` enrichi : `npm run dev|format|deploy:functions|deploy:firestore|deploy:firebase|audit:security|logs:functions`
+- **XSS stocké — 4 modules trackers.** Contenu utilisateur injecté brut dans `innerHTML` :
+  - `public/js/gratitude.js:177-179` — champs `g1`/`g2`/`g3`
+  - `public/js/humeur.js:204` — `e.note`
+  - `public/js/sommeil.js:203` — `l.note`
+  - `public/js/habitudes.js:129-131` — `h.name`, `h.emoji`
+  - Impact : données owner-only (un user ne s'attaque que lui-même) → sévérité Important, pas Critique. Devient sérieux si un panneau admin affiche un jour ces données.
+  - Fix : factoriser un `escapeHtml()` partagé (pattern déjà présent dans `codex.js` `esc()` et `settings.js` `escAdmin()`).
+- **7 fichiers — imports Firebase morts.** Symboles importés jamais appelés (le code utilise le singleton) :
+  - `app.js:4` (`signOut`,`getAuth`) · `coach.js:5-7` (`initializeApp`,`getAuth`,`getFirestore`) · `journal.js:6-7` (`initializeApp`,`getAuth`) · `yourlife.js:5-6` (`initializeApp`,`getAuth`) · `habitudes.js:3` (`getAuth`) · `meditation.js:6` (`getAuth`) · `objectifs.js:6` (`getAuth`)
+- **`functions/package.json` — deps mortes + script cassé.** `express` (l.19) et `genkit` (l.22) jamais importés ; script `genkit:start` (l.4) pointe vers `src/genkit-sample.ts` **inexistant**.
+- **`docs/INDEX.md` obsolète.** Référence ~9 fichiers inexistants, email fictif, repo `yourusername/changeyourlife`, date 2025. À réécrire ou supprimer.
 
----
+### 🟡 Mineur
 
-## 3 · Restants (pour les prochaines sessions)
+- `public/js/coach.js:405-408` — `showToast()` définie, jamais appelée (+ `<div id="toast">` + CSS `.toast` inertes).
+- `public/js/xp.js:37-58` — `showLevelUp()` exportée, jamais importée (+ CSS `.levelup-*` `main.min.css:319-335`).
+- `public/css/main.min.css` — bloc `.user-panel*` (l.171-200) = CSS legacy (`setupUserPanel` retiré) + utilitaires non utilisés (`.btn-ghost`, `.input-base`, `.skeleton`, `.anim-fadeup/scalein`, `.text-blue`, `.font-800`).
+- `api/send-verification.js:171` — fuite `err.message` brut au client (les autres endpoints renvoient un message générique).
+- Dépendance CDN `vanta@latest` non pinnée sur ~13 pages (risque supply-chain). Pinner ex. `vanta@0.5.24`.
+- `firestore.rules` — `bilans`, `gratitude`, `codexNotes` : `allow write/create` sans borne de taille des champs texte.
+- `vercel.json` — `style-src 'unsafe-inline'` (connu, accepté) + `img-src https:` large (tracking pixel possible).
+- `functions/src/index.ts` — 3 callables en `cors: true` (origine ouverte ; pas une faille car auth via idToken, mais restreignable).
+- `package.json` racine — dep `firebase` jamais importée (frontend = CDN gstatic). `tsx` (devDep functions) lié au script `genkit:start` mort.
+- `docs/` — ~15 fichiers historiques jamais référencés (`AUDIT_FINAL.md`, `COMPLETION_REPORT.md`, `VANTA_IMPLEMENTATION.md`, `SUMMARY.txt`…) à trier.
 
-### ✅ Cohérence visuelle 8 pages (fait — commits f542a43 + 40f337c)
+### 🔵 Curiosités
 
-Les 8 pages avec CSS local (`/codex/`, `/autoevaluation/`, `/gratitude/`, `/humeur/`, `/sommeil/`, `/habitudes/`, `/bilan/`, `/coach/`) ont leurs **103 couleurs hardcodées remplacées par les variables du design system v2** :
-- `#e5eef8`, `#eef4ff` → `var(--text-1)`
-- `#7ba3c8`, `#7e9ab5`, `#9fb5ff` → `var(--text-2)`
-- `#4a6a8a`, `#3a4a5a` → `var(--text-3)`
-- `#3b82f6`, `#0070f3` → `var(--blue)`
-- `#60a5fa`, `#60aeff` → `var(--blue-light)`
+- `service-worker.js:1` — commentaire `// v21` désynchro (`CACHE_NAME` est bien `v22`).
+- `public/js/common.js:45` — commentaire orphelin « setupUserPanel removed ».
+- `public/logo.svg`, `public/og-image.svg` — aucun HTML ne les référence (`og-image.png` utilisé partout).
+- `console.log` dans `service-worker.js` reste visible (scope worker).
 
-Conséquence : un futur changement de palette (mode clair, refonte couleurs) suffit à modifier `main.min.css`, plus besoin d'éditer 20+ fichiers HTML.
+### ✅ Sections clean
 
-Les couleurs accent thématiques (gratitude=jaune, sommeil=indigo, habitudes=vert) sont conservées intentionnellement comme identité visuelle de chaque module.
-
-### ✅ CSP `script-src` durcie (fait — commits 6383cfd + 2a7d482 + 40f337c)
-
-**Résultat final** : `'unsafe-inline'` est désormais **RETIRÉ** de `script-src` dans `vercel.json`. C'est l'aboutissement de 3 commits :
-1. Externalisation de tous les `<script>` inline → 20 fichiers `/js/page-*.js` créés
-2. Conversion de tous les `onclick=` / `oninput=` / `onmouseover=` HTML inline en `addEventListener` JavaScript (40 conversions sur 5 pages : codex, autoevaluation, humeur, app, bilan)
-3. Retrait de `'unsafe-inline'` de la directive `script-src` du `vercel.json`
-
-**Conséquence sécurité** : un attaquant qui injecterait du HTML sur le site (via une faille XSS hypothétique) ne peut **plus** exécuter de JS. Les seules exécutions JS autorisées sont :
-- Scripts servis depuis notre origine (`'self'`)
-- Scripts depuis les CDNs allowlistés (cdnjs.cloudflare.com, cdn.jsdelivr.net, www.gstatic.com, apis.google.com, code.tidio.co, unpkg.com)
-
-Combiné avec :
-- L'escape de tout user content dans innerHTML (Codex `esc()`, admin Settings `escAdmin()`)
-- Firestore rules strictes (noXpTampering, locks coachRate/roles)
-- OTP CSPRNG (crypto.randomInt)
-
-→ La surface d'attaque XSS est très réduite.
-
-`'unsafe-inline'` reste sur `style-src` (~50 styles inline `style="..."` à travers le code). Moins critique car les styles CSS ne peuvent pas exécuter du JS — refonte distincte si on veut le retirer aussi.
-
-### ⚠️ Action manuelle requise
-
-1. **Deploy des nouvelles règles Firestore** :
-   ```bash
-   npm run deploy:firestore
-   ```
-   Sans ça, `noXpTampering()` et le verrouillage `coachRate`/`roles` ne sont pas actifs.
-
-2. **Révoquer le token v0** sur l'interface v0.app (était commité dans `external/v0-app/`, supprimé du HEAD mais reste dans l'historique git public).
-
-### ✅ Stratégie admin (décision figée 2026-05-08)
-
-Firebase reste en **plan Spark (gratuit)**, donc Secret Manager indisponible.
-
-**Choix retenu** : fallback `BOOTSTRAP_ADMIN_UIDS` hardcoded dans [public/settings/index.html](public/settings/index.html). Le commentaire dans le code rend le choix explicite (pas une dette technique).
-
-**Pourquoi pas la Cloud Function setUserRole serveur** : exigerait soit Secret Manager (= Blaze payant) soit `defineString()` (= un re-deploy interactif). Pour un solo dev avec 1 admin (lui-même), le fallback client est largement suffisant.
-
-**Pour promouvoir un nouvel admin un jour** : ajouter son UID à la liste + push (Vercel auto-redeploy). Aucun deploy Firebase requis.
-
-**Pourquoi pas un risque** : un UID Firebase Auth n'est pas un secret. Inutile sans le mot de passe Google associé. Beaucoup de devs solo laissent ces UIDs en clair sans souci.
-
-**Cloud Functions `setUserRole` + `getMyRole`** restent dans `functions/src/index.ts` — utilisables si besoin d'évoluer plus tard, mais pas obligatoires pour le fonctionnement actuel.
-
-### ⏸ Décisions business (à toi)
-
-- **Tidio chat externe** chargé après 3s sur landing — garder ou retirer ?
-- Re-câbler les compteurs landing à de vraies stats Firestore (vs garanties statiques) ?
-- Programme de témoignages / avis vérifiés pour ré-activer un `aggregateRating` honnête ?
-
-### 🔵 Curiosités sans gravité
-
-- `console.log` dans `service-worker.js` reste visible (override `console.log = () => {}` de `index.html` est scope window, pas worker). À nettoyer un jour ou ignorer.
-- `firebase-admin@^12.6.0` désormais aligné racine ↔ `functions/`
+- Aucun `eval` / `new Function` / `document.write`.
+- Aucun secret en clair (apiKey Firebase web = publique par design).
+- Aucune URL d'exfiltration. CDN allowlistés cohérents avec la CSP.
+- `script-src` sans `unsafe-inline`/`unsafe-eval` (durcissement 2026-05-08 tenu, zéro `<script>` inline / `onclick=`).
+- `api/coach.js`, `verify-code.js`, `send-verification.js` — auth, rate-limit, validation OK.
+- `functions/src/index.ts` — `addXp`/`setUserRole`/`getMyRole` correctement protégées.
+- `firestore.rules` — deny-all par défaut, owner-only, `noXpTampering()`, collections backend verrouillées.
+- Service Worker `CACHE_NAME` v22 cohérent avec `common.js`. Manifest PWA : icônes existent. Aucun doublon `.min.js`. Aucune page orpheline.
 
 ---
 
-## 4 · Architecture courante (post-fix)
+## 3 · État du toolchain (reprise 2026-05-16)
 
-### Frontend
-- 18 pages HTML statiques, vanilla JS via ESM
-- Singleton Firebase via [public/js/firebase.js](public/js/firebase.js) — exporte `auth`, `db`, `functions`, `awardXp`
-- Logo Mon Compte fixed top-right sur les 16 pages module (CSS global `.header` + back button via `.site-nav`)
-- Service Worker v21 cache 18 routes + assets statiques
-- Manifest PWA propre avec shortcuts YourLife/Méditation/Coach
-
-### Backend
-- `/api/send-verification.js` — OTP 6 chiffres CSPRNG, Resend, rate-limit 60s
-- `/api/verify-code.js` — vérif OTP, 5 tentatives max
-- `/api/coach.js` — Coach IA Gemini, idToken vérifié, rate-limit 10/min/uid
-- `functions/src/index.ts` — Cloud Function `addXp` (transactional, cap 10 000)
-
-### Firestore
-- Rules par défaut **deny all** + matches explicites par collection
-- `users/{uid}` → owner only, no `levels`/`xp_*` tampering (force passage par `addXp`)
-- `users/{uid}/{journal,moods,bilans,sleep,gratitude}` → owner only avec validation
-- `assessments`, `codexNotes` → owner only, create + delete
-- `verificationCodes`, `coachRate`, `roles` → backend-only (admin SDK)
+| Outil | État |
+|---|---|
+| Git | ✅ Réparé — `.git` reconstruit, remote `origin` = `omagadah/changeyourlife`, branche `main` synchro |
+| Git Credential Manager | ✅ Présent — auth GitHub au 1er push (popup navigateur) |
+| Node.js / npm | ✅ Installé — v24.15.0 / npm 11.12.1 |
+| Vercel CLI | ✅ Installé v54.1.0 — ⚠️ non connecté (`vercel login`) |
+| Firebase CLI | ✅ Installé v15.18.0 — ⚠️ non connecté (`firebase login`) |
+| Deploy Vercel | ✅ Auto via intégration GitHub (push `main` → build). CLI Vercel non requise pour ce flux. |
 
 ---
 
-## 5 · Stats du repo (post-cleanup + DX)
+## 4 · Actions manuelles en attente (héritées du 2026-05-08, non confirmées)
 
-| Métrique | Avant | Après |
-|---|---|---|
-| Code source total | ~14 700 LOC | ~12 700 LOC (−14%) |
-| Fichiers JS dans `public/js/` | 16 | 6 |
-| Dossiers de generated code | 2 | 0 |
-| `package.json` racine deps | 4 | 3 |
-| `.md` à la racine | 17 | 3 (README, CLAUDE, AUDIT) |
-| Code mort identifié restant | ~2 000 LOC | 0 |
-| Cloud Functions exportées | 1 (`addXp`) | 3 (`addXp`, `setUserRole`, `getMyRole`) |
-| Custom Claims Auth | non | oui (`role: admin\|mod\|user`) |
-| Scripts npm utiles | 0 | 7 (dev, format, deploy:*, audit:security, logs) |
-
-**Top 5 fichiers (hors lock & images) :**
-1. `public/settings/index.html` — 60 KB / 1 087 LOC
-2. `public/app/index.html` — 66 KB / 1 053 LOC
-3. `public/index.html` — 41 KB / 815 LOC
-4. `public/coach/index.html` — 31 KB / 695 LOC
-5. `public/codex/index.html` — 36 KB / 504 LOC
+1. `firebase deploy --only firestore` — pour activer `noXpTampering()` + locks `coachRate`/`roles`.
+2. `firebase deploy --only functions` — pour `addXp` + `setUserRole` + `getMyRole`.
+3. Révoquer le token v0 sur v0.app (était commité dans `external/v0-app/`, supprimé du HEAD mais reste dans l'historique git public).
 
 ---
 
-## 6 · Prochains chantiers recommandés
+## 5 · Stats du repo
 
-1. **Bootstrap Custom Claims** (5 min, manuel) — `firebase functions:secrets:set ROOT_ADMIN_UID` puis `npm run deploy:functions`
-2. **Deploy règles Firestore** (1 min, manuel) — `npm run deploy:firestore`
-3. **Extraire scripts inline** (4-6h, optionnel) — pour CSP plus stricte sans `'unsafe-inline'`
-
-Le 1 et 2 sont les seuls bloquants pour activer 100% des fixes de sécurité de cette session.
+| Métrique | Valeur |
+|---|---|
+| Pages HTML | 20 (18 `index.html` + signup + 404) |
+| Fichiers JS `public/js/` | 26 |
+| Cloud Functions | 3 (`addXp`, `setUserRole`, `getMyRole`) |
+| API serverless | 3 (`coach`, `send-verification`, `verify-code`) |
+| Vuln npm racine | 2 (1 critique `protobufjs`, 1 modérée) |
+| Vuln npm functions | non testée (`functions/node_modules` absent) |
 
 ---
 
-## Méthode de l'audit
+## 6 · Prochains chantiers recommandés (ordre)
 
-Audit lancé via Claude Agent en read-only, scan complet du codebase :
-- Recherche patterns dangereux (`eval`, `document.write`, `innerHTML` user-controlled, secrets en clair)
-- Détection imports inutilisés, code mort, doublons désynchronisés
-- Lecture intégrale `firestore.rules`, `vercel.json`, `package.json`, `.gitignore`
-- `npm audit` racine + functions
-- Cross-référence service-worker / sitemap / pages réelles
+1. `npm audit fix` racine — résout la vuln critique `protobufjs`.
+2. Corriger les 4 XSS trackers via un `escapeHtml()` partagé.
+3. Nettoyer imports Firebase morts (7 fichiers) + deps `express`/`genkit`/`tsx`/`firebase` + script `genkit:start`.
+4. Réécrire/supprimer `docs/INDEX.md` + trier `docs/`.
+5. Mineurs : `showToast`/`showLevelUp`/CSS legacy, pin `vanta`, fuite `send-verification.js:171`.
+6. Connexion Firebase CLI + deploy `firestore`/`functions` (actions manuelles owner).
 
-Refaire un audit : taper `/audit` dans Claude Code.
+---
+
+## Méthode
+
+Audit lancé via `/audit` — 2 agents read-only en parallèle (sécurité / qualité-cohérence) + `npm audit`. Scan complet `public/`, `api/`, `functions/`, `firestore.rules`, `vercel.json`, `package.json`, `docs/`.
