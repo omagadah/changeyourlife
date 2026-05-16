@@ -76,10 +76,10 @@ Repo en **bon état**. L'audit du 2026-05-16 a révélé une régression XSS et 
 
 ## 4 · Actions manuelles en attente (owner)
 
-1. **Pousser les 4 commits locaux** vers GitHub (déclenche le rebuild Vercel).
+1. ~~Pousser les commits~~ → ✅ fait (7 commits poussés sur `main`).
 2. `firebase login` puis `firebase deploy --only firestore` — active `noXpTampering()`, locks `coachRate`/`roles`, et la nouvelle borne `gratitude`.
 3. `firebase deploy --only functions` — `addXp` + `setUserRole` + `getMyRole`.
-4. Révoquer le token v0 sur v0.app (resté dans l'historique git public).
+4. ~~Token v0~~ → ✅ purgé de l'historique git (`filter-branch` + force-push). NB : GitHub peut garder des commits orphelins en cache un temps.
 5. Smoke-test post-deploy des pages trackers (gratitude/humeur/sommeil/habitudes).
 
 ---
@@ -97,15 +97,25 @@ Repo en **bon état**. L'audit du 2026-05-16 a révélé une régression XSS et 
 
 ---
 
-## 6 · Chantiers restants (prochaines sessions)
+## 6 · Travail UI (session 2026-05-16)
+
+- ✅ Bug : `codex` / `autoevaluation` utilisaient des variables CSS non définies → corrigé.
+- ✅ `404.html` repassée aux couleurs de la marque.
+- ✅ `login` / `verify-email` rendus responsive (media queries `≤480px`).
+- ✅ Libellé du bouton retour unifié (« ← Mon espace ») sur 11 pages.
+- ⏸ Toasts : 10 pages redéfinissent leur toast local — unification reportée
+  (refactor invisible + risque de régression).
+
+## 7 · Chantiers restants (prochaines sessions)
 
 1. Connexion + deploy Firebase (cf. §4) — seul bloquant pour activer 100 % des fixes.
 2. Bornes `firestore.rules` sur `bilans`/`codexNotes` (avec le schéma).
 3. Tri du dossier `docs/` (historique vs bruit).
-4. Décisions business : Tidio chat, compteurs landing.
+4. UI : unifier les toasts sur `.toast-notification`, `theme-color` `#00aaff` → `#0070f3`, remplacer les ~300 couleurs hardcodées par les variables du design system.
+5. Décisions business : Tidio chat, compteurs landing.
 
 ---
 
 ## Méthode
 
-Audit via `/audit` — 2 agents read-only en parallèle (sécurité / qualité-cohérence) + `npm audit`. Corrections appliquées en 3 blocs (A sécurité, B nettoyage, D mineurs) sur 4 commits.
+Audit via `/audit` — 2 agents read-only en parallèle (sécurité / qualité-cohérence) + `npm audit`. Corrections appliquées en 3 blocs (A sécurité, B nettoyage, D mineurs) + un lot UI, sur 7 commits. Historique git réécrit pour purger un token v0.
