@@ -122,6 +122,14 @@
     .notification.success { background: rgba(16,185,129,0.92); color: #fff; }
     .notification.info { background: rgba(0,112,243,0.92); color: #fff; }
     .notification.error { background: rgba(239,68,68,0.92); color: #fff; }
+
+    @media (max-width: 480px) {
+      .card { padding: 34px 18px; border-radius: 18px; }
+      h1 { font-size: 1.35rem; }
+      .logo-badge { width: 56px; height: 56px; font-size: 1.4rem; margin-bottom: 16px; }
+      .otp-row { gap: 7px; }
+      .otp-box { width: auto; flex: 1 1 0; min-width: 0; max-width: 54px; height: 60px; font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body>
