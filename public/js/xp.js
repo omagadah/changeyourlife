@@ -1,6 +1,6 @@
 /**
- * XP utilities — floating +XP animation and level-up banner
- * Usage: import { showXpFloat, showLevelUp } from '/js/xp.js';
+ * XP utilities — floating +XP animation.
+ * Usage: import { showXpFloat } from '/js/xp.js';
  */
 
 /**
@@ -25,34 +25,4 @@ export function showXpFloat(amount, near = null) {
   el.style.top  = y + 'px';
 
   el.addEventListener('animationend', () => el.remove());
-}
-
-let _levelupTimer = null;
-
-/**
- * Show a level-up celebration banner.
- * @param {string} domain - Domain name (e.g. "Corps")
- * @param {number} level  - New level number
- */
-export function showLevelUp(domain, level) {
-  let banner = document.getElementById('_levelup_banner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = '_levelup_banner';
-    banner.className = 'levelup-banner';
-    banner.innerHTML = `
-      <div class="levelup-icon">🏆</div>
-      <div class="levelup-text">
-        <div class="levelup-title" id="_lu_title"></div>
-        <div class="levelup-sub" id="_lu_sub"></div>
-      </div>
-    `;
-    document.body.appendChild(banner);
-  }
-  document.getElementById('_lu_title').textContent = `Niveau ${level} — ${domain} !`;
-  document.getElementById('_lu_sub').textContent   = 'Continue comme ça, tu progresses vraiment.';
-
-  banner.classList.add('show');
-  if (_levelupTimer) clearTimeout(_levelupTimer);
-  _levelupTimer = setTimeout(() => banner.classList.remove('show'), 4000);
 }

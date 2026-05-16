@@ -1,7 +1,7 @@
 // /js/habitudes.js — externalisé depuis habitudes/index.html
 
-    import { onAuthStateChanged, getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { initUserMenu } from '/js/userMenu.js';
     import { updateGlobalAvatar } from '/js/common.js';
     import { showXpFloat } from '/js/xp.js';

@@ -18,7 +18,6 @@
     "logs:functions": "cd functions && npm run logs"
   },
   "dependencies": {
-    "firebase": "^12.4.0",
     "firebase-admin": "^12.6.0",
     "resend": "^3.0.0"
   },

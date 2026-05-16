@@ -4,7 +4,7 @@ import { auth, db } from '/js/firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initUserMenu } from '/js/userMenu.js';
-import { showXpFloat, showLevelUp } from '/js/xp.js';
+import { showXpFloat } from '/js/xp.js';
 
 // ── Vanta bootstrap ──────────────────────────────────────────────────────────
 function bootVanta() {
