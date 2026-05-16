@@ -27,6 +27,30 @@ service cloud.firestore {
       return !changed.hasAny(forbidden);
     }
 
+    // Bilan hebdomadaire : 4 réflexions (q1..q4) + métadonnées.
+    function isValidBilan() {
+      let d = request.resource.data;
+      return d.q1 is string && d.q1.size() <= 5000
+        && d.q2 is string && d.q2.size() <= 5000
+        && d.q3 is string && d.q3.size() <= 5000
+        && d.q4 is string && d.q4.size() <= 5000
+        && d.weekKey is string && d.weekKey.size() <= 10
+        && d.savedAt is number;
+    }
+
+    // Note Codex utilisateur. Le body peut contenir du HTML escapé côté front
+    // mais on borne quand même la taille pour éviter abus / spam Firestore.
+    function isValidCodexNote() {
+      let d = request.resource.data;
+      return d.uid == request.auth.uid
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 200
+        && d.summary is string && d.summary.size() <= 1000
+        && d.cat in ['corps', 'coeur', 'etre', 'ordre']
+        && (!('body' in d) || d.body == null || (d.body is string && d.body.size() <= 20000))
+        && (!('tagline' in d) || (d.tagline is string && d.tagline.size() <= 1000))
+        && (!('tags' in d) || (d.tags is list && d.tags.size() <= 20));
+    }
+
     // ── Collection utilisateurs ─────────────────────────────────────────────
     match /users/{userId} {
       allow read:   if isSignedIn() && isOwner(userId);
@@ -51,7 +75,7 @@ service cloud.firestore {
 
       match /bilans/{weekKey} {
         allow read:  if isSignedIn() && isOwner(userId);
-        allow write: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn() && isOwner(userId) && isValidBilan();
       }
 
       match /sleep/{dateStr} {
@@ -84,10 +108,13 @@ service cloud.firestore {
     // ── Codex — notes personnelles ─────────────────────────────────────────
     match /codexNotes/{docId} {
       allow read:   if isSignedIn() && resource.data.uid == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && isValidCodexNote();
       allow update: if isSignedIn()
         && resource.data.uid == request.auth.uid
-        && request.resource.data.uid == request.auth.uid;
+        && request.resource.data.uid == request.auth.uid
+        && isValidCodexNote();
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 

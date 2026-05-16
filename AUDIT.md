@@ -1,7 +1,7 @@
 # Audit changeyourlife.ai
 
-> **Dernière MAJ :** 2026-05-16 (reprise projet — toolchain réparé + audit + corrections A/B/D)
-> **Branche :** `main` (4 commits locaux en avance sur `origin/main`, non poussés)
+> **Dernière MAJ :** 2026-05-17 (session reprise — bornes `bilans`/`codexNotes` + theme-color)
+> **Branche :** `main` (1 commit en cours à pousser)
 > **Type :** profond — sécurité, code mort, anomalies, cohérence, deps
 
 ---
@@ -45,7 +45,7 @@ Repo en **bon état**. L'audit du 2026-05-16 a révélé une régression XSS et 
 
 ### ⏸ Mineurs — non traités (volontaire)
 
-- `firestore.rules` : pas de borne sur `bilans` / `codexNotes` — schéma non vérifié et effet uniquement après deploy (non testable en l'état). À faire avec le schéma sous les yeux.
+- ~~`firestore.rules` : pas de borne sur `bilans` / `codexNotes`~~ → ✅ ajouté 2026-05-17 (helpers `isValidBilan()` et `isValidCodexNote()`). Q1–Q4 ≤ 5000 car. ; codex `title` ≤ 200, `summary` ≤ 1000, `body` ≤ 20000, `cat` enum, `tags` ≤ 20.
 - `vercel.json` : `style-src 'unsafe-inline'` (accepté, non exécutable) + `img-src https:` (large mais bénin).
 - `functions/src/index.ts` : callables en `cors: true` (pas une faille — auth via idToken).
 - `docs/` : ~14 fichiers historiques jamais référencés (`AUDIT_FINAL.md`, `COMPLETION_REPORT.md`, `VANTA_IMPLEMENTATION.md`…) — à trier par l'owner.
@@ -108,10 +108,13 @@ Repo en **bon état**. L'audit du 2026-05-16 a révélé une régression XSS et 
 
 ## 7 · Chantiers restants (prochaines sessions)
 
-1. Connexion + deploy Firebase (cf. §4) — seul bloquant pour activer 100 % des fixes.
-2. Bornes `firestore.rules` sur `bilans`/`codexNotes` (avec le schéma).
+1. Connexion + deploy Firebase (cf. §4) — seul bloquant pour activer 100 % des fixes (y compris les nouvelles bornes `bilans`/`codexNotes`).
+2. ~~Bornes `firestore.rules` sur `bilans`/`codexNotes`~~ ✅ fait 2026-05-17 — à activer via deploy.
 3. Tri du dossier `docs/` (historique vs bruit).
-4. UI : unifier les toasts sur `.toast-notification`, `theme-color` `#00aaff` → `#0070f3`, remplacer les ~300 couleurs hardcodées par les variables du design system.
+4. UI :
+   - ~~`theme-color` `#00aaff` → `#0070f3`~~ ✅ fait 2026-05-17 (19 pages).
+   - Unifier les toasts sur `.toast-notification` — reporté.
+   - Remplacer les ~300 couleurs hardcodées par les variables du design system — reporté.
 5. Décisions business : Tidio chat, compteurs landing.
 
 ---

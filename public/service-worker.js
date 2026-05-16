@@ -1,5 +1,5 @@
-// service-worker.js - v25
-const CACHE_NAME = 'changeyourlife-v25';
+// service-worker.js - v26
+const CACHE_NAME = 'changeyourlife-v26';
 const urlsToCache = [
   '/',
   '/app/',
