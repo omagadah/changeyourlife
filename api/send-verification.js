@@ -168,6 +168,6 @@ module.exports = async function handler(req, res) {
     if (err.code === 'auth/argument-error' || err.code === 'auth/id-token-expired') {
       return res.status(401).json({ error: 'Session expirée, reconnectez-vous' });
     }
-    return res.status(500).json({ error: 'Erreur serveur: ' + err.message });
+    return res.status(500).json({ error: 'Erreur serveur' });
   }
 };

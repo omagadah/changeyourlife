@@ -27,7 +27,7 @@ const urlsToCache = [
   '/js/inscription.js',
   '/js/firebase.js',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
-  'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js'
+  'https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js'
 ];
 
 self.addEventListener('install', event => {

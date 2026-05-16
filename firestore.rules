@@ -64,7 +64,10 @@ service cloud.firestore {
 
       match /gratitude/{dateStr} {
         allow read:  if isSignedIn() && isOwner(userId);
-        allow write: if isSignedIn() && isOwner(userId);
+        allow write: if isSignedIn() && isOwner(userId)
+          && request.resource.data.g1 is string && request.resource.data.g1.size() <= 2000
+          && request.resource.data.g2 is string && request.resource.data.g2.size() <= 2000
+          && request.resource.data.g3 is string && request.resource.data.g3.size() <= 2000;
       }
     }
 
