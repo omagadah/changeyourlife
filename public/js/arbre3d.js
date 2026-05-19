@@ -1,14 +1,14 @@
-// /js/arbre3d.js — Landing /arbre/ : arbre de vie procédural maison + Lya.
+// /js/arbre3d.js — Landing /arbre/ : arbre de vie procédural + croissance + Lya.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v3 — arbre 100 % procédural (plus d'EZ-Tree). Le corps organique ET
-// l'exosquelette ESP sont générés depuis le même graphe (tree-model.js)
-// → l'exosquelette colle parfaitement aux branches, par construction.
+// v4 — l'arbre POUSSE sous les yeux : sapling → arbre centenaire, tier par
+// tier (fondations d'abord, cime en dernier). Animation pilotée par grow(age).
 
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 
-const ORBIT_TARGET = new THREE.Vector3(0, 30, 0);
+const ORBIT_TARGET = new THREE.Vector3(0, 34, 0);
+const GROWTH_SECONDS = 8;
 
 // ── Scène ───────────────────────────────────────────────────────────────────
 function initScene(canvas) {
@@ -23,31 +23,30 @@ function initScene(canvas) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
-    40, canvas.clientWidth / canvas.clientHeight, 0.1, 600);
+    42, canvas.clientWidth / canvas.clientHeight, 0.1, 700);
 
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
-  key.position.set(24, 46, 30);
+  key.position.set(26, 52, 32);
   scene.add(key);
   const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
-  fill.position.set(-30, 22, -16);
+  fill.position.set(-32, 24, -18);
   scene.add(fill);
 
-  const { group, nodes } = buildTree(THREE, createDemoModel());
+  const { group, nodes, grow } = buildTree(THREE, createDemoModel());
   scene.add(group);
 
-  return { renderer, scene, camera, treeGroup: group, nodes };
+  return { renderer, scene, camera, treeGroup: group, nodes, grow };
 }
 
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
 function initControls(canvas, camera) {
   const s = {
-    azimuth: 0.6, polar: 1.06, radius: 78,
-    tAz: 0.6, tPo: 1.06, tR: 78,
-    minR: 46, maxR: 122, minPo: 0.6, maxPo: 1.42,
+    azimuth: 0.6, polar: 1.04, radius: 96,
+    tAz: 0.6, tPo: 1.04, tR: 96,
+    minR: 52, maxR: 145, minPo: 0.58, maxPo: 1.44,
   };
   let dragging = false, moved = false, px = 0, py = 0;
-
   canvas.addEventListener('pointerdown', (e) => {
     dragging = true; moved = false; px = e.clientX; py = e.clientY;
     canvas.setPointerCapture(e.pointerId);
@@ -80,8 +79,7 @@ function initControls(canvas, camera) {
       camera.position.set(
         ORBIT_TARGET.x + s.radius * sp * Math.sin(s.azimuth),
         ORBIT_TARGET.y + s.radius * cp,
-        ORBIT_TARGET.z + s.radius * sp * Math.cos(s.azimuth)
-      );
+        ORBIT_TARGET.z + s.radius * sp * Math.cos(s.azimuth));
       camera.lookAt(ORBIT_TARGET);
     },
     wasDrag: () => moved,
@@ -92,12 +90,13 @@ function initControls(canvas, camera) {
 function initLabels(nodes) {
   const css = document.createElement('style');
   css.textContent = `
-    .esp-labels{position:absolute;inset:0;pointer-events:none;z-index:1;}
+    .esp-labels{position:absolute;inset:0;pointer-events:none;z-index:1;
+      opacity:0;transition:opacity .8s;}
+    .esp-labels.on{opacity:1;}
     .esp-label{position:absolute;transform:translate(-50%,-50%);
       font:600 11px -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.6px;
       text-transform:uppercase;white-space:nowrap;padding:2px 8px;border-radius:6px;
-      background:rgba(6,14,26,0.72);border:1px solid rgba(255,255,255,0.14);
-      transition:opacity .2s;}
+      background:rgba(6,14,26,0.72);border:1px solid rgba(255,255,255,0.14);}
   `;
   document.head.appendChild(css);
   const wrap = document.createElement('div');
@@ -109,30 +108,32 @@ function initLabels(nodes) {
     el.className = 'esp-label';
     el.textContent = m.userData.label;
     el.style.color = '#' + m.userData.color.toString(16).padStart(6, '0');
-    if (m.userData.state === 'dormant') el.style.opacity = '0.5';
+    if (m.userData.state === 'dormant') el.style.opacity = '0.55';
     wrap.appendChild(el);
     return { el, mesh: m };
   });
   const v = new THREE.Vector3();
-  return (camera, canvas) => {
-    for (const { el, mesh } of labels) {
-      mesh.getWorldPosition(v).project(camera);
-      if (v.z > 1) { el.style.visibility = 'hidden'; continue; }
-      el.style.visibility = 'visible';
-      el.style.left = ((v.x * 0.5 + 0.5) * canvas.clientWidth) + 'px';
-      el.style.top = ((-v.y * 0.5 + 0.5) * canvas.clientHeight - 24) + 'px';
-    }
+  return {
+    reveal: () => wrap.classList.add('on'),
+    update(camera, canvas) {
+      for (const { el, mesh } of labels) {
+        mesh.getWorldPosition(v).project(camera);
+        if (v.z > 1) { el.style.visibility = 'hidden'; continue; }
+        el.style.visibility = 'visible';
+        el.style.left = ((v.x * 0.5 + 0.5) * canvas.clientWidth) + 'px';
+        el.style.top = ((-v.y * 0.5 + 0.5) * canvas.clientHeight - 24) + 'px';
+      }
+    },
   };
 }
 
 // ── Lya ─────────────────────────────────────────────────────────────────────
 const LYA_LINES = [
   'Bonjour. Je m’appelle Lya.',
-  'Cet arbre, c’est toi. Chaque branche est une dimension de ta vie.',
-  'Tourne-le, approche. Touche une branche pour l’explorer.',
+  'Regarde — ton arbre pousse. Chaque branche est une dimension de ta vie.',
+  'Le voilà adulte. Tourne-le, touche une branche pour l’explorer.',
 ];
 let lyaSay = null;
-
 function typeLine(el, text, done) {
   el.textContent = '';
   let i = 0;
@@ -165,22 +166,21 @@ function initLya() {
       if (voiceOn && lineEl) speak(lineEl.textContent, true);
     });
   }
-  let idx = 0;
-  const next = () => {
-    if (!lineEl || idx >= LYA_LINES.length) return;
-    const text = LYA_LINES[idx++];
-    typeLine(lineEl, text, () => setTimeout(next, 1900));
-    speak(text, voiceOn);
-  };
-  if (lineEl) setTimeout(next, 1100);
+  // les 3 répliques rythmées sur la croissance (~8 s)
+  const beats = [400, 3200, GROWTH_SECONDS * 1000 + 200];
+  LYA_LINES.forEach((text, i) => {
+    setTimeout(() => {
+      if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); }
+    }, beats[i]);
+  });
   lyaSay = (text) => { if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); } };
 }
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, grow } = initScene(canvas);
   const controls = initControls(canvas, camera);
-  const updateLabels = initLabels(nodes);
+  const labels = initLabels(nodes);
 
   const ray = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
@@ -198,7 +198,7 @@ function initTree3D(canvas) {
       const u = selected.userData;
       if (lyaSay) {
         lyaSay(u.state === 'dormant'
-          ? `${u.label} — cette branche dort encore. Elle s’éveillera quand tu la nourriras.`
+          ? `${u.label} — cette branche dort encore. Nourris-la pour l’éveiller.`
           : `${u.label} — bientôt, tu pourras entrer dans cette dimension.`);
       }
     }
@@ -215,17 +215,27 @@ function initTree3D(canvas) {
   }
 
   const clock = new THREE.Clock();
+  let grown = false;
   function animate() {
     const t = clock.getElapsedTime();
-    treeGroup.rotation.z = Math.sin(t * 0.32) * 0.022; // balancement doux
-    for (const m of nodes) {
-      if (m !== selected) {
-        m.scale.setScalar(m.userData.baseR * (1 + Math.sin(t * 2 + m.position.y) * 0.09));
+    const age = Math.min(1, t / GROWTH_SECONDS);
+
+    if (!grown) {
+      grow(age);
+      if (age >= 1) { grown = true; labels.reveal(); }
+    } else {
+      // arbre adulte : balancement doux + pulsation des nœuds
+      treeGroup.rotation.z = Math.sin(t * 0.32) * 0.018;
+      for (const m of nodes) {
+        if (m !== selected) {
+          m.scale.setScalar(m.userData.baseR * (1 + Math.sin(t * 2 + m.position.y) * 0.09));
+        }
       }
     }
+
     maybeResize();
     controls.apply();
-    updateLabels(camera, canvas);
+    if (grown) labels.update(camera, canvas);
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }

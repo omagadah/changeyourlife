@@ -221,8 +221,27 @@ L'owner a validé l'ensemble des propositions. Décisions figées :
 
 ---
 
-## 9 · Prochaine étape (Phase 1.1)
+## 9 · Idées visuelles à venir (roadmap arbre)
 
-Une fois ce doc validé : prototyper la **landing-arbre** — l'arrivée sur l'arbre
-(sapling) + première parole de Lya. Réutilise les protos existants
-(`coach` a déjà un `#tree-canvas` + `drawTree()`, point de départ technique).
+Idées de l'owner à intégrer progressivement :
+
+- **La santé (Corps) est LA base** — pas la finance. Corps s'accroche le plus
+  bas, le tronc le plus épais. Finances est une fondation distincte qui évolue
+  à son propre rythme. Le socle de l'arbre = la santé.
+- **Le sol / socle = le passé de la personne.** La frise chronologique (mémoire
+  longue) se construit au pied de l'arbre, dans les racines/la terre, au fur et
+  à mesure que l'histoire de la personne est connue.
+- **Décor généré depuis l'histoire de vie.** Si la personne a vécu à la
+  campagne → décor campagne ; sinon ville, plage, montagne… L'environnement
+  autour de l'arbre reflète son vécu (lu sur la frise chronologique).
+- **Croissance pilotée par l'XP global du site.** Plus l'utilisateur nourrit le
+  système (connexions, infos, actions validées), plus l'arbre grandit. Il faut
+  développer toutes les sections pour devenir « complet » — un arbre centenaire.
+- **L'arbre n'est pas figé à 7 branches.** De nouvelles branches poussent quand
+  des dimensions inconnues émergent dans la vie de la personne.
+
+## 10 · Prochaine étape
+
+Animation de croissance (Phase 1.1, en cours) : l'arbre pousse sous les yeux,
+du sapling à l'arbre centenaire, tier par tier. Ensuite : câblage aux vraies
+données utilisateur, navigation par les branches, frise chronologique au sol.
