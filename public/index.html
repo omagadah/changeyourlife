@@ -1,852 +1,208 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Change Your Life - Outils de santé mentale optimisés par l'IA</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChangeYourLife.ai — Construis la meilleure version de toi-même</title>
+  <meta name="description" content="Ta vie devient un arbre vivant qui grandit avec toi. Guidé par Lya, ton coach IA. Corps, mental, relations, sens — chaque dimension prend racine et s'épanouit." />
+  <meta name="keywords" content="développement personnel, coach IA, bien-être, santé mentale, méditation, objectifs, arbre de vie" />
+  <meta name="author" content="ChangeYourLife.ai" />
 
-    <meta name="description" content="Changez votre vie grâce à des outils de santé mentale performants et optimisés par l'IA. Commencez votre aventure dès maintenant.">
-    <meta name="keywords" content="santé mentale, IA, bien-être, développement personnel, méditation, objectifs, journal, thérapie IA">
-    <meta name="author" content="ChangeYourLife.ai">
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="Change Your Life - Une base saine pour construire de grandes choses">
-    <meta property="og:description" content="Des outils gratuits et performants pour la santé mentale, optimisés par l'IA.">
-    <meta property="og:image" content="https://changeyourlife.ai/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="ChangeYourLife.ai — Une base saine pour construire de grandes choses">
-    <meta property="og:url" content="https://changeyourlife.ai">
-    <meta property="og:type" content="website">
-    <meta property="og:locale" content="fr_FR">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Change Your Life - Santé mentale optimisée par l'IA">
-    <meta name="twitter:description" content="Des outils gratuits et performants pour la santé mentale, optimisés par l'IA.">
-    <meta name="twitter:image" content="https://changeyourlife.ai/og-image.png">
+  <!-- Open Graph -->
+  <meta property="og:title" content="ChangeYourLife.ai — Construis la meilleure version de toi-même" />
+  <meta property="og:description" content="Ta vie devient un arbre vivant qui grandit avec toi, guidé par Lya, ton coach IA." />
+  <meta property="og:image" content="https://changeyourlife.ai/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://changeyourlife.ai" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ChangeYourLife.ai — Construis la meilleure version de toi-même" />
+  <meta name="twitter:description" content="Ta vie devient un arbre vivant qui grandit avec toi, guidé par Lya." />
+  <meta name="twitter:image" content="https://changeyourlife.ai/og-image.png" />
 
-    <!-- Preconnect pour performances -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-    
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <!-- Use available favicon files in repository -->
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" href="/favicon.ico">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="msapplication-TileColor" content="#07192f">
-    <meta name="theme-color" content="#0070f3">
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0070f3" />
+  <meta name="msapplication-TileColor" content="#07192f" />
+  <link rel="modulepreload" href="/vendor/three/three.module.min.js" />
+  <link rel="modulepreload" href="/vendor/three/three.core.min.js" />
+  <link rel="modulepreload" href="/js/tree-model.js" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #060e1a; color: #eef4ff;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,112,243,0.16), transparent 70%),
+        radial-gradient(ellipse 80% 60% at 50% 105%, rgba(0,112,243,0.10), transparent 70%),
+        #060e1a;
+    }
+    .scene { position: fixed; inset: 0; }
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #fff; background: #020b18;
-        }
-        .skip-link { position: absolute; left: -9999px; z-index: 9999; padding: 1em; background: #00aaff; color: white; text-decoration: none; font-weight: 600; }
-        .skip-link:focus { left: 0; top: 0; }
-        *:focus-visible { outline: 3px solid #0070f3; outline-offset: 2px; }
+    /* ── Arbre 3D (fond plein écran) ── */
+    #arbre-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      display: block; animation: fadein 1.8s ease 0.2s both;
+    }
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    .loading-veil {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      color: #4a6a8c; font-size: 0.85rem; letter-spacing: 1px;
+      text-transform: uppercase; pointer-events: none;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 0.75; } }
+    body.tree-ready .loading-veil { display: none; }
 
-        #vanta-birds-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    /* ── Bandeau ── */
+    .site-header {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 4;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px clamp(20px, 5vw, 64px);
+      animation: fadeDown 1s ease both;
+    }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 30px; height: 30px; }
+    .brand-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.2px; }
+    .brand-name span { color: #60a5fa; }
+    .header-login {
+      font-size: 0.88rem; font-weight: 600; color: #8ba4c8;
+      text-decoration: none; padding: 8px 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12); transition: color .2s, border-color .2s, background .2s;
+    }
+    .header-login:hover { color: #eef4ff; border-color: rgba(0,112,243,0.4); background: rgba(0,112,243,0.1); }
 
-        /* ── Top bar ── */
-        .top-bar {
-            position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 100;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 32px;
-            background: rgba(7,25,47,0.6);
-            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-        }
-        .top-bar-brand {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 1rem; font-weight: 700; color: #e5eef8; letter-spacing: -.3px;
-        }
-        .top-bar-brand svg { flex-shrink: 0; }
-        .top-bar-right { display: flex; align-items: center; gap: 10px; }
-        .btn-login {
-            padding: 8px 18px; border-radius: 9px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.06);
-            color: rgba(255,255,255,0.8); font-size: 0.84rem; font-weight: 600;
-            text-decoration: none; transition: all .2s;
-        }
-        .btn-login:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.3); }
-        .btn-cta-top {
-            padding: 8px 18px; border-radius: 9px; border: none;
-            background: #0070f3; color: #fff;
-            font-size: 0.84rem; font-weight: 700;
-            text-decoration: none; transition: all .2s;
-            box-shadow: 0 4px 14px rgba(0,112,243,0.35);
-        }
-        .btn-cta-top:hover { background: #0080ff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,112,243,0.45); }
+    /* ── Titre de présentation (fixe, autour de l'arbre) ── */
+    .headline {
+      position: absolute; z-index: 3; pointer-events: none;
+      top: clamp(88px, 13vh, 132px); left: clamp(20px, 5vw, 64px);
+      max-width: min(33rem, 52vw);
+      animation: fadeUp 1.1s ease 0.4s both;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    .headline h1 {
+      font-size: clamp(1.85rem, 4.6vw, 3.3rem); font-weight: 800;
+      line-height: 1.1; letter-spacing: -1px;
+      background: linear-gradient(135deg, #ffffff 30%, #7fb4ff);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .headline p {
+      margin-top: 14px; font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+      line-height: 1.6; color: #8ba4c8; max-width: 27rem;
+    }
 
-        /* ── Hero ── */
-        .hero {
-            min-height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            text-align: center; padding: 80px 24px 80px;
-        }
+    /* ── Lya (bas) ── */
+    .lya {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 4;
+      display: flex; align-items: flex-end; gap: 18px;
+      padding: 24px clamp(20px, 5vw, 64px) 30px;
+      background: linear-gradient(0deg, rgba(6,14,26,0.94) 32%, transparent);
+      animation: rise 1.2s ease 0.6s both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    .lya-orb {
+      width: 60px; height: 60px; flex-shrink: 0; border-radius: 50%;
+      background: radial-gradient(circle at 38% 34%, #8fc2ff 0%, #2f7ef0 42%, #1a3a8c 100%);
+      box-shadow: 0 0 32px rgba(47,126,240,0.6), inset 0 0 18px rgba(255,255,255,0.25);
+      position: relative; animation: breathe 4.6s ease-in-out infinite;
+    }
+    .lya-orb::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 64% 70%, rgba(255,255,255,0.35), transparent 45%);
+    }
+    @keyframes breathe {
+      0%,100% { transform: scale(1);    box-shadow: 0 0 28px rgba(47,126,240,0.5), inset 0 0 18px rgba(255,255,255,0.22); }
+      50%     { transform: scale(1.06); box-shadow: 0 0 44px rgba(47,126,240,0.8), inset 0 0 22px rgba(255,255,255,0.32); }
+    }
+    .lya-body { flex: 1; min-width: 0; max-width: 600px; }
+    .lya-name {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.4px;
+      text-transform: uppercase; color: #60a5fa; margin-bottom: 4px;
+    }
+    .lya-line {
+      font-size: clamp(1rem, 2.2vw, 1.4rem); font-weight: 500;
+      line-height: 1.5; min-height: 2.2em; color: #eef4ff;
+    }
+    .lya-line::after {
+      content: "▌"; color: #60a5fa; margin-left: 2px;
+      animation: caret 1s steps(1) infinite;
+    }
+    @keyframes caret { 50% { opacity: 0; } }
+    .actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .btn-enter {
+      padding: 14px 26px; border-radius: 14px; border: none;
+      background: #0070f3; color: #fff; font-size: 0.95rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; text-decoration: none; white-space: nowrap;
+      box-shadow: 0 6px 24px rgba(0,112,243,0.4); transition: transform .2s, filter .2s;
+    }
+    .btn-enter:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .lya-voice {
+      padding: 11px 14px; border-radius: 12px; cursor: pointer;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #8ba4c8; font-size: 0.82rem; font-family: inherit; white-space: nowrap;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+    .lya-voice:hover { background: rgba(255,255,255,0.1); color: #eef4ff; }
+    .lya-voice.on { color: #60a5fa; border-color: rgba(0,112,243,0.4); background: rgba(0,112,243,0.12); }
 
-        /* Pill badge */
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 6px 14px; border-radius: 999px; margin-bottom: 28px;
-            background: rgba(0,112,243,0.15);
-            border: 1px solid rgba(0,112,243,0.35);
-            font-size: 0.78rem; font-weight: 600; color: #7bbfff;
-            letter-spacing: .3px;
-            animation: fadeUp .6s ease both;
-        }
-        .hero-badge-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #0070f3; animation: pulse-dot 2s ease infinite;
-        }
-        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-        /* Headline */
-        .hero h1 {
-            font-size: clamp(2.6rem, 6vw, 4.8rem);
-            font-weight: 800; line-height: 1.1; letter-spacing: -1.5px;
-            margin-bottom: 20px;
-            animation: fadeUp .6s .1s ease both;
-        }
-        .hero h1 .gradient-text {
-            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Subtitle */
-        .hero-sub {
-            font-size: clamp(1rem, 2.5vw, 1.2rem); color: rgba(255,255,255,0.6);
-            max-width: 520px; line-height: 1.6; margin-bottom: 36px;
-            animation: fadeUp .6s .2s ease both;
-        }
-
-        /* Feature chips */
-        .hero-chips {
-            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-            margin-bottom: 36px;
-            animation: fadeUp .6s .3s ease both;
-        }
-        .hero-chip {
-            padding: 6px 14px; border-radius: 999px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.8rem; color: rgba(255,255,255,0.65);
-            font-weight: 500;
-        }
-
-        /* CTA group */
-        .hero-cta-group {
-            display: flex; align-items: center; gap: 12px;
-            animation: fadeUp .6s .4s ease both;
-        }
-        .cta-primary {
-            padding: 14px 32px; border-radius: 12px; border: none;
-            background: linear-gradient(135deg, #0070f3, #0050d0);
-            color: #fff; font-size: 1rem; font-weight: 700;
-            text-decoration: none; transition: all .25s;
-            box-shadow: 0 4px 20px rgba(0,112,243,0.45);
-            letter-spacing: -.2px;
-        }
-        .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,112,243,0.55); background: linear-gradient(135deg, #0080ff, #0060e0); }
-        .cta-secondary {
-            padding: 14px 24px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.75); font-size: 0.95rem; font-weight: 600;
-            text-decoration: none; transition: all .2s;
-        }
-        .cta-secondary:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3); }
-
-        /* Social proof */
-        .hero-proof {
-            margin-top: 40px; font-size: 0.77rem; color: rgba(255,255,255,0.3);
-            animation: fadeUp .6s .5s ease both;
-        }
-
-        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-
-        /* Urgence */
-        #urgence-btn {
-            position: fixed; bottom: 28px; left: 28px; z-index: 1000;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.92); color: #d90429;
-            border: 2px solid #d90429; border-radius: 50px;
-            font-size: 0.88rem; font-weight: 800; text-transform: uppercase; text-decoration: none;
-            box-shadow: 0 0 16px rgba(217,4,41,0.45); transition: all .3s;
-            animation: pulse 2.5s infinite;
-        }
-        #urgence-btn:hover { background: #d90429; color: #fff; transform: scale(1.08); animation-play-state: paused; }
-        @keyframes pulse {
-            0%,100% { transform: scale(1); box-shadow: 0 0 15px rgba(217,4,41,.5); }
-            50% { transform: scale(1.04); box-shadow: 0 0 22px rgba(217,4,41,.8); }
-        }
-
-        /* ── Scroll arrow ── */
-        .scroll-arrow {
-            margin-top: 48px; display: flex; flex-direction: column; align-items: center; gap: 6px;
-            color: rgba(255,255,255,0.3); font-size: 0.72rem; letter-spacing: .5px;
-            animation: fadeUp .6s .7s ease both;
-            cursor: pointer; text-decoration: none;
-        }
-        .scroll-arrow svg { animation: bounce-y 1.8s ease-in-out infinite; }
-        @keyframes bounce-y { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
-
-        /* ── Sections ── */
-        .section { padding: 96px 24px; max-width: 1100px; margin: 0 auto; }
-        .section-label {
-            display: inline-block; margin-bottom: 16px;
-            font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
-            color: #60a5fa;
-        }
-        .section-title {
-            font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
-            line-height: 1.15; letter-spacing: -.8px; margin-bottom: 14px;
-        }
-        .section-sub {
-            font-size: 1rem; color: rgba(255,255,255,0.5); line-height: 1.6; max-width: 540px;
-        }
-        .section-header { margin-bottom: 56px; }
-
-        /* Divider */
-        .section-divider {
-            width: 100%; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-        }
-
-        /* ── Feature cards ── */
-        .features-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .feat-card {
-            padding: 28px; border-radius: 18px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.07);
-            transition: transform .2s, border-color .2s, background .2s;
-        }
-        .feat-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.055); border-color: rgba(255,255,255,0.13); }
-        .feat-icon {
-            width: 46px; height: 46px; border-radius: 12px; margin-bottom: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem;
-        }
-        .feat-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: #e5eef8; }
-        .feat-card p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.55; }
-        .feat-badge {
-            display: inline-block; margin-top: 12px;
-            padding: 3px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;
-            background: rgba(0,112,243,0.15); border: 1px solid rgba(0,112,243,0.3); color: #60aeff;
-        }
-
-        /* ── Domains ── */
-        .domains-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
-        }
-        .domain-card {
-            padding: 32px; border-radius: 20px; position: relative; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.07);
-            background: rgba(255,255,255,0.025);
-            transition: transform .2s;
-        }
-        .domain-card:hover { transform: translateY(-3px); }
-        .domain-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            border-radius: 20px 20px 0 0;
-        }
-        .domain-corps::before { background: linear-gradient(90deg, #2dd4bf, #06b6d4); }
-        .domain-coeur::before { background: linear-gradient(90deg, #f87171, #fb923c); }
-        .domain-etre::before  { background: linear-gradient(90deg, #a78bfa, #818cf8); }
-        .domain-ordre::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-        .domain-emoji { font-size: 2rem; margin-bottom: 14px; display: block; }
-        .domain-card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
-        .domain-card p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.55; }
-        .domain-corps h3 { color: #2dd4bf; }
-        .domain-coeur h3 { color: #f87171; }
-        .domain-etre  h3 { color: #a78bfa; }
-        .domain-ordre h3 { color: #fbbf24; }
-
-        /* ── Mission / Manifesto ── */
-        .mission-section {
-            padding: 96px 24px; text-align: center;
-            background: radial-gradient(ellipse at 50% 0%, rgba(0,112,243,0.06) 0%, transparent 70%);
-        }
-        .mission-quote {
-            font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 800;
-            line-height: 1.25; letter-spacing: -.5px; max-width: 760px; margin: 0 auto 24px;
-        }
-        .mission-quote .hl { color: #60a5fa; }
-        .mission-text {
-            font-size: 1rem; color: rgba(255,255,255,0.45); line-height: 1.7;
-            max-width: 600px; margin: 0 auto 48px;
-        }
-
-        /* ── Final CTA ── */
-        .final-cta-section {
-            padding: 80px 24px 120px; text-align: center;
-        }
-        .final-cta-section h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 12px; }
-        .final-cta-section p { font-size: 0.95rem; color: rgba(255,255,255,0.45); margin-bottom: 36px; }
-        .cta-big {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 18px 44px; border-radius: 16px; border: none;
-            background: linear-gradient(135deg, #0070f3, #0050d0);
-            color: #fff; font-size: 1.1rem; font-weight: 700;
-            text-decoration: none; transition: all .25s;
-            box-shadow: 0 6px 30px rgba(0,112,243,0.45);
-        }
-        .cta-big:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,112,243,0.55); }
-        .cta-proof { margin-top: 18px; font-size: 0.75rem; color: rgba(255,255,255,0.25); }
-
-        /* Footer */
-        .footer {
-            padding: 56px 40px 32px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            font-size: 0.84rem; color: rgba(255,255,255,0.4);
-            background: rgba(0,0,0,0.15);
-        }
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr 1fr;
-            gap: 40px;
-            max-width: 1100px;
-            margin: 0 auto 40px;
-        }
-        @media (max-width: 800px) {
-            .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
-        }
-        @media (max-width: 480px) {
-            .footer-grid { grid-template-columns: 1fr; gap: 24px; }
-            .footer { padding: 40px 20px 24px; }
-        }
-        .footer-brand { display: flex; flex-direction: column; gap: 10px; }
-        .footer-brand-name {
-            font-size: 1.05rem; font-weight: 800; color: #eef4ff;
-            letter-spacing: -0.3px;
-        }
-        .footer-brand-desc {
-            font-size: 0.82rem; color: rgba(255,255,255,0.5);
-            line-height: 1.6; max-width: 320px;
-        }
-        .footer-emergency {
-            display: inline-flex; align-items: center; gap: 6px;
-            margin-top: 6px; padding: 6px 12px;
-            background: rgba(239,68,68,0.08);
-            border: 1px solid rgba(239,68,68,0.25);
-            border-radius: 999px;
-            font-size: 0.74rem; font-weight: 700;
-            color: #fca5a5; text-decoration: none;
-            transition: background .2s;
-            width: fit-content;
-        }
-        .footer-emergency:hover { background: rgba(239,68,68,0.14); }
-        .footer-col-title {
-            font-size: 0.7rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px;
-            color: rgba(255,255,255,0.4);
-            margin-bottom: 14px;
-        }
-        .footer-list { display: flex; flex-direction: column; gap: 10px; }
-        .footer-list a {
-            color: rgba(255,255,255,0.55); text-decoration: none;
-            font-size: 0.84rem; font-weight: 500;
-            transition: color .15s;
-        }
-        .footer-list a:hover { color: rgba(255,255,255,0.9); }
-        .footer-bottom {
-            display: flex; justify-content: space-between; align-items: center;
-            padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05);
-            max-width: 1100px; margin: 0 auto;
-            font-size: 0.78rem; color: rgba(255,255,255,0.3);
-            flex-wrap: wrap; gap: 12px;
-        }
-        .footer-bottom a { color: rgba(255,255,255,0.45); text-decoration: none; }
-        .footer-bottom a:hover { color: rgba(255,255,255,0.7); }
-        .footer-bottom-links { display: flex; gap: 18px; flex-wrap: wrap; }
-
-        /* Reveal on scroll */
-        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
-
-        /* ── How it works ── */
-        .how-step {
-          padding:28px; border-radius:18px;
-          background:rgba(255,255,255,0.025);
-          border:1px solid rgba(255,255,255,0.07);
-          transition:transform .2s, background .2s;
-        }
-        .how-step:hover { transform:translateY(-3px); background:rgba(255,255,255,0.045); }
-        .how-num { font-size:0.65rem; font-weight:800; color:rgba(0,112,243,0.5); letter-spacing:1px; margin-bottom:12px; }
-        .how-icon { font-size:2.2rem; margin-bottom:14px; }
-        .how-title-inner { font-size:1rem; font-weight:800; margin-bottom:8px; color:#eef4ff; }
-        .how-desc { font-size:0.84rem; color:rgba(255,255,255,0.5); line-height:1.65; }
-
-        /* ── Testimonials ── */
-        .testi-card {
-          padding:24px; border-radius:18px;
-          background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.07);
-          display:flex; flex-direction:column; gap:16px;
-        }
-        .testi-stars { color:#fbbf24; font-size:0.85rem; letter-spacing:2px; }
-        .testi-text { font-size:0.88rem; color:rgba(255,255,255,0.65); line-height:1.65; font-style:italic; flex:1; }
-        .testi-author { display:flex; align-items:center; gap:12px; }
-        .testi-avatar {
-          width:40px; height:40px; border-radius:50%; flex-shrink:0;
-          background:linear-gradient(135deg,#0070f3,#6366f1);
-          display:flex; align-items:center; justify-content:center;
-          font-size:1rem; font-weight:800; color:#fff;
-        }
-        .testi-name { font-size:0.84rem; font-weight:700; color:#eef4ff; }
-        .testi-role { font-size:0.72rem; color:rgba(255,255,255,0.35); margin-top:2px; }
-
-        /* ── FAQ ── */
-        .faq-list { display:flex; flex-direction:column; gap:8px; }
-        .faq-item {
-          border:1px solid rgba(255,255,255,0.07); border-radius:14px;
-          background:rgba(255,255,255,0.025);
-          overflow:hidden; transition:background .2s;
-        }
-        .faq-item[open] { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.12); }
-        .faq-q {
-          padding:16px 20px; font-size:0.9rem; font-weight:700; color:#eef4ff;
-          cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between;
-          transition:color .2s;
-        }
-        .faq-q::-webkit-details-marker { display:none; }
-        .faq-q::after { content:'+'; font-size:1.2rem; color:rgba(255,255,255,0.3); transition:transform .2s; flex-shrink:0; }
-        .faq-item[open] .faq-q::after { transform:rotate(45deg); color:#60a5fa; }
-        .faq-item[open] .faq-q { color:#60a5fa; }
-        .faq-a { padding:0 20px 16px; font-size:0.86rem; color:rgba(255,255,255,0.5); line-height:1.65; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px; }
-
-        /* ── Stats counter section ── */
-        .stats-counter-section {
-          padding: 72px 24px;
-          background: radial-gradient(ellipse at 50% 50%, rgba(0,112,243,0.04) 0%, transparent 70%);
-          border-top: 1px solid rgba(255,255,255,0.05);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .stats-counter-grid {
-          max-width: 900px; margin: 0 auto;
-          display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
-          text-align: center;
-        }
-        .counter-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .counter-value {
-          font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
-          background: linear-gradient(135deg, #60a5fa, #a78bfa);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-          letter-spacing: -1px; line-height: 1;
-        }
-        .counter-label { font-size: 0.82rem; color: rgba(255,255,255,0.4); font-weight: 500; max-width: 120px; line-height: 1.4; }
-
-        @media (max-width: 640px) {
-            .stats-counter-grid { grid-template-columns: repeat(2,1fr); }
-            .top-bar { padding: 0 16px; }
-            .top-bar-brand span { display: none; }
-            .hero h1 { letter-spacing: -.5px; }
-            .hero-cta-group { flex-direction: column; width: 100%; max-width: 300px; }
-            .cta-primary, .cta-secondary { width: 100%; text-align: center; }
-            #urgence-btn { font-size: 0.78rem; padding: 8px 14px; bottom: 16px; left: 16px; }
-            .domains-grid { grid-template-columns: 1fr; }
-            .section { padding: 64px 20px; }
-            .footer { flex-direction: column; gap: 10px; text-align: center; }
-        }
-    </style>
+    @media (max-width: 820px) {
+      .headline { max-width: 80vw; top: clamp(74px, 11vh, 110px); }
+    }
+    @media (max-width: 720px) {
+      .lya { flex-direction: column; align-items: stretch; gap: 14px; }
+      .lya-top { display: flex; align-items: center; gap: 14px; }
+      .actions { justify-content: space-between; }
+      .btn-enter { flex: 1; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #arbre-canvas, .lya, .lya-orb, .headline, .site-header { animation: none !important; }
+    }
+  </style>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
-    <div id="vanta-birds-bg"></div>
+  <main class="scene">
+    <canvas id="arbre-canvas" aria-label="Ton arbre de vie"></canvas>
+    <div class="loading-veil" aria-hidden="true">l'arbre s'éveille…</div>
 
-    <!-- Top bar -->
-    <nav class="top-bar" aria-label="Navigation principale">
-      <div class="top-bar-brand">
-        <svg viewBox="0 0 36 36" width="28" height="28" aria-hidden="true">
-          <circle cx="13" cy="18" r="9" fill="none" stroke="#3399ff" stroke-width="2.5"/>
-          <line x1="22" y1="18" x2="29" y2="12" stroke="white" stroke-width="1.5"/>
-          <line x1="22" y1="18" x2="29" y2="18" stroke="white" stroke-width="1.5"/>
-          <line x1="22" y1="18" x2="29" y2="24" stroke="white" stroke-width="1.5"/>
-          <circle cx="30" cy="12" r="3.5" fill="none" stroke="white" stroke-width="1.5"/>
-          <circle cx="30" cy="18" r="3.5" fill="none" stroke="white" stroke-width="1.5"/>
-          <circle cx="30" cy="24" r="3.5" fill="none" stroke="white" stroke-width="1.5"/>
-        </svg>
-        <span>ChangeYourLife.ai</span>
+    <header class="site-header">
+      <div class="brand">
+        <img src="/favicon.svg" alt="" />
+        <span class="brand-name">ChangeYourLife<span>.ai</span></span>
       </div>
-      <div class="top-bar-right">
-        <a href="/login" class="btn-login">Se connecter</a>
-        <a href="/login" id="cta-top" class="btn-cta-top">Commencer</a>
-      </div>
-    </nav>
+      <a class="header-login" href="/login/">Se connecter</a>
+    </header>
 
-    <!-- Hero -->
-    <div class="hero" id="main-content" role="main">
-      <div class="hero-badge">
-        <span class="hero-badge-dot"></span>
-        Plateforme française de développement personnel
-      </div>
-
-      <h1>
-        Construis la meilleure<br>
-        <span class="gradient-text">version de toi-même</span>
-      </h1>
-
-      <p class="hero-sub">
-        Journal intime, méditation guidée, objectifs de vie et carte de compétences —
-        réunis dans un espace gratuit et intelligent.
-      </p>
-
-      <div class="hero-chips">
-        <span class="hero-chip">🌳 Arbre de compétences</span>
-        <span class="hero-chip">📔 Journal & émotions</span>
-        <span class="hero-chip">🧘 Méditation guidée</span>
-        <span class="hero-chip">🎯 Objectifs & deadlines</span>
-        <span class="hero-chip">😌 Suivi d'humeur</span>
-        <span class="hero-chip">🤖 Optimisé par l'IA</span>
-      </div>
-
-      <div class="hero-cta-group">
-        <a href="/login" id="cta-button" class="cta-primary">Commencer l'aventure →</a>
-        <a href="/login" id="cta-login" class="cta-secondary">Déjà membre</a>
-      </div>
-
-      <p class="hero-proof">100% gratuit · Aucune carte bancaire · Données privées</p>
-
-      <a href="#features" class="scroll-arrow" aria-label="Découvrir les fonctionnalités">
-        Découvrir
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </a>
+    <div class="headline">
+      <h1>Construis la meilleure version de toi-même.</h1>
+      <p>Ta vie devient un arbre vivant. Chaque dimension — corps, mental,
+        relations, sens — prend racine et s'épanouit avec toi.</p>
     </div>
 
-    <!-- ── FEATURES ── -->
-    <div class="section-divider"></div>
-    <section id="features" aria-labelledby="features-title">
-      <div class="section reveal">
-        <div class="section-header">
-          <span class="section-label">Fonctionnalités</span>
-          <h2 class="section-title" id="features-title">Tout ce qu'il te faut<br>pour avancer</h2>
-          <p class="section-sub">Des outils pensés ensemble, qui se complètent et mesurent ta progression dans tous les domaines de ta vie.</p>
+    <section class="lya" aria-live="polite">
+      <div class="lya-top" style="display:contents;">
+        <div class="lya-orb" aria-hidden="true"></div>
+        <div class="lya-body">
+          <div class="lya-name">Lya</div>
+          <p class="lya-line" id="lya-line"></p>
         </div>
-        <div class="features-grid">
-          <div class="feat-card reveal">
-            <div class="feat-icon" style="background:rgba(45,212,191,0.12)">📔</div>
-            <h3>Journal intime</h3>
-            <p>Écris chaque jour avec des prompts inspirants, filtre par émotion ou domaine, et visualise ton évolution dans le temps.</p>
-            <span class="feat-badge">+10 XP / entrée</span>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon" style="background:rgba(167,139,250,0.12)">🧘</div>
-            <h3>Méditation guidée</h3>
-            <p>Séances de 5 à 30 minutes avec ambiances sonores, suivi de ta streak et de tes minutes cumulées.</p>
-            <span class="feat-badge">+15 XP / séance</span>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon" style="background:rgba(251,191,36,0.12)">🎯</div>
-            <h3>Objectifs de vie</h3>
-            <p>Crée des objectifs par domaine, suis ta progression pas à pas et célèbre chaque victoire avec des gains d'XP.</p>
-            <span class="feat-badge">+25 XP / complété</span>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon" style="background:rgba(96,165,250,0.12)">🎡</div>
-            <h3>Roue de vie</h3>
-            <p>Évalue tes 4 domaines en quelques minutes, visualise ton équilibre sur un radar et identifie où concentrer tes efforts.</p>
-            <span class="feat-badge">Historique & tendances</span>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon" style="background:rgba(248,113,113,0.12)">🌳</div>
-            <h3>Codex de connaissances</h3>
-            <p>Centralise les apprentissages clés de ta vie : citations, livres, insights — ton encyclopédie personnelle.</p>
-            <span class="feat-badge">Bientôt</span>
-          </div>
-          <div class="feat-card reveal">
-            <div class="feat-icon" style="background:rgba(0,112,243,0.12)">⚡</div>
-            <h3>Système XP & Niveaux</h3>
-            <p>Chaque action te rapporte de l'XP. Monte en niveau dans chaque domaine et débloques des insights sur toi-même.</p>
-            <span class="feat-badge">Gamification</span>
-          </div>
-        </div>
+      </div>
+      <div class="actions">
+        <button class="lya-voice" id="lya-voice" aria-pressed="false">🔇 Voix de Lya</button>
+        <a class="btn-enter" href="/login/">Commencer l'aventure</a>
       </div>
     </section>
-
-    <!-- ── 4 DOMAINS ── -->
-    <div class="section-divider"></div>
-    <section id="domains" aria-labelledby="domains-title">
-      <div class="section reveal">
-        <div class="section-header">
-          <span class="section-label">Les 4 domaines</span>
-          <h2 class="section-title" id="domains-title">Une vie équilibrée<br>sur 4 piliers</h2>
-          <p class="section-sub">Inspirée de la hiérarchie de Maslow, notre approche couvre toutes les dimensions de l'épanouissement humain.</p>
-        </div>
-        <div class="domains-grid">
-          <div class="domain-card domain-corps reveal">
-            <span class="domain-emoji">💪</span>
-            <h3>Corps</h3>
-            <p>Santé physique, énergie, sommeil, alimentation, sport. La fondation sur laquelle tout repose. Sans corps en bonne santé, rien d'autre ne tient.</p>
-          </div>
-          <div class="domain-card domain-coeur reveal">
-            <span class="domain-emoji">❤️</span>
-            <h3>Cœur</h3>
-            <p>Relations, amour, famille, amitié. Les connexions humaines qui donnent du sens à notre existence et alimentent notre résilience.</p>
-          </div>
-          <div class="domain-card domain-etre reveal">
-            <span class="domain-emoji">✨</span>
-            <h3>Être</h3>
-            <p>Identité, valeurs, spiritualité, croissance intérieure. Qui tu es vraiment, au-delà de ce que tu fais ou possèdes.</p>
-          </div>
-          <div class="domain-card domain-ordre reveal">
-            <span class="domain-emoji">⚡</span>
-            <h3>Ordre</h3>
-            <p>Finances, organisation, environnement, productivité. La structure qui libère l'esprit et permet à l'énergie de circuler librement.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── COMMENT ÇA MARCHE ── -->
-    <div class="section-divider"></div>
-    <section id="how" aria-labelledby="how-title">
-      <div class="section reveal">
-        <div class="section-header">
-          <span class="section-label">Comment ça marche</span>
-          <h2 class="section-title" id="how-title">Simple. Efficace.<br>Gratuit.</h2>
-          <p class="section-sub">3 étapes pour commencer ta transformation, dès aujourd'hui.</p>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;counter-reset:step">
-          <div class="how-step reveal" style="counter-increment:step">
-            <div class="how-num">01</div>
-            <div class="how-icon">🎡</div>
-            <h3 class="how-title-inner">Fais ta Roue de Vie</h3>
-            <p class="how-desc">Réponds à 20 questions en 5 minutes. Obtiens un radar visuel de tes 4 domaines (Corps, Cœur, Être, Ordre) et identifie instantanément où concentrer tes efforts.</p>
-          </div>
-          <div class="how-step reveal" style="counter-increment:step">
-            <div class="how-num">02</div>
-            <div class="how-icon">🎯</div>
-            <h3 class="how-title-inner">Crée tes objectifs</h3>
-            <p class="how-desc">Transforme tes axes d'amélioration en objectifs concrets avec des deadlines. La plateforme t'accompagne pas à pas et célèbre chaque victoire avec des gains d'XP.</p>
-          </div>
-          <div class="how-step reveal" style="counter-increment:step">
-            <div class="how-num">03</div>
-            <div class="how-icon">🔥</div>
-            <h3 class="how-title-inner">Construis tes routines</h3>
-            <p class="how-desc">Journal quotidien, méditation guidée, suivi des habitudes — chaque action alimente ton système XP et te fait monter en niveau dans chacun de tes domaines de vie.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── GARANTIES (anciennement compteurs — chiffres concrets vérifiables) ── -->
-    <div class="stats-counter-section reveal">
-      <div class="stats-counter-grid">
-        <div class="counter-item">
-          <span class="counter-value">100%</span>
-          <span class="counter-label">gratuit, sans pub, sans carte bancaire</span>
-        </div>
-        <div class="counter-item">
-          <span class="counter-value">16</span>
-          <span class="counter-label">modules pour explorer ta vie</span>
-        </div>
-        <div class="counter-item">
-          <span class="counter-value">PWA</span>
-          <span class="counter-label">installable, fonctionne hors-ligne</span>
-        </div>
-        <div class="counter-item">
-          <span class="counter-value">EU</span>
-          <span class="counter-label">données privées hébergées en Europe</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── TÉMOIGNAGES ── -->
-    <div class="section-divider"></div>
-    <section id="testimonials" aria-labelledby="testi-title">
-      <div class="section reveal">
-        <div class="section-header">
-          <span class="section-label">Témoignages</span>
-          <h2 class="section-title" id="testi-title">Ce qu'ils en disent</h2>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
-          <div class="testi-card reveal">
-            <div class="testi-stars">★★★★★</div>
-            <p class="testi-text">"La Roue de Vie m'a ouvert les yeux. En 5 minutes, j'ai compris pourquoi je me sentais à plat malgré mes succès professionnels — je négligeais totalement mon domaine Cœur."</p>
-            <div class="testi-author">
-              <div class="testi-avatar">M</div>
-              <div>
-                <div class="testi-name">Marie, 34 ans</div>
-                <div class="testi-role">Consultante · Paris</div>
-              </div>
-            </div>
-          </div>
-          <div class="testi-card reveal">
-            <div class="testi-stars">★★★★★</div>
-            <p class="testi-text">"Le journal avec les prompts du jour a changé ma relation à l'écriture. Je n'avais jamais pu tenir un journal plus de 3 jours — là, ça fait 6 semaines que j'écris chaque matin."</p>
-            <div class="testi-author">
-              <div class="testi-avatar" style="background:linear-gradient(135deg,#a78bfa,#6366f1)">T</div>
-              <div>
-                <div class="testi-name">Thomas, 28 ans</div>
-                <div class="testi-role">Développeur · Lyon</div>
-              </div>
-            </div>
-          </div>
-          <div class="testi-card reveal">
-            <div class="testi-stars">★★★★★</div>
-            <p class="testi-text">"Le système de niveaux et d'XP rend la progression addictive. Je me retrouve à compléter mes habitudes non pas par obligation, mais parce que j'ai envie de voir ma jauge monter."</p>
-            <div class="testi-author">
-              <div class="testi-avatar" style="background:linear-gradient(135deg,#2dd4bf,#06b6d4)">S</div>
-              <div>
-                <div class="testi-name">Sophie, 41 ans</div>
-                <div class="testi-role">Enseignante · Bordeaux</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── FAQ ── -->
-    <div class="section-divider"></div>
-    <section id="faq" aria-labelledby="faq-title">
-      <div class="section reveal" style="max-width:720px;margin:0 auto">
-        <div class="section-header" style="text-align:center">
-          <span class="section-label">FAQ</span>
-          <h2 class="section-title" id="faq-title">Questions fréquentes</h2>
-        </div>
-        <div class="faq-list">
-          <details class="faq-item reveal">
-            <summary class="faq-q">C'est vraiment gratuit ?</summary>
-            <p class="faq-a">Oui, 100% gratuit. Tous les modules — journal, méditation, objectifs, roue de vie, habitudes — sont accessibles sans abonnement ni carte bancaire. Le projet est développé par passion, pas pour le profit.</p>
-          </details>
-          <details class="faq-item reveal">
-            <summary class="faq-q">Mes données sont-elles privées ?</summary>
-            <p class="faq-a">Tes données appartiennent uniquement à toi. Elles sont stockées de manière sécurisée via Firebase (Google Cloud), chiffrées, et ne sont jamais partagées ni vendues. Tu peux les supprimer à tout moment.</p>
-          </details>
-          <details class="faq-item reveal">
-            <summary class="faq-q">Combien de temps ça prend par jour ?</summary>
-            <p class="faq-a">Aussi peu que 5 minutes suffit pour maintenir ta progression : une entrée de journal, cocher tes habitudes, ou une courte méditation. L'idée est de construire une pratique durable, pas de te surcharger.</p>
-          </details>
-          <details class="faq-item reveal">
-            <summary class="faq-q">À qui s'adresse ChangeYourLife.ai ?</summary>
-            <p class="faq-a">À toute personne qui veut progresser — que tu sois débutant dans le développement personnel ou expérimenté. La plateforme s'adapte à ton rythme. Pas de jugement, pas de pression.</p>
-          </details>
-          <details class="faq-item reveal">
-            <summary class="faq-q">Une IA est-elle vraiment utilisée ?</summary>
-            <p class="faq-a">Actuellement, l'IA intervient dans les prompts de journal, les suggestions d'action du jour et les analyses de ta roue de vie. Nous développons un compagnon IA plus avancé — reste connecté(e).</p>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── MISSION ── -->
-    <div class="section-divider"></div>
-    <div class="mission-section">
-      <div class="reveal">
-        <span class="section-label">Notre manifeste</span>
-        <p class="mission-quote">
-          "La vie ne change pas d'un coup.<br>Elle change <span class="hl">un choix</span>, une habitude,<br>une entrée de journal à la fois."
-        </p>
-        <p class="mission-text">
-          ChangeYourLife.ai est né d'une conviction simple : les meilleurs outils de développement personnel ne devraient pas être réservés à ceux qui peuvent se payer un coach ou un thérapeute. Chaque personne mérite un espace pour se comprendre, progresser et construire la vie qu'elle veut vraiment.
-        </p>
-      </div>
-    </div>
-
-    <!-- ── FINAL CTA ── -->
-    <div class="section-divider"></div>
-    <div class="final-cta-section reveal">
-      <h2>Prêt(e) à changer ta vie ?</h2>
-      <p>Prends quelques minutes pour toi — tous les outils sont gratuits, accessibles immédiatement.</p>
-      <a href="/login" id="cta-final" class="cta-big">
-        Commencer gratuitement →
-      </a>
-      <p class="cta-proof">100% gratuit · Pas de carte bancaire · Données privées</p>
-    </div>
-
-    <!-- ── FOOTER ── -->
-    <footer class="footer">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="footer-brand-name">ChangeYourLife.ai</div>
-          <div class="footer-brand-desc">
-            Une base saine pour construire de grandes choses. Outils gratuits de santé mentale optimisés par l'IA.
-          </div>
-          <a href="tel:3114" class="footer-emergency" aria-label="Numéro national de prévention du suicide — 3114">
-            🆘 Détresse — 3114 (24/7)
-          </a>
-        </div>
-
-        <div>
-          <div class="footer-col-title">Outils</div>
-          <div class="footer-list">
-            <a href="/yourlife/">Pyramide de Maslow</a>
-            <a href="/meditation/">Méditation</a>
-            <a href="/journal/">Journal</a>
-            <a href="/objectifs/">Objectifs</a>
-            <a href="/coach/">Coach IA</a>
-            <a href="/codex/">Codex</a>
-          </div>
-        </div>
-
-        <div>
-          <div class="footer-col-title">Trackers</div>
-          <div class="footer-list">
-            <a href="/humeur/">Humeur</a>
-            <a href="/sommeil/">Sommeil</a>
-            <a href="/habitudes/">Habitudes</a>
-            <a href="/gratitude/">Gratitude</a>
-            <a href="/bilan/">Bilan hebdo</a>
-            <a href="/autoevaluation/">Roue de vie</a>
-          </div>
-        </div>
-
-        <div>
-          <div class="footer-col-title">Compte</div>
-          <div class="footer-list">
-            <a href="/login/">Connexion</a>
-            <a href="/app/">Mon espace</a>
-            <a href="/profile/">Profil</a>
-            <a href="/settings/">Paramètres</a>
-            <a href="mailto:contact@changeyourlife.ai">Contact</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <span>© <span id="footer-year">2026</span> ChangeYourLife.ai — Tous droits réservés</span>
-        <div class="footer-bottom-links">
-          <a href="mailto:contact@changeyourlife.ai">contact@changeyourlife.ai</a>
-          <a href="tel:3114">URGENCE · 3114</a>
-        </div>
-      </div>
-    </footer>
-
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "ChangeYourLife.ai",
-      "description": "Outils de santé mentale optimisés par l'IA — méditation, journal, objectifs, coach IA, trackers.",
-      "url": "https://changeyourlife.ai",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Web",
-      "inLanguage": "fr-FR",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      }
-    }
-    </script>
-
-    <a href="tel:3114" id="urgence-btn" aria-label="Numéro national de prévention du suicide — 3114">URGENCE · 3114</a>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js"></script>
-    <script type="module" src="/js/landing.js"></script>
+  </main>
+  <script type="module" src="/js/arbre3d.js"></script>
 </body>
 </html>

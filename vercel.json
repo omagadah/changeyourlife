@@ -69,6 +69,8 @@
     { "source": "/settings.html", "destination": "/settings", "permanent": true },
     { "source": "/profile.html", "destination": "/profile", "permanent": true },
     { "source": "/journal.html", "destination": "/journal/", "permanent": true },
-    { "source": "/signup", "destination": "/login", "permanent": true }
+    { "source": "/signup", "destination": "/login", "permanent": true },
+    { "source": "/arbre", "destination": "/", "permanent": false },
+    { "source": "/arbre/", "destination": "/", "permanent": false }
   ]
 }

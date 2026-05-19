@@ -1,8 +1,7 @@
-// service-worker.js - v32 (arbre 3D procédural maison)
-const CACHE_NAME = 'changeyourlife-v32';
+// service-worker.js - v33 (arbre 3D = page d'accueil)
+const CACHE_NAME = 'changeyourlife-v33';
 const urlsToCache = [
   '/',
-  '/arbre/',
   '/app/',
   '/login/',
   '/signup/',
