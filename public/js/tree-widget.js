@@ -160,15 +160,24 @@ function injectCss() {
   .tw-lya-name{font-size:0.66rem;font-weight:700;letter-spacing:1.3px;
     text-transform:uppercase;color:#60a5fa;margin-bottom:3px;}
   .tw-lya-line{font-size:clamp(0.92rem,1.6vw,1.1rem);line-height:1.5;color:#eef4ff;}
-  .tw-lya-btn{flex-shrink:0;padding:11px 18px;border-radius:12px;cursor:pointer;
-    background:#0070f3;color:#fff;font:700 0.84rem inherit;text-decoration:none;
-    border:none;white-space:nowrap;box-shadow:0 6px 20px rgba(0,112,243,0.4);
-    transition:transform .2s,filter .2s;}
-  .tw-lya-btn:hover{transform:translateY(-2px);filter:brightness(1.1);}
+  .tw-lya-form{display:flex;gap:8px;margin-top:9px;}
+  .tw-lya-input{flex:1;min-width:0;padding:9px 13px;border-radius:11px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
+    color:#eef4ff;font:500 0.88rem inherit;outline:none;transition:border-color .2s;}
+  .tw-lya-input:focus{border-color:rgba(0,112,243,0.55);}
+  .tw-lya-input::placeholder{color:#5d7895;}
+  .tw-lya-send{flex-shrink:0;width:42px;border-radius:11px;cursor:pointer;
+    background:#0070f3;color:#fff;border:none;font-size:0.95rem;
+    transition:filter .2s,transform .2s;}
+  .tw-lya-send:hover{filter:brightness(1.12);}
+  .tw-lya-send:active{transform:scale(0.94);}
+  .tw-lya-send:disabled{opacity:.5;cursor:default;}
+  .tw-lya.thinking .tw-lya-input{opacity:.6;}
+  .tw-lya.thinking .tw-lya-orb{animation:twPulse 1s ease-in-out infinite;}
+  @keyframes twPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
   @media (max-width:640px){
     .tw-panel{width:100%;}
-    .tw-lya{right:0;flex-direction:column;align-items:stretch;}
-    .tw-lya-btn{text-align:center;}
+    .tw-lya{right:0;}
   }`;
   document.head.appendChild(css);
 }
@@ -274,14 +283,99 @@ export function initTreeWidget(userData) {
       <div class="tw-lya-body">
         <div class="tw-lya-name">Lya</div>
         <div class="tw-lya-line" id="tw-lya-line"></div>
+        <form class="tw-lya-form" id="tw-lya-form">
+          <input class="tw-lya-input" id="tw-lya-input" type="text" autocomplete="off"
+                 placeholder="Parle à Lya — pose-lui une question sur ton arbre…" />
+          <button class="tw-lya-send" id="tw-lya-send" type="submit" aria-label="Envoyer">➤</button>
+        </form>
       </div>
-      <a class="tw-lya-btn" href="/coach/">Parler à Lya →</a>
     </section>
   `);
   const panel = stage.querySelector('#tw-panel');
   const lyaSection = stage.querySelector('.tw-lya');
   const lyaLine = stage.querySelector('#tw-lya-line');
-  lyaLine.textContent = lyaMessage(model, name);
+  const lyaForm = stage.querySelector('#tw-lya-form');
+  const lyaInput = stage.querySelector('#tw-lya-input');
+  const lyaSend = stage.querySelector('#tw-lya-send');
+
+  // Le panneau et la zone de Lya ne doivent pas déclencher l'orbite / le clic
+  // sur une branche — on isole leurs événements pointeur de la scène.
+  ['pointerdown', 'pointerup', 'pointermove', 'wheel', 'click'].forEach((ev) => {
+    lyaSection.addEventListener(ev, (e) => e.stopPropagation());
+    panel.addEventListener(ev, (e) => e.stopPropagation());
+  });
+
+  // ── Lya parle (machine à écrire) ──────────────────────────────────────────
+  let lyaTypeTok = 0;
+  function lyaSay(text) {
+    const tok = ++lyaTypeTok;
+    let i = 0;
+    lyaLine.textContent = '';
+    (function tick() {
+      if (tok !== lyaTypeTok) return;
+      if (i <= text.length) { lyaLine.textContent = text.slice(0, i++); setTimeout(tick, 16); }
+    })();
+  }
+  lyaSay(lyaMessage(model, name));
+
+  // ── Lya en conversation libre (Gemini via /api/coach) ─────────────────────
+  const lyaHistory = [];
+  let lyaBusy = false;
+  async function sendToLya(text) {
+    const msg = (text || '').trim();
+    if (!msg || lyaBusy) return;
+    lyaBusy = true;
+    lyaSend.disabled = true;
+    lyaInput.value = '';
+    lyaSection.classList.add('thinking');
+    lyaSay('Lya réfléchit…');
+    lyaHistory.push({ role: 'user', content: msg });
+    try {
+      const fb = window._cyfFirebase;
+      const user = fb && fb.auth && fb.auth.currentUser;
+      if (!user) throw new Error('not-signed-in');
+      const idToken = await user.getIdToken();
+      // contexte : l'état réel de l'arbre → Lya « voit » l'arbre
+      const userProfile = {
+        prenom: name || undefined,
+        arbre: {
+          stade: model.stage,
+          xpTotal: totalXp,
+          branches: model.branches.map((b) => ({
+            nom: b.label, niveau: b.level, dev: b.dev,
+            vitalite: b.vitality, etat: b.state,
+          })),
+        },
+      };
+      const res = await fetch('/api/coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, messages: lyaHistory, userProfile }),
+      });
+      if (!res.ok) {
+        lyaHistory.pop();
+        lyaSay(res.status === 429
+          ? 'Lya a besoin d’une minute — réessaie dans un instant.'
+          : (res.status === 401 || res.status === 403)
+            ? 'Reconnecte-toi pour parler à Lya.'
+            : 'Lya est indisponible pour l’instant. Réessaie plus tard.');
+        return;
+      }
+      const data = await res.json();
+      const reply = (data && data.reply)
+        ? String(data.reply) : 'Je n’ai pas su quoi répondre — reformule ?';
+      lyaHistory.push({ role: 'assistant', content: reply });
+      lyaSay(reply);
+    } catch (e) {
+      lyaHistory.pop();
+      lyaSay('Lya est hors ligne pour l’instant.');
+    } finally {
+      lyaBusy = false;
+      lyaSend.disabled = false;
+      lyaSection.classList.remove('thinking');
+    }
+  }
+  lyaForm.addEventListener('submit', (e) => { e.preventDefault(); sendToLya(lyaInput.value); });
 
   // ── Three.js ──────────────────────────────────────────────────────────────
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -374,7 +468,7 @@ export function initTreeWidget(userData) {
     requestAnimationFrame(() => {
       panel.querySelectorAll('.tw-bar-fill').forEach((f) => { f.style.width = (f.dataset.w || 0) + '%'; });
     });
-    lyaLine.textContent = `${b.label} — voici sa progression réelle et les outils pour la nourrir.`;
+    lyaSay(`${b.label} — voici sa progression réelle et les outils pour la nourrir.`);
   }
   function closeBranch() {
     panel.classList.remove('open');

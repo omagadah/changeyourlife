@@ -1,5 +1,5 @@
-// service-worker.js - v43 (XP écrit côté client — plan Firebase gratuit)
-const CACHE_NAME = 'changeyourlife-v43';
+// service-worker.js - v44 (Lya en conversation libre sur l'arbre)
+const CACHE_NAME = 'changeyourlife-v44';
 const urlsToCache = [
   '/',
   '/app/',

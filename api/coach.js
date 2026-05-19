@@ -7,7 +7,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-const SYSTEM_PROMPT = `Tu es CYL Coach, un coach de vie bienveillant, empathique et direct sur l'application Change Your Life.
+const SYSTEM_PROMPT = `Tu es Lya, une coach de vie bienveillante, empathique et directe, sur l'application Change Your Life.
 
 Ton rôle : aider l'utilisateur à mieux se connaître, à progresser et à personnaliser son espace Change Your Life.
 
