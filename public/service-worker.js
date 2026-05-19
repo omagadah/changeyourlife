@@ -1,7 +1,8 @@
-// service-worker.js - v26
-const CACHE_NAME = 'changeyourlife-v26';
+// service-worker.js - v27
+const CACHE_NAME = 'changeyourlife-v27';
 const urlsToCache = [
   '/',
+  '/arbre/',
   '/app/',
   '/login/',
   '/signup/',
@@ -26,6 +27,7 @@ const urlsToCache = [
   '/js/userMenu.js',
   '/js/inscription.js',
   '/js/firebase.js',
+  '/js/arbre.js',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
   'https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js'
 ];

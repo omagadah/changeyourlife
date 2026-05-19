@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChangeYourLife.ai — Ton arbre commence</title>
+  <meta name="description" content="Ton arbre de vie. Il pousse avec ce que tu fais, vraiment. Lya t'accompagne." />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0070f3" />
+  <meta name="msapplication-TileColor" content="#07192f" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #060e1a; color: #eef4ff;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,112,243,0.16), transparent 70%),
+        #060e1a;
+    }
+
+    .scene { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+    /* ── L'arbre ── */
+    .arbre-wrap {
+      flex: 1; min-height: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-top: 14px;
+    }
+    .arbre-svg {
+      height: 100%; max-width: 100%;
+      display: block;
+      transform-origin: 50% 100%;
+      animation: grow 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes grow {
+      from { opacity: 0; transform: scaleY(0.82) scaleX(0.92); }
+      to   { opacity: 1; transform: none; }
+    }
+    .arbre-crown {
+      transform-origin: 500px 850px;
+      animation: sway 11s ease-in-out infinite;
+    }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-0.9deg); }
+      50%      { transform: rotate(0.9deg); }
+    }
+
+    /* ── Lya — présence + parole ── */
+    .lya {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: flex-end; gap: 18px;
+      padding: 24px clamp(20px, 5vw, 64px) 30px;
+      background: linear-gradient(0deg, rgba(6,14,26,0.92) 30%, transparent);
+      animation: rise 1.2s ease 0.5s both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+    .lya-orb {
+      width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%;
+      background: radial-gradient(circle at 38% 34%, #8fc2ff 0%, #2f7ef0 42%, #1a3a8c 100%);
+      box-shadow: 0 0 32px rgba(47,126,240,0.6), inset 0 0 18px rgba(255,255,255,0.25);
+      position: relative;
+      animation: breathe 4.6s ease-in-out infinite;
+    }
+    .lya-orb::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 64% 70%, rgba(255,255,255,0.35), transparent 45%);
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1);    box-shadow: 0 0 28px rgba(47,126,240,0.5), inset 0 0 18px rgba(255,255,255,0.22); }
+      50%      { transform: scale(1.06); box-shadow: 0 0 44px rgba(47,126,240,0.8), inset 0 0 22px rgba(255,255,255,0.32); }
+    }
+
+    .lya-body { flex: 1; min-width: 0; max-width: 620px; }
+    .lya-name {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.4px;
+      text-transform: uppercase; color: #60a5fa; margin-bottom: 4px;
+    }
+    .lya-line {
+      font-size: clamp(1.05rem, 2.4vw, 1.5rem); font-weight: 500;
+      line-height: 1.5; min-height: 2.2em; color: #eef4ff;
+    }
+    .lya-line::after {
+      content: '▌'; color: #60a5fa; margin-left: 2px;
+      animation: caret 1s steps(1) infinite;
+    }
+    @keyframes caret { 50% { opacity: 0; } }
+
+    /* ── Actions ── */
+    .actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .btn-enter {
+      padding: 14px 26px; border-radius: 14px; border: none;
+      background: #0070f3; color: #fff; font-size: 0.95rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; text-decoration: none;
+      white-space: nowrap; box-shadow: 0 6px 24px rgba(0,112,243,0.4);
+      transition: transform 0.2s, filter 0.2s;
+    }
+    .btn-enter:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .lya-voice {
+      padding: 11px 14px; border-radius: 12px; cursor: pointer;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #8ba4c8; font-size: 0.82rem; font-family: inherit; white-space: nowrap;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .lya-voice:hover { background: rgba(255,255,255,0.1); color: #eef4ff; }
+    .lya-voice.on { color: #60a5fa; border-color: rgba(0,112,243,0.4); background: rgba(0,112,243,0.12); }
+
+    @media (max-width: 720px) {
+      .lya { flex-direction: column; align-items: stretch; gap: 14px; }
+      .lya-top { display: flex; align-items: center; gap: 14px; }
+      .actions { justify-content: space-between; }
+      .btn-enter { flex: 1; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .arbre-svg, .arbre-crown, .lya, .lya-orb { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <div class="arbre-wrap">
+      <div id="arbre" aria-label="Ton arbre de vie"></div>
+    </div>
+
+    <section class="lya" aria-live="polite">
+      <div class="lya-top" style="display:contents;">
+        <div class="lya-orb" aria-hidden="true"></div>
+        <div class="lya-body">
+          <div class="lya-name">Lya</div>
+          <p class="lya-line" id="lya-line"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="lya-voice" id="lya-voice" aria-pressed="false">🔇 Voix de Lya</button>
+        <a class="btn-enter" href="/login/">Entrer dans mon espace</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/arbre.js"></script>
+</body>
+</html>
