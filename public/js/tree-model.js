@@ -126,7 +126,8 @@ export function buildTree(THREE, model) {
   const ballGeo = new THREE.SphereGeometry(1, 16, 12);
 
   const growables = [];   // { obj, birth, dur, target }
-  const nodes = [];       // 7 nœuds-dimension cliquables
+  const nodes = [];       // 8 nœuds-dimension cliquables
+  const subNodes = [];    // nœuds des sous-branches (labellés sous-élément)
   // feuilles : InstancedMesh global, croissance par instance
   const lp = [], lq = [], ls = [], lb = []; // position, quaternion, scale, birth
 
@@ -247,6 +248,8 @@ export function buildTree(THREE, model) {
       sGroup.add(espLine(sCurve, 4));
       const sTipLocal = sCurve.getPoint(1);
       const sNode = espNode(sGroup, sTipLocal, b.color, 0.42, 0.85, 11);
+      sNode.userData = { label: b.sub[k] || '', color: b.color };
+      subNodes.push(sNode);
       growables.push({ obj: sNode, birth: sBirth + 0.1, dur: 0.08, target: 0.42 });
 
       // rejet (niveau 3) : un cran de ramification de plus
@@ -320,5 +323,5 @@ export function buildTree(THREE, model) {
   }
   grow(0);
 
-  return { group: root, nodes, grow };
+  return { group: root, nodes, subNodes, grow };
 }

@@ -129,9 +129,9 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, grow } = buildTree(THREE, createDemoModel());
+  const { group, nodes, subNodes, grow } = buildTree(THREE, createDemoModel());
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, grow };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow };
 }
 
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
@@ -303,7 +303,8 @@ function initBranchPanel() {
 }
 
 // ── Labels HTML projetés (style ESP) ────────────────────────────────────────
-function initLabels(nodes) {
+// `nodes` = branches principales · `subNodes` = sous-éléments (boules vides)
+function initLabels(nodes, subNodes) {
   const css = document.createElement('style');
   css.textContent = `
     .esp-labels{position:absolute;inset:0;pointer-events:none;z-index:2;
@@ -313,32 +314,38 @@ function initLabels(nodes) {
       font:600 11px -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.6px;
       text-transform:uppercase;white-space:nowrap;padding:2px 8px;border-radius:6px;
       background:rgba(6,14,26,0.72);border:1px solid rgba(255,255,255,0.14);}
+    .esp-label.sub{font-size:8.5px;font-weight:600;letter-spacing:.4px;
+      padding:1px 6px;border-radius:5px;opacity:.82;
+      background:rgba(6,14,26,0.58);border-color:rgba(255,255,255,0.09);}
   `;
   document.head.appendChild(css);
   const wrap = document.createElement('div');
   wrap.className = 'esp-labels';
   document.querySelector('.scene')?.appendChild(wrap);
 
-  const labels = nodes.map((m) => {
+  function makeLabel(m, sub) {
     const el = document.createElement('div');
-    el.className = 'esp-label';
-    el.textContent = m.userData.label;
-    el.style.color = '#' + m.userData.color.toString(16).padStart(6, '0');
-    if (m.userData.state === 'dormant') el.style.opacity = '0.55';
+    el.className = sub ? 'esp-label sub' : 'esp-label';
+    el.textContent = m.userData.label || '';
+    el.style.color = '#' + (m.userData.color || 0xffffff).toString(16).padStart(6, '0');
+    if (!sub && m.userData.state === 'dormant') el.style.opacity = '0.55';
     wrap.appendChild(el);
-    return { el, mesh: m };
-  });
+    return { el, mesh: m, sub };
+  }
+  const labels = nodes.map((m) => makeLabel(m, false))
+    .concat((subNodes || []).filter((m) => m.userData && m.userData.label)
+      .map((m) => makeLabel(m, true)));
   const v = new THREE.Vector3();
   return {
     reveal: () => wrap.classList.add('on'),
     hide: () => wrap.classList.remove('on'),
     update(camera, canvas) {
-      for (const { el, mesh } of labels) {
+      for (const { el, mesh, sub } of labels) {
         mesh.getWorldPosition(v).project(camera);
         if (v.z > 1) { el.style.visibility = 'hidden'; continue; }
         el.style.visibility = 'visible';
         el.style.left = ((v.x * 0.5 + 0.5) * canvas.clientWidth) + 'px';
-        el.style.top = ((-v.y * 0.5 + 0.5) * canvas.clientHeight - 24) + 'px';
+        el.style.top = ((-v.y * 0.5 + 0.5) * canvas.clientHeight - (sub ? 16 : 24)) + 'px';
       }
     },
   };
@@ -405,9 +412,9 @@ function initLya() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, grow } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow } = initScene(canvas);
   const controls = initControls(canvas, camera);
-  const labels = initLabels(nodes);
+  const labels = initLabels(nodes, subNodes);
   const hud = initHud();
   const branchPanel = initBranchPanel();
 
