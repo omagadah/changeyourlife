@@ -12,6 +12,9 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <meta name="theme-color" content="#0070f3" />
   <meta name="msapplication-TileColor" content="#07192f" />
+  <link rel="modulepreload" href="/vendor/three/three.module.min.js" />
+  <link rel="modulepreload" href="/vendor/three/three.core.min.js" />
+  <link rel="modulepreload" href="/vendor/ez-tree/ez-tree.es.js" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -23,46 +26,36 @@
     body {
       background:
         radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,112,243,0.16), transparent 70%),
+        radial-gradient(ellipse 80% 60% at 50% 105%, rgba(0,112,243,0.10), transparent 70%),
         #060e1a;
     }
-
-    .scene { position: fixed; inset: 0; display: flex; flex-direction: column; }
-
-    /* ── L'arbre ── */
-    .arbre-wrap {
-      flex: 1; min-height: 0;
-      display: flex; align-items: flex-end; justify-content: center;
-      padding-top: 14px;
-    }
-    .arbre-svg {
-      height: 100%; max-width: 100%;
+    .scene { position: fixed; inset: 0; }
+    #arbre-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
       display: block;
-      transform-origin: 50% 100%;
-      animation: grow 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation: fadein 1.8s ease 0.2s both;
     }
-    @keyframes grow {
-      from { opacity: 0; transform: scaleY(0.82) scaleX(0.92); }
-      to   { opacity: 1; transform: none; }
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    .loading-veil {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #4a6a8c; font-size: 0.85rem; letter-spacing: 1px;
+      text-transform: uppercase;
+      pointer-events: none;
+      animation: pulse 1.6s ease-in-out infinite;
     }
-    .arbre-crown {
-      transform-origin: 500px 850px;
-      animation: sway 11s ease-in-out infinite;
-    }
-    @keyframes sway {
-      0%, 100% { transform: rotate(-0.9deg); }
-      50%      { transform: rotate(0.9deg); }
-    }
-
-    /* ── Lya — présence + parole ── */
+    @keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 0.75; } }
+    body.tree-ready .loading-veil { display: none; }
     .lya {
       position: absolute; left: 0; right: 0; bottom: 0;
       display: flex; align-items: flex-end; gap: 18px;
       padding: 24px clamp(20px, 5vw, 64px) 30px;
       background: linear-gradient(0deg, rgba(6,14,26,0.92) 30%, transparent);
       animation: rise 1.2s ease 0.5s both;
+      z-index: 2;
     }
     @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-
     .lya-orb {
       width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%;
       background: radial-gradient(circle at 38% 34%, #8fc2ff 0%, #2f7ef0 42%, #1a3a8c 100%);
@@ -78,7 +71,6 @@
       0%, 100% { transform: scale(1);    box-shadow: 0 0 28px rgba(47,126,240,0.5), inset 0 0 18px rgba(255,255,255,0.22); }
       50%      { transform: scale(1.06); box-shadow: 0 0 44px rgba(47,126,240,0.8), inset 0 0 22px rgba(255,255,255,0.32); }
     }
-
     .lya-body { flex: 1; min-width: 0; max-width: 620px; }
     .lya-name {
       font-size: 0.72rem; font-weight: 700; letter-spacing: 1.4px;
@@ -89,12 +81,10 @@
       line-height: 1.5; min-height: 2.2em; color: #eef4ff;
     }
     .lya-line::after {
-      content: '▌'; color: #60a5fa; margin-left: 2px;
+      content: "▌"; color: #60a5fa; margin-left: 2px;
       animation: caret 1s steps(1) infinite;
     }
     @keyframes caret { 50% { opacity: 0; } }
-
-    /* ── Actions ── */
     .actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
     .btn-enter {
       padding: 14px 26px; border-radius: 14px; border: none;
@@ -112,7 +102,6 @@
     }
     .lya-voice:hover { background: rgba(255,255,255,0.1); color: #eef4ff; }
     .lya-voice.on { color: #60a5fa; border-color: rgba(0,112,243,0.4); background: rgba(0,112,243,0.12); }
-
     @media (max-width: 720px) {
       .lya { flex-direction: column; align-items: stretch; gap: 14px; }
       .lya-top { display: flex; align-items: center; gap: 14px; }
@@ -120,16 +109,15 @@
       .btn-enter { flex: 1; text-align: center; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .arbre-svg, .arbre-crown, .lya, .lya-orb { animation: none !important; }
+      #arbre-canvas, .lya, .lya-orb { animation: none !important; }
     }
   </style>
+  <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js","@dgreenheck/ez-tree":"/vendor/ez-tree/ez-tree.es.js"}}</script>
 </head>
 <body>
   <main class="scene">
-    <div class="arbre-wrap">
-      <div id="arbre" aria-label="Ton arbre de vie"></div>
-    </div>
-
+    <canvas id="arbre-canvas" aria-label="Ton arbre de vie"></canvas>
+    <div class="loading-veil" aria-hidden="true">l'arbre s'éveille…</div>
     <section class="lya" aria-live="polite">
       <div class="lya-top" style="display:contents;">
         <div class="lya-orb" aria-hidden="true"></div>
@@ -144,7 +132,6 @@
       </div>
     </section>
   </main>
-
-  <script type="module" src="/js/arbre.js"></script>
+  <script type="module" src="/js/arbre3d.js"></script>
 </body>
 </html>

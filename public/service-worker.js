@@ -1,5 +1,5 @@
-// service-worker.js - v27
-const CACHE_NAME = 'changeyourlife-v27';
+// service-worker.js - v28 (arbre 3D EZ-Tree)
+const CACHE_NAME = 'changeyourlife-v28';
 const urlsToCache = [
   '/',
   '/arbre/',
@@ -27,9 +27,11 @@ const urlsToCache = [
   '/js/userMenu.js',
   '/js/inscription.js',
   '/js/firebase.js',
-  '/js/arbre.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
-  'https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js'
+  '/js/arbre3d.js'
+  // Bundles vendor (three + ez-tree, total ~4.6 MB) volontairement omis ici :
+  // - addAll() est atomique, un échec ferait planter tout l'install
+  // - Ils sont gros et seront mis en cache automatiquement par la stratégie
+  //   "cache first" du fetch handler dès la 1re visite de /arbre/.
 ];
 
 self.addEventListener('install', event => {
