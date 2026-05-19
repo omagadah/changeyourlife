@@ -206,32 +206,42 @@ function initHud() {
         : age < 0.78 ? 'Arbre mature' : 'Arbre centenaire';
     }
   }
-  function showBeat(b) {
+  function showBeat(b, idx) {
     if (hud) { hud.classList.remove('flash'); void hud.offsetWidth; hud.classList.add('flash'); }
     if (!stream) return;
     const card = document.createElement('div');
     card.className = 'task-card';
+    card.dataset.beat = String(idx);
     card.innerHTML =
       `<span class="ic">${b.icon}</span>` +
       `<span class="bd"><span class="nm">${b.task}</span><span class="xp">${b.xp}</span></span>` +
       `<span class="ck">✓</span>`;
     stream.appendChild(card);
     while (stream.children.length > 5) stream.removeChild(stream.firstChild);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       card.classList.add('out');
       setTimeout(() => card.remove(), 500);
     }, 3000);
+    card._timer = timer;
+  }
+  function removeCard(idx) {
+    if (!stream) return;
+    const c = stream.querySelector(`[data-beat="${idx}"]`);
+    if (c) { clearTimeout(c._timer); c.remove(); }
   }
   return {
     updateXp,
-    checkBeats(age) {
+    // Synchronise les pop-ups avec la barre de temps : ils apparaissent quand
+    // on franchit leur instant en avant, disparaissent quand on recule.
+    syncBeats(age, prev) {
       for (let i = 0; i < BEATS.length; i++) {
-        if (!fired[i] && age >= BEATS[i].at) { fired[i] = true; showBeat(BEATS[i]); }
+        const at = BEATS[i].at;
+        if (prev < at && age >= at) {
+          if (!fired[i]) { fired[i] = true; showBeat(BEATS[i], i); }
+        } else if (prev >= at && age < at) {
+          fired[i] = false; removeCard(i);
+        }
       }
-    },
-    resetBeats() {
-      fired = BEATS.map(() => false);
-      if (stream) stream.innerHTML = '';
     },
   };
 }
@@ -405,20 +415,36 @@ function initTree3D(canvas) {
     });
   }
 
-  const ray = new THREE.Raycaster();
-  const mouse = new THREE.Vector2();
-  let selected = null;
+  // ── Facilitateur de clic : on cible le nœud le plus PROCHE du curseur ────
+  // (pas besoin de viser pile au centre — seuil généreux en pixels écran)
+  const _proj = new THREE.Vector3();
+  let hovered = null;
+  let pointerDown = false;
+  function nearestNode(clientX, clientY) {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    let best = null, bestD = 9999;
+    for (const m of nodes) {
+      m.getWorldPosition(_proj).project(camera);
+      if (_proj.z > 1) continue;
+      const sx = (_proj.x * 0.5 + 0.5) * w;
+      const sy = (-_proj.y * 0.5 + 0.5) * h;
+      const d = Math.hypot(sx - clientX, sy - clientY);
+      if (d < bestD) { bestD = d; best = m; }
+    }
+    return bestD < 66 ? best : null;   // seuil ~66 px = clic facile
+  }
+  canvas.addEventListener('pointerdown', () => { pointerDown = true; });
+  canvas.addEventListener('pointermove', (e) => {
+    if (pointerDown || phase !== 'live') return;
+    hovered = nearestNode(e.clientX, e.clientY);
+    canvas.style.cursor = hovered ? 'pointer' : '';
+  });
   canvas.addEventListener('pointerup', (e) => {
+    pointerDown = false;
     if (phase !== 'live' || controls.wasDrag()) return;
-    mouse.x = (e.clientX / canvas.clientWidth) * 2 - 1;
-    mouse.y = -(e.clientY / canvas.clientHeight) * 2 + 1;
-    ray.setFromCamera(mouse, camera);
-    const hit = ray.intersectObjects(nodes, false)[0];
+    const hit = nearestNode(e.clientX, e.clientY);
     if (hit) {
-      if (selected) selected.scale.setScalar(selected.userData.baseR);
-      selected = hit.object;
-      selected.scale.setScalar(selected.userData.baseR * 1.5);
-      const u = selected.userData;
+      const u = hit.userData;
       branchPanel.open(u.key, u.label, u.color);
       if (lyaSay) lyaSay(`${u.label} — voici ce qui fait grandir cette branche.`);
     }
@@ -435,7 +461,7 @@ function initTree3D(canvas) {
   }
 
   const clock = new THREE.Clock();
-  let lastT = 0, timelineReady = false, labelsOn = false;
+  let lastT = 0, prevAge = 0, timelineReady = false, labelsOn = false;
 
   function enableTimeline() {
     if (scrub) scrub.disabled = false;
@@ -455,12 +481,16 @@ function initTree3D(canvas) {
       if (age >= 1) { phase = 'live'; grow(1); }
     }
 
+    // pop-ups synchronisés à la position de la barre de temps
+    hud.syncBeats(age, prevAge);
+    prevAge = age;
+
     if (phase === 'live') {
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;
       for (const m of nodes) {
-        if (m !== selected) {
-          m.scale.setScalar(m.userData.baseR * (1 + Math.sin(t * 2 + m.position.y) * 0.09));
-        }
+        let mult = 1 + Math.sin(t * 2 + m.position.y) * 0.09;
+        if (m === hovered) mult *= 1.4;          // facilitateur : survol → grossit
+        m.scale.setScalar(m.userData.baseR * mult);
       }
       controls.apply();
       labels.update(camera, canvas);
@@ -472,7 +502,6 @@ function initTree3D(canvas) {
       grow(age);
       growthCamera(camera, age);
       hud.updateXp(age);
-      if (phase === 'auto') hud.checkBeats(age);
       if (labelsOn) { labels.hide(); labelsOn = false; }
       if (phase !== 'scrub' && scrub) scrub.value = String(Math.round(age * 1000));
       if (!timelineReady && phase !== 'auto') { timelineReady = true; enableTimeline(); }
