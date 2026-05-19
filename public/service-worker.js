@@ -1,5 +1,5 @@
-// service-worker.js - v28 (arbre 3D EZ-Tree)
-const CACHE_NAME = 'changeyourlife-v28';
+// service-worker.js - v29 (arbre 3D EZ-Tree)
+const CACHE_NAME = 'changeyourlife-v29';
 const urlsToCache = [
   '/',
   '/arbre/',
