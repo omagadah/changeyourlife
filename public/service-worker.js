@@ -1,5 +1,5 @@
-// service-worker.js - v29 (arbre 3D EZ-Tree)
-const CACHE_NAME = 'changeyourlife-v29';
+// service-worker.js - v30 (arbre 3D procédural maison)
+const CACHE_NAME = 'changeyourlife-v30';
 const urlsToCache = [
   '/',
   '/arbre/',
@@ -27,11 +27,12 @@ const urlsToCache = [
   '/js/userMenu.js',
   '/js/inscription.js',
   '/js/firebase.js',
-  '/js/arbre3d.js'
-  // Bundles vendor (three + ez-tree, total ~4.6 MB) volontairement omis ici :
+  '/js/arbre3d.js',
+  '/js/tree-model.js'
+  // Bundle vendor three (~733 KB) volontairement omis ici :
   // - addAll() est atomique, un échec ferait planter tout l'install
-  // - Ils sont gros et seront mis en cache automatiquement par la stratégie
-  //   "cache first" du fetch handler dès la 1re visite de /arbre/.
+  // - mis en cache automatiquement par la stratégie "cache first" du
+  //   fetch handler dès la 1re visite de /arbre/.
 ];
 
 self.addEventListener('install', event => {
