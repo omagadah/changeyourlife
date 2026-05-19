@@ -178,28 +178,72 @@
     .hud.flash { animation: hudFlash 0.6s ease; }
     @keyframes hudFlash { 0%,100% { transform: none; } 32% { transform: scale(1.09); } }
 
-    /* ── Pop-up « tâche accomplie » ── */
-    .task-pop {
-      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px); top: 44%;
-      display: flex; align-items: center; gap: 13px;
-      padding: 13px 17px; border-radius: 16px;
-      background: rgba(11,24,41,0.96); border: 1px solid rgba(0,112,243,0.32);
-      box-shadow: 0 14px 44px rgba(0,0,0,0.55);
-      transform: translateX(150%); opacity: 0; pointer-events: none;
-      transition: transform .55s cubic-bezier(0.22,1,0.36,1), opacity .4s;
+    /* ── Flux de pop-ups « tâche accomplie » ── */
+    .task-stream {
+      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px); top: 36%;
+      width: 252px; display: flex; flex-direction: column; gap: 10px;
+      pointer-events: none;
     }
-    .task-pop.show { transform: translateX(0); opacity: 1; }
-    .task-icon { font-size: 1.7rem; flex-shrink: 0; }
-    .task-name { font-size: 0.92rem; font-weight: 700; color: #eef4ff; }
-    .task-xp { font-size: 0.8rem; font-weight: 700; color: #4ade80; margin-top: 2px; }
-    .task-check {
-      width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
-      background: #22c55e; color: #fff; font-size: 0.9rem; font-weight: 800;
+    .task-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 15px; border-radius: 14px;
+      background: rgba(11,24,41,0.96); border: 1px solid rgba(0,112,243,0.3);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.5);
+      transform: translateX(150%); opacity: 0;
+      animation: cardIn .5s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .task-card.out { animation: cardOut .45s ease forwards; }
+    @keyframes cardIn { to { transform: translateX(0); opacity: 1; } }
+    @keyframes cardOut { to { transform: translateX(150%); opacity: 0; } }
+    .task-card .ic { font-size: 1.5rem; flex-shrink: 0; }
+    .task-card .bd { display: flex; flex-direction: column; }
+    .task-card .nm { font-size: 0.85rem; font-weight: 700; color: #eef4ff; }
+    .task-card .xp { font-size: 0.78rem; font-weight: 700; color: #4ade80; margin-top: 1px; }
+    .task-card .ck {
+      width: 24px; height: 24px; flex-shrink: 0; margin-left: auto; border-radius: 50%;
+      background: #22c55e; color: #fff; font-size: 0.78rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
-      opacity: 0; transform: scale(0.4);
-      transition: opacity .3s, transform .35s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .task-pop.validated .task-check { opacity: 1; transform: scale(1); }
+
+    /* ── Panneau explicatif d'une branche ── */
+    .branch-panel {
+      position: absolute; z-index: 8; top: 0; right: 0; bottom: 0;
+      width: clamp(300px, 33vw, 410px);
+      background: rgba(8,17,30,0.97); backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(255,255,255,0.1);
+      box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+      padding: 30px clamp(24px, 3vw, 38px);
+      transform: translateX(100%); transition: transform .5s cubic-bezier(0.22,1,0.36,1);
+      overflow-y: auto;
+    }
+    .branch-panel.open { transform: translateX(0); }
+    .bp-close {
+      position: absolute; top: 18px; right: 18px;
+      width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #8ba4c8; font-size: 0.9rem; transition: background .2s, color .2s;
+    }
+    .bp-close:hover { background: rgba(255,255,255,0.12); color: #eef4ff; }
+    .bp-head { display: flex; align-items: center; gap: 12px; margin: 8px 0 14px; }
+    .bp-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 0 16px currentColor; }
+    .bp-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
+    .bp-desc { font-size: 0.95rem; line-height: 1.6; color: #b9c7da; margin-bottom: 22px; }
+    .bp-sub {
+      display: flex; gap: 12px; padding: 11px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      opacity: 0; transform: translateX(16px);
+      animation: subIn .45s ease forwards;
+    }
+    @keyframes subIn { to { opacity: 1; transform: none; } }
+    .bp-sub-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .bp-sub-txt { font-size: 0.88rem; line-height: 1.5; color: #8ba4c8; }
+    .bp-sub-txt b { display: block; color: #eef4ff; font-weight: 700; margin-bottom: 1px; }
+    .bp-modules {
+      margin-top: 20px; padding: 12px 14px; border-radius: 12px;
+      background: rgba(0,112,243,0.1); border: 1px solid rgba(0,112,243,0.22);
+      font-size: 0.82rem; color: #7fb4ff; font-weight: 600;
+    }
 
     /* ── Barre de temps (croissance de l'arbre) ── */
     .timeline {
@@ -268,14 +312,18 @@
              disabled aria-label="Évolution de l'arbre" />
     </div>
 
-    <div class="task-pop" id="task-pop" aria-hidden="true">
-      <div class="task-icon"></div>
-      <div class="task-body">
-        <div class="task-name"></div>
-        <div class="task-xp"></div>
+    <div class="task-stream" id="task-stream" aria-hidden="true"></div>
+
+    <aside class="branch-panel" id="branch-panel" aria-hidden="true">
+      <button class="bp-close" id="bp-close" type="button" aria-label="Fermer">✕</button>
+      <div class="bp-head">
+        <span class="bp-dot" id="bp-dot"></span>
+        <h2 class="bp-title" id="bp-title"></h2>
       </div>
-      <div class="task-check">✓</div>
-    </div>
+      <p class="bp-desc" id="bp-desc"></p>
+      <div class="bp-subs" id="bp-subs"></div>
+      <div class="bp-modules" id="bp-modules"></div>
+    </aside>
 
     <section class="lya" aria-live="polite">
       <div class="lya-top" style="display:contents;">

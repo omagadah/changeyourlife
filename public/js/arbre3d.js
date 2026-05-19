@@ -1,17 +1,93 @@
 // /js/arbre3d.js — Page d'accueil : arbre de vie procédural + croissance + Lya.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v6 — barre de temps (scrubber) : on rejoue / recule la croissance de l'arbre.
-// Caméra recalée pour le grand arbre. Compteur XP + pop-ups « tâche accomplie ».
+// v7 — fix du texte de Lya (plus de superposition au clic rapide), flux de
+// pop-ups « tâche accomplie » (satisfaisant), panneau explicatif au clic sur
+// une branche. Barre de temps + caméra cinématique conservées.
 
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 
 const ORBIT_TARGET = new THREE.Vector3(0, 40, 0);
-const GROWTH_SECONDS = 9;     // pousse initiale
-const REPLAY_SECONDS = 4.5;   // « accélérer » vers l'arbre maximum
+const GROWTH_SECONDS = 9;
+const REPLAY_SECONDS = 4.5;
 const TOTAL_XP = 24800;
 const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+
+// ── Contenu des 7 dimensions (panneau explicatif) ───────────────────────────
+const BRANCHES_INFO = {
+  corps: {
+    desc: 'Ton socle. Tout part de là — sans énergie ni sommeil, rien d’autre ne tient debout.',
+    subs: [
+      ['Sommeil', '7 à 9 h règlent l’humeur, le focus et la santé.'],
+      ['Nutrition', 'Le carburant de ton cerveau et de ton corps.'],
+      ['Mouvement', 'Le corps est fait pour bouger — chaque jour compte.'],
+      ['Santé', 'Écouter les signaux, prévenir plutôt que subir.'],
+      ['Énergie', 'Le résultat vivant des quatre autres.'],
+    ],
+    modules: 'Déjà sur le site : Sommeil, Habitudes.',
+  },
+  finances: {
+    desc: 'La sécurité matérielle. Elle ne fait pas le bonheur, mais elle libère l’esprit.',
+    subs: [
+      ['Revenus', 'Ce qui entre — ton travail, tes sources.'],
+      ['Épargne', 'Un coussin, c’est de la sérénité.'],
+      ['Sécurité', '3 à 6 mois de dépenses de côté.'],
+      ['Investir', 'Faire travailler ton argent pour demain.'],
+    ],
+    modules: 'Module dédié à venir.',
+  },
+  relations: {
+    desc: 'Personne ne s’épanouit seul. Tes liens te portent — ou te freinent.',
+    subs: [
+      ['Famille', 'Tes racines, ton premier cercle.'],
+      ['Amis', 'Ceux qui te choisissent.'],
+      ['Amour', 'L’intimité, le lien profond.'],
+      ['Travail', 'Les relations qui occupent tes journées.'],
+      ['Communauté', 'Appartenir à plus grand que soi.'],
+    ],
+    modules: 'Module dédié à venir.',
+  },
+  mental: {
+    desc: 'Ta clarté intérieure. Tes émotions ne sont pas des ordres — ce sont des données.',
+    subs: [
+      ['Émotions', 'Les nommer pour les réguler.'],
+      ['Stress', 'Le doser, en faire un moteur.'],
+      ['Clarté', 'Penser net, décider juste.'],
+      ['Estime', 'La valeur que tu te donnes.'],
+    ],
+    modules: 'Déjà sur le site : Humeur, Méditation, Journal, Gratitude.',
+  },
+  creation: {
+    desc: 'Ce que tu construis, apprends et exprimes. La trace active de qui tu deviens.',
+    subs: [
+      ['Projets', 'Ce que tu mets au monde.'],
+      ['Apprentissage', 'Grandir, toujours.'],
+      ['Compétences', 'Ce que tu sais faire, vraiment.'],
+      ['Expression', 'Dire qui tu es.'],
+    ],
+    modules: 'Déjà sur le site : Objectifs, Codex.',
+  },
+  sens: {
+    desc: 'Le pourquoi. Ce qui donne une direction à tout le reste.',
+    subs: [
+      ['Valeurs', 'Tes boussoles non négociables.'],
+      ['Spiritualité', 'Le lien à plus vaste que soi.'],
+      ['Contribution', 'Ce que tu apportes au monde.'],
+      ['Raison d’être', 'Ce pour quoi tu te lèves.'],
+    ],
+    modules: 'Déjà sur le site : Codex.',
+  },
+  heritage: {
+    desc: 'Ce que tu transmets, la trace que tu laisses. Une branche de fin de parcours — elle s’épanouit tard, et c’est normal.',
+    subs: [
+      ['Transmission', 'Ce que tu passes aux autres.'],
+      ['Trace', 'Ce qui reste après toi.'],
+      ['Mémoire', 'Ton histoire, racontée.'],
+    ],
+    modules: 'Alimentée par la frise chronologique, à venir.',
+  },
+};
 
 // ── Scène ───────────────────────────────────────────────────────────────────
 function initScene(canvas) {
@@ -38,7 +114,6 @@ function initScene(canvas) {
 
   const { group, nodes, grow } = buildTree(THREE, createDemoModel());
   scene.add(group);
-
   return { renderer, scene, camera, treeGroup: group, nodes, grow };
 }
 
@@ -89,12 +164,10 @@ function initControls(canvas, camera) {
   };
 }
 
-// Caméra cinématique pendant la pousse : part près du sapling, dézoome pour
-// cadrer le grand arbre. Finit EXACTEMENT sur la position des contrôles.
 function growthCamera(camera, age) {
   const e = easeOut(age);
-  const targetY = 12 + e * 28;          // 12 → 40 (= ORBIT_TARGET.y)
-  const radius = 58 + e * 52;           // 58 → 110 (= contrôles.radius)
+  const targetY = 12 + e * 28;
+  const radius = 58 + e * 52;
   const sp = Math.sin(1.06), cp = Math.cos(1.06);
   camera.position.set(
     radius * sp * Math.sin(0.5),
@@ -103,17 +176,26 @@ function growthCamera(camera, age) {
   camera.lookAt(0, targetY, 0);
 }
 
-// ── HUD : compteur XP + stade + pop-ups « tâche accomplie » ─────────────────
+// ── HUD : compteur XP + flux de pop-ups « tâche accomplie » ─────────────────
 const BEATS = [
-  { at: 0.28, icon: '🧘', task: 'Méditation du matin', xp: '+180 XP' },
-  { at: 0.52, icon: '🎯', task: 'Objectif atteint', xp: '+420 XP' },
-  { at: 0.76, icon: '😴', task: 'Nuit réparatrice', xp: '+150 XP' },
+  { at: 0.10, icon: '🌅', task: 'Réveil en pleine forme', xp: '+60 XP' },
+  { at: 0.18, icon: '🧘', task: 'Méditation du matin', xp: '+180 XP' },
+  { at: 0.26, icon: '💧', task: 'Hydratation', xp: '+40 XP' },
+  { at: 0.34, icon: '📓', task: 'Journal du jour', xp: '+120 XP' },
+  { at: 0.42, icon: '🏃', task: 'Séance de sport', xp: '+260 XP' },
+  { at: 0.50, icon: '🎯', task: 'Objectif atteint', xp: '+420 XP' },
+  { at: 0.58, icon: '🙏', task: 'Gratitude notée', xp: '+90 XP' },
+  { at: 0.66, icon: '📚', task: '30 min de lecture', xp: '+140 XP' },
+  { at: 0.73, icon: '🤝', task: 'Appel à un proche', xp: '+160 XP' },
+  { at: 0.80, icon: '😴', task: 'Nuit réparatrice', xp: '+150 XP' },
+  { at: 0.87, icon: '✅', task: 'Habitude tenue 7 jours', xp: '+300 XP' },
+  { at: 0.93, icon: '🏆', task: 'Nouveau palier de niveau', xp: '+500 XP' },
 ];
 function initHud() {
   const xpEl = document.getElementById('xp-value');
   const stageEl = document.getElementById('xp-stage');
   const hud = document.getElementById('hud');
-  const pop = document.getElementById('task-pop');
+  const stream = document.getElementById('task-stream');
   let fired = BEATS.map(() => false);
 
   function updateXp(age) {
@@ -125,15 +207,20 @@ function initHud() {
     }
   }
   function showBeat(b) {
-    if (!pop) return;
-    pop.querySelector('.task-icon').textContent = b.icon;
-    pop.querySelector('.task-name').textContent = b.task;
-    pop.querySelector('.task-xp').textContent = b.xp;
-    pop.classList.remove('validated');
-    pop.classList.add('show');
     if (hud) { hud.classList.remove('flash'); void hud.offsetWidth; hud.classList.add('flash'); }
-    setTimeout(() => pop.classList.add('validated'), 1500);
-    setTimeout(() => pop.classList.remove('show'), 2800);
+    if (!stream) return;
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.innerHTML =
+      `<span class="ic">${b.icon}</span>` +
+      `<span class="bd"><span class="nm">${b.task}</span><span class="xp">${b.xp}</span></span>` +
+      `<span class="ck">✓</span>`;
+    stream.appendChild(card);
+    while (stream.children.length > 5) stream.removeChild(stream.firstChild);
+    setTimeout(() => {
+      card.classList.add('out');
+      setTimeout(() => card.remove(), 500);
+    }, 3000);
   }
   return {
     updateXp,
@@ -142,8 +229,50 @@ function initHud() {
         if (!fired[i] && age >= BEATS[i].at) { fired[i] = true; showBeat(BEATS[i]); }
       }
     },
-    resetBeats() { fired = BEATS.map(() => false); },
+    resetBeats() {
+      fired = BEATS.map(() => false);
+      if (stream) stream.innerHTML = '';
+    },
   };
+}
+
+// ── Panneau explicatif d'une branche ────────────────────────────────────────
+function initBranchPanel() {
+  const panel = document.getElementById('branch-panel');
+  const dot = document.getElementById('bp-dot');
+  const title = document.getElementById('bp-title');
+  const desc = document.getElementById('bp-desc');
+  const subsEl = document.getElementById('bp-subs');
+  const modsEl = document.getElementById('bp-modules');
+  const closeBtn = document.getElementById('bp-close');
+
+  function close() { if (panel) panel.classList.remove('open'); }
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  function open(key, label, colorHex) {
+    const info = BRANCHES_INFO[key];
+    if (!panel || !info) return;
+    const col = '#' + colorHex.toString(16).padStart(6, '0');
+    if (dot) dot.style.background = col;
+    if (title) { title.textContent = label; title.style.color = col; }
+    if (desc) desc.textContent = info.desc;
+    if (subsEl) {
+      subsEl.innerHTML = '';
+      info.subs.forEach(([name, note], i) => {
+        const row = document.createElement('div');
+        row.className = 'bp-sub';
+        row.style.animationDelay = (0.12 + i * 0.09) + 's';
+        row.innerHTML =
+          `<span class="bp-sub-dot" style="background:${col}"></span>` +
+          `<span class="bp-sub-txt"><b>${name}</b>${note}</span>`;
+        subsEl.appendChild(row);
+      });
+    }
+    if (modsEl) modsEl.textContent = info.modules;
+    panel.classList.add('open');
+  }
+  return { open, close };
 }
 
 // ── Labels HTML projetés (style ESP) ────────────────────────────────────────
@@ -192,15 +321,21 @@ function initLabels(nodes) {
 const LYA_LINES = [
   'Bonjour. Je m’appelle Lya.',
   'Regarde — chaque chose que tu accomplis fait grandir ton arbre.',
-  'Le voilà adulte. Rejoue sa croissance, ou touche une branche.',
+  'Le voilà adulte. Touche une branche pour l’explorer.',
 ];
 let lyaSay = null;
+let typeGen = 0;            // jeton anti-superposition du texte de Lya
 function typeLine(el, text, done) {
+  const gen = ++typeGen;   // toute frappe précédente est invalidée
+  if (!el) return;
   el.textContent = '';
   let i = 0;
   const tick = () => {
-    if (i <= text.length) { el.textContent = text.slice(0, i++); setTimeout(tick, 26 + Math.random() * 30); }
-    else if (done) done();
+    if (gen !== typeGen) return;          // une nouvelle frappe a démarré
+    if (i <= text.length) {
+      el.textContent = text.slice(0, i++);
+      setTimeout(tick, 26 + Math.random() * 30);
+    } else if (done) { done(); }
   };
   tick();
 }
@@ -218,6 +353,7 @@ function initLya() {
   const lineEl = document.getElementById('lya-line');
   const voiceBtn = document.getElementById('lya-voice');
   let voiceOn = false;
+  const introTimers = [];
   if (voiceBtn) {
     voiceBtn.addEventListener('click', () => {
       voiceOn = !voiceOn;
@@ -229,9 +365,15 @@ function initLya() {
   }
   const beats = [400, 3600, GROWTH_SECONDS * 1000 + 300];
   LYA_LINES.forEach((text, i) => {
-    setTimeout(() => { if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); } }, beats[i]);
+    introTimers.push(setTimeout(() => {
+      if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); }
+    }, beats[i]));
   });
-  lyaSay = (text) => { if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); } };
+  // une nouvelle réplique annule l'intro encore en attente → plus de saut
+  lyaSay = (text) => {
+    introTimers.forEach(clearTimeout);
+    if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); }
+  };
 }
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
@@ -240,14 +382,13 @@ function initTree3D(canvas) {
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes);
   const hud = initHud();
+  const branchPanel = initBranchPanel();
 
-  // barre de temps
   const scrub = document.getElementById('scrub');
   const playBtn = document.getElementById('scrub-play');
   const timeline = document.getElementById('timeline');
 
-  // phase : 'auto' (pousse) · 'live' (adulte) · 'scrub' (curseur) · 'play' (rejoue)
-  let phase = 'auto';
+  let phase = 'auto';   // 'auto' | 'live' | 'scrub' | 'play'
   let age = 0;
 
   if (scrub) {
@@ -255,9 +396,7 @@ function initTree3D(canvas) {
       phase = 'scrub';
       age = Math.max(0, Math.min(1, Number(scrub.value) / 1000));
     });
-    scrub.addEventListener('change', () => {
-      if (age >= 0.999) phase = 'live';
-    });
+    scrub.addEventListener('change', () => { if (age >= 0.999) phase = 'live'; });
   }
   if (playBtn) {
     playBtn.addEventListener('click', () => {
@@ -266,7 +405,6 @@ function initTree3D(canvas) {
     });
   }
 
-  // clic sur un nœud (en mode adulte)
   const ray = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   let selected = null;
@@ -281,11 +419,8 @@ function initTree3D(canvas) {
       selected = hit.object;
       selected.scale.setScalar(selected.userData.baseR * 1.5);
       const u = selected.userData;
-      if (lyaSay) {
-        lyaSay(u.state === 'dormant'
-          ? `${u.label} — cette branche dort encore. Nourris-la pour l’éveiller.`
-          : `${u.label} — bientôt, tu pourras entrer dans cette dimension.`);
-      }
+      branchPanel.open(u.key, u.label, u.color);
+      if (lyaSay) lyaSay(`${u.label} — voici ce qui fait grandir cette branche.`);
     }
   });
 
@@ -300,8 +435,13 @@ function initTree3D(canvas) {
   }
 
   const clock = new THREE.Clock();
-  let lastT = 0;
-  let timelineReady = false;
+  let lastT = 0, timelineReady = false, labelsOn = false;
+
+  function enableTimeline() {
+    if (scrub) scrub.disabled = false;
+    if (playBtn) playBtn.disabled = false;
+    if (timeline) timeline.classList.add('on');
+  }
 
   function animate() {
     const t = clock.getElapsedTime();
@@ -316,7 +456,6 @@ function initTree3D(canvas) {
     }
 
     if (phase === 'live') {
-      // arbre adulte : balancement doux + pulsation des nœuds
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;
       for (const m of nodes) {
         if (m !== selected) {
@@ -325,17 +464,16 @@ function initTree3D(canvas) {
       }
       controls.apply();
       labels.update(camera, canvas);
-      if (!labels._on) { labels.reveal(); labels._on = true; }
+      if (!labelsOn) { labels.reveal(); labelsOn = true; }
       if (scrub) scrub.value = '1000';
       hud.updateXp(1);
       if (!timelineReady) { timelineReady = true; enableTimeline(); }
     } else {
-      // pousse / scrub / replay : vue de croissance
       grow(age);
       growthCamera(camera, age);
       hud.updateXp(age);
       if (phase === 'auto') hud.checkBeats(age);
-      if (labels._on) { labels.hide(); labels._on = false; }
+      if (labelsOn) { labels.hide(); labelsOn = false; }
       if (phase !== 'scrub' && scrub) scrub.value = String(Math.round(age * 1000));
       if (!timelineReady && phase !== 'auto') { timelineReady = true; enableTimeline(); }
     }
@@ -344,13 +482,6 @@ function initTree3D(canvas) {
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }
-
-  function enableTimeline() {
-    if (scrub) scrub.disabled = false;
-    if (playBtn) playBtn.disabled = false;
-    if (timeline) timeline.classList.add('on');
-  }
-
   animate();
 }
 
