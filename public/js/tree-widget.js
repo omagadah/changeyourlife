@@ -256,6 +256,22 @@ export function initTreeWidget(userData) {
   const name = (userData && (userData.displayName || userData.username) || '').trim();
   const totalXp = model.branches.reduce((s, b) => s + (b.xp || 0), 0);
 
+  // « Qu'est-ce qui a poussé depuis la dernière visite ? » — diff localStorage.
+  const SEEN_KEY = 'cyl_tree_seen_xp';
+  let grownBranches = [];
+  try {
+    const raw = localStorage.getItem(SEEN_KEY);
+    if (raw !== null) {
+      const seen = JSON.parse(raw) || {};
+      grownBranches = model.branches
+        .filter((b) => (b.xp || 0) > (seen[b.key] || 0))
+        .map((b) => ({ key: b.key, label: b.label, delta: (b.xp || 0) - (seen[b.key] || 0) }));
+    }
+    const snap = {};
+    model.branches.forEach((b) => { snap[b.key] = b.xp || 0; });
+    localStorage.setItem(SEEN_KEY, JSON.stringify(snap));
+  } catch (_) { /* localStorage indisponible — sans gravité */ }
+
   // ── Chrome (créé en JS — index.html ne fournit qu'un <div> vide) ──────────
   const canvas = document.createElement('canvas');
   stage.appendChild(canvas);
@@ -557,18 +573,34 @@ export function initTreeWidget(userData) {
   controls.setTargetRadius(118);
   const clock = new THREE.Clock();
   let grown = false;
+  let celebrateStart = null;
+  let celebrateKeys = new Set();
   function frame() {
     const t = clock.getElapsedTime();
     if (!grown) {
       const age = Math.min(1, t / 2.6);
       grow(age);
-      if (age >= 1) { grown = true; grow(1); }
+      if (age >= 1) {
+        grown = true; grow(1);
+        // pousse depuis la dernière visite : pulsation festive + bilan de Lya
+        if (grownBranches.length) {
+          celebrateStart = t;
+          celebrateKeys = new Set(grownBranches.map((g) => g.key));
+          const top = grownBranches.slice().sort((a, b) => b.delta - a.delta).slice(0, 3);
+          const summary = top.map((g) => `${g.label} +${g.delta} XP`).join(' · ');
+          lyaSay(`Depuis ta dernière visite, ton arbre a poussé : ${summary} 🌱`);
+        }
+      }
     }
     if (!controls.isDragging() && !panel.classList.contains('open')) {
       group.rotation.y += 0.0018;
     }
     for (const m of nodes) {
-      const mult = 1 + Math.sin(t * 2 + m.position.y) * 0.08;
+      let mult = 1 + Math.sin(t * 2 + m.position.y) * 0.08;
+      if (celebrateStart != null && celebrateKeys.has(m.userData.key)) {
+        const e = t - celebrateStart;
+        if (e < 3.2) mult *= 1 + (1 - e / 3.2) * (0.55 + 0.35 * Math.sin(e * 10));
+      }
       m.scale.setScalar((m.userData.baseR || 1) * mult);
     }
     controls.apply();

@@ -12,6 +12,7 @@ import { getAuth }      from 'https://www.gstatic.com/firebasejs/10.12.2/firebas
 import { getFirestore, doc, runTransaction } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getFunctions } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
 import { treeFromUserDoc, applyXp, BRANCH_KEYS, LEGACY_DOMAIN_MAP } from '/js/tree-data.js';
+import { showXpReward } from '/js/xp-reward.js';
 
 const FIREBASE_CONFIG = {
   apiKey:            'AIzaSyCvEtaivyC5QD0dGyPKh97IgYU8U8QrrWg',
@@ -77,6 +78,8 @@ export async function awardXp(domain, amount) {
 
       tx.set(ref, patch, { merge: true });
     });
+    // retour visuel : carte de récompense à la couleur de la branche
+    showXpReward(branch, a);
     return { ok: true, branch };
   } catch (e) {
     console.warn('[awardXp] failed', (e && e.message) || e);

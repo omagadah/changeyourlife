@@ -1,5 +1,5 @@
-// service-worker.js - v44 (Lya en conversation libre sur l'arbre)
-const CACHE_NAME = 'changeyourlife-v44';
+// service-worker.js - v45 (carte de récompense XP + pousse des branches)
+const CACHE_NAME = 'changeyourlife-v45';
 const urlsToCache = [
   '/',
   '/app/',
@@ -29,7 +29,8 @@ const urlsToCache = [
   '/js/arbre3d.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
-  '/js/tree-widget.js'
+  '/js/tree-widget.js',
+  '/js/xp-reward.js'
   // Bundle vendor three (~733 KB) volontairement omis ici :
   // - addAll() est atomique, un échec ferait planter tout l'install
   // - mis en cache automatiquement par la stratégie "cache first" du
