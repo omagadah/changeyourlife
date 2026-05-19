@@ -24,36 +24,29 @@ devient *legacy*, les données existantes sont migrées (cf. §6).
 
 ---
 
-## 2 · Les 7 branches — taxonomie en 4 tiers
+## 2 · Les 8 branches — la pyramide de Maslow, verticale
 
-Les 7 branches ne sont **pas 7 pairs équivalents**. Elles forment une
-**hiérarchie de fondations**, synthèse de Maslow (besoins) + Erikson
-(générativité) : on ne s'épanouit pas tant que le socle n'est pas tenu.
-Sur l'arbre, le tier = la **hauteur d'accroche sur le tronc** : les fondations
-sont basses et épaisses (près des racines), la transcendance est haute (la cime).
+**Décision owner (2026-05) : l'arbre EST la pyramide de Maslow étendue.** Les
+8 branches sont les 8 niveaux de besoin, de la base du tronc (besoins vitaux)
+à la cime (transcendance). On ne s'épanouit pas tant que le niveau inférieur
+n'est pas tenu — d'où l'empilement vertical. Affiché sur le site : « inspiré
+de la pyramide de Maslow ».
 
-| Tier | Branches | Équivalent | Hauteur tronc |
-|---|---|---|---|
-| **1 · Fondations** (survie) | **Corps**, **Finances** | Maslow 1-2 (physiologique, sécurité) | basse, épaisse |
-| **2 · Lien** (appartenance) | **Relations**, **Mental** | Maslow 3-4 (amour, estime) | médiane |
-| **3 · Accomplissement** | **Création**, **Sens** | Maslow 5 (réalisation de soi) | haute |
-| **4 · Transcendance** | **Héritage** | Erikson (générativité) — au-delà de Maslow | la cime / le leader |
+| # | Branche | Niveau de Maslow | Couleur | Sous-branches |
+|---|---|---|---|---|
+| 1 | **Physiologique** | besoins vitaux | #2dd4bf | Sommeil · Nutrition · Hydratation · Mouvement · Repos |
+| 2 | **Sécurité** | besoin de sûreté | #fbbf24 | Logement · Stabilité · Finances · Santé · Sérénité |
+| 3 | **Appartenance** | amour, lien | #f87171 | Famille · Amis · Amour · Empathie · Communauté |
+| 4 | **Estime** | reconnaissance | #fb923c | Confiance · Compétence · Réussite · Reconnaissance · Fierté |
+| 5 | **Cognitif** | savoir, comprendre | #a78bfa | Savoir · Curiosité · Compréhension · Apprentissage · Lucidité |
+| 6 | **Esthétique** | beauté, harmonie | #e879c7 | Beauté · Harmonie · Ordre · Créativité · Émerveillement |
+| 7 | **Accomplissement** | réalisation de soi | #38bdf8 | Croissance · Projets · Maîtrise · Authenticité · Vision |
+| 8 | **Transcendance** | au-delà de soi | #c4b5fd | Spiritualité · Contribution · Sens · Transmission · Héritage |
 
-**Détail des branches** et leurs sous-branches sémantiques (les sous-nœuds) :
-
-| Branche | Couleur | Sous-branches |
-|---|---|---|
-| **Corps** | #2dd4bf | Sommeil · Nutrition · Mouvement · Santé · Énergie |
-| **Finances** | #fbbf24 | Revenus · Épargne · Sécurité · Investir |
-| **Relations** | #f87171 | Famille · Amis · Amour · Travail · Communauté |
-| **Mental** | #a78bfa | Émotions · Stress · Clarté · Estime de soi |
-| **Création** | #fb923c | Projets · Apprentissage · Compétences · Expression |
-| **Sens** | #38bdf8 | Valeurs · Spiritualité · Contribution · Raison d'être |
-| **Héritage** | #94a3b8 | Transmission · Trace · Mémoire *(+ alimente les racines)* |
-
-> 🔵 **Question ouverte** : « Estime de soi / Identité » est aujourd'hui sous
-> *Mental*. On pourrait en faire une 8ᵉ branche à part entière (Maslow distingue
-> bien l'estime). À trancher selon le ressenti de l'owner.
+Sur le tronc : Physiologique est la branche la plus basse et la plus épaisse,
+Transcendance est la cime (le leader vertical). « Héritage » est désormais une
+sous-branche de Transcendance — tout en haut, car elle s'épanouit en fin de
+parcours.
 
 ### Les 3 axes de croissance de l'arbre
 

@@ -14,78 +14,95 @@ const REPLAY_SECONDS = 4.5;
 const TOTAL_XP = 24800;
 const easeOut = (x) => 1 - Math.pow(1 - x, 3);
 
-// ── Contenu des 7 dimensions (panneau explicatif) ───────────────────────────
+// ── Contenu des 8 dimensions = 8 niveaux de la pyramide de Maslow ───────────
 const BRANCHES_INFO = {
-  corps: {
-    desc: 'Ton socle. Tout part de là — sans énergie ni sommeil, rien d’autre ne tient debout.',
+  physio: {
+    desc: 'Le besoin vital — la base de tout. Sans énergie ni sommeil, rien d’autre ne tient debout.',
     subs: [
-      ['Sommeil', '7 à 9 h règlent l’humeur, le focus et la santé.'],
-      ['Nutrition', 'Le carburant de ton cerveau et de ton corps.'],
-      ['Mouvement', 'Le corps est fait pour bouger — chaque jour compte.'],
-      ['Santé', 'Écouter les signaux, prévenir plutôt que subir.'],
-      ['Énergie', 'Le résultat vivant des quatre autres.'],
+      ['Sommeil', '7 à 9 h règlent l’humeur, le focus, la santé.'],
+      ['Nutrition', 'Le carburant du cerveau et du corps.'],
+      ['Hydratation', 'Le premier réflexe, trop souvent oublié.'],
+      ['Mouvement', 'Le corps est fait pour bouger, chaque jour.'],
+      ['Repos', 'Récupérer fait partie de la performance.'],
     ],
     modules: 'Déjà sur le site : Sommeil, Habitudes.',
   },
-  finances: {
-    desc: 'La sécurité matérielle. Elle ne fait pas le bonheur, mais elle libère l’esprit.',
+  securite: {
+    desc: 'Se sentir à l’abri — un toit, des ressources, un lendemain serein.',
     subs: [
-      ['Revenus', 'Ce qui entre — ton travail, tes sources.'],
-      ['Épargne', 'Un coussin, c’est de la sérénité.'],
-      ['Sécurité', '3 à 6 mois de dépenses de côté.'],
-      ['Investir', 'Faire travailler ton argent pour demain.'],
+      ['Logement', 'Un lieu stable, le point d’ancrage.'],
+      ['Stabilité', 'Un cadre prévisible où se poser.'],
+      ['Finances', 'Un coussin, c’est de la sérénité.'],
+      ['Santé', 'Prévenir, écouter les signaux du corps.'],
+      ['Sérénité', 'L’esprit libre, parce que la base est tenue.'],
     ],
     modules: 'Module dédié à venir.',
   },
-  relations: {
-    desc: 'Personne ne s’épanouit seul. Tes liens te portent — ou te freinent.',
+  appartenance: {
+    desc: 'Aimer et être aimé. Personne ne s’épanouit seul.',
     subs: [
       ['Famille', 'Tes racines, ton premier cercle.'],
       ['Amis', 'Ceux qui te choisissent.'],
       ['Amour', 'L’intimité, le lien profond.'],
-      ['Travail', 'Les relations qui occupent tes journées.'],
+      ['Empathie', 'Comprendre et accueillir l’autre.'],
       ['Communauté', 'Appartenir à plus grand que soi.'],
     ],
     modules: 'Module dédié à venir.',
   },
-  mental: {
-    desc: 'Ta clarté intérieure. Tes émotions ne sont pas des ordres — ce sont des données.',
+  estime: {
+    desc: 'Être reconnu — et d’abord se reconnaître soi-même de la valeur.',
     subs: [
-      ['Émotions', 'Les nommer pour les réguler.'],
-      ['Stress', 'Le doser, en faire un moteur.'],
-      ['Clarté', 'Penser net, décider juste.'],
-      ['Estime', 'La valeur que tu te donnes.'],
+      ['Confiance', 'Croire en sa capacité d’agir.'],
+      ['Compétence', 'Ce que tu sais faire, vraiment.'],
+      ['Réussite', 'Atteindre ce que tu vises.'],
+      ['Reconnaissance', 'Être vu et apprécié pour ce que tu fais.'],
+      ['Fierté', 'Le respect que tu te portes.'],
     ],
-    modules: 'Déjà sur le site : Humeur, Méditation, Journal, Gratitude.',
+    modules: 'Déjà sur le site : Autoévaluation, Bilan.',
   },
-  creation: {
-    desc: 'Ce que tu construis, apprends et exprimes. La trace active de qui tu deviens.',
+  cognitif: {
+    desc: 'Le besoin de savoir, de comprendre, d’explorer le monde et soi.',
     subs: [
-      ['Projets', 'Ce que tu mets au monde.'],
+      ['Savoir', 'Nourrir l’esprit en continu.'],
+      ['Curiosité', 'Le moteur de toute découverte.'],
+      ['Compréhension', 'Relier les choses, voir clair.'],
       ['Apprentissage', 'Grandir, toujours.'],
-      ['Compétences', 'Ce que tu sais faire, vraiment.'],
-      ['Expression', 'Dire qui tu es.'],
+      ['Lucidité', 'Penser net, décider juste.'],
     ],
-    modules: 'Déjà sur le site : Objectifs, Codex.',
+    modules: 'Déjà sur le site : Codex, Journal.',
   },
-  sens: {
-    desc: 'Le pourquoi. Ce qui donne une direction à tout le reste.',
+  esthetique: {
+    desc: 'Le besoin de beauté, d’harmonie et d’ordre — autour de soi et en soi.',
     subs: [
-      ['Valeurs', 'Tes boussoles non négociables.'],
+      ['Beauté', 'Ce qui élève le regard.'],
+      ['Harmonie', 'L’équilibre entre les choses.'],
+      ['Ordre', 'Un cadre clair libère l’esprit.'],
+      ['Créativité', 'Mettre de la forme au monde.'],
+      ['Émerveillement', 'Savoir encore s’étonner.'],
+    ],
+    modules: 'Module dédié à venir.',
+  },
+  accomplissement: {
+    desc: 'Devenir pleinement soi — réaliser son potentiel.',
+    subs: [
+      ['Croissance', 'Toujours un cran plus loin.'],
+      ['Projets', 'Ce que tu mets au monde.'],
+      ['Maîtrise', 'L’excellence dans ce qui compte.'],
+      ['Authenticité', 'Vivre aligné avec qui tu es.'],
+      ['Vision', 'Savoir où tu vas.'],
+    ],
+    modules: 'Déjà sur le site : Objectifs, Méditation.',
+  },
+  transcendance: {
+    desc: 'Aller au-delà de soi — donner du sens, contribuer, transmettre. La cime s’épanouit tard, et c’est normal.',
+    subs: [
       ['Spiritualité', 'Le lien à plus vaste que soi.'],
       ['Contribution', 'Ce que tu apportes au monde.'],
-      ['Raison d’être', 'Ce pour quoi tu te lèves.'],
-    ],
-    modules: 'Déjà sur le site : Codex.',
-  },
-  heritage: {
-    desc: 'Ce que tu transmets, la trace que tu laisses. Une branche de fin de parcours — elle s’épanouit tard, et c’est normal.',
-    subs: [
+      ['Sens', 'Le pourquoi de tout le reste.'],
       ['Transmission', 'Ce que tu passes aux autres.'],
-      ['Trace', 'Ce qui reste après toi.'],
-      ['Mémoire', 'Ton histoire, racontée.'],
+      ['Héritage', 'La trace que tu laisses.'],
     ],
-    modules: 'Alimentée par la frise chronologique, à venir.',
+    modules: 'Déjà sur le site : Gratitude. Frise chronologique à venir.',
   },
 };
 

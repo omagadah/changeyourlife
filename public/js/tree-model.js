@@ -10,28 +10,38 @@
 //   - Hiérarchie de groupes (tronc → branches → sous-branches) → l'arbre peut
 //     POUSSER : buildTree renvoie grow(age) qui anime sapling → centenaire.
 
-// ── Les 7 dimensions, en 4 tiers (Corps = la base) ──────────────────────────
+// ── Les 8 branches = les 8 niveaux de la pyramide de Maslow (étendue) ───────
+// De la base du tronc (besoins vitaux) à la cime (transcendance). C'est
+// l'épine dorsale du modèle : l'arbre EST la pyramide de Maslow, verticale.
 export const DIMENSIONS = [
-  { key: 'corps',     label: 'Corps',     color: 0x2dd4bf, tier: 1, azimuth: 205, attach: 0.22, elev: 46,
-    sub: ['Sommeil', 'Nutrition', 'Mouvement', 'Santé', 'Énergie'] },
-  { key: 'finances',  label: 'Finances',  color: 0xfbbf24, tier: 1, azimuth:  35, attach: 0.40, elev: 47,
-    sub: ['Revenus', 'Épargne', 'Sécurité', 'Investir'] },
-  { key: 'relations', label: 'Relations', color: 0xf87171, tier: 2, azimuth: 300, attach: 0.55, elev: 39,
-    sub: ['Famille', 'Amis', 'Amour', 'Travail', 'Communauté'] },
-  { key: 'mental',    label: 'Mental',    color: 0xa78bfa, tier: 2, azimuth: 110, attach: 0.66, elev: 41,
-    sub: ['Émotions', 'Stress', 'Clarté', 'Estime'] },
-  { key: 'creation',  label: 'Création',  color: 0xfb923c, tier: 3, azimuth: 235, attach: 0.78, elev: 34,
-    sub: ['Projets', 'Apprentissage', 'Compétences', 'Expression'] },
-  { key: 'sens',      label: 'Sens',      color: 0x38bdf8, tier: 3, azimuth: 140, attach: 0.89, elev: 32,
-    sub: ['Valeurs', 'Spiritualité', 'Contribution', 'Raison d’être'] },
-  { key: 'heritage',  label: 'Héritage',  color: 0x94a3b8, tier: 4, azimuth:   0, attach: 1.00, elev: 80,
-    sub: ['Transmission', 'Trace', 'Mémoire'] },
+  { key: 'physio',          label: 'Physiologique',  color: 0x2dd4bf, tier: 1, azimuth: 205, attach: 0.20, elev: 47,
+    sub: ['Sommeil', 'Nutrition', 'Hydratation', 'Mouvement', 'Repos'] },
+  { key: 'securite',        label: 'Sécurité',       color: 0xfbbf24, tier: 1, azimuth:  35, attach: 0.32, elev: 46,
+    sub: ['Logement', 'Stabilité', 'Finances', 'Santé', 'Sérénité'] },
+  { key: 'appartenance',    label: 'Appartenance',   color: 0xf87171, tier: 2, azimuth: 300, attach: 0.44, elev: 41,
+    sub: ['Famille', 'Amis', 'Amour', 'Empathie', 'Communauté'] },
+  { key: 'estime',          label: 'Estime',         color: 0xfb923c, tier: 2, azimuth: 110, attach: 0.56, elev: 40,
+    sub: ['Confiance', 'Compétence', 'Réussite', 'Reconnaissance', 'Fierté'] },
+  { key: 'cognitif',        label: 'Cognitif',       color: 0xa78bfa, tier: 3, azimuth: 250, attach: 0.67, elev: 36,
+    sub: ['Savoir', 'Curiosité', 'Compréhension', 'Apprentissage', 'Lucidité'] },
+  { key: 'esthetique',      label: 'Esthétique',     color: 0xe879c7, tier: 3, azimuth: 140, attach: 0.78, elev: 34,
+    sub: ['Beauté', 'Harmonie', 'Ordre', 'Créativité', 'Émerveillement'] },
+  { key: 'accomplissement', label: 'Accomplissement',color: 0x38bdf8, tier: 4, azimuth:  20, attach: 0.89, elev: 33,
+    sub: ['Croissance', 'Projets', 'Maîtrise', 'Authenticité', 'Vision'] },
+  { key: 'transcendance',   label: 'Transcendance',  color: 0xc4b5fd, tier: 4, azimuth:   0, attach: 1.00, elev: 80,
+    sub: ['Spiritualité', 'Contribution', 'Sens', 'Transmission', 'Héritage'] },
 ];
 
 // ── Modèle de démo : un arbre centenaire (la landing montre l'aboutissement) ─
 export function createDemoModel() {
-  const dev = { corps: 95, finances: 70, relations: 82, mental: 86, creation: 76, sens: 74, heritage: 55 };
-  const vit = { corps: 80, finances: 60, relations: 74, mental: 78, creation: 68, sens: 66, heritage: 58 };
+  const dev = {
+    physio: 96, securite: 84, appartenance: 88, estime: 80,
+    cognitif: 74, esthetique: 66, accomplissement: 70, transcendance: 52,
+  };
+  const vit = {
+    physio: 82, securite: 70, appartenance: 78, estime: 72,
+    cognitif: 66, esthetique: 60, accomplissement: 64, transcendance: 56,
+  };
   return {
     stage: 'centenaire',
     branches: DIMENSIONS.map((d) => ({
@@ -276,23 +286,6 @@ export function buildTree(THREE, model) {
     if (b.state === 'active' && b.vitality > 8) {
       scatterLeaves(tipWorld, Math.round((b.vitality / 100) * 11), b.color, 4.6, branchBirth + 0.28);
     }
-  }
-
-  // ── 8ᵉ section : une branche en émergence (dimension à venir) ────────────
-  // L'arbre n'est pas figé à 7 (cf. ARCHITECTURE.md §9). Une pousse pâle,
-  // près de la cime, signale qu'une nouvelle dimension peut éclore.
-  {
-    const emOrigin = trunkCurve.getPoint(0.94);
-    const emGroup = new THREE.Group();
-    emGroup.position.copy(emOrigin);
-    emGroup.scale.setScalar(0.0001);
-    trunkGroup.add(emGroup);
-    growables.push({ obj: emGroup, birth: 0.72, dur: 0.14, target: 1 });
-    const emCurve = localCurve(THREE, new THREE.Vector3(0.5, 1, -0.32), 13, rnd);
-    emGroup.add(new THREE.Mesh(taperedTube(THREE, emCurve, 0.5, 0.16, 12, 6), barkDormant));
-    emGroup.add(espLine(emCurve, 5));
-    const emNode = espNode(emGroup, emCurve.getPoint(1), 0xb9c7da, 0.55, 0.5, 12);
-    growables.push({ obj: emNode, birth: 0.88, dur: 0.1, target: 0.55 });
   }
 
   // ── Feuilles : InstancedMesh global, croissance par instance ─────────────

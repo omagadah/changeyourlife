@@ -18,15 +18,18 @@ try { admin.initializeApp(); } catch (e) { /* already initialized */ }
 setGlobalOptions({ maxInstances: 10 });
 
 // ── XP ─────────────────────────────────────────────────────────────────────
-// Arbre de vie : 7 branches (modèle `tree`, cf. public/js/tree-data.js)
-const TREE_BRANCHES = ["corps", "finances", "relations", "mental", "creation", "sens", "heritage"];
-// anciennes clés 4-axes → 7 branches
+// Arbre de vie : 8 branches = 8 niveaux de Maslow (cf. public/js/tree-data.js)
+const TREE_BRANCHES = [
+	"physio", "securite", "appartenance", "estime",
+	"cognitif", "esthetique", "accomplissement", "transcendance",
+];
+// anciennes clés 4-axes → 8 branches Maslow (au mieux)
 const LEGACY_TO_BRANCH: Record<string, string> = {
-	body: "corps", heart: "relations", etre: "mental", mind: "mental", order: "creation",
+	body: "physio", heart: "appartenance", etre: "cognitif", mind: "cognitif", order: "securite",
 };
-// branche → slot legacy `levels` (finances/sens/heritage n'en ont pas)
+// branche → slot legacy `levels` (les 4 autres branches n'en ont pas)
 const BRANCH_TO_LEGACY: Record<string, "body" | "heart" | "etre" | "order"> = {
-	corps: "body", relations: "heart", mental: "etre", creation: "order",
+	physio: "body", appartenance: "heart", cognitif: "etre", securite: "order",
 };
 
 interface LevelState { level: number; xp: number; nextXp: number }

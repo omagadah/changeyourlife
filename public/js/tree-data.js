@@ -24,9 +24,9 @@ import { DIMENSIONS } from '/js/tree-model.js';
 export const TREE_SCHEMA_VERSION = 1;
 export const BRANCH_KEYS = DIMENSIONS.map((d) => d.key);
 
-// Modèle 4-axes legacy → 7 branches (cf. ARCHITECTURE.md §8.2)
+// Modèle 4-axes legacy → 8 branches Maslow (au mieux — données pré-refonte)
 export const LEGACY_DOMAIN_MAP = {
-  body: 'corps', heart: 'relations', etre: 'mental', mind: 'mental', order: 'creation',
+  body: 'physio', heart: 'appartenance', etre: 'cognitif', mind: 'cognitif', order: 'securite',
 };
 
 const XP_CAP = 10000;          // garde-fou par appel
