@@ -147,35 +147,46 @@ un signal exploitable par Lya.
 
 ---
 
-## 5 · Évolution du modèle Firestore
+## 5 · Le modèle Firestore `tree` (implémenté — Étape B)
 
-Actuel : `users/{uid}.levels = { body, heart, etre, order }`.
-
-Proposé :
+Schéma de `users/{uid}.tree` :
 ```
 users/{uid}.tree = {
-  stage: 'sapling',
+  v: 1,                          // version du schéma
+  createdAt: <ms epoch>,
   branches: {
-    corps:     { level, xp, nextXp, lastActionAt, vitality },
-    mental:    { ... },
-    relations: { ... },
-    finances:  { ... },
-    sens:      { ... },
-    creation:  { ... },
-    heritage:  { ... }
+    corps:     { xp: <number cumulé>, lastActionAt: <ms epoch> },
+    finances:  { ... }, relations, mental, creation, sens, heritage
   }
 }
 ```
-Impacts :
-- `functions/src/index.ts` — `addXp` accepte les 7 clés de branche + met à jour
-  `lastActionAt` ; ajout possible d'un calcul de `vitality`.
-- `firestore.rules` — `noXpTampering()` protège désormais `tree` (au lieu de `levels`).
-- `firebase.js` — `awardXp` et `DOMAIN_ALIASES` mis à jour.
 
-**Migration des données existantes** (décision §8.2) : `body → corps` ·
-`heart → relations` · `etre → mental` · `order → creation` ; branches neuves à 0 :
-`finances`, `sens`, `heritage`. Migration douce : lecture unique de l'ancien
-`levels` pour amorcer `tree`, puis on n'écrit plus que `tree`.
+**Principe : on ne stocke que le brut.** Une branche = `xp` cumulé +
+`lastActionAt`. Tout le reste est **dérivé**, jamais stocké :
+- `level` ← `xp` (seuil k = 100 + k·20)
+- `dev` 0-100 ← `xp` (courbe saturante : un arbre centenaire frôle 100)
+- `vitality` 0-100 ← `lastActionAt` (100 après une action, → 0 en ~21 j de négligence)
+- `stage` (sapling/jeune/mature/centenaire) ← xp total toutes branches
+- `state` (active/dormant) ← `dev`
+
+→ Aucune redondance, aucune désynchronisation possible.
+
+**Implémentation :**
+- `public/js/tree-data.js` — le socle : schéma, `createTree()`,
+  `migrateFromLevels()`, `treeFromUserDoc()`, dérivations, `applyXp()` (pur),
+  `toVisualModel()` (→ alimente `buildTree()` de tree-model.js).
+- `functions/src/index.ts` — `addXp` écrit `tree.branches[branche].xp` +
+  `lastActionAt` (transactionnel, cap 10 000/appel). Accepte les 7 clés ET les
+  anciennes (mapping legacy). **Dual-write** : met aussi `levels` à jour tant
+  que d'anciennes pages le lisent.
+- `firestore.rules` — `noXpTampering()` interdit l'écriture client de `tree`
+  (seul `addXp`, admin SDK, l'écrit).
+
+**Migration** (décision §8.2) : `body→corps` · `heart→relations` ·
+`etre→mental` · `order→creation` ; `finances`/`sens`/`heritage` à 0. Faite à la
+volée par `treeFromUserDoc()` (si pas de `tree`, on lit `levels`).
+
+⚠️ Activation : `firebase deploy --only functions,firestore`.
 
 ---
 

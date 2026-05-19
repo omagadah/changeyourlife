@@ -23,7 +23,7 @@ service cloud.firestore {
     // passer par la Cloud Function `addXp` (admin SDK = bypass des rules).
     function noXpTampering() {
       let changed = request.resource.data.diff(resource.data).affectedKeys();
-      let forbidden = ['levels', 'xp_body', 'xp_heart', 'xp_etre', 'xp_order', 'xp_mind'];
+      let forbidden = ['tree', 'levels', 'xp_body', 'xp_heart', 'xp_etre', 'xp_order', 'xp_mind'];
       return !changed.hasAny(forbidden);
     }
 

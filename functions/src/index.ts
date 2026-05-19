@@ -18,7 +18,17 @@ try { admin.initializeApp(); } catch (e) { /* already initialized */ }
 setGlobalOptions({ maxInstances: 10 });
 
 // ── XP ─────────────────────────────────────────────────────────────────────
-type Domain = "body" | "etre" | "heart" | "order" | "mind";
+// Arbre de vie : 7 branches (modèle `tree`, cf. public/js/tree-data.js)
+const TREE_BRANCHES = ["corps", "finances", "relations", "mental", "creation", "sens", "heritage"];
+// anciennes clés 4-axes → 7 branches
+const LEGACY_TO_BRANCH: Record<string, string> = {
+	body: "corps", heart: "relations", etre: "mental", mind: "mental", order: "creation",
+};
+// branche → slot legacy `levels` (finances/sens/heritage n'en ont pas)
+const BRANCH_TO_LEGACY: Record<string, "body" | "heart" | "etre" | "order"> = {
+	corps: "body", relations: "heart", mental: "etre", creation: "order",
+};
+
 interface LevelState { level: number; xp: number; nextXp: number }
 interface Levels { body: LevelState; etre?: LevelState; mind?: LevelState; heart: LevelState; order: LevelState }
 
@@ -51,35 +61,53 @@ export const addXp = onCall({ cors: true }, async (req) => {
 		throw new HttpsError("unauthenticated", "Auth required");
 	}
 	const { domain, amount } = req.data || {};
-	const validDomains: Domain[] = ["body", "etre", "heart", "order", "mind"];
-	if (!validDomains.includes(domain)) {
+	// accepte les 7 clés de branche ET les anciennes clés 4-axes
+	const branch = TREE_BRANCHES.includes(domain)
+		? domain
+		: LEGACY_TO_BRANCH[domain];
+	if (!branch) {
 		throw new HttpsError("invalid-argument", "invalid-domain");
 	}
 	const inc = Number(amount || 0);
 	if (!Number.isFinite(inc) || inc <= 0 || inc > 10000) {
 		throw new HttpsError("invalid-argument", "invalid-amount");
 	}
+	const legacyKey = BRANCH_TO_LEGACY[branch] || null;
 
 	const db = admin.firestore();
 	const ref = db.collection("users").doc(uid);
 	await db.runTransaction(async (tx) => {
 		const snap = await tx.get(ref);
 		const data = snap.exists ? (snap.data() as any) : {};
-		const levels: Levels = normalizeLevels(data.levels || defaultLevels());
-		const key: "body" | "etre" | "heart" | "order" = (domain === "mind" ? "etre" : domain);
-		const cur = (levels as any)[key] || { level: 0, xp: 0, nextXp: 100 };
-		let xp = cur.xp + inc;
-		let level = cur.level;
-		let nextXp = cur.nextXp || nextThreshold(level);
+		const now = Date.now();
 
-		while (xp >= nextXp) {
-			xp -= nextXp;
-			level += 1;
-			nextXp = nextThreshold(level);
+		// 1. `tree` — modèle de données source de vérité (xp cumulé par branche)
+		const tree = (data.tree && data.tree.branches)
+			? data.tree
+			: { v: 1, createdAt: now, branches: {} as any };
+		const tb = tree.branches[branch] || { xp: 0, lastActionAt: 0 };
+		tb.xp = (tb.xp || 0) + inc;
+		tb.lastActionAt = now;
+		tree.branches[branch] = tb;
+		const patch: any = { tree };
+
+		// 2. `levels` — miroir legacy (tant que d'anciennes pages le lisent)
+		if (legacyKey) {
+			const levels: Levels = normalizeLevels(data.levels || defaultLevels());
+			const cur = (levels as any)[legacyKey] || { level: 0, xp: 0, nextXp: 100 };
+			let xp = cur.xp + inc;
+			let level = cur.level;
+			let nextXp = cur.nextXp || nextThreshold(level);
+			while (xp >= nextXp) {
+				xp -= nextXp;
+				level += 1;
+				nextXp = nextThreshold(level);
+			}
+			(levels as any)[legacyKey] = { level, xp, nextXp };
+			patch.levels = levels;
 		}
 
-		(levels as any)[key] = { level, xp, nextXp };
-		tx.set(ref, { levels }, { merge: true });
+		tx.set(ref, patch, { merge: true });
 	});
 
 	return { ok: true };
