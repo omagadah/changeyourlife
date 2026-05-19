@@ -18,13 +18,16 @@ service cloud.firestore {
         && data.userId == request.auth.uid;
     }
 
-    // Empêche le client de modifier directement le champ `levels` ou les anciens
-    // champs plats `xp_*` du document utilisateur. Les écritures XP doivent
-    // passer par la Cloud Function `addXp` (admin SDK = bypass des rules).
-    function noXpTampering() {
-      let changed = request.resource.data.diff(resource.data).affectedKeys();
-      let forbidden = ['tree', 'levels', 'xp_body', 'xp_heart', 'xp_etre', 'xp_order', 'xp_mind'];
-      return !changed.hasAny(forbidden);
+    // L'XP de l'arbre (`tree`) et son miroir legacy (`levels`) sont écrits
+    // côté client (projet sur plan Firebase gratuit — Cloud Functions non
+    // déployables). On vérifie seulement qu'ils restent des maps bien formées.
+    // Les anciens champs plats `xp_*` restent interdits côté client.
+    function xpFieldsValid() {
+      let d = request.resource.data;
+      let changed = d.diff(resource.data).affectedKeys();
+      return !changed.hasAny(['xp_body', 'xp_heart', 'xp_etre', 'xp_order', 'xp_mind'])
+        && (!('tree' in d) || d.tree is map)
+        && (!('levels' in d) || d.levels is map);
     }
 
     // Bilan hebdomadaire : 4 réflexions (q1..q4) + métadonnées.
@@ -55,7 +58,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read:   if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId) && noXpTampering();
+      allow update: if isSignedIn() && isOwner(userId) && xpFieldsValid();
       // (no delete — préférable de garder l'historique)
 
       match /journal/{entryId} {

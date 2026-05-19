@@ -1,5 +1,5 @@
-// service-worker.js - v42 (XP câblé de bout en bout → branches Maslow)
-const CACHE_NAME = 'changeyourlife-v42';
+// service-worker.js - v43 (XP écrit côté client — plan Firebase gratuit)
+const CACHE_NAME = 'changeyourlife-v43';
 const urlsToCache = [
   '/',
   '/app/',

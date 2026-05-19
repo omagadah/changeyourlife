@@ -168,18 +168,19 @@ users/{uid}.tree = {
 - `public/js/tree-data.js` — le socle : schéma, `createTree()`,
   `migrateFromLevels()`, `treeFromUserDoc()`, dérivations, `applyXp()` (pur),
   `toVisualModel()` (→ alimente `buildTree()` de tree-model.js).
-- `functions/src/index.ts` — `addXp` écrit `tree.branches[branche].xp` +
-  `lastActionAt` (transactionnel, cap 10 000/appel). Accepte les 7 clés ET les
-  anciennes (mapping legacy). **Dual-write** : met aussi `levels` à jour tant
-  que d'anciennes pages le lisent.
-- `firestore.rules` — `noXpTampering()` interdit l'écriture client de `tree`
-  (seul `addXp`, admin SDK, l'écrit).
+- `public/js/firebase.js` — `awardXp()` écrit `tree` **côté client** via une
+  transaction Firestore (cap 10 000/appel, **dual-write** `levels`). Le projet
+  est sur le plan Firebase **gratuit** (Spark) : les Cloud Functions ne sont
+  pas déployables. `addXp` (`functions/src/index.ts`) reste la **référence
+  canonique** — logique identique — pour un futur passage en Blaze.
+- `firestore.rules` — `xpFieldsValid()` autorise l'owner à écrire son `tree`
+  (et `levels`), en vérifiant juste que ce sont des maps. L'anti-triche
+  serveur (écriture XP réservée à l'admin SDK) reviendra avec le plan Blaze.
 
-**Migration** (décision §8.2) : `body→corps` · `heart→relations` ·
-`etre→mental` · `order→creation` ; `finances`/`sens`/`heritage` à 0. Faite à la
-volée par `treeFromUserDoc()` (si pas de `tree`, on lit `levels`).
+**Migration** (décision §8.2) : ancien `levels` 4-axes → 8 branches Maslow,
+faite à la volée par `treeFromUserDoc()` (si pas de `tree`, on lit `levels`).
 
-⚠️ Activation : `firebase deploy --only functions,firestore`.
+⚠️ Activation : `npm run deploy:firestore` (déploie les rules — gratuit).
 
 ---
 
