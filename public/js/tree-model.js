@@ -3,28 +3,38 @@
 // en paramètre → réutilisable (landing /arbre/ ET intérieur du site post-login).
 //
 // Principe (cf. docs/ARCHITECTURE.md) : l'arbre EST un graphe.
-//   - 7 branches maîtresses = les 7 dimensions de vie.
-//   - chaque branche porte dev (développement, cumulatif → longueur/épaisseur)
-//     et vitality (vitalité, décroît si négligé → feuilles/couleur).
-//   - state : 'active' | 'dormant' | 'broken'.
-// Le corps organique (tubes) ET l'exosquelette ESP (lignes + nœuds) sont
-// dérivés du MÊME graphe → alignement parfait par construction.
+//   - 7 branches maîtresses = 7 dimensions, organisées en 4 tiers
+//     (Maslow + Erikson) : le tier pilote la hauteur d'accroche sur le tronc.
+//   - chaque branche a des sous-branches SÉMANTIQUES (Relations → Famille,
+//     Amis, Amour…). Le nombre de sous-branches « écloses » dépend de dev.
+//   - dev (cumulatif → longueur/épaisseur) · vitality (→ feuilles/couleur)
+//     · state ('active' | 'dormant' | 'broken').
+// Corps organique (tubes) ET exosquelette ESP (lignes + nœuds) dérivent du
+// MÊME graphe → alignement parfait par construction.
 
-// ── Les 7 dimensions + leur implantation sur le tronc ───────────────────────
+// ── Les 7 dimensions, en 4 tiers ────────────────────────────────────────────
+// tier 1 = fondations (bas du tronc, épais) … tier 4 = transcendance (cime).
 export const DIMENSIONS = [
-  { key: 'corps',     label: 'Corps',     color: 0x2dd4bf, azimuth: 200, attach: 0.42, elev: 40 },
-  { key: 'mental',    label: 'Mental',    color: 0xa78bfa, azimuth:  40, attach: 0.52, elev: 44 },
-  { key: 'relations', label: 'Relations', color: 0xf87171, azimuth: 320, attach: 0.60, elev: 37 },
-  { key: 'finances',  label: 'Finances',  color: 0xfbbf24, azimuth:  95, attach: 0.69, elev: 41 },
-  { key: 'sens',      label: 'Sens',      color: 0x38bdf8, azimuth: 250, attach: 0.79, elev: 33 },
-  { key: 'creation',  label: 'Création',  color: 0xfb923c, azimuth: 150, attach: 0.88, elev: 34 },
-  { key: 'heritage',  label: 'Héritage',  color: 0x94a3b8, azimuth:   0, attach: 1.00, elev: 78 },
+  { key: 'corps',     label: 'Corps',     color: 0x2dd4bf, tier: 1, azimuth: 205, attach: 0.28, elev: 44,
+    sub: ['Sommeil', 'Nutrition', 'Mouvement', 'Santé', 'Énergie'] },
+  { key: 'finances',  label: 'Finances',  color: 0xfbbf24, tier: 1, azimuth:  30, attach: 0.40, elev: 46,
+    sub: ['Revenus', 'Épargne', 'Sécurité', 'Investir'] },
+  { key: 'relations', label: 'Relations', color: 0xf87171, tier: 2, azimuth: 300, attach: 0.55, elev: 39,
+    sub: ['Famille', 'Amis', 'Amour', 'Travail', 'Communauté'] },
+  { key: 'mental',    label: 'Mental',    color: 0xa78bfa, tier: 2, azimuth: 110, attach: 0.65, elev: 41,
+    sub: ['Émotions', 'Stress', 'Clarté', 'Estime'] },
+  { key: 'creation',  label: 'Création',  color: 0xfb923c, tier: 3, azimuth: 235, attach: 0.77, elev: 34,
+    sub: ['Projets', 'Apprentissage', 'Compétences', 'Expression'] },
+  { key: 'sens',      label: 'Sens',      color: 0x38bdf8, tier: 3, azimuth: 140, attach: 0.88, elev: 32,
+    sub: ['Valeurs', 'Spiritualité', 'Contribution', 'Raison d’être'] },
+  { key: 'heritage',  label: 'Héritage',  color: 0x94a3b8, tier: 4, azimuth:   0, attach: 1.00, elev: 80,
+    sub: ['Transmission', 'Trace', 'Mémoire'] },
 ];
 
-// ── Modèle de démo : un jeune arbre (4 dimensions actives, 3 dormantes) ─────
+// ── Modèle de démo : un jeune arbre ─────────────────────────────────────────
 export function createDemoModel() {
-  const dev = { corps: 38, mental: 44, relations: 9, finances: 6, sens: 30, creation: 33, heritage: 4 };
-  const vit = { corps: 64, mental: 72, relations: 22, finances: 14, sens: 52, creation: 56, heritage: 10 };
+  const dev = { corps: 42, finances: 8, relations: 10, mental: 46, creation: 34, sens: 28, heritage: 5 };
+  const vit = { corps: 66, finances: 14, relations: 20, mental: 70, creation: 56, sens: 50, heritage: 10 };
   return {
     stage: 'sapling',
     branches: DIMENSIONS.map((d) => ({
@@ -79,20 +89,19 @@ function taperedTube(THREE, curve, r0, r1, tubular, radial) {
   return g;
 }
 
-// ── Construit la courbe d'une branche (origine, direction, longueur) ────────
+// ── Courbe d'une branche (origine, direction, longueur) ─────────────────────
 function branchCurve(THREE, origin, dir, length, rnd) {
-  const d = dir.clone().normalize();
-  // les branches se redressent vers le haut en grandissant (gravitropisme)
   const up = new THREE.Vector3(0, 1, 0);
   const pts = [origin.clone()];
-  const steps = 4;
   let p = origin.clone();
-  let cur = d.clone();
+  let cur = dir.clone().normalize();
+  const steps = 4;
   for (let i = 1; i <= steps; i++) {
-    cur.lerp(up, 0.12).normalize();                       // redressement
-    const jit = (rnd() - 0.5) * length * 0.10;            // irrégularité
-    const seg = cur.clone().multiplyScalar(length / steps);
-    p = p.clone().add(seg).add(new THREE.Vector3(jit, 0, jit));
+    cur.lerp(up, 0.12).normalize();
+    const jit = (rnd() - 0.5) * length * 0.1;
+    p = p.clone()
+      .add(cur.clone().multiplyScalar(length / steps))
+      .add(new THREE.Vector3(jit, 0, jit));
     pts.push(p);
   }
   return new THREE.CatmullRomCurve3(pts);
@@ -100,91 +109,66 @@ function branchCurve(THREE, origin, dir, length, rnd) {
 
 /**
  * Construit l'objet 3D de l'arbre depuis un modèle.
- * @returns {{ group, nodes }} group = THREE.Group ; nodes = sphères cliquables.
+ * @returns {{ group, nodes }} group = THREE.Group ; nodes = 7 sphères cliquables.
  */
 export function buildTree(THREE, model) {
   const group = new THREE.Group();
-  const rnd = rng(0x4c594c); // graine fixe → arbre stable
+  const rnd = rng(0x4c594c);
 
-  // Matériaux
   const barkActive = new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 0.9 });
   const barkDormant = new THREE.MeshStandardMaterial({ color: 0x3d4657, roughness: 1 });
   const barkBroken = new THREE.MeshStandardMaterial({ color: 0x7a2e2e, roughness: 0.9 });
   const barkOf = (st) => (st === 'broken' ? barkBroken : st === 'dormant' ? barkDormant : barkActive);
 
-  // Collecteurs ESP + feuilles
   const espSegs = [];
   const espAdd = (a, b) => espSegs.push(a.x, a.y, a.z, b.x, b.y, b.z);
-  const leafMatrix = [];
-  const leafColor = [];
-
-  // ── Tronc ─────────────────────────────────────────────────────────────────
-  const trunkH = 16 + (model.stage === 'sapling' ? 8 : 16);
-  const trunkCurve = branchCurve(
-    THREE, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.04, 1, 0.02), trunkH, rnd);
-  group.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 2.4, 0.9, 24, 10), barkActive));
-  for (let i = 0; i <= 8; i++) {
-    espAdd(trunkCurve.getPoint(i / 8), trunkCurve.getPoint(Math.min(1, (i + 1) / 8)));
-  }
-
-  // ── Feuilles : petits amas près d'un point ───────────────────────────────
+  const leafMat = [], leafCol = [];
   const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(),
-        _s = new THREE.Vector3(), _p = new THREE.Vector3(), _col = new THREE.Color();
+        _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
+
   function scatterLeaves(center, count, color, spread) {
     for (let i = 0; i < count; i++) {
-      _p.set(
-        center.x + (rnd() - 0.5) * spread,
-        center.y + (rnd() - 0.5) * spread,
-        center.z + (rnd() - 0.5) * spread
-      );
+      _p.set(center.x + (rnd() - 0.5) * spread,
+             center.y + (rnd() - 0.5) * spread,
+             center.z + (rnd() - 0.5) * spread);
       _q.setFromEuler(new THREE.Euler(rnd() * 3, rnd() * 3, rnd() * 3));
       const sc = 0.7 + rnd() * 0.7;
       _s.set(sc, sc * 0.55, sc);
       _m.compose(_p, _q, _s);
-      leafMatrix.push(_m.clone());
-      _col.setHex(color);
-      leafColor.push(_col.r, _col.g, _col.b);
+      leafMat.push(_m.clone());
+      _c.setHex(color);
+      leafCol.push(_c.r, _c.g, _c.b);
     }
   }
 
-  // ── Une branche (récursive : maîtresse → sous-branches) ──────────────────
+  // petite sphère ESP (nœud)
+  const ballGeo = new THREE.SphereGeometry(1, 16, 12);
+  function espNode(pos, color, radius, opacity, order) {
+    const core = new THREE.Mesh(ballGeo, new THREE.MeshBasicMaterial({
+      color, depthTest: false, transparent: true, opacity }));
+    core.scale.setScalar(radius);
+    core.position.copy(pos);
+    core.renderOrder = order;
+    const halo = new THREE.Mesh(ballGeo, new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: opacity * 0.3,
+      blending: THREE.AdditiveBlending, depthTest: false }));
+    halo.scale.setScalar(radius * 2.7);
+    halo.position.copy(pos);
+    halo.renderOrder = order - 1;
+    group.add(halo, core);
+    return core;
+  }
+
+  // ── Tronc ─────────────────────────────────────────────────────────────────
+  const trunkH = model.stage === 'sapling' ? 26 : 38;
+  const trunkCurve = branchCurve(
+    THREE, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.04, 1, 0.02), trunkH, rnd);
+  group.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 2.6, 0.9, 26, 10), barkActive));
+  for (let i = 0; i < 8; i++) espAdd(trunkCurve.getPoint(i / 8), trunkCurve.getPoint((i + 1) / 8));
+  espNode(trunkCurve.getPoint(0).setY(0.5), 0x9ecaff, 1.3, 1, 12);
+
+  // ── Une branche maîtresse + ses sous-branches sémantiques ────────────────
   const nodes = [];
-  function growBranch(origin, dir, length, r0, r1, depth, branch) {
-    const curve = branchCurve(THREE, origin, dir, length, rnd);
-    const tub = depth === 1 ? 18 : 12;
-    group.add(new THREE.Mesh(
-      taperedTube(THREE, curve, r0, r1, tub, depth === 1 ? 8 : 6), barkOf(branch.state)));
-
-    // ESP : ligne le long de la branche
-    for (let i = 0; i <= 6; i++) {
-      espAdd(curve.getPoint(i / 6), curve.getPoint(Math.min(1, (i + 1) / 6)));
-    }
-    const tip = curve.getPoint(1);
-
-    // feuilles au bout (si vivante)
-    if (branch.state === 'active' && branch.vitality > 8) {
-      const n = Math.round((branch.vitality / 100) * (depth === 1 ? 13 : 6));
-      scatterLeaves(tip, n, branch.color, depth === 1 ? 5 : 3);
-    }
-
-    // sous-branches (depth 1 actives uniquement)
-    if (depth === 1 && branch.state === 'active' && branch.dev > 18) {
-      const subCount = branch.dev > 55 ? 3 : 2;
-      for (let k = 0; k < subCount; k++) {
-        const at = 0.5 + k * 0.18;
-        const sOrigin = curve.getPoint(at);
-        const sDir = curve.getTangent(at);
-        // dévie latéralement + vers le haut
-        const side = new THREE.Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize();
-        sDir.lerp(side, 0.4).add(new THREE.Vector3(0, 0.4, 0)).normalize();
-        const sLen = length * (0.42 + rnd() * 0.2);
-        growBranch(sOrigin, sDir, sLen, r1 * 1.1, r1 * 0.4, 2, branch);
-      }
-    }
-    return tip;
-  }
-
-  // ── Les 7 branches maîtresses ────────────────────────────────────────────
   for (const b of model.branches) {
     const origin = trunkCurve.getPoint(b.attach);
     const dir = new THREE.Vector3(
@@ -192,67 +176,67 @@ export function buildTree(THREE, model) {
       Math.sin(deg(b.elev)),
       Math.cos(deg(b.elev)) * Math.sin(deg(b.azimuth))
     );
+    // tier 1 = fondations → branches plus épaisses
+    const tierThick = b.tier === 1 ? 1.35 : b.tier === 2 ? 1.1 : 0.9;
     const len = 6 + (b.dev / 100) * 22;
-    const r0 = 0.5 + (b.dev / 100) * 1.0;
-    const tip = growBranch(origin, dir, len, r0, r0 * 0.32, 1, b);
+    const r0 = (0.5 + (b.dev / 100) * 1.0) * tierThick;
+    const r1 = r0 * 0.32;
 
-    // nœud-dimension ESP au bout de la branche
+    const curve = branchCurve(THREE, origin, dir, len, rnd);
+    group.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 18, 8), barkOf(b.state)));
+    for (let i = 0; i < 6; i++) espAdd(curve.getPoint(i / 6), curve.getPoint((i + 1) / 6));
+    const tip = curve.getPoint(1);
+
+    // sous-branches sémantiques : combien ont « éclos » dépend de dev
+    const grown = b.state === 'active'
+      ? Math.min(b.sub.length, 1 + Math.round((b.dev / 100) * b.sub.length))
+      : 0;
+    for (let k = 0; k < grown; k++) {
+      const at = 0.45 + (k / Math.max(1, grown)) * 0.45;
+      const sOrigin = curve.getPoint(at);
+      const sDir = curve.getTangent(at);
+      const ang = ((k / grown) - 0.5) * 2.4; // éventail latéral
+      const side = new THREE.Vector3(Math.cos(ang), 0, Math.sin(ang)).normalize();
+      sDir.lerp(side, 0.45).add(new THREE.Vector3(0, 0.45, 0)).normalize();
+      const sLen = len * (0.4 + rnd() * 0.22);
+      const sCurve = branchCurve(THREE, sOrigin, sDir, sLen, rnd);
+      group.add(new THREE.Mesh(taperedTube(THREE, sCurve, r1 * 1.1, r1 * 0.4, 12, 6), barkOf(b.state)));
+      for (let i = 0; i < 4; i++) espAdd(sCurve.getPoint(i / 4), sCurve.getPoint((i + 1) / 4));
+      const sTip = sCurve.getPoint(1);
+      espNode(sTip, b.color, 0.65, 0.85, 10);
+      if (b.vitality > 8) scatterLeaves(sTip, Math.round((b.vitality / 100) * 6), b.color, 3);
+    }
+
+    // feuilles au bout de la branche maîtresse
+    if (b.state === 'active' && b.vitality > 8) {
+      scatterLeaves(tip, Math.round((b.vitality / 100) * 11), b.color, 4.5);
+    }
+
+    // nœud-dimension (cliquable, labellé)
     const dim = b.state === 'dormant' ? 0.35 : 1;
-    const core = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 18, 14),
-      new THREE.MeshBasicMaterial({ color: b.color, depthTest: false,
-        transparent: true, opacity: 0.4 + dim * 0.6 })
-    );
-    const baseR = b.state === 'dormant' ? 0.9 : 1.7;
-    core.scale.setScalar(baseR);
-    core.position.copy(tip);
-    core.renderOrder = 12;
-    core.userData = { key: b.key, label: b.label, color: b.color, baseR, state: b.state };
-    const halo = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 16, 12),
-      new THREE.MeshBasicMaterial({ color: b.color, transparent: true,
-        opacity: 0.22 * dim, blending: THREE.AdditiveBlending, depthTest: false })
-    );
-    halo.scale.setScalar(baseR * 2.7);
-    halo.position.copy(tip);
-    halo.renderOrder = 11;
-    group.add(core, halo);
+    const baseR = b.state === 'dormant' ? 0.95 : 1.7;
+    const core = espNode(tip, b.color, baseR, 0.4 + dim * 0.6, 13);
+    core.userData = { key: b.key, label: b.label, color: b.color, baseR, state: b.state, tier: b.tier };
     nodes.push(core);
   }
-
-  // nœud-racine (base du tronc)
-  const root = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0x9ecaff, depthTest: false })
-  );
-  root.scale.setScalar(1.3);
-  root.position.set(0, 0.5, 0);
-  root.renderOrder = 12;
-  group.add(root);
 
   // ── Exosquelette ESP : lignes blanches X-ray ─────────────────────────────
   const espGeo = new THREE.BufferGeometry();
   espGeo.setAttribute('position', new THREE.Float32BufferAttribute(espSegs, 3));
-  const espLines = new THREE.LineSegments(
-    espGeo,
-    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true,
-      opacity: 0.5, depthTest: false })
-  );
-  espLines.renderOrder = 10;
+  const espLines = new THREE.LineSegments(espGeo, new THREE.LineBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.5, depthTest: false }));
+  espLines.renderOrder = 9;
   group.add(espLines);
 
-  // ── Feuilles en InstancedMesh (1 draw call) ──────────────────────────────
-  if (leafMatrix.length) {
-    const leafGeo = new THREE.IcosahedronGeometry(0.9, 0);
+  // ── Feuilles en InstancedMesh ────────────────────────────────────────────
+  if (leafMat.length) {
     const leafMesh = new THREE.InstancedMesh(
-      leafGeo,
+      new THREE.IcosahedronGeometry(0.9, 0),
       new THREE.MeshStandardMaterial({ roughness: 0.7, flatShading: true }),
-      leafMatrix.length
-    );
-    for (let i = 0; i < leafMatrix.length; i++) {
-      leafMesh.setMatrixAt(i, leafMatrix[i]);
-      leafMesh.setColorAt(i, _col.setRGB(
-        leafColor[i * 3], leafColor[i * 3 + 1], leafColor[i * 3 + 2]));
+      leafMat.length);
+    for (let i = 0; i < leafMat.length; i++) {
+      leafMesh.setMatrixAt(i, leafMat[i]);
+      leafMesh.setColorAt(i, _c.setRGB(leafCol[i * 3], leafCol[i * 3 + 1], leafCol[i * 3 + 2]));
     }
     leafMesh.instanceMatrix.needsUpdate = true;
     if (leafMesh.instanceColor) leafMesh.instanceColor.needsUpdate = true;

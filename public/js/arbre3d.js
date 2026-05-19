@@ -8,7 +8,7 @@
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 
-const ORBIT_TARGET = new THREE.Vector3(0, 26, 0);
+const ORBIT_TARGET = new THREE.Vector3(0, 30, 0);
 
 // ── Scène ───────────────────────────────────────────────────────────────────
 function initScene(canvas) {

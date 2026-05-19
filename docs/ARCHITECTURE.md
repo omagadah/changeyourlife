@@ -24,17 +24,53 @@ devient *legacy*, les données existantes sont migrées (cf. §6).
 
 ---
 
-## 2 · Les 7 branches (proposition figée)
+## 2 · Les 7 branches — taxonomie en 4 tiers
 
-| Branche | Couvre | Couleur (proposée) |
+Les 7 branches ne sont **pas 7 pairs équivalents**. Elles forment une
+**hiérarchie de fondations**, synthèse de Maslow (besoins) + Erikson
+(générativité) : on ne s'épanouit pas tant que le socle n'est pas tenu.
+Sur l'arbre, le tier = la **hauteur d'accroche sur le tronc** : les fondations
+sont basses et épaisses (près des racines), la transcendance est haute (la cime).
+
+| Tier | Branches | Équivalent | Hauteur tronc |
+|---|---|---|---|
+| **1 · Fondations** (survie) | **Corps**, **Finances** | Maslow 1-2 (physiologique, sécurité) | basse, épaisse |
+| **2 · Lien** (appartenance) | **Relations**, **Mental** | Maslow 3-4 (amour, estime) | médiane |
+| **3 · Accomplissement** | **Création**, **Sens** | Maslow 5 (réalisation de soi) | haute |
+| **4 · Transcendance** | **Héritage** | Erikson (générativité) — au-delà de Maslow | la cime / le leader |
+
+**Détail des branches** et leurs sous-branches sémantiques (les sous-nœuds) :
+
+| Branche | Couleur | Sous-branches |
 |---|---|---|
-| **Corps** | santé physique, sommeil, énergie, mouvement, nutrition | `--corps` #2dd4bf |
-| **Mental** | santé psychique, émotions, stress, clarté, focus | `--mental` #a78bfa |
-| **Relations** | famille, amitiés, amour, lien social | `--relations` #f87171 |
-| **Finances** | argent, sécurité matérielle, autonomie | `--finances` #fbbf24 |
-| **Sens** | valeurs, spiritualité, raison d'être, contribution | `--sens` #38bdf8 |
-| **Création** | projets, œuvres, apprentissage, compétences, expression | `--creation` #fb923c |
-| **Héritage** | ce qu'on transmet / la trace que l'on laisse | `--heritage` #94a3b8 |
+| **Corps** | #2dd4bf | Sommeil · Nutrition · Mouvement · Santé · Énergie |
+| **Finances** | #fbbf24 | Revenus · Épargne · Sécurité · Investir |
+| **Relations** | #f87171 | Famille · Amis · Amour · Travail · Communauté |
+| **Mental** | #a78bfa | Émotions · Stress · Clarté · Estime de soi |
+| **Création** | #fb923c | Projets · Apprentissage · Compétences · Expression |
+| **Sens** | #38bdf8 | Valeurs · Spiritualité · Contribution · Raison d'être |
+| **Héritage** | #94a3b8 | Transmission · Trace · Mémoire *(+ alimente les racines)* |
+
+> 🔵 **Question ouverte** : « Estime de soi / Identité » est aujourd'hui sous
+> *Mental*. On pourrait en faire une 8ᵉ branche à part entière (Maslow distingue
+> bien l'estime). À trancher selon le ressenti de l'owner.
+
+### Les 3 axes de croissance de l'arbre
+
+L'arbre grandit de **trois façons distinctes**, chacune liée à un signal réel :
+
+1. **Épaisseur / taille globale** — pilotée par le **tier 1** (Corps, Finances)
+   + la fréquence de connexion (nourrir le système en infos). Un socle solide
+   et un usage régulier = un arbre gros et haut. C'est « l'arbre c'est le corps ».
+2. **Densité / nombre de nœuds** — chaque sous-branche sémantique qui se précise
+   (Relations → Famille, puis Famille → tel proche…) ajoute un nœud. Plus la vie
+   de l'utilisateur est cartographiée finement, plus l'exosquelette se ramifie.
+3. **Hauteur / nouvelles branches** — quand une **dimension inconnue émerge**
+   dans la vie de la personne, une nouvelle branche pousse vers le haut. L'arbre
+   n'est pas figé à 7 : 7 est le socle, il peut s'étendre.
+
+→ Un arbre « centenaire » = socle épais + des centaines de sous-nœuds + une cime
+très haute. Un arbre de débutant = sapling à 7 branches dont 3 dormantes.
 
 **Statut d'Héritage** (décision §8.1) : Héritage **est** une branche (on agit
 dessus, tourné vers l'avenir : ce qu'on construit pour transmettre) ; en parallèle
