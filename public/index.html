@@ -156,6 +156,51 @@
     .lya-voice:hover { background: rgba(255,255,255,0.1); color: #eef4ff; }
     .lya-voice.on { color: #60a5fa; border-color: rgba(0,112,243,0.4); background: rgba(0,112,243,0.12); }
 
+    /* ── HUD : compteur XP + stade ── */
+    .hud {
+      position: absolute; z-index: 4; pointer-events: none; text-align: right;
+      top: clamp(64px, 9vh, 88px); right: clamp(20px, 5vw, 64px);
+      animation: fadeDown 1s ease 0.4s both;
+    }
+    .hud-stage {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: #60a5fa; margin-bottom: 2px;
+    }
+    .hud-xp {
+      font-size: clamp(1.6rem, 3.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff, #7fb4ff);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hud-xp small {
+      font-size: 0.4em; font-weight: 700; color: #8ba4c8;
+      -webkit-text-fill-color: #8ba4c8; margin-left: 5px;
+    }
+    .hud.flash { animation: hudFlash 0.6s ease; }
+    @keyframes hudFlash { 0%,100% { transform: none; } 32% { transform: scale(1.09); } }
+
+    /* ── Pop-up « tâche accomplie » ── */
+    .task-pop {
+      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px); top: 44%;
+      display: flex; align-items: center; gap: 13px;
+      padding: 13px 17px; border-radius: 16px;
+      background: rgba(11,24,41,0.96); border: 1px solid rgba(0,112,243,0.32);
+      box-shadow: 0 14px 44px rgba(0,0,0,0.55);
+      transform: translateX(150%); opacity: 0; pointer-events: none;
+      transition: transform .55s cubic-bezier(0.22,1,0.36,1), opacity .4s;
+    }
+    .task-pop.show { transform: translateX(0); opacity: 1; }
+    .task-icon { font-size: 1.7rem; flex-shrink: 0; }
+    .task-name { font-size: 0.92rem; font-weight: 700; color: #eef4ff; }
+    .task-xp { font-size: 0.8rem; font-weight: 700; color: #4ade80; margin-top: 2px; }
+    .task-check {
+      width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
+      background: #22c55e; color: #fff; font-size: 0.9rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: scale(0.4);
+      transition: opacity .3s, transform .35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .task-pop.validated .task-check { opacity: 1; transform: scale(1); }
+
     @media (max-width: 820px) {
       .headline { max-width: 80vw; top: clamp(74px, 11vh, 110px); }
     }
@@ -164,9 +209,12 @@
       .lya-top { display: flex; align-items: center; gap: 14px; }
       .actions { justify-content: space-between; }
       .btn-enter { flex: 1; text-align: center; }
+      .hud { display: none; }
+      .task-pop { left: 16px; right: 16px; top: auto; bottom: 188px; }
+      .task-pop:not(.show) { transform: translateY(40px); }
     }
     @media (prefers-reduced-motion: reduce) {
-      #arbre-canvas, .lya, .lya-orb, .headline, .site-header { animation: none !important; }
+      #arbre-canvas, .lya, .lya-orb, .headline, .site-header, .hud { animation: none !important; }
     }
   </style>
 </head>
@@ -187,6 +235,20 @@
       <h1>Construis la meilleure version de toi-même.</h1>
       <p>Ta vie devient un arbre vivant. Chaque dimension — corps, mental,
         relations, sens — prend racine et s'épanouit avec toi.</p>
+    </div>
+
+    <div class="hud" id="hud" aria-hidden="true">
+      <div class="hud-stage" id="xp-stage">Sapling</div>
+      <div class="hud-xp"><span id="xp-value">0</span><small>XP</small></div>
+    </div>
+
+    <div class="task-pop" id="task-pop" aria-hidden="true">
+      <div class="task-icon"></div>
+      <div class="task-body">
+        <div class="task-name"></div>
+        <div class="task-xp"></div>
+      </div>
+      <div class="task-check">✓</div>
     </div>
 
     <section class="lya" aria-live="polite">

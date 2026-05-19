@@ -1,14 +1,17 @@
-// /js/arbre3d.js — Landing /arbre/ : arbre de vie procédural + croissance + Lya.
+// /js/arbre3d.js — Page d'accueil : arbre de vie procédural + croissance + Lya.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v4 — l'arbre POUSSE sous les yeux : sapling → arbre centenaire, tier par
-// tier (fondations d'abord, cime en dernier). Animation pilotée par grow(age).
+// v5 — la caméra suit la pousse (dézoom progressif pour cadrer l'arbre entier),
+// compteur XP qui grimpe avec la croissance, et pop-ups « tâche accomplie »
+// qui illustrent : action → XP → l'arbre grandit.
 
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 
-const ORBIT_TARGET = new THREE.Vector3(0, 34, 0);
-const GROWTH_SECONDS = 8;
+const ORBIT_TARGET = new THREE.Vector3(0, 32, 0);
+const GROWTH_SECONDS = 9;
+const TOTAL_XP = 24800;
+const easeOut = (x) => 1 - Math.pow(1 - x, 3);
 
 // ── Scène ───────────────────────────────────────────────────────────────────
 function initScene(canvas) {
@@ -23,14 +26,14 @@ function initScene(canvas) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
-    42, canvas.clientWidth / canvas.clientHeight, 0.1, 700);
+    42, canvas.clientWidth / canvas.clientHeight, 0.1, 800);
 
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
-  key.position.set(26, 52, 32);
+  key.position.set(26, 56, 32);
   scene.add(key);
   const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
-  fill.position.set(-32, 24, -18);
+  fill.position.set(-32, 26, -18);
   scene.add(fill);
 
   const { group, nodes, grow } = buildTree(THREE, createDemoModel());
@@ -42,9 +45,9 @@ function initScene(canvas) {
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
 function initControls(canvas, camera) {
   const s = {
-    azimuth: 0.6, polar: 1.04, radius: 96,
-    tAz: 0.6, tPo: 1.04, tR: 96,
-    minR: 52, maxR: 145, minPo: 0.58, maxPo: 1.44,
+    azimuth: 0.5, polar: 1.05, radius: 82,
+    tAz: 0.5, tPo: 1.05, tR: 82,
+    minR: 48, maxR: 155, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   canvas.addEventListener('pointerdown', (e) => {
@@ -86,11 +89,66 @@ function initControls(canvas, camera) {
   };
 }
 
+// Caméra cinématique pendant la pousse : part près du sapling, dézoome pour
+// cadrer l'arbre entier. Finit EXACTEMENT sur la position des contrôles.
+function growthCamera(camera, age) {
+  const e = easeOut(age);
+  const targetY = 10 + e * 22;          // 10 → 32 (= ORBIT_TARGET.y)
+  const radius = 54 + e * 28;           // 54 → 82 (= contrôles.radius)
+  const az = 0.5, polar = 1.05;
+  const sp = Math.sin(polar), cp = Math.cos(polar);
+  camera.position.set(
+    radius * sp * Math.sin(az),
+    targetY + radius * cp,
+    radius * sp * Math.cos(az));
+  camera.lookAt(0, targetY, 0);
+}
+
+// ── HUD : compteur XP + stade + pop-ups « tâche accomplie » ─────────────────
+const BEATS = [
+  { at: 0.28, icon: '🧘', task: 'Méditation du matin', xp: '+180 XP' },
+  { at: 0.52, icon: '🎯', task: 'Objectif atteint', xp: '+420 XP' },
+  { at: 0.76, icon: '😴', task: 'Nuit réparatrice', xp: '+150 XP' },
+];
+function initHud() {
+  const xpEl = document.getElementById('xp-value');
+  const stageEl = document.getElementById('xp-stage');
+  const hud = document.getElementById('hud');
+  const pop = document.getElementById('task-pop');
+  const fired = BEATS.map(() => false);
+
+  function updateXp(age) {
+    if (xpEl) xpEl.textContent = Math.round(easeOut(age) * TOTAL_XP).toLocaleString('fr-FR');
+    if (stageEl) {
+      stageEl.textContent = age < 0.12 ? 'Sapling'
+        : age < 0.42 ? 'Jeune arbre'
+        : age < 0.78 ? 'Arbre mature' : 'Arbre centenaire';
+    }
+  }
+  function showBeat(b) {
+    if (!pop) return;
+    pop.querySelector('.task-icon').textContent = b.icon;
+    pop.querySelector('.task-name').textContent = b.task;
+    pop.querySelector('.task-xp').textContent = b.xp;
+    pop.classList.remove('validated');
+    pop.classList.add('show');
+    if (hud) { hud.classList.remove('flash'); void hud.offsetWidth; hud.classList.add('flash'); }
+    setTimeout(() => pop.classList.add('validated'), 1500);
+    setTimeout(() => pop.classList.remove('show'), 2800);
+  }
+  function checkBeats(age) {
+    for (let i = 0; i < BEATS.length; i++) {
+      if (!fired[i] && age >= BEATS[i].at) { fired[i] = true; showBeat(BEATS[i]); }
+    }
+  }
+  return { updateXp, checkBeats };
+}
+
 // ── Labels HTML projetés (style ESP) ────────────────────────────────────────
 function initLabels(nodes) {
   const css = document.createElement('style');
   css.textContent = `
-    .esp-labels{position:absolute;inset:0;pointer-events:none;z-index:1;
+    .esp-labels{position:absolute;inset:0;pointer-events:none;z-index:2;
       opacity:0;transition:opacity .8s;}
     .esp-labels.on{opacity:1;}
     .esp-label{position:absolute;transform:translate(-50%,-50%);
@@ -130,7 +188,7 @@ function initLabels(nodes) {
 // ── Lya ─────────────────────────────────────────────────────────────────────
 const LYA_LINES = [
   'Bonjour. Je m’appelle Lya.',
-  'Regarde — ton arbre pousse. Chaque branche est une dimension de ta vie.',
+  'Regarde — chaque chose que tu accomplis fait grandir ton arbre.',
   'Le voilà adulte. Tourne-le, touche une branche pour l’explorer.',
 ];
 let lyaSay = null;
@@ -166,12 +224,9 @@ function initLya() {
       if (voiceOn && lineEl) speak(lineEl.textContent, true);
     });
   }
-  // les 3 répliques rythmées sur la croissance (~8 s)
-  const beats = [400, 3200, GROWTH_SECONDS * 1000 + 200];
+  const beats = [400, 3600, GROWTH_SECONDS * 1000 + 300];
   LYA_LINES.forEach((text, i) => {
-    setTimeout(() => {
-      if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); }
-    }, beats[i]);
+    setTimeout(() => { if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); } }, beats[i]);
   });
   lyaSay = (text) => { if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); } };
 }
@@ -181,6 +236,7 @@ function initTree3D(canvas) {
   const { renderer, scene, camera, treeGroup, nodes, grow } = initScene(canvas);
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes);
+  const hud = initHud();
 
   const ray = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
@@ -222,20 +278,22 @@ function initTree3D(canvas) {
 
     if (!grown) {
       grow(age);
+      growthCamera(camera, age);   // la caméra suit la pousse
+      hud.updateXp(age);
+      hud.checkBeats(age);
       if (age >= 1) { grown = true; labels.reveal(); }
     } else {
-      // arbre adulte : balancement doux + pulsation des nœuds
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.018;
       for (const m of nodes) {
         if (m !== selected) {
           m.scale.setScalar(m.userData.baseR * (1 + Math.sin(t * 2 + m.position.y) * 0.09));
         }
       }
+      controls.apply();
+      labels.update(camera, canvas);
     }
 
     maybeResize();
-    controls.apply();
-    if (grown) labels.update(camera, canvas);
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }

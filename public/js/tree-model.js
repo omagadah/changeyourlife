@@ -239,6 +239,35 @@ export function buildTree(THREE, model) {
       const sNode = espNode(sGroup, sTipLocal, b.color, 0.7, 0.85, 11);
       growables.push({ obj: sNode, birth: sBirth + 0.1, dur: 0.08, target: 0.7 });
 
+      // rejet (niveau 3) : un cran de ramification de plus
+      if (b.state === 'active') {
+        const twAt = 0.55 + rnd() * 0.2;
+        const twBirth = sBirth + 0.12;
+        const twOriginLocal = sCurve.getPoint(twAt);
+        const twGroup = new THREE.Group();
+        twGroup.position.copy(twOriginLocal);
+        twGroup.scale.setScalar(0.0001);
+        sGroup.add(twGroup);
+        growables.push({ obj: twGroup, birth: twBirth, dur: 0.08, target: 1 });
+
+        const twTan = sCurve.getTangent(twAt);
+        const twSide = new THREE.Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize();
+        twTan.lerp(twSide, 0.5).add(new THREE.Vector3(0, 0.5, 0)).normalize();
+        const twLen = sLen * (0.42 + rnd() * 0.2);
+        const twCurve = localCurve(THREE, twTan, twLen, rnd);
+        twGroup.add(new THREE.Mesh(
+          taperedTube(THREE, twCurve, r1 * 0.45, r1 * 0.16, 8, 5), barkOf(b.state)));
+        twGroup.add(espLine(twCurve, 3));
+        const twTipLocal = twCurve.getPoint(1);
+        const twNode = espNode(twGroup, twTipLocal, b.color, 0.4, 0.8, 11);
+        growables.push({ obj: twNode, birth: twBirth + 0.08, dur: 0.07, target: 0.4 });
+        if (b.vitality > 8) {
+          const twTipWorld = attachLocal.clone()
+            .add(sOriginLocal).add(twOriginLocal).add(twTipLocal);
+          scatterLeaves(twTipWorld, Math.round((b.vitality / 100) * 4), b.color, 2.4, twBirth + 0.1);
+        }
+      }
+
       if (b.vitality > 8) {
         const sTipWorld = attachLocal.clone().add(sOriginLocal).add(sTipLocal);
         scatterLeaves(sTipWorld, Math.round((b.vitality / 100) * 6), b.color, 3.2, sBirth + 0.14);
