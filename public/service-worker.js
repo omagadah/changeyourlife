@@ -1,5 +1,5 @@
-// service-worker.js - v39 (labels des sous-éléments dans l'arbre)
-const CACHE_NAME = 'changeyourlife-v39';
+// service-worker.js - v40 (sous-labels au clic + arbre manipulable en pousse)
+const CACHE_NAME = 'changeyourlife-v40';
 const urlsToCache = [
   '/',
   '/app/',

@@ -248,7 +248,7 @@ export function buildTree(THREE, model) {
       sGroup.add(espLine(sCurve, 4));
       const sTipLocal = sCurve.getPoint(1);
       const sNode = espNode(sGroup, sTipLocal, b.color, 0.42, 0.85, 11);
-      sNode.userData = { label: b.sub[k] || '', color: b.color };
+      sNode.userData = { label: b.sub[k] || '', color: b.color, key: b.key };
       subNodes.push(sNode);
       growables.push({ obj: sNode, birth: sBirth + 0.1, dur: 0.08, target: 0.42 });
 

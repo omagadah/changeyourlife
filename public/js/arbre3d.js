@@ -142,6 +142,7 @@ function initControls(canvas, camera) {
     minR: 64, maxR: 205, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
+  let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
   canvas.addEventListener('pointerdown', (e) => {
     dragging = true; moved = false; px = e.clientX; py = e.clientY;
     canvas.setPointerCapture(e.pointerId);
@@ -162,35 +163,31 @@ function initControls(canvas, camera) {
   canvas.addEventListener('pointercancel', end);
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
+    userZoomed = true;
     s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.06));
   }, { passive: false });
 
   return {
-    apply() {
+    // `target` (optionnel) : centre d'orbite — suit la cime pendant la pousse.
+    apply(target) {
+      const tgt = target || ORBIT_TARGET;
       s.azimuth += (s.tAz - s.azimuth) * 0.12;
       s.polar += (s.tPo - s.polar) * 0.12;
       s.radius += (s.tR - s.radius) * 0.12;
       const sp = Math.sin(s.polar), cp = Math.cos(s.polar);
       camera.position.set(
-        ORBIT_TARGET.x + s.radius * sp * Math.sin(s.azimuth),
-        ORBIT_TARGET.y + s.radius * cp,
-        ORBIT_TARGET.z + s.radius * sp * Math.cos(s.azimuth));
-      camera.lookAt(ORBIT_TARGET);
+        tgt.x + s.radius * sp * Math.sin(s.azimuth),
+        tgt.y + s.radius * cp,
+        tgt.z + s.radius * sp * Math.cos(s.azimuth));
+      camera.lookAt(tgt);
+    },
+    // Pendant la croissance : impose le rayon sauf si l'utilisateur a zoomé.
+    setRadius(r) {
+      if (userZoomed) return;
+      s.tR = r; s.radius = r;
     },
     wasDrag: () => moved,
   };
-}
-
-function growthCamera(camera, age) {
-  const e = easeOut(age);
-  const targetY = 12 + e * 28;
-  const radius = 58 + e * 52;
-  const sp = Math.sin(1.06), cp = Math.cos(1.06);
-  camera.position.set(
-    radius * sp * Math.sin(0.5),
-    targetY + radius * cp,
-    radius * sp * Math.cos(0.5));
-  camera.lookAt(0, targetY, 0);
 }
 
 // ── HUD : compteur XP + flux de pop-ups « tâche accomplie » ─────────────────
@@ -264,7 +261,7 @@ function initHud() {
 }
 
 // ── Panneau explicatif d'une branche ────────────────────────────────────────
-function initBranchPanel() {
+function initBranchPanel(onClose) {
   const panel = document.getElementById('branch-panel');
   const dot = document.getElementById('bp-dot');
   const title = document.getElementById('bp-title');
@@ -273,7 +270,10 @@ function initBranchPanel() {
   const modsEl = document.getElementById('bp-modules');
   const closeBtn = document.getElementById('bp-close');
 
-  function close() { if (panel) panel.classList.remove('open'); }
+  function close() {
+    if (panel) panel.classList.remove('open');
+    if (onClose) onClose();
+  }
   if (closeBtn) closeBtn.addEventListener('click', close);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
@@ -336,11 +336,19 @@ function initLabels(nodes, subNodes) {
     .concat((subNodes || []).filter((m) => m.userData && m.userData.label)
       .map((m) => makeLabel(m, true)));
   const v = new THREE.Vector3();
+  // Les sous-labels ne sont visibles que pour la branche sélectionnée.
+  let activeSubKey = null;
   return {
     reveal: () => wrap.classList.add('on'),
     hide: () => wrap.classList.remove('on'),
+    showSubs(key) { activeSubKey = key; },
+    hideSubs() { activeSubKey = null; },
     update(camera, canvas) {
       for (const { el, mesh, sub } of labels) {
+        if (sub && mesh.userData.key !== activeSubKey) {
+          el.style.visibility = 'hidden';
+          continue;
+        }
         mesh.getWorldPosition(v).project(camera);
         if (v.z > 1) { el.style.visibility = 'hidden'; continue; }
         el.style.visibility = 'visible';
@@ -416,7 +424,7 @@ function initTree3D(canvas) {
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
   const hud = initHud();
-  const branchPanel = initBranchPanel();
+  const branchPanel = initBranchPanel(() => labels.hideSubs());
 
   const scrub = document.getElementById('scrub');
   const playBtn = document.getElementById('scrub-play');
@@ -442,6 +450,7 @@ function initTree3D(canvas) {
   // ── Facilitateur de clic : on cible le nœud le plus PROCHE du curseur ────
   // (pas besoin de viser pile au centre — seuil généreux en pixels écran)
   const _proj = new THREE.Vector3();
+  const growTarget = new THREE.Vector3();
   let hovered = null;
   let pointerDown = false;
   function nearestNode(clientX, clientY) {
@@ -470,6 +479,7 @@ function initTree3D(canvas) {
     if (hit) {
       const u = hit.userData;
       branchPanel.open(u.key, u.label, u.color);
+      labels.showSubs(u.key);
       if (lyaSay) lyaSay(`${u.label} — voici ce qui fait grandir cette branche.`);
     }
   });
@@ -524,7 +534,12 @@ function initTree3D(canvas) {
       if (!timelineReady) { timelineReady = true; enableTimeline(); }
     } else {
       grow(age);
-      growthCamera(camera, age);
+      // La caméra suit la cime via les contrôles → l'arbre reste manipulable
+      // (rotation, zoom) pendant toute la croissance.
+      const e = easeOut(age);
+      growTarget.set(0, 12 + e * 28, 0);
+      controls.setRadius(58 + e * 52);
+      controls.apply(growTarget);
       hud.updateXp(age);
       if (labelsOn) { labels.hide(); labelsOn = false; }
       if (phase !== 'scrub' && scrub) scrub.value = String(Math.round(age * 1000));
