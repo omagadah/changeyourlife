@@ -1,5 +1,5 @@
-// service-worker.js - v34 (arbre 3D = page d'accueil)
-const CACHE_NAME = 'changeyourlife-v34';
+// service-worker.js - v35 (arbre 3D = page d'accueil)
+const CACHE_NAME = 'changeyourlife-v35';
 const urlsToCache = [
   '/',
   '/app/',

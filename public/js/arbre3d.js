@@ -1,15 +1,15 @@
 // /js/arbre3d.js — Page d'accueil : arbre de vie procédural + croissance + Lya.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v5 — la caméra suit la pousse (dézoom progressif pour cadrer l'arbre entier),
-// compteur XP qui grimpe avec la croissance, et pop-ups « tâche accomplie »
-// qui illustrent : action → XP → l'arbre grandit.
+// v6 — barre de temps (scrubber) : on rejoue / recule la croissance de l'arbre.
+// Caméra recalée pour le grand arbre. Compteur XP + pop-ups « tâche accomplie ».
 
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 
-const ORBIT_TARGET = new THREE.Vector3(0, 32, 0);
-const GROWTH_SECONDS = 9;
+const ORBIT_TARGET = new THREE.Vector3(0, 40, 0);
+const GROWTH_SECONDS = 9;     // pousse initiale
+const REPLAY_SECONDS = 4.5;   // « accélérer » vers l'arbre maximum
 const TOTAL_XP = 24800;
 const easeOut = (x) => 1 - Math.pow(1 - x, 3);
 
@@ -26,14 +26,14 @@ function initScene(canvas) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
-    42, canvas.clientWidth / canvas.clientHeight, 0.1, 800);
+    42, canvas.clientWidth / canvas.clientHeight, 0.1, 900);
 
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
-  key.position.set(26, 56, 32);
+  key.position.set(30, 70, 36);
   scene.add(key);
   const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
-  fill.position.set(-32, 26, -18);
+  fill.position.set(-36, 30, -20);
   scene.add(fill);
 
   const { group, nodes, grow } = buildTree(THREE, createDemoModel());
@@ -45,9 +45,9 @@ function initScene(canvas) {
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
 function initControls(canvas, camera) {
   const s = {
-    azimuth: 0.5, polar: 1.05, radius: 82,
-    tAz: 0.5, tPo: 1.05, tR: 82,
-    minR: 48, maxR: 155, minPo: 0.55, maxPo: 1.45,
+    azimuth: 0.5, polar: 1.06, radius: 110,
+    tAz: 0.5, tPo: 1.06, tR: 110,
+    minR: 64, maxR: 205, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   canvas.addEventListener('pointerdown', (e) => {
@@ -70,7 +70,7 @@ function initControls(canvas, camera) {
   canvas.addEventListener('pointercancel', end);
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.05));
+    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.06));
   }, { passive: false });
 
   return {
@@ -90,17 +90,16 @@ function initControls(canvas, camera) {
 }
 
 // Caméra cinématique pendant la pousse : part près du sapling, dézoome pour
-// cadrer l'arbre entier. Finit EXACTEMENT sur la position des contrôles.
+// cadrer le grand arbre. Finit EXACTEMENT sur la position des contrôles.
 function growthCamera(camera, age) {
   const e = easeOut(age);
-  const targetY = 10 + e * 22;          // 10 → 32 (= ORBIT_TARGET.y)
-  const radius = 54 + e * 28;           // 54 → 82 (= contrôles.radius)
-  const az = 0.5, polar = 1.05;
-  const sp = Math.sin(polar), cp = Math.cos(polar);
+  const targetY = 12 + e * 28;          // 12 → 40 (= ORBIT_TARGET.y)
+  const radius = 58 + e * 52;           // 58 → 110 (= contrôles.radius)
+  const sp = Math.sin(1.06), cp = Math.cos(1.06);
   camera.position.set(
-    radius * sp * Math.sin(az),
+    radius * sp * Math.sin(0.5),
     targetY + radius * cp,
-    radius * sp * Math.cos(az));
+    radius * sp * Math.cos(0.5));
   camera.lookAt(0, targetY, 0);
 }
 
@@ -115,7 +114,7 @@ function initHud() {
   const stageEl = document.getElementById('xp-stage');
   const hud = document.getElementById('hud');
   const pop = document.getElementById('task-pop');
-  const fired = BEATS.map(() => false);
+  let fired = BEATS.map(() => false);
 
   function updateXp(age) {
     if (xpEl) xpEl.textContent = Math.round(easeOut(age) * TOTAL_XP).toLocaleString('fr-FR');
@@ -136,12 +135,15 @@ function initHud() {
     setTimeout(() => pop.classList.add('validated'), 1500);
     setTimeout(() => pop.classList.remove('show'), 2800);
   }
-  function checkBeats(age) {
-    for (let i = 0; i < BEATS.length; i++) {
-      if (!fired[i] && age >= BEATS[i].at) { fired[i] = true; showBeat(BEATS[i]); }
-    }
-  }
-  return { updateXp, checkBeats };
+  return {
+    updateXp,
+    checkBeats(age) {
+      for (let i = 0; i < BEATS.length; i++) {
+        if (!fired[i] && age >= BEATS[i].at) { fired[i] = true; showBeat(BEATS[i]); }
+      }
+    },
+    resetBeats() { fired = BEATS.map(() => false); },
+  };
 }
 
 // ── Labels HTML projetés (style ESP) ────────────────────────────────────────
@@ -149,7 +151,7 @@ function initLabels(nodes) {
   const css = document.createElement('style');
   css.textContent = `
     .esp-labels{position:absolute;inset:0;pointer-events:none;z-index:2;
-      opacity:0;transition:opacity .8s;}
+      opacity:0;transition:opacity .6s;}
     .esp-labels.on{opacity:1;}
     .esp-label{position:absolute;transform:translate(-50%,-50%);
       font:600 11px -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.6px;
@@ -173,6 +175,7 @@ function initLabels(nodes) {
   const v = new THREE.Vector3();
   return {
     reveal: () => wrap.classList.add('on'),
+    hide: () => wrap.classList.remove('on'),
     update(camera, canvas) {
       for (const { el, mesh } of labels) {
         mesh.getWorldPosition(v).project(camera);
@@ -189,7 +192,7 @@ function initLabels(nodes) {
 const LYA_LINES = [
   'Bonjour. Je m’appelle Lya.',
   'Regarde — chaque chose que tu accomplis fait grandir ton arbre.',
-  'Le voilà adulte. Tourne-le, touche une branche pour l’explorer.',
+  'Le voilà adulte. Rejoue sa croissance, ou touche une branche.',
 ];
 let lyaSay = null;
 function typeLine(el, text, done) {
@@ -238,11 +241,37 @@ function initTree3D(canvas) {
   const labels = initLabels(nodes);
   const hud = initHud();
 
+  // barre de temps
+  const scrub = document.getElementById('scrub');
+  const playBtn = document.getElementById('scrub-play');
+  const timeline = document.getElementById('timeline');
+
+  // phase : 'auto' (pousse) · 'live' (adulte) · 'scrub' (curseur) · 'play' (rejoue)
+  let phase = 'auto';
+  let age = 0;
+
+  if (scrub) {
+    scrub.addEventListener('input', () => {
+      phase = 'scrub';
+      age = Math.max(0, Math.min(1, Number(scrub.value) / 1000));
+    });
+    scrub.addEventListener('change', () => {
+      if (age >= 0.999) phase = 'live';
+    });
+  }
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      if (age >= 0.999) { age = 0; hud.resetBeats(); }
+      phase = 'play';
+    });
+  }
+
+  // clic sur un nœud (en mode adulte)
   const ray = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   let selected = null;
   canvas.addEventListener('pointerup', (e) => {
-    if (controls.wasDrag()) return;
+    if (phase !== 'live' || controls.wasDrag()) return;
     mouse.x = (e.clientX / canvas.clientWidth) * 2 - 1;
     mouse.y = -(e.clientY / canvas.clientHeight) * 2 + 1;
     ray.setFromCamera(mouse, camera);
@@ -271,19 +300,24 @@ function initTree3D(canvas) {
   }
 
   const clock = new THREE.Clock();
-  let grown = false;
+  let lastT = 0;
+  let timelineReady = false;
+
   function animate() {
     const t = clock.getElapsedTime();
-    const age = Math.min(1, t / GROWTH_SECONDS);
+    const dt = Math.min(0.1, t - lastT); lastT = t;
 
-    if (!grown) {
-      grow(age);
-      growthCamera(camera, age);   // la caméra suit la pousse
-      hud.updateXp(age);
-      hud.checkBeats(age);
-      if (age >= 1) { grown = true; labels.reveal(); }
-    } else {
-      treeGroup.rotation.z = Math.sin(t * 0.32) * 0.018;
+    if (phase === 'auto') {
+      age = Math.min(1, t / GROWTH_SECONDS);
+      if (age >= 1) { phase = 'live'; grow(1); }
+    } else if (phase === 'play') {
+      age = Math.min(1, age + dt / REPLAY_SECONDS);
+      if (age >= 1) { phase = 'live'; grow(1); }
+    }
+
+    if (phase === 'live') {
+      // arbre adulte : balancement doux + pulsation des nœuds
+      treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;
       for (const m of nodes) {
         if (m !== selected) {
           m.scale.setScalar(m.userData.baseR * (1 + Math.sin(t * 2 + m.position.y) * 0.09));
@@ -291,12 +325,32 @@ function initTree3D(canvas) {
       }
       controls.apply();
       labels.update(camera, canvas);
+      if (!labels._on) { labels.reveal(); labels._on = true; }
+      if (scrub) scrub.value = '1000';
+      hud.updateXp(1);
+      if (!timelineReady) { timelineReady = true; enableTimeline(); }
+    } else {
+      // pousse / scrub / replay : vue de croissance
+      grow(age);
+      growthCamera(camera, age);
+      hud.updateXp(age);
+      if (phase === 'auto') hud.checkBeats(age);
+      if (labels._on) { labels.hide(); labels._on = false; }
+      if (phase !== 'scrub' && scrub) scrub.value = String(Math.round(age * 1000));
+      if (!timelineReady && phase !== 'auto') { timelineReady = true; enableTimeline(); }
     }
 
     maybeResize();
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }
+
+  function enableTimeline() {
+    if (scrub) scrub.disabled = false;
+    if (playBtn) playBtn.disabled = false;
+    if (timeline) timeline.classList.add('on');
+  }
+
   animate();
 }
 

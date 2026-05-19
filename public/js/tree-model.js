@@ -144,8 +144,8 @@ export function buildTree(THREE, model) {
       color, transparent: true, opacity: opacity * 0.3,
       blending: THREE.AdditiveBlending, depthTest: false }));
     halo.renderOrder = order - 1;
-    core.add(halo);            // enfant du core (centré dessus), échelle ×2.7
-    halo.scale.setScalar(2.7);
+    core.add(halo);            // enfant du core (centré dessus)
+    halo.scale.setScalar(2.4);
     parent.add(core);
     return core;
   }
@@ -168,17 +168,17 @@ export function buildTree(THREE, model) {
   }
 
   // ── Tronc ─────────────────────────────────────────────────────────────────
-  const trunkH = 30;
+  const trunkH = 48;
   const trunkGroup = new THREE.Group();
   trunkGroup.scale.setScalar(0.0001);
   root.add(trunkGroup);
   const trunkCurve = localCurve(THREE, new THREE.Vector3(0.05, 1, 0.03), trunkH, rnd);
-  trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.0, 1.0, 26, 12), barkActive));
+  trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
   trunkGroup.add(espLine(trunkCurve, 9));
   growables.push({ obj: trunkGroup, birth: 0, dur: 0.16, target: 1 });
   // nœud-racine
   const baseNode = espNode(trunkGroup, new THREE.Vector3(0, 0.4, 0), 0x9ecaff, 1, 1, 12);
-  growables.push({ obj: baseNode, birth: 0.06, dur: 0.1, target: 1.3 });
+  growables.push({ obj: baseNode, birth: 0.06, dur: 0.1, target: 0.85 });
 
   // ── Branches maîtresses ──────────────────────────────────────────────────
   for (const b of model.branches) {
@@ -208,7 +208,7 @@ export function buildTree(THREE, model) {
 
     // nœud-dimension (cliquable)
     const dim = b.state === 'dormant' ? 0.35 : 1;
-    const baseR = b.state === 'dormant' ? 1.0 : 1.8;
+    const baseR = b.state === 'dormant' ? 0.62 : 1.1;
     const node = espNode(bGroup, tipLocal, b.color, baseR, 0.4 + dim * 0.6, 13);
     node.userData = { key: b.key, label: b.label, color: b.color, baseR, state: b.state, tier: b.tier };
     growables.push({ obj: node, birth: branchBirth + 0.15, dur: 0.1, target: baseR });
@@ -236,8 +236,8 @@ export function buildTree(THREE, model) {
       sGroup.add(new THREE.Mesh(taperedTube(THREE, sCurve, r1 * 1.1, r1 * 0.4, 10, 6), barkOf(b.state)));
       sGroup.add(espLine(sCurve, 4));
       const sTipLocal = sCurve.getPoint(1);
-      const sNode = espNode(sGroup, sTipLocal, b.color, 0.7, 0.85, 11);
-      growables.push({ obj: sNode, birth: sBirth + 0.1, dur: 0.08, target: 0.7 });
+      const sNode = espNode(sGroup, sTipLocal, b.color, 0.42, 0.85, 11);
+      growables.push({ obj: sNode, birth: sBirth + 0.1, dur: 0.08, target: 0.42 });
 
       // rejet (niveau 3) : un cran de ramification de plus
       if (b.state === 'active') {
@@ -259,8 +259,8 @@ export function buildTree(THREE, model) {
           taperedTube(THREE, twCurve, r1 * 0.45, r1 * 0.16, 8, 5), barkOf(b.state)));
         twGroup.add(espLine(twCurve, 3));
         const twTipLocal = twCurve.getPoint(1);
-        const twNode = espNode(twGroup, twTipLocal, b.color, 0.4, 0.8, 11);
-        growables.push({ obj: twNode, birth: twBirth + 0.08, dur: 0.07, target: 0.4 });
+        const twNode = espNode(twGroup, twTipLocal, b.color, 0.26, 0.8, 11);
+        growables.push({ obj: twNode, birth: twBirth + 0.08, dur: 0.07, target: 0.26 });
         if (b.vitality > 8) {
           const twTipWorld = attachLocal.clone()
             .add(sOriginLocal).add(twOriginLocal).add(twTipLocal);
@@ -276,6 +276,23 @@ export function buildTree(THREE, model) {
     if (b.state === 'active' && b.vitality > 8) {
       scatterLeaves(tipWorld, Math.round((b.vitality / 100) * 11), b.color, 4.6, branchBirth + 0.28);
     }
+  }
+
+  // ── 8ᵉ section : une branche en émergence (dimension à venir) ────────────
+  // L'arbre n'est pas figé à 7 (cf. ARCHITECTURE.md §9). Une pousse pâle,
+  // près de la cime, signale qu'une nouvelle dimension peut éclore.
+  {
+    const emOrigin = trunkCurve.getPoint(0.94);
+    const emGroup = new THREE.Group();
+    emGroup.position.copy(emOrigin);
+    emGroup.scale.setScalar(0.0001);
+    trunkGroup.add(emGroup);
+    growables.push({ obj: emGroup, birth: 0.72, dur: 0.14, target: 1 });
+    const emCurve = localCurve(THREE, new THREE.Vector3(0.5, 1, -0.32), 13, rnd);
+    emGroup.add(new THREE.Mesh(taperedTube(THREE, emCurve, 0.5, 0.16, 12, 6), barkDormant));
+    emGroup.add(espLine(emCurve, 5));
+    const emNode = espNode(emGroup, emCurve.getPoint(1), 0xb9c7da, 0.55, 0.5, 12);
+    growables.push({ obj: emNode, birth: 0.88, dur: 0.1, target: 0.55 });
   }
 
   // ── Feuilles : InstancedMesh global, croissance par instance ─────────────
