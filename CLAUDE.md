@@ -3,6 +3,15 @@
 > Contexte permanent pour Claude Code travaillant sur changeyourlife.ai.
 > Lu automatiquement à chaque session. Si tu modifies des conventions du projet, mets à jour ce fichier.
 
+## ⚠️ Vision produit — à lire en premier
+
+La cible du projet est décrite dans **[docs/VISION.md](docs/VISION.md)** : un
+assistant de vie incarné où l'interface **est un arbre vivant**, piloté par une
+IA-coach **Lya**, alimenté par des connecteurs. Le site actuel (16 modules + nav
+classique) est un **brouillon** (« version −200 ») qui doit converger vers cette
+vision. Toute proposition de feature doit s'inscrire dans la métaphore de l'arbre.
+**Lire `docs/VISION.md` avant toute décision produit.**
+
 ## Projet
 - **Nom** : Change Your Life · `changeyourlife.ai`
 - **Type** : PWA HTML/CSS/JS vanilla, **aucun build step**
