@@ -247,6 +247,8 @@ window.saveNote=async()=>{
     try{
       const ref=await addDoc(collection(db,'codexNotes'),{...note,uid:currentUser.uid,createdAt:serverTimestamp()});
       note.id=ref.id;
+      // XP via Cloud Function addXp → branche Cognitif (apprendre, noter, comprendre)
+      try{ await window._cyfFirebase.awardXp('cognitif', 8); }catch(_){}
     }catch(e){console.error('saveNote',e);}
   }
   userNotes.push(note);allItems=[...BUILT_IN,...userNotes];

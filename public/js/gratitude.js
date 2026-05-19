@@ -203,16 +203,8 @@
       entries[today] = data;
 
       if (!todayAlreadySaved) {
-        // Award XP
-        const userRef = doc(db, 'users', uid);
-        const snap = await getDoc(userRef);
-        const cur = snap.exists() ? (snap.data().xp || 0) : 0;
-        const lvlBefore = Math.floor(cur / 100);
-        const newXp = cur + 5;
-        await setDoc(userRef, { xp: newXp }, { merge: true });
-        if (Math.floor(newXp / 100) > lvlBefore) {
-          showToast(`🎉 Niveau ${Math.floor(newXp / 100)} atteint !`, 4000);
-        }
+        // XP via Cloud Function addXp → branche Transcendance (la gratitude)
+        try { await window._cyfFirebase.awardXp('transcendance', 5); } catch(_) {}
         const btn = document.getElementById('btn-save');
         const r = btn.getBoundingClientRect();
         showXpPop(r.left + r.width / 2 - 20, r.top - 10);

@@ -106,6 +106,7 @@
       const quality = parseInt(document.getElementById('quality-slider').value, 10);
       const note = document.getElementById('sleep-note').value.trim();
       const duration = calcDuration(bedtime, waketime);
+      const isNewNight = !allLogs[dateStr];
 
       btn.disabled = true; btn.textContent = 'Enregistrement…';
       try {
@@ -114,8 +115,12 @@
           duration, savedAt: Date.now()
         });
         allLogs[dateStr] = { date:dateStr, bedtime, waketime, quality, note:note||null, duration };
+        // XP via Cloud Function addXp → branche Physiologique (le sommeil = base vitale)
+        if (isNewNight) {
+          try { await window._cyfFirebase.awardXp('physio', 10); } catch(_) {}
+        }
         renderAll();
-        showToast('Nuit enregistrée !');
+        showToast(isNewNight ? '+10 XP · Nuit enregistrée !' : 'Nuit mise à jour !');
         btn.textContent = 'Mettre à jour';
       } catch(e) {
         console.error(e);

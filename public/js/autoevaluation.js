@@ -300,7 +300,11 @@ window.showHistDetail=(i)=>{
 
 async function save(scores,global){
   if(!currentUser)return;
-  try{await addDoc(collection(db,'assessments'),{uid:currentUser.uid,scores,globalScore:global,answers:JSON.parse(JSON.stringify(answers)),createdAt:serverTimestamp()});}
+  try{
+    await addDoc(collection(db,'assessments'),{uid:currentUser.uid,scores,globalScore:global,answers:JSON.parse(JSON.stringify(answers)),createdAt:serverTimestamp()});
+    // XP via Cloud Function addXp → branche Estime (faire le point sur soi)
+    try{ await window._cyfFirebase.awardXp('estime', 30); }catch(_){}
+  }
   catch(e){console.error('save',e);}
 }
 

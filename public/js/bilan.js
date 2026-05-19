@@ -271,8 +271,11 @@ async function saveBilan() {
   };
 
   try {
+    const isNewBilan = !weekBilanData;
     await setDoc(doc(db, 'users', currentUser.uid, 'bilans', wKey), data);
     weekBilanData = data;
+    // XP via Cloud Function addXp → branche Estime (le rituel de réflexion hebdo)
+    if (isNewBilan) { try { await window._cyfFirebase.awardXp('estime', 20); } catch(_) {} }
     btn.textContent = '✓ Bilan sauvegardé';
     showToast('Bilan de la semaine enregistré !');
     setTimeout(() => { btn.disabled = false; btn.textContent = 'Mettre à jour mon bilan'; }, 2000);

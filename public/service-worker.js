@@ -1,5 +1,5 @@
-// service-worker.js - v41 (arbre de vie sur le dashboard /app/)
-const CACHE_NAME = 'changeyourlife-v41';
+// service-worker.js - v42 (XP câblé de bout en bout → branches Maslow)
+const CACHE_NAME = 'changeyourlife-v42';
 const urlsToCache = [
   '/',
   '/app/',

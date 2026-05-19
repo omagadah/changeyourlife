@@ -160,7 +160,7 @@
         await saveHabits();
         // Award XP via Cloud Function (validation + level-up server-side)
         try {
-          await window._cyfFirebase.awardXp(h.domain || 'etre', 5);
+          await window._cyfFirebase.awardXp(h.domain || 'physio', 5);
           try { showXpFloat(5); } catch(e) {}
         } catch(_) {}
         showToast(`+5 XP · Habitude complétée ! 🔥 ${newStreak} jour${newStreak!==1?'s':''}`, 'xp');

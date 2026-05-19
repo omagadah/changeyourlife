@@ -28,10 +28,12 @@ const BRANCH_TOOLS = {
   physio: [
     { icon: '🌙', label: 'Sommeil', href: '/sommeil/' },
     { icon: '✅', label: 'Habitudes', href: '/habitudes/' },
-    { icon: '😌', label: 'Humeur', href: '/humeur/' },
+    { icon: '🧘', label: 'Méditation', href: '/meditation/' },
   ],
   securite: [],
-  appartenance: [],
+  appartenance: [
+    { icon: '😌', label: 'Humeur', href: '/humeur/' },
+  ],
   estime: [
     { icon: '🎯', label: 'Autoévaluation', href: '/autoevaluation/' },
     { icon: '📊', label: 'Bilan', href: '/bilan/' },
@@ -43,7 +45,6 @@ const BRANCH_TOOLS = {
   esthetique: [],
   accomplissement: [
     { icon: '🎯', label: 'Objectifs', href: '/objectifs/' },
-    { icon: '🧘', label: 'Méditation', href: '/meditation/' },
   ],
   transcendance: [
     { icon: '🌟', label: 'Gratitude', href: '/gratitude/' },

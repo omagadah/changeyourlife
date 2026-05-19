@@ -220,7 +220,7 @@ function buildGoalCard(g, idx) {
     g.progress = v;
     if (v >= 100 && !wasCompleted) {
       g.completed = true; showToast('🏆 Objectif complété ! +25 XP');
-      try { await window._cyfFirebase.awardXp(g.domain || 'etre', 25); showXpFloat(25); } catch(_){}
+      try { await window._cyfFirebase.awardXp(g.domain || 'accomplissement', 25); showXpFloat(25); } catch(_){}
     }
     await persistGoals(); renderAll();
   });
@@ -285,7 +285,7 @@ function buildGoalCard(g, idx) {
     else { showToast('↻ Objectif réactivé'); }
     await persistGoals();
     if (!was) {
-      try { await window._cyfFirebase.awardXp(g.domain || 'etre', 25); showXpFloat(25); } catch(_){}
+      try { await window._cyfFirebase.awardXp(g.domain || 'accomplissement', 25); showXpFloat(25); } catch(_){}
     }
     renderAll();
   });
