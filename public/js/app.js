@@ -5,6 +5,7 @@
         import { doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { updateGlobalAvatar } from '/js/common.js?v=16';
         import { initUserMenu } from '/js/userMenu.js';
+        import { initTreeWidget } from '/js/tree-widget.js';
 
         // Early initialization of the user menu so the button responds immediately even before auth state fires.
         try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }
@@ -66,6 +67,9 @@
                   const now = new Date();
                   wd.textContent = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
                 }
+                // ── Arbre de vie : le hub central, sur les vraies données ──
+                try { initTreeWidget(userData); } catch(e) { console.warn('tree widget failed', e); }
+
                 // ── Load dashboard stats (async, non-blocking) ──
                 loadDashboardStats(db, user.uid, userData);
                 loadXPRings(userData);
