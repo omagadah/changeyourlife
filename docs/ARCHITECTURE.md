@@ -36,13 +36,10 @@ devient *legacy*, les données existantes sont migrées (cf. §6).
 | **Création** | projets, œuvres, apprentissage, compétences, expression | `--creation` #fb923c |
 | **Héritage** | ce qu'on transmet / la trace que l'on laisse | `--heritage` #94a3b8 |
 
-🔴 **À trancher — statut d'Héritage.** La vision met Héritage dans les *branches*
-ET dit « Racines = frise chronologique ». Ce sont les deux bouts de l'axe du temps :
-- les **racines** = d'où l'on vient (mémoire longue, naissance → aujourd'hui) ;
-- **Héritage** = ce qu'on construit *pour laisser* (tourné vers l'avenir).
-
-Proposition : Héritage **est** une branche (on agit dessus), et la frise
-chronologique alimente les **racines** (un visuel distinct). À valider.
+**Statut d'Héritage** (décision §8.1) : Héritage **est** une branche (on agit
+dessus, tourné vers l'avenir : ce qu'on construit pour transmettre) ; en parallèle
+la frise chronologique alimente les **racines** (d'où l'on vient, mémoire longue
+naissance → aujourd'hui). Deux visuels distincts, les deux bouts de l'axe du temps.
 
 ---
 
@@ -139,14 +136,10 @@ Impacts :
 - `firestore.rules` — `noXpTampering()` protège désormais `tree` (au lieu de `levels`).
 - `firebase.js` — `awardXp` et `DOMAIN_ALIASES` mis à jour.
 
-🔴 **À trancher — migration des données existantes.** Le passage 4→7 est en
-partie ambigu. Proposition de mapping de départ (les 3 branches neuves démarrent
-à 0) :
-- `body → corps` · `heart → relations` · `etre → mental` · `order → creation`
-- branches neuves à 0 : `finances`, `sens`, `heritage`
-Migration douce : on lit l'ancien `levels` une dernière fois pour amorcer `tree`,
-puis on n'écrit plus que `tree`. À valider — d'autres mappings sont défendables
-(`order → finances` plutôt que `creation`, etc.).
+**Migration des données existantes** (décision §8.2) : `body → corps` ·
+`heart → relations` · `etre → mental` · `order → creation` ; branches neuves à 0 :
+`finances`, `sens`, `heritage`. Migration douce : lecture unique de l'ancien
+`levels` pour amorcer `tree`, puis on n'écrit plus que `tree`.
 
 ---
 
@@ -176,17 +169,19 @@ les organes restent, c'est la coquille qui change.
 
 ---
 
-## 8 · Questions ouvertes à trancher (owner)
+## 8 · Décisions (tranchées 2026-05-17 — owner)
 
-1. 🔴 Héritage = 7ᵉ branche **et** racines = frise ? (cf. §2)
-2. 🔴 Mapping de migration 4→7 (cf. §5).
-3. 🔴 Les branches vides (Relations, Finances, Héritage) : branches dormantes
-   visibles dès le départ, ou apparaissent seulement quand alimentées ?
-4. 🔴 Stade de l'arbre : basé sur l'XP total, ou sur l'ancienneté du compte ×
-   l'engagement ? (l'XP total récompense l'usage long ; risque : un nouveau venu
-   très actif reste « sapling » longtemps).
-5. 🔴 Arbre **SVG procédural** ou **3D (three.js)** ? (three.js déjà chargé pour
-   Vanta ; mais SVG plus maîtrisable sans build step — cf. VISION tensions).
+L'owner a validé l'ensemble des propositions. Décisions figées :
+
+1. ✅ **Héritage** = 7ᵉ branche (ce qu'on construit pour transmettre) **et** la
+   frise chronologique alimente les **racines** (d'où l'on vient). Deux visuels.
+2. ✅ **Migration 4→7** : `body→corps`, `heart→relations`, `etre→mental`,
+   `order→creation` ; `finances` / `sens` / `heritage` démarrent à 0. Lecture
+   unique de l'ancien `levels` pour amorcer `tree`, puis on n'écrit plus que `tree`.
+3. ✅ **Branches vides** : visibles dès le départ comme branches **dormantes**
+   (fines, en attente) — la structure des 7 branches se lit immédiatement.
+4. ✅ **Stade de l'arbre** : basé sur l'**XP total cumulé** toutes branches.
+5. ✅ **Rendu** : **SVG procédural** (maîtrisable sans build step, animable en CSS).
 
 ---
 
