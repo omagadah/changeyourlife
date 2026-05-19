@@ -59,7 +59,7 @@
                     const subs = ['Prêt à avancer aujourd\'hui ?', 'Chaque jour compte.', 'Construis ta meilleure version.'];
                     if (subEl && !t) subEl.childNodes[0].textContent = subs[new Date().getDay() % subs.length];
                 } catch(e) {}
-                if (!userDoc.exists() || userData.hasSeenTutorial !== true) { startTutorial(userDocRef); }
+                const needsOnboarding = (!userDoc.exists() || userData.hasSeenTutorial !== true);
 
                 // ── Welcome date ──
                 const wd = document.getElementById('welcome-date');
@@ -67,8 +67,15 @@
                   const now = new Date();
                   wd.textContent = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
                 }
-                // ── Arbre de vie : le hub central, sur les vraies données ──
-                try { initTreeWidget(userData); } catch(e) { console.warn('tree widget failed', e); }
+                // ── Arbre de vie : le hub central + onboarding conversationnel ──
+                try {
+                  initTreeWidget(userData, {
+                    needsOnboarding,
+                    onOnboardingComplete: () => {
+                      setDoc(userDocRef, { hasSeenTutorial: true, onboardedAt: Date.now() }, { merge: true }).catch(()=>{});
+                    },
+                  });
+                } catch(e) { console.warn('tree widget failed', e); }
 
                 // ── Load dashboard stats (async, non-blocking) ──
                 loadDashboardStats(db, user.uid, userData);
@@ -83,46 +90,10 @@
             } else { window.location.href = '/login'; }
         });
 
-        // no legacy panel DOM — new menu handles toggle & sign-out
-        function startTutorial(userDocRef) {
-            const tour = new Shepherd.Tour({ useModalOverlay: true, defaultStepOptions: { classes: 'shepherd-element', scrollTo: { behavior: 'smooth', block: 'center' } } });
-            tour.addStep({
-              title: '👋 Bienvenue sur Change Your Life',
-              text: "Ce tableau de bord est ton <strong>espace de transformation personnelle</strong>.<br><br>Tout est organisé autour de <strong>4 domaines de vie</strong> : 💪 Corps, ❤️ Cœur, ✨ Être et ⚡ Ordre. Chaque action dans ces domaines te fait progresser.",
-              attachTo: { element: '.app-container', on: 'top' },
-              buttons: [{ action: tour.next, text: 'Suivant →' }]
-            });
-            tour.addStep({
-              title: '🕸 Ta première étape : la Roue de Vie',
-              text: "Commence par une <strong>autoévaluation de 5 minutes</strong>.<br><br>Elle va révéler tes forces et tes points d'amélioration à travers 20 questions. Résultat immédiat avec un radar visuel.",
-              attachTo: { element: '#card-autoeval', on: 'top' },
-              buttons: [
-                { action: tour.back, classes: 'shepherd-button-secondary', text: '← Retour' },
-                { action: tour.next, text: 'Suivant →' }
-              ]
-            });
-            tour.addStep({
-              title: '🎯 Objectifs & Journal',
-              text: "Crée des <strong>objectifs concrets</strong> dans chacun de tes 4 domaines et écris dans ton <strong>journal quotidien</strong> pour suivre ton évolution.<br><br>Ton XP augmente à chaque action.",
-              attachTo: { element: '#card-objectifs', on: 'top' },
-              buttons: [
-                { action: tour.back, classes: 'shepherd-button-secondary', text: '← Retour' },
-                { action: tour.next, text: 'Compris !' }
-              ]
-            });
-            tour.addStep({
-              title: '🚀 C\'est parti !',
-              text: "Tu n'es pas seul(e) dans cette aventure.<br><br><strong>Lance ton autoévaluation</strong> maintenant — 5 minutes qui peuvent changer ta perspective sur ta vie.",
-              buttons: [
-                { action: () => { tour.complete(); window.location.href='/autoevaluation/'; }, text: '🕸 Faire mon évaluation' },
-                { action: tour.complete, classes: 'shepherd-button-secondary', text: 'Explorer d\'abord' }
-              ]
-            });
-            const markSeen = () => setDoc(userDocRef, { hasSeenTutorial: true }, { merge: true }).catch(()=>{});
-            tour.on('complete', markSeen);
-            tour.on('cancel', markSeen);
-            tour.start();
-        }
+        // L'onboarding est désormais conversationnel : Lya accueille le nouvel
+        // utilisateur et plante l'arbre avec lui (cf. tree-widget.js). L'ancien
+        // tutoriel guidé Shepherd a été retiré.
+
         // ── Dashboard stats loader ─────────────────────────────────────────────
         async function loadDashboardStats(db, uid, userData) {
             try {

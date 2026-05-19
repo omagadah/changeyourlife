@@ -1,5 +1,5 @@
-// service-worker.js - v45 (carte de récompense XP + pousse des branches)
-const CACHE_NAME = 'changeyourlife-v45';
+// service-worker.js - v46 (onboarding conversationnel avec Lya)
+const CACHE_NAME = 'changeyourlife-v46';
 const urlsToCache = [
   '/',
   '/app/',

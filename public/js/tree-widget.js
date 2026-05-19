@@ -54,6 +54,27 @@ const STAGE_LABEL = {
   sapling: 'Jeune pousse', jeune: 'Jeune arbre',
   mature: 'Arbre mature', centenaire: 'Arbre centenaire',
 };
+
+// ── Onboarding conversationnel : Lya plante les 8 branches en discutant ─────
+const ONBOARD_XP = 250;   // XP « de plantation » par branche (1 question = 1 branche)
+const ONBOARDING = [
+  { branch: 'physio', q: 'Commençons par la base : ton corps. Comment te sens-tu physiquement en ce moment ?',
+    chips: ['En pleine forme', 'Ça va', 'Plutôt fatigué·e'] },
+  { branch: 'securite', q: 'Ta sécurité — un toit, de quoi voir venir. Tu te sens à l’abri ?',
+    chips: ['Oui, stable', 'À peu près', 'Pas vraiment'] },
+  { branch: 'appartenance', q: 'Les liens : famille, amis, amour. Tu te sens entouré·e ?',
+    chips: ['Bien entouré·e', 'Quelques proches', 'Plutôt seul·e'] },
+  { branch: 'estime', q: 'Le regard sur toi-même : es-tu fier·e de qui tu es ?',
+    chips: ['Oui', 'Parfois', 'Difficilement'] },
+  { branch: 'cognitif', q: 'Apprendre, comprendre, nourrir ton esprit — tu y trouves de la place ?',
+    chips: ['Chaque jour', 'De temps en temps', 'Pas assez'] },
+  { branch: 'esthetique', q: 'La beauté, l’ordre, l’harmonie autour de toi — ça compte pour toi ?',
+    chips: ['Essentiel', 'Un peu', 'J’y pense peu'] },
+  { branch: 'accomplissement', q: 'Tes projets, ce que tu construis : tu avances vers tes buts ?',
+    chips: ['Pleinement', 'Doucement', 'Je cherche encore'] },
+  { branch: 'transcendance', q: 'Le sens, enfin : contribuer, transmettre, viser plus grand que soi ?',
+    chips: ['Très présent', 'Ça vient', 'Pas encore'] },
+];
 const hex = (c) => '#' + (c >>> 0).toString(16).padStart(6, '0');
 
 // progression XP à l'intérieur du niveau courant (seuil k = 100 + k*20)
@@ -175,6 +196,17 @@ function injectCss() {
   .tw-lya.thinking .tw-lya-input{opacity:.6;}
   .tw-lya.thinking .tw-lya-orb{animation:twPulse 1s ease-in-out infinite;}
   @keyframes twPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+  /* onboarding — chips de réponse */
+  .tw-onb{display:none;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .tw-onb.on{display:flex;}
+  .tw-onb-chip{padding:9px 16px;border-radius:11px;cursor:pointer;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);
+    color:#dce7f5;font:600 0.86rem inherit;
+    transition:background .16s,border-color .16s,transform .16s,color .16s;}
+  .tw-onb-chip:hover{background:rgba(0,112,243,0.2);border-color:rgba(0,112,243,0.55);
+    color:#fff;transform:translateY(-2px);}
+  .tw-onb-chip:active{transform:translateY(0);}
+  .tw-lya.onb .tw-lya-form{display:none;}
   @media (max-width:640px){
     .tw-panel{width:100%;}
     .tw-lya{right:0;}
@@ -246,13 +278,26 @@ function lyaMessage(model, name) {
 }
 
 // ── Entrée publique ─────────────────────────────────────────────────────────
-export function initTreeWidget(userData) {
+export function initTreeWidget(userData, opts) {
   const stage = document.getElementById('tree-stage');
   if (!stage) return;
   injectCss();
+  opts = opts || {};
+  const needsOnboarding = !!opts.needsOnboarding;
+  const onOnboardingComplete = opts.onOnboardingComplete;
 
-  const tree = treeFromUserDoc(userData || {});
-  const model = toVisualModel(tree);
+  const realTree = treeFromUserDoc(userData || {});
+  // En onboarding, on bâtit l'arbre « destination » (8 branches plantées) ;
+  // la croissance est ensuite révélée réponse par réponse.
+  let srcTree = realTree;
+  if (needsOnboarding) {
+    srcTree = { v: realTree.v, createdAt: realTree.createdAt, branches: {} };
+    for (const k of Object.keys(realTree.branches)) {
+      const b = realTree.branches[k];
+      srcTree.branches[k] = { xp: (b.xp || 0) + ONBOARD_XP, lastActionAt: Date.now() };
+    }
+  }
+  const model = toVisualModel(srcTree);
   const name = (userData && (userData.displayName || userData.username) || '').trim();
   const totalXp = model.branches.reduce((s, b) => s + (b.xp || 0), 0);
 
@@ -261,7 +306,7 @@ export function initTreeWidget(userData) {
   let grownBranches = [];
   try {
     const raw = localStorage.getItem(SEEN_KEY);
-    if (raw !== null) {
+    if (raw !== null && !needsOnboarding) {
       const seen = JSON.parse(raw) || {};
       grownBranches = model.branches
         .filter((b) => (b.xp || 0) > (seen[b.key] || 0))
@@ -304,6 +349,7 @@ export function initTreeWidget(userData) {
                  placeholder="Parle à Lya — pose-lui une question sur ton arbre…" />
           <button class="tw-lya-send" id="tw-lya-send" type="submit" aria-label="Envoyer">➤</button>
         </form>
+        <div class="tw-onb" id="tw-onb"></div>
       </div>
     </section>
   `);
@@ -313,6 +359,7 @@ export function initTreeWidget(userData) {
   const lyaForm = stage.querySelector('#tw-lya-form');
   const lyaInput = stage.querySelector('#tw-lya-input');
   const lyaSend = stage.querySelector('#tw-lya-send');
+  const onbBox = stage.querySelector('#tw-onb');
 
   // Le panneau et la zone de Lya ne doivent pas déclencher l'orbite / le clic
   // sur une branche — on isole leurs événements pointeur de la scène.
@@ -332,7 +379,7 @@ export function initTreeWidget(userData) {
       if (i <= text.length) { lyaLine.textContent = text.slice(0, i++); setTimeout(tick, 16); }
     })();
   }
-  lyaSay(lyaMessage(model, name));
+  if (!needsOnboarding) lyaSay(lyaMessage(model, name));
 
   // ── Lya en conversation libre (Gemini via /api/coach) ─────────────────────
   const lyaHistory = [];
@@ -392,6 +439,72 @@ export function initTreeWidget(userData) {
     }
   }
   lyaForm.addEventListener('submit', (e) => { e.preventDefault(); sendToLya(lyaInput.value); });
+
+  // ── Onboarding conversationnel — Lya plante l'arbre avec l'utilisateur ────
+  // mode : 'intro' (pousse auto) · 'onboarding' (pousse pilotée) · 'live'
+  let mode = needsOnboarding ? 'onboarding' : 'intro';
+  let curAge = needsOnboarding ? 0.10 : 0;
+  let targetAge = 0.10;
+  let onbActive = needsOnboarding;
+  let celebrateStart = null;
+  let celebrateKeys = new Set();
+
+  function celebrate(branchKey) {
+    celebrateStart = clock.getElapsedTime();
+    celebrateKeys = new Set([branchKey]);
+  }
+  function showChips(items, onPick) {
+    onbBox.innerHTML = '';
+    items.forEach((label) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tw-onb-chip';
+      b.textContent = label;
+      b.addEventListener('click', () => onPick(label));
+      onbBox.appendChild(b);
+    });
+    onbBox.classList.add('on');
+  }
+  function clearChips() { onbBox.innerHTML = ''; onbBox.classList.remove('on'); }
+  function endOnboarding(completed) {
+    onbActive = false;
+    targetAge = 1;
+    clearChips();
+    lyaSection.classList.remove('onb');
+    if (completed && typeof onOnboardingComplete === 'function') {
+      try { onOnboardingComplete(); } catch (_) { /* non bloquant */ }
+    }
+  }
+  function runOnboarding() {
+    lyaSection.classList.add('onb');
+    const greet = name ? `Bonjour ${name}.` : 'Bonjour.';
+    lyaSay(`${greet} Je suis Lya. Avant tout, plantons ton arbre — il grandira avec ta vie. Quelques questions, réponds simplement.`);
+    showChips(['Planter mon arbre 🌱'], () => askQuestion(0));
+
+    function askQuestion(i) {
+      if (i >= ONBOARDING.length) {
+        clearChips();
+        lyaSay('Voilà — ton arbre a pris racine. Huit branches, comme les huit besoins de la pyramide de Maslow. À toi de le faire grandir maintenant : chaque action le nourrit. Je reste là, parle-moi quand tu veux.');
+        endOnboarding(true);
+        return;
+      }
+      const o = ONBOARDING[i];
+      lyaSay(o.q);
+      showChips(o.chips, () => {
+        clearChips();
+        targetAge = 0.12 + ((i + 1) / ONBOARDING.length) * 0.88;
+        celebrate(o.branch);
+        const b = model.branches.find((x) => x.key === o.branch);
+        lyaSay(`${b ? b.label : 'Cette branche'} prend racine 🌱`);
+        try {
+          if (window._cyfFirebase && window._cyfFirebase.awardXp) {
+            window._cyfFirebase.awardXp(o.branch, ONBOARD_XP);
+          }
+        } catch (_) { /* l'XP est non bloquant pour le déroulé */ }
+        setTimeout(() => askQuestion(i + 1), 1600);
+      });
+    }
+  }
 
   // ── Three.js ──────────────────────────────────────────────────────────────
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -519,11 +632,18 @@ export function initTreeWidget(userData) {
     document.body.style.overflow = '';
     resize();
   }
-  stage.querySelector('.tw-close').addEventListener('click', (e) => { e.stopPropagation(); collapse(); });
+  stage.querySelector('.tw-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (onbActive) endOnboarding(true);   // ✕ pendant l'onboarding = passer
+    collapse();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (panel.classList.contains('open')) closeBranch();
-    else if (stage.classList.contains('expanded')) collapse();
+    else if (stage.classList.contains('expanded')) {
+      if (onbActive) endOnboarding(true);
+      collapse();
+    }
   });
 
   // ── Clic : widget → expand · plein écran → branche la plus proche ─────────
@@ -544,11 +664,12 @@ export function initTreeWidget(userData) {
   stage.addEventListener('pointerup', (e) => {
     if (controls.wasDrag()) return;
     if (!stage.classList.contains('expanded')) { expand(); return; }
+    if (onbActive) return;            // pendant l'onboarding, pas de clic-branche
     const hit = nearestNode(e.clientX, e.clientY);
     if (hit) openBranch(hit.userData.key);
   });
   stage.addEventListener('pointermove', (e) => {
-    if (!stage.classList.contains('expanded') || controls.isDragging()) return;
+    if (!stage.classList.contains('expanded') || controls.isDragging() || onbActive) return;
     stage.style.cursor = nearestNode(e.clientX, e.clientY) ? 'pointer' : 'default';
   });
   stage.addEventListener('keydown', (e) => {
@@ -569,39 +690,40 @@ export function initTreeWidget(userData) {
   window.addEventListener('resize', resize);
   resize();
 
-  // ── Boucle : pousse d'intro puis vie (rotation douce + pulsation) ─────────
+  // ── Boucle : croissance (intro / onboarding) puis vie ─────────────────────
   controls.setTargetRadius(118);
   const clock = new THREE.Clock();
-  let grown = false;
-  let celebrateStart = null;
-  let celebrateKeys = new Set();
   function frame() {
     const t = clock.getElapsedTime();
-    if (!grown) {
-      const age = Math.min(1, t / 2.6);
-      grow(age);
-      if (age >= 1) {
-        grown = true; grow(1);
+    if (mode === 'intro') {
+      curAge = Math.min(1, t / 2.6);
+      grow(curAge);
+      if (curAge >= 1) {
+        mode = 'live'; grow(1);
         // pousse depuis la dernière visite : pulsation festive + bilan de Lya
         if (grownBranches.length) {
           celebrateStart = t;
           celebrateKeys = new Set(grownBranches.map((g) => g.key));
           const top = grownBranches.slice().sort((a, b) => b.delta - a.delta).slice(0, 3);
-          const summary = top.map((g) => `${g.label} +${g.delta} XP`).join(' · ');
-          lyaSay(`Depuis ta dernière visite, ton arbre a poussé : ${summary} 🌱`);
+          lyaSay(`Depuis ta dernière visite, ton arbre a poussé : ${top.map((g) => `${g.label} +${g.delta} XP`).join(' · ')} 🌱`);
         }
       }
+    } else if (mode === 'onboarding') {
+      // l'âge de croissance suit la progression des réponses
+      curAge += (Math.min(1, targetAge) - curAge) * 0.045;
+      grow(Math.min(1, curAge));
+      if (!onbActive && curAge > 0.999) { grow(1); mode = 'live'; }
     }
     if (!controls.isDragging() && !panel.classList.contains('open')) {
       group.rotation.y += 0.0018;
     }
     for (const m of nodes) {
-      let mult = 1 + Math.sin(t * 2 + m.position.y) * 0.08;
+      let pulse = 1 + Math.sin(t * 2 + m.position.y) * 0.08;
       if (celebrateStart != null && celebrateKeys.has(m.userData.key)) {
         const e = t - celebrateStart;
-        if (e < 3.2) mult *= 1 + (1 - e / 3.2) * (0.55 + 0.35 * Math.sin(e * 10));
+        if (e < 3.2) pulse *= 1 + (1 - e / 3.2) * (0.55 + 0.35 * Math.sin(e * 10));
       }
-      m.scale.setScalar((m.userData.baseR || 1) * mult);
+      m.scale.setScalar((m.userData.baseR || 1) * pulse);
     }
     controls.apply();
     updateLabels();
@@ -609,4 +731,7 @@ export function initTreeWidget(userData) {
     requestAnimationFrame(frame);
   }
   frame();
+
+  // un nouvel utilisateur : Lya l'accueille et plante l'arbre avec lui
+  if (needsOnboarding) { expand(); runOnboarding(); }
 }
