@@ -285,6 +285,9 @@ export function initTreeWidget(userData, opts) {
   opts = opts || {};
   const needsOnboarding = !!opts.needsOnboarding;
   const onOnboardingComplete = opts.onOnboardingComplete;
+  // Diagnostic : visible dans la console pour vérifier que la nouvelle version
+  // tourne et que l'onboarding est bien attendu pour ce compte.
+  try { console.log('[CYL] tree-widget v47 — needsOnboarding:', needsOnboarding); } catch (_) {}
 
   const realTree = treeFromUserDoc(userData || {});
   // En onboarding, on bâtit l'arbre « destination » (8 branches plantées) ;

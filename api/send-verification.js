@@ -144,12 +144,24 @@ module.exports = async function handler(req, res) {
     });
 
     // Send email via Resend
+    // Anti-spam : on accompagne le HTML d'une version texte (multipart améliore
+    // la délivrabilité), un sujet qui commence par du texte (pas par les chiffres
+    // du code), et un reply_to explicite.
+    const textVersion =
+      `Bonjour,\n\n` +
+      `Votre code de vérification ChangeYourLife : ${code}\n\n` +
+      `Ce code expire dans 15 minutes. À ne partager avec personne.\n\n` +
+      `Si vous n'avez pas créé de compte sur ChangeYourLife.ai, ignorez simplement cet email.\n\n` +
+      `— L'équipe ChangeYourLife\nhttps://changeyourlife.ai\n`;
+
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { data: resendData, error: resendError } = await resend.emails.send({
       from: 'ChangeYourLife <noreply@changeyourlife.ai>',
       to: email,
-      subject: `${code} — Votre code de vérification ChangeYourLife`,
+      reply_to: 'noreply@changeyourlife.ai',
+      subject: `Code de vérification ChangeYourLife · ${code}`,
       html: buildEmailHtml(code, email),
+      text: textVersion,
     });
 
     if (resendError) {

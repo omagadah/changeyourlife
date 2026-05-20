@@ -1,5 +1,5 @@
-// service-worker.js - v46 (onboarding conversationnel avec Lya)
-const CACHE_NAME = 'changeyourlife-v46';
+// service-worker.js - v47 (auto-reload des onglets à la mise à jour + network-first JS/CSS)
+const CACHE_NAME = 'changeyourlife-v47';
 const urlsToCache = [
   '/',
   '/app/',
@@ -50,57 +50,61 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(clients.claim());
+  event.waitUntil((async () => {
+    await clients.claim();
+    // Auto-recharge les onglets contrôlés : sans ça, l'utilisateur reste
+    // bloqué sur d'anciens assets en cache après un déploiement. Une seule
+    // recharge par mise à jour du SW (pas de boucle).
+    try {
+      const all = await clients.matchAll({ type: 'window' });
+      for (const c of all) {
+        try { c.navigate(c.url); } catch (_) { /* ignore */ }
+      }
+    } catch (_) { /* matchAll/navigate non supporté → tant pis */ }
+  })());
 });
 
+// Stratégie de cache :
+//   - HTML / JS / CSS  → network first (toujours servir la dernière version
+//     quand on est en ligne, fallback cache hors ligne).
+//   - reste (images, fonts, vendor)  → cache first (rapide).
 self.addEventListener('fetch', event => {
   const { request } = event;
-  
-  // Network first for navigation (HTML pages)
-  if (request.mode === 'navigate') {
+  // On ne s'occupe pas des requêtes non-GET ni des chrome-extension://
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  const isFreshAsset = request.mode === 'navigate'
+    || /\.(?:js|mjs|css|html)$/i.test(url.pathname);
+
+  if (isFreshAsset) {
     event.respondWith(
       fetch(request)
         .then(response => {
           if (response && response.status === 200) {
             const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, responseToCache);
-            });
+            caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache)).catch(() => {});
           }
           return response;
         })
-        .catch(() => {
-          return caches.match(request).then(response => {
-            return response || new Response('Offline', { status: 503 });
-          });
-        })
+        .catch(() => caches.match(request).then(r => r || caches.match('/') || new Response('Offline', { status: 503 })))
     );
     return;
   }
 
-  // Cache first for other requests
+  // Cache first pour le reste (images, fonts, vendor)
   event.respondWith(
     caches.match(request)
       .then(response => {
-        if (response) {
-          return response;
-        }
-
+        if (response) return response;
         return fetch(request).then(response => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
+          if (!response || response.status !== 200 || response.type !== 'basic') return response;
           const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseToCache);
-          });
-
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache)).catch(() => {});
           return response;
         });
       })
-      .catch(() => {
-        return caches.match('/');
-      })
+      .catch(() => caches.match('/'))
   );
 });
