@@ -1,5 +1,5 @@
-// service-worker.js - v52 (Lya en overlay sur toutes les pages auth)
-const CACHE_NAME = 'changeyourlife-v52';
+// service-worker.js - v53 (jalons datés + XP par jalon sur /objectifs/)
+const CACHE_NAME = 'changeyourlife-v53';
 const urlsToCache = [
   '/',
   '/app/',

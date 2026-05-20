@@ -43,8 +43,72 @@ if (window._cyfFirebase) {
 try { initUserMenu(); } catch(e) {}
 window.addEventListener('DOMContentLoaded', () => {
   bootVanta();
+  injectMilestoneCss();
   try { updateGlobalAvatar(); } catch(e) {}
 });
+
+// ── Helpers Jalons (milestones datés) ────────────────────────────────────────
+function injectMilestoneCss() {
+  if (document.getElementById('cyl-milestone-css')) return;
+  const css = document.createElement('style');
+  css.id = 'cyl-milestone-css';
+  css.textContent = `
+    .subtask-date{font-size:0.72rem;font-weight:600;margin-left:auto;
+      padding:2px 7px;border-radius:6px;background:rgba(255,255,255,0.06);
+      color:#9bb3d0;flex-shrink:0;letter-spacing:.2px;white-space:nowrap;}
+    .subtask-date.overdue{color:#fca5a5;background:rgba(248,113,113,0.15);}
+    .subtask-date.soon{color:#fde68a;background:rgba(251,191,36,0.15);}
+    .subtask-add-row.has-date{flex-wrap:wrap;}
+    .subtask-add-date{padding:7px 9px;border-radius:8px;
+      background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+      color:#cdd9ea;font:500 0.78rem inherit;width:142px;flex-shrink:0;
+      color-scheme:dark;outline:none;transition:border-color .15s;}
+    .subtask-add-date:focus{border-color:rgba(0,112,243,0.4);}
+    .next-milestone{display:flex;align-items:center;gap:10px;padding:9px 13px;
+      border-radius:10px;margin:10px 0 4px;
+      background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.22);}
+    .next-milestone-emoji{font-size:1.05rem;flex-shrink:0;}
+    .next-milestone-label{flex:1;min-width:0;font-size:0.84rem;font-weight:600;color:#e0eaf6;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .next-milestone-date{font-size:0.74rem;color:#7bbfff;font-weight:700;flex-shrink:0;}
+    .next-milestone.overdue{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.25);}
+    .next-milestone.overdue .next-milestone-date{color:#fca5a5;}
+    .next-milestone.soon{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.28);}
+    .next-milestone.soon .next-milestone-date{color:#fbbf24;}
+  `;
+  document.head.appendChild(css);
+}
+
+function fmtDueDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00');
+  if (isNaN(d)) return '';
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString('fr-FR', sameYear ? { day:'numeric', month:'short' } : { day:'numeric', month:'short', year:'numeric' });
+}
+function dueStatus(iso) {
+  if (!iso) return 'none';
+  const t = new Date(iso + 'T00:00').getTime();
+  if (isNaN(t)) return 'none';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diffDays = Math.floor((t - today.getTime()) / 86400000);
+  if (diffDays < 0) return 'overdue';
+  if (diffDays <= 3) return 'soon';
+  return 'ok';
+}
+function sortMilestones(arr) {
+  return arr.slice().sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const ad = a.dueAt ? new Date(a.dueAt + 'T00:00').getTime() : Infinity;
+    const bd = b.dueAt ? new Date(b.dueAt + 'T00:00').getTime() : Infinity;
+    return ad - bd;
+  });
+}
+function nextMilestone(g) {
+  const arr = (g.subtasks || []).filter(s => !s.done);
+  if (!arr.length) return null;
+  return sortMilestones(arr)[0];
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login'; return; }
@@ -182,6 +246,27 @@ function buildGoalCard(g, idx) {
     card.appendChild(desc);
   }
 
+  // ── Prochain jalon ──
+  if (!g.completed) {
+    const nxt = nextMilestone(g);
+    if (nxt) {
+      const nmBox = document.createElement('div');
+      const status = dueStatus(nxt.dueAt);
+      nmBox.className = 'next-milestone' + (status === 'overdue' ? ' overdue' : status === 'soon' ? ' soon' : '');
+      const e1 = document.createElement('span'); e1.className = 'next-milestone-emoji';
+      e1.textContent = status === 'overdue' ? '⚠️' : '🎯';
+      const e2 = document.createElement('span'); e2.className = 'next-milestone-label';
+      e2.textContent = 'Prochain jalon : ' + nxt.label;
+      nmBox.append(e1, e2);
+      if (nxt.dueAt) {
+        const e3 = document.createElement('span'); e3.className = 'next-milestone-date';
+        e3.textContent = fmtDueDate(nxt.dueAt);
+        nmBox.appendChild(e3);
+      }
+      card.appendChild(nmBox);
+    }
+  }
+
   // ── Progress row ──
   const progRow = document.createElement('div'); progRow.className = 'progress-row';
   const progText = document.createElement('span'); progText.className = 'progress-text';
@@ -227,13 +312,17 @@ function buildGoalCard(g, idx) {
   sliderWrap.append(slider, sliderLabel);
   card.appendChild(sliderWrap);
 
-  // ── Sub-tasks ──
-  const subtasks = g.subtasks || [];
+  // ── Jalons (milestones datés) ──
+  // Note interne : on conserve la clé `subtasks` en Firestore pour la rétro-
+  // compatibilité, mais l'UI parle de « jalons ». Une date d'échéance
+  // optionnelle est ajoutée à chaque entrée.
+  const subtasksRaw = g.subtasks || [];
+  const subtasks = sortMilestones(subtasksRaw);
   const stSection = document.createElement('div'); stSection.className = 'subtasks-section';
 
   const stToggle = document.createElement('button'); stToggle.className = 'subtasks-toggle';
   const doneCount = subtasks.filter(s=>s.done).length;
-  stToggle.innerHTML = `<span class="arrow">▶</span> Étapes <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${subtasks.length ? `${doneCount}/${subtasks.length}` : '+ ajouter'}</span>`;
+  stToggle.innerHTML = `<span class="arrow">▶</span> Jalons <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${subtasks.length ? `${doneCount}/${subtasks.length}` : '+ ajouter'}</span>`;
   stToggle.addEventListener('click', () => {
     stToggle.classList.toggle('open');
     stList.classList.toggle('open');
@@ -242,24 +331,36 @@ function buildGoalCard(g, idx) {
 
   const stList = document.createElement('div'); stList.className = 'subtasks-list';
   subtasks.forEach((st, si) => {
-    stList.appendChild(buildSubtaskItem(g, idx, st, si, card, stToggle, goalColor));
+    // si est l'index dans le tableau trié ; on retrouve l'index réel pour delete/toggle.
+    const realIdx = (g.subtasks || []).indexOf(st);
+    stList.appendChild(buildSubtaskItem(g, idx, st, realIdx, card, stToggle, goalColor));
   });
 
-  // Add subtask row
-  const addRow = document.createElement('div'); addRow.className = 'subtask-add-row';
+  // Ajout d'un jalon : libellé + date d'échéance optionnelle
+  const addRow = document.createElement('div'); addRow.className = 'subtask-add-row has-date';
   const addInput = document.createElement('input');
-  addInput.type = 'text'; addInput.className = 'subtask-add-input'; addInput.placeholder = 'Nouvelle étape…'; addInput.maxLength = 80;
+  addInput.type = 'text'; addInput.className = 'subtask-add-input';
+  addInput.placeholder = 'Nouveau jalon…'; addInput.maxLength = 80;
+  const addDate = document.createElement('input');
+  addDate.type = 'date'; addDate.className = 'subtask-add-date';
+  addDate.title = 'Échéance (optionnelle)';
   const addBtn = document.createElement('button'); addBtn.className = 'subtask-add-btn'; addBtn.textContent = '+ Ajouter';
-  const addSubtask = async () => {
+  const addMilestone = async () => {
     const val = addInput.value.trim(); if (!val) return;
     if (!g.subtasks) g.subtasks = [];
-    g.subtasks.push({ id:`st_${Date.now()}`, label:val, done:false });
-    addInput.value = '';
+    g.subtasks.push({
+      id: `st_${Date.now()}`,
+      label: val,
+      done: false,
+      dueAt: addDate.value || null,
+    });
+    addInput.value = ''; addDate.value = '';
     await persistGoals(); renderAll();
   };
-  addBtn.addEventListener('click', addSubtask);
-  addInput.addEventListener('keydown', e => { if (e.key==='Enter') addSubtask(); });
-  addRow.append(addInput, addBtn);
+  addBtn.addEventListener('click', addMilestone);
+  addInput.addEventListener('keydown', e => { if (e.key==='Enter') addMilestone(); });
+  addDate.addEventListener('keydown', e => { if (e.key==='Enter') addMilestone(); });
+  addRow.append(addInput, addDate, addBtn);
   stList.appendChild(addRow);
 
   stSection.appendChild(stList);
@@ -318,15 +419,32 @@ function buildSubtaskItem(g, goalIdx, st, stIdx, card, toggle, goalColor) {
   const label = document.createElement('span');
   label.className = `subtask-label${st.done?' done':''}`;
   label.textContent = st.label;
+
+  // Badge de date (n'apparaît que si dueAt + jalon non fait)
+  let dateBadge = null;
+  if (st.dueAt && !st.done) {
+    const status = dueStatus(st.dueAt);
+    dateBadge = document.createElement('span');
+    dateBadge.className = 'subtask-date' + (status === 'overdue' ? ' overdue' : status === 'soon' ? ' soon' : '');
+    dateBadge.textContent = fmtDueDate(st.dueAt);
+  }
+
   const del = document.createElement('button'); del.className = 'subtask-del'; del.textContent = '×';
 
   const toggle2 = async () => {
+    const wasDone = st.done;
     st.done = !st.done;
-    // Update toggle badge
+    // XP : on récompense le passage à « fait » (et seulement celui-là), à la
+    // branche de l'objectif. Garde-fou côté firestore.rules + addXp.
+    if (!wasDone) {
+      try { await window._cyfFirebase.awardXp(g.domain || 'accomplissement', 5); } catch (_) {}
+      try { showXpFloat(5); } catch (_) {}
+    }
+    // Update toggle badge (libellé « Jalons »)
     const doneCount = (g.subtasks||[]).filter(s=>s.done).length;
     const total = (g.subtasks||[]).length;
-    toggle.innerHTML = `<span class="arrow${toggle.classList.contains('open')?'':''}" style="transition:transform .2s;display:inline-block${toggle.classList.contains('open')?';transform:rotate(90deg)':''}">▶</span> Étapes <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${total?`${doneCount}/${total}`:' + ajouter'}</span>`;
-    // Auto-update goal progress from subtasks
+    toggle.innerHTML = `<span class="arrow${toggle.classList.contains('open')?'':''}" style="transition:transform .2s;display:inline-block${toggle.classList.contains('open')?';transform:rotate(90deg)':''}">▶</span> Jalons <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${total?`${doneCount}/${total}`:' + ajouter'}</span>`;
+    // Auto-update goal progress from milestones
     if (total > 0) {
       g.progress = Math.round(doneCount / total * 100);
     }
@@ -340,7 +458,9 @@ function buildSubtaskItem(g, goalIdx, st, stIdx, card, toggle, goalColor) {
     await persistGoals(); renderAll();
   });
 
-  item.append(check, label, del);
+  item.append(check, label);
+  if (dateBadge) item.appendChild(dateBadge);
+  item.appendChild(del);
   return item;
 }
 

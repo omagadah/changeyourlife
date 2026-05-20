@@ -49,10 +49,12 @@
 
 ### A · Flow concret « Objectif → Réalité »
 Exemple cible (arrêter de fumer) :
-- [ ] Création d'un objectif → **jalons** auto-générés ou éditables (J+1 sans fumer / J+7 / J+30 / J+90)
-- [ ] Page **Objectifs** : vue chronologique des jalons en cours, à venir, atteints
-- [ ] Chaque jalon coché = gain d'XP **accomplissement** + branche **physio** (santé) + carte de récompense
-- [ ] Une frise simple sous l'arbre pour visualiser ses jalons sur la durée
+- [x] Création d'un objectif avec **jalons datés** (ex: J+7 sans fumer / J+30 / J+90), date d'échéance optionnelle par jalon
+- [x] Tri automatique des jalons par échéance, badge de date avec coloration (overdue rouge / soon ambre / ok bleu)
+- [x] Surlignage du « prochain jalon » sur chaque carte d'objectif (avec emoji ⚠️ si en retard)
+- [x] Chaque jalon coché = **+5 XP** sur la branche de l'objectif (en plus de l'XP de complétion de l'objectif)
+- [ ] Une frise globale sous l'arbre pour visualiser tous les jalons sur la durée (page dédiée, plus tard)
+- [ ] Génération automatique de jalons par Lya (« Propose-moi 5 jalons pour cet objectif » — nécessite IA payante)
 
 ### B · Lya overlay sur TOUTES les interfaces ✅
 > L'IA n'est pas dans l'arbre seulement — elle est addossée à chaque page.
