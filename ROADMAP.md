@@ -24,12 +24,15 @@
 
 ### Lya
 - [x] Présence dans l'arbre en plein écran : message contextuel à l'arrivée
-- [x] **Conversation libre** branchée sur Gemini 2.0 Flash (`/api/coach`) qui voit l'état réel de l'arbre
+- [x] **Conversation libre** branchée sur l'IA (`/api/coach`) qui voit l'état réel de l'arbre
 - [x] Historique de conversation conservé
+- [x] **Double provider** : Groq (Llama 3.3 70B, gratuit, rapide — préféré si `GROQ_API_KEY` Vercel) avec fallback Gemini 2.0 Flash
+- [x] Diagnostic des erreurs IA remonté côté client (status Gemini/Groq + début du message)
 
 ### Onboarding conversationnel
-- [x] Nouvel utilisateur → arbre plein écran direct, Lya pose 8 questions (1 par branche)
-- [x] Chaque réponse fait pousser SA branche en direct (avec carte d'XP)
+- [x] Nouvel utilisateur → arbre plein écran direct, Lya pose **1 question** pour planter la première branche et expliquer le mécanisme
+- [x] Les 7 autres branches restent dormantes et s'éveillent au fil des actions vraies (Sommeil, Journal, Méditation…)
+- [x] Message de clôture explicite : « pas d'XP creux, on agit dans le réel et l'arbre le voit »
 - [x] L'ancien tutoriel guidé Shepherd a été retiré
 
 ### Plomberie

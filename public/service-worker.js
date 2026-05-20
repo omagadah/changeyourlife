@@ -1,5 +1,5 @@
-// service-worker.js - v49 (Lya diagnostics + onboarding clarifie l'XP-from-actions)
-const CACHE_NAME = 'changeyourlife-v49';
+// service-worker.js - v50 (onboarding 1 question + Groq fallback)
+const CACHE_NAME = 'changeyourlife-v50';
 const urlsToCache = [
   '/',
   '/app/',

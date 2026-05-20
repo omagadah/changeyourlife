@@ -57,23 +57,12 @@ const STAGE_LABEL = {
 
 // ── Onboarding conversationnel : Lya plante les 8 branches en discutant ─────
 const ONBOARD_XP = 250;   // XP « de plantation » par branche (1 question = 1 branche)
+// Une seule question pour planter la première branche et faire comprendre le
+// mécanisme (action → branche pousse). Les 7 autres grandiront naturellement
+// au fil de l'utilisation des modules (Sommeil, Journal, Méditation…).
 const ONBOARDING = [
   { branch: 'physio', q: 'Commençons par la base : ton corps. Comment te sens-tu physiquement en ce moment ?',
     chips: ['En pleine forme', 'Ça va', 'Plutôt fatigué·e'] },
-  { branch: 'securite', q: 'Ta sécurité — un toit, de quoi voir venir. Tu te sens à l’abri ?',
-    chips: ['Oui, stable', 'À peu près', 'Pas vraiment'] },
-  { branch: 'appartenance', q: 'Les liens : famille, amis, amour. Tu te sens entouré·e ?',
-    chips: ['Bien entouré·e', 'Quelques proches', 'Plutôt seul·e'] },
-  { branch: 'estime', q: 'Le regard sur toi-même : es-tu fier·e de qui tu es ?',
-    chips: ['Oui', 'Parfois', 'Difficilement'] },
-  { branch: 'cognitif', q: 'Apprendre, comprendre, nourrir ton esprit — tu y trouves de la place ?',
-    chips: ['Chaque jour', 'De temps en temps', 'Pas assez'] },
-  { branch: 'esthetique', q: 'La beauté, l’ordre, l’harmonie autour de toi — ça compte pour toi ?',
-    chips: ['Essentiel', 'Un peu', 'J’y pense peu'] },
-  { branch: 'accomplissement', q: 'Tes projets, ce que tu construis : tu avances vers tes buts ?',
-    chips: ['Pleinement', 'Doucement', 'Je cherche encore'] },
-  { branch: 'transcendance', q: 'Le sens, enfin : contribuer, transmettre, viser plus grand que soi ?',
-    chips: ['Très présent', 'Ça vient', 'Pas encore'] },
 ];
 const hex = (c) => '#' + (c >>> 0).toString(16).padStart(6, '0');
 
@@ -294,10 +283,14 @@ export function initTreeWidget(userData, opts) {
   // la croissance est ensuite révélée réponse par réponse.
   let srcTree = realTree;
   if (needsOnboarding) {
+    // Seules les branches qu'on va planter dans l'onboarding sont seedées.
+    // Les autres restent dormantes — elles grandiront avec l'usage du site.
+    const seededBranches = new Set(ONBOARDING.map((o) => o.branch));
     srcTree = { v: realTree.v, createdAt: realTree.createdAt, branches: {} };
     for (const k of Object.keys(realTree.branches)) {
       const b = realTree.branches[k];
-      srcTree.branches[k] = { xp: (b.xp || 0) + ONBOARD_XP, lastActionAt: Date.now() };
+      const seed = seededBranches.has(k) ? ONBOARD_XP : 0;
+      srcTree.branches[k] = { xp: (b.xp || 0) + seed, lastActionAt: Date.now() };
     }
   }
   const model = toVisualModel(srcTree);
@@ -483,13 +476,13 @@ export function initTreeWidget(userData, opts) {
   function runOnboarding() {
     lyaSection.classList.add('onb');
     const greet = name ? `Bonjour ${name}.` : 'Bonjour.';
-    lyaSay(`${greet} Je suis Lya. Avant tout, plantons ton arbre — il grandira avec ta vie. Quelques questions, réponds simplement.`);
-    showChips(['Planter mon arbre 🌱'], () => askQuestion(0));
+    lyaSay(`${greet} Je suis Lya. Plantons ensemble la première branche de ton arbre — il grandira au fil de tes actions. Une question pour commencer.`);
+    showChips(['C’est parti 🌱'], () => askQuestion(0));
 
     function askQuestion(i) {
       if (i >= ONBOARDING.length) {
         clearChips();
-        lyaSay('Voilà — ton arbre a pris racine. À partir d’ici, chaque action vraie sur ce site fait pousser SA branche : tu médites → Physiologique. Tu journales → Cognitif. Tu atteins un objectif → Accomplissement. Pas d’XP creux, on agit dans le réel et l’arbre le voit. Je reste là — parle-moi quand tu veux.');
+        lyaSay('Voilà — la première branche est plantée. Les 7 autres sont là, dormantes : elles s’éveilleront au fil de tes actions vraies sur ce site. Tu médites → Physiologique pousse. Tu journales → Cognitif pousse. Tu atteins un objectif → Accomplissement pousse. Pas d’XP creux, on agit dans le réel et l’arbre le voit. Je reste là — parle-moi quand tu veux.');
         endOnboarding(true);
         return;
       }

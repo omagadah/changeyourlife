@@ -128,6 +128,61 @@ module.exports = async function handler(req, res) {
     last.parts[0].text += profileCtx;
   }
 
+  // ── Provider Groq (gratuit, fiable, format OpenAI) — préféré si GROQ_API_KEY défini ──
+  // Llama 3.3 70B via Groq : quota gratuit 30 req/min, hyper rapide, JSON mode.
+  // Permet à Lya de fonctionner même si la clé Gemini est invalide ou épuisée.
+  if (process.env.GROQ_API_KEY) {
+    const groqMessages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...safeMessages.map(m => ({
+        role: m.role === 'model' ? 'assistant' : 'user',
+        content: m.parts[0].text,
+      })),
+    ];
+    try {
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+          messages: groqMessages,
+          response_format: { type: 'json_object' },
+          temperature: 0.85,
+          max_tokens: 1024,
+        }),
+      });
+      if (!groqRes.ok) {
+        const errText = await groqRes.text();
+        console.error('[coach] Groq error:', groqRes.status, errText);
+        return res.status(502).json({
+          error: 'Service IA temporairement indisponible',
+          provider: 'groq',
+          groqStatus: groqRes.status,
+          details: (errText || '').slice(0, 240),
+        });
+      }
+      const data = await groqRes.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (!text) return res.status(502).json({ error: 'Réponse IA vide', provider: 'groq' });
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        parsed = {
+          reply: text,
+          analysis: { topics: [], stats_delta: { mental: 0, corps: 0, social: 0, pro: 0 }, new_nodes: [], priority_modules: [], insight: '' },
+        };
+      }
+      return res.status(200).json(parsed);
+    } catch (e) {
+      console.error('[coach] Groq handler error:', e?.message || e);
+      return res.status(500).json({ error: 'Erreur interne', provider: 'groq' });
+    }
+  }
+
   // ── Call Gemini (key in header, not query string) ──────────────────────────
   try {
     const geminiRes = await fetch(GEMINI_URL, {
