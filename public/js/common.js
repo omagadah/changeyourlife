@@ -178,7 +178,7 @@ if (typeof window !== 'undefined') {
 
         // Register service worker once globally, if supported and not already registered
         if ('serviceWorker' in navigator) {
-            const swUrl = '/service-worker.js?v=51';
+            const swUrl = '/service-worker.js?v=52';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
@@ -219,3 +219,14 @@ if (typeof window !== 'undefined') {
         }
     } catch (e) { /* ignore in non-browser contexts */ }
 }
+
+// ── Lya overlay (orb + chat) — chargée sur toutes les pages auth ────────────
+// Pas sur la landing, login, signup, verify-email (pages publiques sans Lya).
+(function maybeLoadLyaOverlay() {
+  try {
+    var p = location.pathname;
+    if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0) return;
+    // import dynamique : non bloquant si le module échoue
+    import('/js/lya-overlay.js').catch(function (e) { try { console.warn('[lya-overlay]', e && e.message || e); } catch (_) {} });
+  } catch (_) { /* ignore */ }
+})();

@@ -54,13 +54,14 @@ Exemple cible (arrêter de fumer) :
 - [ ] Chaque jalon coché = gain d'XP **accomplissement** + branche **physio** (santé) + carte de récompense
 - [ ] Une frise simple sous l'arbre pour visualiser ses jalons sur la durée
 
-### B · Lya overlay sur TOUTES les interfaces
-> L'IA n'est pas dans l'arbre seulement — elle est addosée à chaque page.
+### B · Lya overlay sur TOUTES les interfaces ✅
+> L'IA n'est pas dans l'arbre seulement — elle est addossée à chaque page.
 
-- [ ] Bouton/orb « Parler à Lya » persistant en bas à droite de chaque module
-- [ ] Quand on est dans `/sommeil/`, Lya voit ton historique sommeil → conseil contextuel
-- [ ] Quand on est dans `/objectifs/`, elle voit tes jalons → t'aide à prioriser
-- [ ] Quand on est dans `/journal/`, elle peut suggérer une question d'amorce
+- [x] Orb « Parler à Lya » persistant en bas à droite de chaque page authentifiée
+- [x] Panneau de chat compact, ferme sur clic en dehors / Échap / ✕
+- [x] Contexte envoyé : page actuelle + résumé de l'arbre (8 branches : niveau/dev/vitalité)
+- [x] Sur `/app/`, l'orb s'efface quand l'arbre passe en plein écran (le tree-widget a sa propre Lya)
+- [ ] **Phase suivante (besoin payant)** : Lya pré-charge l'historique sommeil sur `/sommeil/`, lit les jalons sur `/objectifs/`, propose une amorce de journal sur `/journal/` — vrai contexte spécifique par page
 
 ### C · Onboarding — message de clôture
 - [ ] Après les 8 branches plantées, Lya explique : « Maintenant à toi. Chaque action sur ce site (méditer, journaler, dormir, atteindre un objectif…) fait pousser SA branche. Pas de magie : on agit dans le vrai, ça compte ici. »
@@ -83,6 +84,19 @@ UI : chaque connecteur = une carte dans `/settings/` avec son état (connecté /
 - [ ] Préparer une API interne `connectors/` pour ajouter facilement de nouveaux pluggables
 
 ---
+
+## 🤖 IA — montée en gamme progressive
+
+Stratégie : démarrer avec des modèles **gratuits et simples** (Groq Llama 3.3 70B,
+Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèles
+**payants méga-promptés** quand la base sera prouvée.
+
+- [x] Phase 1 : Groq / Gemini gratuits, prompt système simple, conversation libre
+- [ ] **Phase 2 (plus tard)** : provider payant (Claude Opus, GPT-4o, Gemini Pro…)
+  - Prompts ultra-spécialisés par contexte (page actuelle, branche en cours, état émotionnel)
+  - Mémoire long-terme entre sessions (Lya se souvient de ce qu'elle t'a dit hier)
+  - Tool-use : Lya peut directement ouvrir un module, créer un objectif, planifier dans le calendrier
+  - Streaming des réponses (effet « elle écrit en direct »)
 
 ## 📝 Idées validées (à planifier)
 

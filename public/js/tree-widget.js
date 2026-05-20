@@ -618,6 +618,7 @@ export function initTreeWidget(userData, opts) {
     controls.setTargetRadius(150);
     document.body.style.overflow = 'hidden';
     resize();
+    try { document.dispatchEvent(new CustomEvent('cyl:tree-expand')); } catch (_) {}
   }
   function collapse() {
     stage.classList.remove('expanded');
@@ -629,6 +630,7 @@ export function initTreeWidget(userData, opts) {
     controls.setTargetRadius(118);
     document.body.style.overflow = '';
     resize();
+    try { document.dispatchEvent(new CustomEvent('cyl:tree-collapse')); } catch (_) {}
   }
   const closeBtn = stage.querySelector('.tw-close');
   // Isole la croix du handler global de la scène (sinon le clic compte

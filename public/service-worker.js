@@ -1,5 +1,5 @@
-// service-worker.js - v51 (clic dans le vide ferme l'arbre fullscreen)
-const CACHE_NAME = 'changeyourlife-v51';
+// service-worker.js - v52 (Lya en overlay sur toutes les pages auth)
+const CACHE_NAME = 'changeyourlife-v52';
 const urlsToCache = [
   '/',
   '/app/',
@@ -30,7 +30,8 @@ const urlsToCache = [
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',
-  '/js/xp-reward.js'
+  '/js/xp-reward.js',
+  '/js/lya-overlay.js'
   // Bundle vendor three (~733 KB) volontairement omis ici :
   // - addAll() est atomique, un échec ferait planter tout l'install
   // - mis en cache automatiquement par la stratégie "cache first" du
