@@ -420,11 +420,13 @@ export function initTreeWidget(userData, opts) {
       });
       if (!res.ok) {
         lyaHistory.pop();
+        let detail = '';
+        try { const j = await res.json(); detail = j && (j.error || j.details) ? ` (${(j.error || '') + (j.geminiStatus ? ' · Gemini ' + j.geminiStatus : '')})` : ''; } catch (_) {}
         lyaSay(res.status === 429
-          ? 'Lya a besoin d’une minute — réessaie dans un instant.'
+          ? `Lya a besoin d’une minute — réessaie dans un instant.${detail}`
           : (res.status === 401 || res.status === 403)
-            ? 'Reconnecte-toi pour parler à Lya.'
-            : 'Lya est indisponible pour l’instant. Réessaie plus tard.');
+            ? `Reconnecte-toi pour parler à Lya.${detail}`
+            : `Lya est indisponible pour l’instant${detail}`);
         return;
       }
       const data = await res.json();
@@ -487,7 +489,7 @@ export function initTreeWidget(userData, opts) {
     function askQuestion(i) {
       if (i >= ONBOARDING.length) {
         clearChips();
-        lyaSay('Voilà — ton arbre a pris racine. Huit branches, comme les huit besoins de la pyramide de Maslow. À toi de le faire grandir maintenant : chaque action le nourrit. Je reste là, parle-moi quand tu veux.');
+        lyaSay('Voilà — ton arbre a pris racine. À partir d’ici, chaque action vraie sur ce site fait pousser SA branche : tu médites → Physiologique. Tu journales → Cognitif. Tu atteins un objectif → Accomplissement. Pas d’XP creux, on agit dans le réel et l’arbre le voit. Je reste là — parle-moi quand tu veux.');
         endOnboarding(true);
         return;
       }

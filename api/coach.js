@@ -152,7 +152,13 @@ module.exports = async function handler(req, res) {
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
       console.error('[coach] Gemini error:', geminiRes.status, errText);
-      return res.status(502).json({ error: 'Service IA temporairement indisponible' });
+      // On remonte assez d'info pour qu'on puisse diagnostiquer côté client
+      // (model deprecated, quota, key invalide…). Tronqué pour ne pas fuiter.
+      return res.status(502).json({
+        error: 'Service IA temporairement indisponible',
+        geminiStatus: geminiRes.status,
+        details: (errText || '').slice(0, 240),
+      });
     }
 
     const data = await geminiRes.json();

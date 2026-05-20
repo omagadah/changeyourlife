@@ -1,5 +1,5 @@
-// service-worker.js - v48 (fix : null user-email cassait toute l'init de /app/)
-const CACHE_NAME = 'changeyourlife-v48';
+// service-worker.js - v49 (Lya diagnostics + onboarding clarifie l'XP-from-actions)
+const CACHE_NAME = 'changeyourlife-v49';
 const urlsToCache = [
   '/',
   '/app/',

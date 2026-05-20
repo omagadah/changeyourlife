@@ -129,6 +129,9 @@ Pas de suite automatisée. Validation = redeploy Vercel + smoke test manuel par 
 - Quand je dis « on continue » : tu reprends depuis le dernier session log
 
 ## Ressources
+- **[ROADMAP.md](ROADMAP.md) — checklist opérationnelle (fait vs à faire)**
+- [docs/VISION.md](docs/VISION.md) — vision narrative (lue à chaque session)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — modèle de données + architecture de l'arbre
 - [AUDIT.md](AUDIT.md) — état actuel du code (toujours à jour)
 - [docs/sessions/](docs/sessions/) — log chronologique des sessions
 - [README.md](README.md) — pitch projet
