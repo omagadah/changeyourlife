@@ -29,7 +29,11 @@
             window.location.replace('/verify-email');
             return;
         }
-        document.getElementById('user-email').textContent = user.email || "Utilisateur Anonyme";
+        // L'ancien panneau utilisateur a été remplacé par le user-menu — ce champ
+        // n'existe plus dans le DOM. Garde-fou pour ne pas casser toute la suite
+        // (notamment initTreeWidget) sur un getElementById nul.
+        const userEmailEl = document.getElementById('user-email');
+        if (userEmailEl) userEmailEl.textContent = user.email || "Utilisateur Anonyme";
                 // keep trigger logo intact; use updateGlobalAvatar to refresh any avatar state
                 // if you want personal avatar, set localStorage 'userAvatarUrl' and call updateGlobalAvatar()
                 if (document.referrer.includes("/login")) {

@@ -1,5 +1,5 @@
-// service-worker.js - v47 (auto-reload des onglets à la mise à jour + network-first JS/CSS)
-const CACHE_NAME = 'changeyourlife-v47';
+// service-worker.js - v48 (fix : null user-email cassait toute l'init de /app/)
+const CACHE_NAME = 'changeyourlife-v48';
 const urlsToCache = [
   '/',
   '/app/',
