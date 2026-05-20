@@ -102,7 +102,7 @@ function injectCss() {
     background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:#cdd9ea;}
   .tree-stage.expanded .tw-close{display:flex;align-items:center;justify-content:center;}
   .tw-close:hover{background:rgba(255,255,255,0.14);color:#fff;}
-  .tw-hud{position:absolute;top:20px;left:22px;z-index:4;display:none;}
+  .tw-hud{position:absolute;top:20px;left:22px;z-index:4;display:none;pointer-events:none;}
   .tree-stage.expanded .tw-hud{display:block;}
   .tw-hud-stage{font-size:0.66rem;font-weight:700;letter-spacing:1.2px;
     text-transform:uppercase;color:#60a5fa;}
@@ -630,7 +630,11 @@ export function initTreeWidget(userData, opts) {
     document.body.style.overflow = '';
     resize();
   }
-  stage.querySelector('.tw-close').addEventListener('click', (e) => {
+  const closeBtn = stage.querySelector('.tw-close');
+  // Isole la croix du handler global de la scène (sinon le clic compte
+  // aussi comme « clic dans le vide » et déclenche un double collapse).
+  ['pointerdown', 'pointerup'].forEach((ev) => closeBtn.addEventListener(ev, (e) => e.stopPropagation()));
+  closeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (onbActive) endOnboarding(true);   // ✕ pendant l'onboarding = passer
     collapse();
@@ -662,13 +666,18 @@ export function initTreeWidget(userData, opts) {
   stage.addEventListener('pointerup', (e) => {
     if (controls.wasDrag()) return;
     if (!stage.classList.contains('expanded')) { expand(); return; }
-    if (onbActive) return;            // pendant l'onboarding, pas de clic-branche
+    if (onbActive) return;            // pendant l'onboarding, on garde le focus
     const hit = nearestNode(e.clientX, e.clientY);
-    if (hit) openBranch(hit.userData.key);
+    if (hit) { openBranch(hit.userData.key); return; }
+    // Clic dans le vide en plein écran → ferme l'arbre (UX standard, plus
+    // besoin d'attraper la croix ou de presser Échap).
+    collapse();
   });
   stage.addEventListener('pointermove', (e) => {
     if (!stage.classList.contains('expanded') || controls.isDragging() || onbActive) return;
-    stage.style.cursor = nearestNode(e.clientX, e.clientY) ? 'pointer' : 'default';
+    // Curseur : pointer sur une branche, zoom-out ailleurs (indique « cliquer
+    // ferme »). Standard sur les lightboxes / Google Maps fullscreen.
+    stage.style.cursor = nearestNode(e.clientX, e.clientY) ? 'pointer' : 'zoom-out';
   });
   stage.addEventListener('keydown', (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && !stage.classList.contains('expanded')) {

@@ -1,5 +1,5 @@
-// service-worker.js - v50 (onboarding 1 question + Groq fallback)
-const CACHE_NAME = 'changeyourlife-v50';
+// service-worker.js - v51 (clic dans le vide ferme l'arbre fullscreen)
+const CACHE_NAME = 'changeyourlife-v51';
 const urlsToCache = [
   '/',
   '/app/',
