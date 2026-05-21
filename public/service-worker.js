@@ -1,5 +1,5 @@
-// service-worker.js - v56 (rotation : suivi 1:1 direct, sensibilité adaptative)
-const CACHE_NAME = 'changeyourlife-v56';
+// service-worker.js - v57 (auto-rotation stop + onboarding : XP visible + invite à explorer)
+const CACHE_NAME = 'changeyourlife-v57';
 const urlsToCache = [
   '/',
   '/app/',

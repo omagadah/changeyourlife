@@ -490,8 +490,10 @@ export function initTreeWidget(userData, opts) {
 
     function askQuestion(i) {
       if (i >= ONBOARDING.length) {
+        // Filet de sécurité (n'est plus atteint avec le flow à 1 question :
+        // la clôture se fait juste après la réponse, en deux temps).
         clearChips();
-        lyaSay('Voilà — la première branche est plantée. Les 7 autres sont là, dormantes : elles s’éveilleront au fil de tes actions vraies sur ce site. Tu médites → Physiologique pousse. Tu journales → Cognitif pousse. Tu atteins un objectif → Accomplissement pousse. Pas d’XP creux, on agit dans le réel et l’arbre le voit. Je reste là — parle-moi quand tu veux.');
+        lyaSay('Voilà — ton arbre a pris racine. À toi de le faire pousser maintenant.');
         endOnboarding(true);
         return;
       }
@@ -499,16 +501,24 @@ export function initTreeWidget(userData, opts) {
       lyaSay(o.q);
       showChips(o.chips, () => {
         clearChips();
-        targetAge = 0.12 + ((i + 1) / ONBOARDING.length) * 0.88;
+        targetAge = 1;                       // arbre à pleine taille tout de suite
         celebrate(o.branch);
         const b = model.branches.find((x) => x.key === o.branch);
-        lyaSay(`${b ? b.label : 'Cette branche'} prend racine 🌱`);
+        // 1) Carte de récompense XP (top-right) + écriture Firestore. Passe par
+        //    awardXp → showXpReward, exactement comme un gain « réel » dans un module.
         try {
           if (window._cyfFirebase && window._cyfFirebase.awardXp) {
             window._cyfFirebase.awardXp(o.branch, ONBOARD_XP);
           }
         } catch (_) { /* l'XP est non bloquant pour le déroulé */ }
-        setTimeout(() => askQuestion(i + 1), 1600);
+        // 2) Lya célèbre + pointe la carte pour que l'utilisateur la repère.
+        lyaSay(`+${ONBOARD_XP} XP ✨ Ta branche ${b ? b.label : ''} vient de pousser. Regarde la carte qui glisse en haut à droite — c'est ta récompense. Chaque action sur le site fera pareil.`);
+        // 3) Après lecture (~3,4 s) : invitation à explorer + fin de l'onboarding
+        //    pour rendre les autres branches cliquables.
+        setTimeout(() => {
+          lyaSay('À toi maintenant : clique sur les autres branches de l’arbre pour découvrir ce qu’elles contiennent (Sécurité, Appartenance, Estime, Cognitif…). Les outils que tu utiliseras feront pousser leur branche, comme à l’instant.');
+          endOnboarding(true);
+        }, 3400);
       });
     }
   }
@@ -732,9 +742,9 @@ export function initTreeWidget(userData, opts) {
       grow(Math.min(1, curAge));
       if (!onbActive && curAge > 0.999) { grow(1); mode = 'live'; }
     }
-    if (!controls.isDragging() && !panel.classList.contains('open')) {
-      group.rotation.y += 0.0018;
-    }
+    // Auto-rotation désactivée : avec le sol et l'herbe en repère, le micro-
+    // tournis du Y permanent devenait vite désagréable. L'arbre reste là où
+    // l'utilisateur l'a laissé.
     for (const m of nodes) {
       let pulse = 1 + Math.sin(t * 2 + m.position.y) * 0.08;
       if (celebrateStart != null && celebrateKeys.has(m.userData.key)) {
