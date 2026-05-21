@@ -118,8 +118,9 @@ function initScene(canvas) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
+  // Far plane étendu pour le cosmos (soleil ~1100, planètes jusqu'à ~2200, étoiles ~1400).
   const camera = new THREE.PerspectiveCamera(
-    42, canvas.clientWidth / canvas.clientHeight, 0.1, 900);
+    42, canvas.clientWidth / canvas.clientHeight, 0.1, 5000);
 
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -129,9 +130,9 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow } = buildTree(THREE, createDemoModel());
+  const { group, nodes, subNodes, grow, animateCosmos } = buildTree(THREE, createDemoModel());
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos };
 }
 
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
@@ -139,7 +140,7 @@ function initControls(canvas, camera) {
   const s = {
     azimuth: 0.5, polar: 1.06, radius: 110,
     tAz: 0.5, tPo: 1.06, tR: 110,
-    minR: 64, maxR: 205, minPo: 0.55, maxPo: 1.45,
+    minR: 64, maxR: 1800, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
@@ -171,7 +172,9 @@ function initControls(canvas, camera) {
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     userZoomed = true;
-    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.06));
+    // Zoom logarithmique : step proportionnel au rayon courant (du tronc ~80
+    // jusqu'au système solaire ~1800 sans 200 coups de molette).
+    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.0018 * s.tR));
   }, { passive: false });
 
   return {
@@ -428,7 +431,7 @@ function initLya() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos } = initScene(canvas);
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
   const hud = initHud();
@@ -526,6 +529,9 @@ function initTree3D(canvas) {
     // pop-ups synchronisés à la position de la barre de temps
     hud.syncBeats(age, prevAge);
     prevAge = age;
+
+    // Orbite lente des planètes (visible quand on dézoome)
+    if (typeof animateCosmos === 'function') animateCosmos(dt);
 
     if (phase === 'live') {
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;

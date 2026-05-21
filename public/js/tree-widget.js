@@ -235,7 +235,9 @@ function makeControls(el, camera, target) {
   el.addEventListener('wheel', (e) => {
     if (!enabled()) return;
     e.preventDefault();
-    s.tR = Math.min(240, Math.max(80, s.tR + e.deltaY * 0.07));
+    // Zoom logarithmique : step proportionnel au rayon courant. Permet d'aller
+    // du tronc (~80) jusqu'au système solaire (~1800) sans 200 coups de molette.
+    s.tR = Math.min(1800, Math.max(60, s.tR + e.deltaY * 0.0018 * s.tR));
   }, { passive: false });
   return {
     isDragging: () => dragging,
@@ -531,7 +533,8 @@ export function initTreeWidget(userData, opts) {
   renderer.toneMappingExposure = 1.6;
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 900);
+  // Far plane large pour embrasser le cosmos (soleil ~1100, planètes jusqu'à ~2200, étoiles ~1400).
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 5000);
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
   key.position.set(30, 70, 36); scene.add(key);
@@ -546,7 +549,7 @@ export function initTreeWidget(userData, opts) {
   try { extraGrass = Math.max(0, Math.min(1500, parseInt(localStorage.getItem('cyl_grass_bonus') || '0', 10) || 0)); } catch (_) {}
   try { branchScales = JSON.parse(localStorage.getItem('cyl_branch_scales') || '{}') || {}; } catch (_) {}
 
-  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades } = buildTree(THREE, model, { extraGrass });
+  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos } = buildTree(THREE, model, { extraGrass });
   scene.add(group);
 
   const target = new THREE.Vector3(0, 40, 0);
@@ -769,8 +772,11 @@ export function initTreeWidget(userData, opts) {
   // ── Boucle : croissance (intro / onboarding) puis vie ─────────────────────
   controls.setTargetRadius(118);
   const clock = new THREE.Clock();
+  let lastFrameT = 0;
   function frame() {
     const t = clock.getElapsedTime();
+    const dt = lastFrameT ? Math.min(0.1, t - lastFrameT) : 0.016;
+    lastFrameT = t;
     if (mode === 'intro') {
       curAge = Math.min(1, t / 2.6);
       grow(curAge);
@@ -802,6 +808,8 @@ export function initTreeWidget(userData, opts) {
       }
       m.scale.setScalar((m.userData.baseR || 1) * pulse);
     }
+    // Cosmos : orbite lente des planètes (visible quand on dézoome).
+    if (typeof animateCosmos === 'function') animateCosmos(dt);
     controls.apply();
     updateLabels();
     renderer.render(scene, camera);

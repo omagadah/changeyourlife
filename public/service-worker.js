@@ -1,5 +1,5 @@
-// service-worker.js - v59 (synergie XP : branche pousse + herbe densifie en live)
-const CACHE_NAME = 'changeyourlife-v59';
+// service-worker.js - v60 (cosmos : étoiles + soleil + planètes au dézoom)
+const CACHE_NAME = 'changeyourlife-v60';
 const urlsToCache = [
   '/',
   '/app/',

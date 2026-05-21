@@ -295,6 +295,103 @@ export function buildTree(THREE, model, opts) {
   const folMatB = new THREE.MeshStandardMaterial({ color: 0x4a8a3a, roughness: 0.85, flatShading: true });
   const folMatC = new THREE.MeshStandardMaterial({ color: 0x6aa852, roughness: 0.85, flatShading: true });
 
+  // ── Cosmos : étoiles + soleil + planètes en orbite ──────────────────────
+  // Toujours dans la scène. Invisible/lointain au zoom normal, se révèle
+  // quand l'utilisateur dézoome : « tu es minuscule sur une petite planète,
+  // remets-toi en perspective ». Coût quasi nul (Points + sphères basiques).
+
+  // Champ d'étoiles — 2200 points sur une coquille lointaine
+  const STAR_COUNT = 2200;
+  const starPos = new Float32Array(STAR_COUNT * 3);
+  const starCol = new Float32Array(STAR_COUNT * 3);
+  for (let i = 0; i < STAR_COUNT; i++) {
+    // distribution uniforme sur sphère
+    const u = rnd(), v = rnd();
+    const theta = 2 * Math.PI * u;
+    const phi = Math.acos(2 * v - 1);
+    const r = 1400 * (0.85 + rnd() * 0.3);
+    starPos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+    starPos[i * 3 + 1] = r * Math.cos(phi);
+    starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    const intens = 0.55 + rnd() * 0.45;
+    starCol[i * 3]     = intens * (0.85 + rnd() * 0.15);
+    starCol[i * 3 + 1] = intens * (0.85 + rnd() * 0.15);
+    starCol[i * 3 + 2] = intens * (0.90 + rnd() * 0.10);
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+  starGeo.setAttribute('color',    new THREE.Float32BufferAttribute(starCol, 3));
+  const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({
+    size: 2, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.88,
+  }));
+  root.add(stars);
+
+  // Soleil — sphère émissive lointaine + halos additifs + lumière warm
+  const sunGroup = new THREE.Group();
+  sunGroup.position.set(-1100, 280, -800);
+  root.add(sunGroup);
+  sunGroup.add(new THREE.Mesh(
+    new THREE.SphereGeometry(45, 32, 20),
+    new THREE.MeshBasicMaterial({ color: 0xffd86a })
+  ));
+  sunGroup.add(new THREE.Mesh(
+    new THREE.SphereGeometry(85, 32, 20),
+    new THREE.MeshBasicMaterial({ color: 0xffb84a, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false })
+  ));
+  sunGroup.add(new THREE.Mesh(
+    new THREE.SphereGeometry(150, 32, 20),
+    new THREE.MeshBasicMaterial({ color: 0xff9a3a, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false })
+  ));
+  // une lumière point qui pose un poil de chaleur du côté soleil
+  sunGroup.add(new THREE.PointLight(0xffd6a0, 1.4, 4000, 0.6));
+
+  // Planètes en orbite (parentées au soleil pour orbite naturelle)
+  const planetsData = [
+    { color: 0x9a8a7a, radius:  4, dist: 180, speed: 0.18,  tilt:  0.04 },   // Mercure
+    { color: 0xddc06a, radius:  6, dist: 280, speed: 0.10,  tilt: -0.03 },   // Vénus
+    { color: 0xd17a48, radius:  5, dist: 380, speed: 0.07,  tilt:  0.04 },   // Mars
+    { color: 0xd4a574, radius: 16, dist: 540, speed: 0.04,  tilt:  0.02 },   // Jupiter
+    { color: 0xc9b078, radius: 13, dist: 720, speed: 0.025, tilt:  0.05, ring: true }, // Saturne
+    { color: 0x8fc6d4, radius:  8, dist: 920, speed: 0.018, tilt: -0.04 },   // Uranus
+    { color: 0x4a78d4, radius:  8, dist:1120, speed: 0.014, tilt:  0.02 },   // Neptune
+  ];
+  const planets = [];
+  for (const p of planetsData) {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(p.radius, 20, 14),
+      new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.85, metalness: 0.03 })
+    );
+    const ang = rnd() * Math.PI * 2;
+    mesh.userData = { dist: p.dist, speed: p.speed, tilt: p.tilt, angle: ang };
+    mesh.position.set(Math.cos(ang) * p.dist, p.tilt * p.dist, Math.sin(ang) * p.dist);
+    sunGroup.add(mesh);
+    if (p.ring) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(p.radius * 1.5, p.radius * 2.4, 48),
+        new THREE.MeshBasicMaterial({ color: 0xc9b078, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+      );
+      ring.rotation.x = Math.PI * 0.42;
+      mesh.add(ring);
+    }
+    planets.push(mesh);
+  }
+
+  // Animation des orbites (appelée chaque frame par l'orchestrateur).
+  // Lente exprès : ce n'est pas un écran de veille, c'est un repère mental.
+  function animateCosmos(dt) {
+    if (!dt || dt > 0.5) dt = 0.016; // garde-fou (onglet en veille…)
+    for (const p of planets) {
+      p.userData.angle += p.userData.speed * dt;
+      const a = p.userData.angle;
+      p.position.set(
+        Math.cos(a) * p.userData.dist,
+        p.userData.tilt * p.userData.dist,
+        Math.sin(a) * p.userData.dist,
+      );
+      p.rotation.y += dt * 0.3;
+    }
+  }
+
   // ── Tronc ─────────────────────────────────────────────────────────────────
   const trunkH = 48;
   const trunkGroup = new THREE.Group();
@@ -467,5 +564,5 @@ export function buildTree(THREE, model, opts) {
   }
   grow(0);
 
-  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades };
+  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos };
 }
