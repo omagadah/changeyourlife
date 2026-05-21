@@ -1,5 +1,5 @@
-// service-worker.js - v53 (jalons datés + XP par jalon sur /objectifs/)
-const CACHE_NAME = 'changeyourlife-v53';
+// service-worker.js - v54 (tronc plus lisible + rotation plus douce)
+const CACHE_NAME = 'changeyourlife-v54';
 const urlsToCache = [
   '/',
   '/app/',

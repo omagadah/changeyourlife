@@ -218,8 +218,10 @@ function makeControls(el, camera, target) {
     const dx = e.clientX - px, dy = e.clientY - py;
     if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
     px = e.clientX; py = e.clientY;
-    s.tAz -= dx * 0.006;
-    s.tPo = Math.min(1.4, Math.max(0.5, s.tPo - dy * 0.005));
+    // Sensibilité réduite : la rotation se faisait « par à-coups », trop
+    // radicale au moindre mouvement de souris. Halvée pour un feel posé.
+    s.tAz -= dx * 0.0035;
+    s.tPo = Math.min(1.4, Math.max(0.5, s.tPo - dy * 0.003));
   });
   const end = () => { dragging = false; };
   el.addEventListener('pointerup', end);
@@ -234,9 +236,11 @@ function makeControls(el, camera, target) {
     wasDrag: () => moved,
     setTargetRadius: (r) => { s.tR = r; },
     apply() {
-      s.az += (s.tAz - s.az) * 0.12;
-      s.po += (s.tPo - s.po) * 0.12;
-      s.r += (s.tR - s.r) * 0.1;
+      // Lerp plus doux (0.12 → 0.085) : l'arrivée à la cible est moins
+      // brutale, le mouvement « glisse ». Toujours réactif.
+      s.az += (s.tAz - s.az) * 0.085;
+      s.po += (s.tPo - s.po) * 0.085;
+      s.r += (s.tR - s.r) * 0.085;
       const sp = Math.sin(s.po), cp = Math.cos(s.po);
       camera.position.set(
         target.x + s.r * sp * Math.sin(s.az),

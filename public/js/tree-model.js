@@ -118,9 +118,12 @@ export function buildTree(THREE, model) {
   const root = new THREE.Group();
   const rnd = rng(0x4c594c);
 
-  const barkActive = new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 0.9 });
-  const barkDormant = new THREE.MeshStandardMaterial({ color: 0x3d4657, roughness: 1 });
-  const barkBroken = new THREE.MeshStandardMaterial({ color: 0x7a2e2e, roughness: 0.9 });
+  // Tronc en chêne clair plutôt qu'en chocolat sombre : se voit nettement sur
+  // fond marine #060e1a, et la grille ESP blanche par-dessus ne « grille » plus
+  // le tronc par contraste — on lit enfin l'arbre comme un arbre.
+  const barkActive = new THREE.MeshStandardMaterial({ color: 0xa67c52, roughness: 0.7, metalness: 0.05 });
+  const barkDormant = new THREE.MeshStandardMaterial({ color: 0x5d6677, roughness: 0.95 });
+  const barkBroken = new THREE.MeshStandardMaterial({ color: 0x8a3c3c, roughness: 0.85 });
   const barkOf = (st) => (st === 'broken' ? barkBroken : st === 'dormant' ? barkDormant : barkActive);
   const espMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, depthTest: false });
   const ballGeo = new THREE.SphereGeometry(1, 16, 12);

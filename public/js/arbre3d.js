@@ -152,8 +152,9 @@ function initControls(canvas, camera) {
     const dx = e.clientX - px, dy = e.clientY - py;
     if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
     px = e.clientX; py = e.clientY;
-    s.tAz -= dx * 0.006;
-    s.tPo = Math.min(s.maxPo, Math.max(s.minPo, s.tPo - dy * 0.005));
+    // Sensibilité réduite (cf. tree-widget) : rotation plus posée.
+    s.tAz -= dx * 0.0035;
+    s.tPo = Math.min(s.maxPo, Math.max(s.minPo, s.tPo - dy * 0.003));
   });
   const end = (e) => {
     dragging = false;
@@ -171,9 +172,10 @@ function initControls(canvas, camera) {
     // `target` (optionnel) : centre d'orbite — suit la cime pendant la pousse.
     apply(target) {
       const tgt = target || ORBIT_TARGET;
-      s.azimuth += (s.tAz - s.azimuth) * 0.12;
-      s.polar += (s.tPo - s.polar) * 0.12;
-      s.radius += (s.tR - s.radius) * 0.12;
+      // Lerp plus doux : transitions qui glissent au lieu de claquer.
+      s.azimuth += (s.tAz - s.azimuth) * 0.085;
+      s.polar += (s.tPo - s.polar) * 0.085;
+      s.radius += (s.tR - s.radius) * 0.085;
       const sp = Math.sin(s.polar), cp = Math.cos(s.polar);
       camera.position.set(
         tgt.x + s.radius * sp * Math.sin(s.azimuth),
