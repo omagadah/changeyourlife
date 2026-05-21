@@ -538,7 +538,15 @@ export function initTreeWidget(userData, opts) {
   const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
   fill.position.set(-36, 30, -20); scene.add(fill);
 
-  const { group, nodes, subNodes, grow } = buildTree(THREE, model);
+  // Synergie XP ↔ visuel : on charge ce qu'on a accumulé entre sessions.
+  // - cyl_grass_bonus : nombre de brins d'herbe en plus (un peu par récompense)
+  // - cyl_branch_scales : multiplicateur de taille par branche (croissance lente)
+  let extraGrass = 0;
+  let branchScales = {};
+  try { extraGrass = Math.max(0, Math.min(1500, parseInt(localStorage.getItem('cyl_grass_bonus') || '0', 10) || 0)); } catch (_) {}
+  try { branchScales = JSON.parse(localStorage.getItem('cyl_branch_scales') || '{}') || {}; } catch (_) {}
+
+  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades } = buildTree(THREE, model, { extraGrass });
   scene.add(group);
 
   const target = new THREE.Vector3(0, 40, 0);
@@ -718,6 +726,46 @@ export function initTreeWidget(userData, opts) {
   window.addEventListener('resize', resize);
   resize();
 
+  // ── Synergie XP → arbre : appliquer les multiplicateurs de branches ──────
+  // Chaque gain d'XP fait pousser SA branche d'un cran (plafonné à 1.6×) et
+  // ajoute quelques brins d'herbe. Les deux sont persistés localement et
+  // appliqués au rechargement → la progression est cumulative et visible.
+  function applyPersistedBranchScales() {
+    if (!branchScales) return;
+    for (const [k, s] of Object.entries(branchScales)) {
+      const bg = branchGroups.get(k);
+      if (bg && typeof s === 'number' && isFinite(s) && s > 0) bg.scale.setScalar(s);
+    }
+  }
+  function bumpBranch(key) {
+    const bg = branchGroups.get(key);
+    if (!bg) return;
+    const cur = (branchScales && branchScales[key]) || bg.scale.x || 1;
+    const next = Math.min(1.6, cur + 0.012);    // +1,2 % par gain, plafond 1,6×
+    branchScales = branchScales || {};
+    branchScales[key] = next;
+    bg.scale.setScalar(next);
+    try { localStorage.setItem('cyl_branch_scales', JSON.stringify(branchScales)); } catch (_) {}
+  }
+  function bumpGrass(n) {
+    n = Math.max(1, n | 0);
+    try { addGrassBlades(n); } catch (_) {}
+    try {
+      const cur = Math.max(0, parseInt(localStorage.getItem('cyl_grass_bonus') || '0', 10) || 0);
+      localStorage.setItem('cyl_grass_bonus', String(Math.min(1500, cur + n)));
+    } catch (_) {}
+  }
+  document.addEventListener('cyl:xp-gained', (e) => {
+    const d = e && e.detail || {};
+    if (d.branch) {
+      bumpBranch(d.branch);
+      // pulse festive sur le nœud concerné (réutilise le système de célébration)
+      celebrateStart = clock.getElapsedTime();
+      celebrateKeys = new Set([d.branch]);
+    }
+    bumpGrass(2);                                // 2 brins par récompense — léger
+  });
+
   // ── Boucle : croissance (intro / onboarding) puis vie ─────────────────────
   controls.setTargetRadius(118);
   const clock = new THREE.Clock();
@@ -728,6 +776,7 @@ export function initTreeWidget(userData, opts) {
       grow(curAge);
       if (curAge >= 1) {
         mode = 'live'; grow(1);
+        applyPersistedBranchScales();
         // pousse depuis la dernière visite : pulsation festive + bilan de Lya
         if (grownBranches.length) {
           celebrateStart = t;
@@ -740,7 +789,7 @@ export function initTreeWidget(userData, opts) {
       // l'âge de croissance suit la progression des réponses
       curAge += (Math.min(1, targetAge) - curAge) * 0.045;
       grow(Math.min(1, curAge));
-      if (!onbActive && curAge > 0.999) { grow(1); mode = 'live'; }
+      if (!onbActive && curAge > 0.999) { grow(1); mode = 'live'; applyPersistedBranchScales(); }
     }
     // Auto-rotation désactivée : avec le sol et l'herbe en repère, le micro-
     // tournis du Y permanent devenait vite désagréable. L'arbre reste là où

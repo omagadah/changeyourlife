@@ -114,9 +114,12 @@ function localCurve(THREE, dir, length, rnd) {
  * Construit l'arbre. Renvoie { group, nodes, grow }.
  *   grow(age) — age ∈ [0,1] : anime la pousse, sapling → centenaire.
  */
-export function buildTree(THREE, model) {
+export function buildTree(THREE, model, opts) {
   const root = new THREE.Group();
   const rnd = rng(0x4c594c);
+  opts = opts || {};
+  // bonus d'herbe persisté entre sessions (chaque récompense XP ajoute des brins)
+  const extraGrass = Math.max(0, Math.min(1500, Math.floor(opts.extraGrass || 0)));
 
   // Tronc en chêne clair plutôt qu'en chocolat sombre : se voit nettement sur
   // fond marine #060e1a, et la grille ESP blanche par-dessus ne « grille » plus
@@ -131,6 +134,7 @@ export function buildTree(THREE, model) {
   const growables = [];   // { obj, birth, dur, target }
   const nodes = [];       // 8 nœuds-dimension cliquables
   const subNodes = [];    // nœuds des sous-branches (labellés sous-élément)
+  const branchGroups = new Map(); // key Maslow → bGroup (pour grossir une branche au gain d'XP)
   // feuilles : InstancedMesh global, croissance par instance
   const lp = [], lq = [], ls = [], lb = []; // position, quaternion, scale, birth
 
@@ -225,7 +229,8 @@ export function buildTree(THREE, model) {
   const bladeMat = new THREE.MeshStandardMaterial({
     roughness: 0.85, side: THREE.DoubleSide, flatShading: true,
   });
-  const BLADE_COUNT = 900;
+  const BASE_BLADES = 900;
+  const BLADE_COUNT = BASE_BLADES + extraGrass; // densité bonifiée par persistance
   const grassMesh = new THREE.InstancedMesh(bladeGeo, bladeMat, BLADE_COUNT);
   const _bm = new THREE.Matrix4();
   const _bq = new THREE.Quaternion();
@@ -255,6 +260,36 @@ export function buildTree(THREE, model) {
   if (grassMesh.instanceColor) grassMesh.instanceColor.needsUpdate = true;
   root.add(grassMesh);
 
+  // Fonction exposée : ajoute n brins d'herbe live (chaque récompense en
+  // pousse quelques-uns). On crée un petit InstancedMesh par appel — c'est
+  // léger pour le GPU et ça évite de re-créer le mesh global.
+  function addGrassBlades(n) {
+    n = Math.max(1, Math.min(20, n | 0));
+    const m = new THREE.InstancedMesh(bladeGeo, bladeMat, n);
+    const _m2 = new THREE.Matrix4(), _q2 = new THREE.Quaternion(), _p2 = new THREE.Vector3();
+    const _s2 = new THREE.Vector3(), _e2 = new THREE.Euler(), _c2 = new THREE.Color();
+    for (let i = 0; i < n; i++) {
+      const r = 3 + Math.sqrt(Math.random()) * 82;
+      const ang = Math.random() * Math.PI * 2;
+      _p2.set(Math.cos(ang) * r, 0, Math.sin(ang) * r);
+      _e2.set(
+        (Math.random() - 0.5) * 0.28,
+        Math.random() * Math.PI * 2,
+        (Math.random() - 0.5) * 0.2,
+      );
+      _q2.setFromEuler(_e2);
+      const sc = 0.55 + Math.random() * 1.1;
+      _s2.set(sc, sc * (0.8 + Math.random() * 0.6), sc);
+      _m2.compose(_p2, _q2, _s2);
+      m.setMatrixAt(i, _m2);
+      m.setColorAt(i, _c2.setHex(grassGreens[(Math.random() * grassGreens.length) | 0]));
+    }
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    root.add(m);
+    return m;
+  }
+
   // Palette pour le feuillage des branches actives (canopée verte)
   const folMatA = new THREE.MeshStandardMaterial({ color: 0x3d7032, roughness: 0.85, flatShading: true });
   const folMatB = new THREE.MeshStandardMaterial({ color: 0x4a8a3a, roughness: 0.85, flatShading: true });
@@ -283,6 +318,7 @@ export function buildTree(THREE, model) {
     bGroup.scale.setScalar(0.0001);
     trunkGroup.add(bGroup);
     growables.push({ obj: bGroup, birth: branchBirth, dur: 0.13, target: 1 });
+    branchGroups.set(b.key, bGroup);
 
     const dir = new THREE.Vector3(
       Math.cos(deg(b.elev)) * Math.cos(deg(b.azimuth)),
@@ -431,5 +467,5 @@ export function buildTree(THREE, model) {
   }
   grow(0);
 
-  return { group: root, nodes, subNodes, grow };
+  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades };
 }

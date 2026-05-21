@@ -80,6 +80,13 @@ export async function awardXp(domain, amount) {
     });
     // retour visuel : carte de récompense à la couleur de la branche
     showXpReward(branch, a);
+    // L'arbre (tree-widget) écoute cet événement pour faire pousser la branche
+    // concernée en temps réel et ajouter quelques brins d'herbe au sol.
+    try {
+      document.dispatchEvent(new CustomEvent('cyl:xp-gained', {
+        detail: { branch, amount: a },
+      }));
+    } catch (_) { /* ignore */ }
     return { ok: true, branch };
   } catch (e) {
     console.warn('[awardXp] failed', (e && e.message) || e);

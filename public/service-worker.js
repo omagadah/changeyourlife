@@ -1,5 +1,5 @@
-// service-worker.js - v58 (vraies lames d'herbe au sol — InstancedMesh)
-const CACHE_NAME = 'changeyourlife-v58';
+// service-worker.js - v59 (synergie XP : branche pousse + herbe densifie en live)
+const CACHE_NAME = 'changeyourlife-v59';
 const urlsToCache = [
   '/',
   '/app/',
