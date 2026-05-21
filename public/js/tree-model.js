@@ -164,7 +164,10 @@ export function buildTree(THREE, model) {
     return core;
   }
   // dépose des feuilles (monde) autour d'un point, écloses à `birth`
+  // Teintées vers le vert (55%) pour qu'on lise un feuillage d'arbre — sans
+  // perdre l'identité couleur de la branche (qui reste discernable).
   const _e = new THREE.Euler();
+  const _foliageGreen = new THREE.Color(0x4a7a3a);
   function scatterLeaves(worldPos, count, color, spread, birth) {
     for (let i = 0; i < count; i++) {
       lp.push(new THREE.Vector3(
@@ -173,13 +176,52 @@ export function buildTree(THREE, model) {
         worldPos.z + (rnd() - 0.5) * spread));
       _e.set(rnd() * 3, rnd() * 3, rnd() * 3);
       lq.push(new THREE.Quaternion().setFromEuler(_e));
-      const sc = 0.7 + rnd() * 0.7;
-      ls.push(new THREE.Vector3(sc, sc * 0.55, sc));
+      const sc = 0.9 + rnd() * 0.9;
+      ls.push(new THREE.Vector3(sc, sc * 0.6, sc));
       lb.push(birth + rnd() * 0.05);
-      const c = new THREE.Color(color);
-      lp[lp.length - 1].userColor = c; // couleur stockée à part ci-dessous
+      const c = new THREE.Color(color).lerp(_foliageGreen, 0.55);
+      lp[lp.length - 1].userColor = c;
     }
   }
+
+  // ── Sol herbeux + touffes d'herbe ────────────────────────────────────────
+  // Disque légèrement bosselé (relief organique) sous l'arbre, vert forêt.
+  const groundGeo = new THREE.CircleGeometry(95, 56);
+  const gp = groundGeo.attributes.position;
+  for (let i = 0; i < gp.count; i++) {
+    // displacement en Z avant rotation = Y après → micro-relief du sol
+    gp.setZ(i, gp.getZ(i) + (rnd() - 0.5) * 0.7);
+  }
+  groundGeo.computeVertexNormals();
+  const ground = new THREE.Mesh(
+    groundGeo,
+    new THREE.MeshStandardMaterial({ color: 0x223d18, roughness: 0.95, metalness: 0 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.05;
+  ground.receiveShadow = false;
+  root.add(ground);
+
+  // Touffes d'herbe (icos low-poly) éparpillées autour du tronc
+  const tuftMat1 = new THREE.MeshStandardMaterial({ color: 0x4a7a3a, roughness: 0.85, flatShading: true });
+  const tuftMat2 = new THREE.MeshStandardMaterial({ color: 0x5d8a48, roughness: 0.85, flatShading: true });
+  const tuftMat3 = new THREE.MeshStandardMaterial({ color: 0x3a6230, roughness: 0.9,  flatShading: true });
+  const tuftGeo = new THREE.IcosahedronGeometry(1, 0);
+  for (let i = 0; i < 64; i++) {
+    const r = 5 + rnd() * 78;
+    const ang = rnd() * Math.PI * 2;
+    const tuft = new THREE.Mesh(tuftGeo, [tuftMat1, tuftMat2, tuftMat3][(rnd() * 3) | 0]);
+    tuft.position.set(Math.cos(ang) * r, 0.35 + rnd() * 0.8, Math.sin(ang) * r);
+    const s = 0.55 + rnd() * 1.05;
+    tuft.scale.set(s, s * (0.5 + rnd() * 0.3), s);
+    tuft.rotation.y = rnd() * Math.PI * 2;
+    root.add(tuft);
+  }
+
+  // Palette pour le feuillage des branches actives (canopée verte)
+  const folMatA = new THREE.MeshStandardMaterial({ color: 0x3d7032, roughness: 0.85, flatShading: true });
+  const folMatB = new THREE.MeshStandardMaterial({ color: 0x4a8a3a, roughness: 0.85, flatShading: true });
+  const folMatC = new THREE.MeshStandardMaterial({ color: 0x6aa852, roughness: 0.85, flatShading: true });
 
   // ── Tronc ─────────────────────────────────────────────────────────────────
   const trunkH = 48;
@@ -227,6 +269,32 @@ export function buildTree(THREE, model) {
     node.userData = { key: b.key, label: b.label, color: b.color, baseR, state: b.state, tier: b.tier };
     growables.push({ obj: node, birth: branchBirth + 0.15, dur: 0.1, target: baseR });
     nodes.push(node);
+
+    // Canopée : feuillage vert épais autour de l'extrémité de chaque branche
+    // active — c'est ce qui fait qu'on lit un arbre et non un schéma.
+    if (b.state === 'active') {
+      const folGroup = new THREE.Group();
+      folGroup.position.copy(tipLocal);
+      folGroup.scale.setScalar(0.0001);
+      bGroup.add(folGroup);
+      growables.push({ obj: folGroup, birth: branchBirth + 0.40, dur: 0.22, target: 1 });
+
+      const puffCount = 3 + Math.round((b.vitality / 100) * 3);     // 3 à 6
+      const palette = [folMatA, folMatB, folMatC];
+      for (let p = 0; p < puffCount; p++) {
+        const pr = 2.4 + rnd() * 1.6;
+        const fol = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(pr, 1),
+          palette[(rnd() * palette.length) | 0]
+        );
+        fol.position.set(
+          (rnd() - 0.5) * 3.8,
+          0.4 + (rnd() - 0.3) * 2.4,
+          (rnd() - 0.5) * 3.8
+        );
+        folGroup.add(fol);
+      }
+    }
 
     // sous-branches sémantiques : combien écloses ∝ dev
     const grown = b.state === 'active'

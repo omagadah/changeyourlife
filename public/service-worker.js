@@ -1,5 +1,5 @@
-// service-worker.js - v54 (tronc plus lisible + rotation plus douce)
-const CACHE_NAME = 'changeyourlife-v54';
+// service-worker.js - v55 (canopée verte + sol herbeux + rotation plus posée)
+const CACHE_NAME = 'changeyourlife-v55';
 const urlsToCache = [
   '/',
   '/app/',
