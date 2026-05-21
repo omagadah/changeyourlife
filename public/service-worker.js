@@ -1,5 +1,5 @@
-// service-worker.js - v57 (auto-rotation stop + onboarding : XP visible + invite à explorer)
-const CACHE_NAME = 'changeyourlife-v57';
+// service-worker.js - v58 (vraies lames d'herbe au sol — InstancedMesh)
+const CACHE_NAME = 'changeyourlife-v58';
 const urlsToCache = [
   '/',
   '/app/',

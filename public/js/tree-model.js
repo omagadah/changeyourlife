@@ -202,21 +202,58 @@ export function buildTree(THREE, model) {
   ground.receiveShadow = false;
   root.add(ground);
 
-  // Touffes d'herbe (icos low-poly) éparpillées autour du tronc
-  const tuftMat1 = new THREE.MeshStandardMaterial({ color: 0x4a7a3a, roughness: 0.85, flatShading: true });
-  const tuftMat2 = new THREE.MeshStandardMaterial({ color: 0x5d8a48, roughness: 0.85, flatShading: true });
-  const tuftMat3 = new THREE.MeshStandardMaterial({ color: 0x3a6230, roughness: 0.9,  flatShading: true });
-  const tuftGeo = new THREE.IcosahedronGeometry(1, 0);
-  for (let i = 0; i < 64; i++) {
-    const r = 5 + rnd() * 78;
+  // ── Vraies lames d'herbe (InstancedMesh) ────────────────────────────────
+  // Chaque lame = un quad fuselé (5 vertices, 3 triangles) qui se rétrécit
+  // jusqu'à la pointe. ~900 instances réparties en disque autour du tronc
+  // (densité radiale racine carrée → plus dense près du pied). Rotation Y
+  // aléatoire + léger tilt pour casser la grille. 5 nuances de vert via
+  // instanceColor pour le relief naturel. Coût ~2700 triangles, négligeable.
+  const bladeGeo = (() => {
+    const g = new THREE.BufferGeometry();
+    const w = 0.07, h = 1.4;
+    g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array([
+      -w, 0,        0,
+       w, 0,        0,
+      -w * 0.55,  h * 0.55, 0,
+       w * 0.55,  h * 0.55, 0,
+       0,         h,        0,
+    ]), 3));
+    g.setIndex([0, 1, 2,  1, 3, 2,  2, 3, 4]);
+    g.computeVertexNormals();
+    return g;
+  })();
+  const bladeMat = new THREE.MeshStandardMaterial({
+    roughness: 0.85, side: THREE.DoubleSide, flatShading: true,
+  });
+  const BLADE_COUNT = 900;
+  const grassMesh = new THREE.InstancedMesh(bladeGeo, bladeMat, BLADE_COUNT);
+  const _bm = new THREE.Matrix4();
+  const _bq = new THREE.Quaternion();
+  const _bp = new THREE.Vector3();
+  const _bs = new THREE.Vector3();
+  const _be = new THREE.Euler();
+  const _bc = new THREE.Color();
+  const grassGreens = [0x4a7a3a, 0x5d8a48, 0x3a6230, 0x68a350, 0x52904a];
+  for (let i = 0; i < BLADE_COUNT; i++) {
+    // racine carrée → distribution plus dense au centre, plus aérée loin
+    const r = 3 + Math.sqrt(rnd()) * 82;
     const ang = rnd() * Math.PI * 2;
-    const tuft = new THREE.Mesh(tuftGeo, [tuftMat1, tuftMat2, tuftMat3][(rnd() * 3) | 0]);
-    tuft.position.set(Math.cos(ang) * r, 0.35 + rnd() * 0.8, Math.sin(ang) * r);
-    const s = 0.55 + rnd() * 1.05;
-    tuft.scale.set(s, s * (0.5 + rnd() * 0.3), s);
-    tuft.rotation.y = rnd() * Math.PI * 2;
-    root.add(tuft);
+    _bp.set(Math.cos(ang) * r, 0, Math.sin(ang) * r);
+    _be.set(
+      (rnd() - 0.5) * 0.28,           // léger tilt avant/arrière
+      rnd() * Math.PI * 2,            // rotation Y libre (lame tournée au hasard)
+      (rnd() - 0.5) * 0.2             // léger tilt latéral
+    );
+    _bq.setFromEuler(_be);
+    const sc = 0.55 + rnd() * 1.1;     // ~55% à ~165% de la taille de base
+    _bs.set(sc, sc * (0.8 + rnd() * 0.6), sc);
+    _bm.compose(_bp, _bq, _bs);
+    grassMesh.setMatrixAt(i, _bm);
+    grassMesh.setColorAt(i, _bc.setHex(grassGreens[(rnd() * grassGreens.length) | 0]));
   }
+  grassMesh.instanceMatrix.needsUpdate = true;
+  if (grassMesh.instanceColor) grassMesh.instanceColor.needsUpdate = true;
+  root.add(grassMesh);
 
   // Palette pour le feuillage des branches actives (canopée verte)
   const folMatA = new THREE.MeshStandardMaterial({ color: 0x3d7032, roughness: 0.85, flatShading: true });
