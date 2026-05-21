@@ -152,9 +152,15 @@ function initControls(canvas, camera) {
     const dx = e.clientX - px, dy = e.clientY - py;
     if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
     px = e.clientX; py = e.clientY;
-    // Sensibilité encore baissée (cf. tree-widget) : rotation vraiment posée.
-    s.tAz -= dx * 0.002;
-    s.tPo = Math.min(s.maxPo, Math.max(s.minPo, s.tPo - dy * 0.0016));
+    // Suivi 1:1 du doigt : sensibilité adaptative à la largeur du canvas
+    // (~75° pour un drag d'une largeur d'écran), mise à jour DIRECTE (pas
+    // de lerp pendant le drag, donc pas d'inertie après release).
+    const dim = Math.max(canvas.clientWidth, 320);
+    const SENS = (Math.PI * 0.75) / dim;
+    const newAz = s.tAz - dx * SENS;
+    const newPo = Math.min(s.maxPo, Math.max(s.minPo, s.tPo - dy * SENS * 0.85));
+    s.tAz = newAz; s.azimuth = newAz;
+    s.tPo = newPo; s.polar = newPo;
   });
   const end = (e) => {
     dragging = false;

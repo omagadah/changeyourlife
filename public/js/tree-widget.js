@@ -218,9 +218,16 @@ function makeControls(el, camera, target) {
     const dx = e.clientX - px, dy = e.clientY - py;
     if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
     px = e.clientX; py = e.clientY;
-    // Sensibilité encore baissée : rotation vraiment posée, qui « pèse ».
-    s.tAz -= dx * 0.002;
-    s.tPo = Math.min(1.4, Math.max(0.5, s.tPo - dy * 0.0016));
+    // Suivi 1:1 du doigt : sensibilité adaptative à la largeur du canvas
+    // (~75° de rotation pour un drag d'une largeur d'écran complète) et
+    // mise à jour DIRECTE de s.az/s.po (pas de lerp pendant le drag, donc
+    // pas d'inertie après release — l'arbre s'arrête où ton doigt s'arrête).
+    const dim = Math.max(el.clientWidth, 320);
+    const SENS = (Math.PI * 0.75) / dim;
+    const newAz = s.tAz - dx * SENS;
+    const newPo = Math.min(1.4, Math.max(0.5, s.tPo - dy * SENS * 0.85));
+    s.tAz = newAz; s.az = newAz;
+    s.tPo = newPo; s.po = newPo;
   });
   const end = () => { dragging = false; };
   el.addEventListener('pointerup', end);

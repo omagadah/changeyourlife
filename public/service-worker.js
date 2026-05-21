@@ -1,5 +1,5 @@
-// service-worker.js - v55 (canopée verte + sol herbeux + rotation plus posée)
-const CACHE_NAME = 'changeyourlife-v55';
+// service-worker.js - v56 (rotation : suivi 1:1 direct, sensibilité adaptative)
+const CACHE_NAME = 'changeyourlife-v56';
 const urlsToCache = [
   '/',
   '/app/',
