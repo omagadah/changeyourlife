@@ -481,12 +481,34 @@ export function buildTree(THREE, model, opts) {
     new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
   ));
 
+  // Géolocalisation : place le PAYS de l'utilisateur sous l'arbre (au sommet),
+  // au lieu du pôle nord. On oriente la Terre + nuages pour amener (lat,lon)
+  // en haut, et on fige l'auto-rotation pour que le pays reste sous l'arbre.
+  let geoLocked = false;
+  function setEarthLocation(lat, lon) {
+    if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) return;
+    const latR = lat * Math.PI / 180;
+    const lonR = lon * Math.PI / 180;
+    const LON_OFFSET = -Math.PI / 2; // calage du méridien d'origine (ajustable)
+    const d = new THREE.Vector3(
+      Math.cos(latR) * Math.sin(lonR + LON_OFFSET),
+      Math.sin(latR),
+      Math.cos(latR) * Math.cos(lonR + LON_OFFSET)
+    ).normalize();
+    const q = new THREE.Quaternion().setFromUnitVectors(d, new THREE.Vector3(0, 1, 0));
+    earth.quaternion.copy(q);
+    clouds.quaternion.copy(q);
+    geoLocked = true;
+  }
+
   // Animation des orbites (appelée chaque frame par l'orchestrateur).
   // Lente exprès : ce n'est pas un écran de veille, c'est un repère mental.
   function animateCosmos(dt) {
     if (!dt || dt > 0.5) dt = 0.016; // garde-fou (onglet en veille…)
-    earth.rotation.y += dt * 0.015;  // la Terre tourne lentement sur elle-même
-    clouds.rotation.y += dt * 0.022; // les nuages dérivent un peu plus vite
+    if (!geoLocked) {                 // sans géoloc, la Terre tourne sur elle-même
+      earth.rotation.y += dt * 0.015;
+      clouds.rotation.y += dt * 0.022;
+    }
     for (const p of planets) {
       p.userData.angle += p.userData.speed * dt;
       const a = p.userData.angle;
@@ -671,5 +693,5 @@ export function buildTree(THREE, model, opts) {
   }
   grow(0);
 
-  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos };
+  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation };
 }

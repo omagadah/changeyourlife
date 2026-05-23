@@ -551,8 +551,22 @@ export function initTreeWidget(userData, opts) {
   try { extraGrass = Math.max(0, Math.min(1500, parseInt(localStorage.getItem('cyl_grass_bonus') || '0', 10) || 0)); } catch (_) {}
   try { branchScales = JSON.parse(localStorage.getItem('cyl_branch_scales') || '{}') || {}; } catch (_) {}
 
-  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos } = buildTree(THREE, model, { extraGrass });
+  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation } = buildTree(THREE, model, { extraGrass });
   scene.add(group);
+
+  // Géoloc IP : l'arbre est planté sur le pays de l'utilisateur (cache local).
+  (function geolocate() {
+    try {
+      const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
+      if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+    } catch (_) {}
+    fetch('https://ipwho.is/').then((r) => r.json()).then((d) => {
+      if (d && d.success && typeof d.latitude === 'number') {
+        setEarthLocation(d.latitude, d.longitude);
+        try { localStorage.setItem('cyl_geo', JSON.stringify({ lat: d.latitude, lon: d.longitude })); } catch (_) {}
+      }
+    }).catch(() => {});
+  })();
 
   const target = new THREE.Vector3(0, 40, 0);
   const controls = makeControls(stage, camera, target);

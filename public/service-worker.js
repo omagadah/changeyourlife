@@ -1,5 +1,5 @@
-// service-worker.js - v63 (vraies textures : planètes, soleil, Terre+nuages, Voie lactée)
-const CACHE_NAME = 'changeyourlife-v63';
+// service-worker.js - v64 (géoloc : arbre planté sur le pays de l'utilisateur)
+const CACHE_NAME = 'changeyourlife-v64';
 const urlsToCache = [
   '/',
   '/app/',

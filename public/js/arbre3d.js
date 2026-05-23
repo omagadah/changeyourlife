@@ -130,9 +130,29 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow, animateCosmos } = buildTree(THREE, createDemoModel());
+  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel());
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation };
+}
+
+// Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
+// l'utilisateur. Mis en cache localStorage → un seul appel API par visiteur.
+// Échec silencieux → l'arbre reste au pôle nord (pas bloquant).
+function geolocateTree(setEarthLocation) {
+  if (typeof setEarthLocation !== 'function') return;
+  try {
+    const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
+    if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+  } catch (_) {}
+  fetch('https://ipwho.is/')
+    .then((r) => r.json())
+    .then((d) => {
+      if (d && d.success && typeof d.latitude === 'number') {
+        setEarthLocation(d.latitude, d.longitude);
+        try { localStorage.setItem('cyl_geo', JSON.stringify({ lat: d.latitude, lon: d.longitude })); } catch (_) {}
+      }
+    })
+    .catch(() => {});
 }
 
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
@@ -436,7 +456,8 @@ function initLya() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation } = initScene(canvas);
+  geolocateTree(setEarthLocation);
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
   const hud = initHud();
