@@ -1,6 +1,21 @@
 import type { Metadata, Viewport } from 'next';
+import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
 import { SmoothScroll } from '@/components/SmoothScroll';
+
+// Typo éditoriale : un serif humaniste chaud (Fraunces) pour les titres —
+// ce qui « humanise » et casse le côté template. Inter neutre pour le texte.
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+  axes: ['opsz'],
+});
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+});
 
 export const metadata: Metadata = {
   title: 'ChangeYourLife.ai — Construis la meilleure version de toi-même',
@@ -22,9 +37,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${fraunces.variable} ${inter.variable}`}>
       <body>
         <SmoothScroll>{children}</SmoothScroll>
+        {/* grain global — texture analogique très subtile par-dessus tout */}
+        <div className="grain" aria-hidden />
       </body>
     </html>
   );

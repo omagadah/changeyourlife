@@ -47,7 +47,7 @@ export default function Home() {
             initial="hidden"
             animate="show"
             variants={fadeUp}
-            className="text-gradient text-[clamp(2rem,4.8vw,3.6rem)] font-extrabold leading-[1.08] tracking-tight"
+            className="font-display text-[clamp(2.4rem,5.4vw,4.3rem)] font-normal leading-[1.03] tracking-[-0.02em] text-cream"
           >
             Construis la meilleure version de toi-même.
           </motion.h1>
@@ -91,30 +91,42 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ── SECTION : les 8 branches ─────────────────────────────────────── */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 py-28">
-        <motion.h2
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-80px' }}
-          variants={fadeUp}
-          className="text-gradient text-center text-[clamp(1.6rem,3.4vw,2.6rem)] font-extrabold tracking-tight"
-        >
-          Huit branches. Une seule vie qui grandit.
-        </motion.h2>
-        <motion.p
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          custom={1}
-          variants={fadeUp}
-          className="mx-auto mt-4 max-w-2xl text-center text-muted"
-        >
-          Chaque dimension de Maslow est une branche. Tes actions réelles la nourrissent,
-          elle pousse, ton arbre prend forme — et toi avec.
-        </motion.p>
+      {/* ── SECTION : les 8 branches (mise en page éditoriale, alignée à gauche) ── */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-28 sm:py-36">
+        <div className="max-w-2xl">
+          <motion.span
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={fadeUp}
+            className="block text-xs font-semibold uppercase tracking-[0.28em] text-gold"
+          >
+            La structure
+          </motion.span>
+          <motion.h2
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            custom={0.5}
+            variants={fadeUp}
+            className="font-display mt-4 text-[clamp(1.9rem,4.2vw,3.1rem)] font-normal leading-[1.06] tracking-[-0.02em] text-cream"
+          >
+            Huit branches.<br />Une seule vie qui grandit.
+          </motion.h2>
+          <motion.p
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            custom={1.2}
+            variants={fadeUp}
+            className="mt-5 max-w-xl text-[1.05rem] leading-relaxed text-muted"
+          >
+            Chaque dimension de Maslow est une branche. Tes actions réelles la nourrissent,
+            elle pousse, ton arbre prend forme — et toi avec.
+          </motion.p>
+        </div>
 
-        <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {DIMENSIONS.map((d, i) => (
             <motion.div
               key={d.key}
@@ -147,7 +159,7 @@ export default function Home() {
           variants={fadeUp}
           className="mx-auto max-w-2xl"
         >
-          <h3 className="text-[clamp(1.5rem,3vw,2.2rem)] font-extrabold tracking-tight text-ink">
+          <h3 className="font-display text-[clamp(1.7rem,3.4vw,2.6rem)] font-normal leading-[1.08] tracking-[-0.02em] text-cream">
             Plante ta première branche aujourd’hui.
           </h3>
           <p className="mt-3 text-muted">Gratuit. Guidé par Lya. Une question pour commencer.</p>

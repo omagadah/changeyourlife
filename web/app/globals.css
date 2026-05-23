@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
-/* ── Design tokens — palette des 8 branches Maslow + base sombre ──────────── */
+/* ── Design tokens ────────────────────────────────────────────────────────── */
 @theme {
-  --color-bg: #060e1a;
-  --color-surface: #0b1829;
-  --color-ink: #eef4ff;
-  --color-muted: #8ba4c8;
-  --color-faint: #4a6a8c;
-  --color-accent: #0070f3;
-  --color-accent-soft: #60a5fa;
+  /* base — navy profond légèrement désaturé, moins "SaaS bleu pur" */
+  --color-bg: #070d16;
+  --color-surface: #0c1622;
+  --color-ink: #eef3fb;
+  --color-cream: #f4eee1;        /* crème chaud pour les titres (anti-template) */
+  --color-muted: #93a6bd;
+  --color-faint: #5a6f87;
+  --color-accent: #4f8cff;       /* bleu un peu plus doux que #0070f3 */
+  --color-accent-soft: #8fb6ff;
+  --color-gold: #e0b667;         /* accent chaud (rappel du soleil de l'arbre) */
 
   /* branches Maslow */
   --color-physio: #2dd4bf;
@@ -19,35 +22,47 @@
   --color-esthetique: #e879c7;
   --color-accomplissement: #38bdf8;
   --color-transcendance: #c4b5fd;
-
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+/* Les familles de police viennent de next/font (variables --font-body /
+   --font-display posées sur <html>). On les consomme directement ci-dessous,
+   sans les redéclarer en token Tailwind (éviterait une auto-référence). */
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 
 body {
+  /* fond : navy + une nappe chaude discrète en haut (pas un dégradé bleu plat) */
   background:
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0, 112, 243, 0.16), transparent 70%),
-    radial-gradient(ellipse 80% 60% at 50% 105%, rgba(0, 112, 243, 0.10), transparent 70%),
-    #060e1a;
-  color: #eef4ff;
-  font-family: var(--font-sans);
+    radial-gradient(120% 80% at 78% -10%, rgba(224, 182, 103, 0.07), transparent 60%),
+    radial-gradient(90% 70% at 12% 8%, rgba(79, 140, 255, 0.10), transparent 64%),
+    #070d16;
+  color: var(--color-ink);
+  font-family: var(--font-body, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Lenis smooth scroll */
+/* titres en serif humaniste — la pièce maîtresse du « dé-template » */
+.font-display {
+  font-family: var(--font-display, Georgia, serif);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+/* Lenis */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
 
-/* texte en dégradé réutilisable */
-.text-gradient {
-  background: linear-gradient(135deg, #ffffff 30%, #7fb4ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* grain analogique — bruit fractal très léger, par-dessus tout, non cliquable */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-::selection { background: rgba(0, 112, 243, 0.35); color: #fff; }
+::selection { background: rgba(79, 140, 255, 0.32); color: #fff; }
