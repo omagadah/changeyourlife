@@ -313,6 +313,7 @@ if (authToggleLink) {
     if (passwordConfirmHint) passwordConfirmHint.textContent = '';
 
     const titleEl = document.getElementById('auth-title');
+    const subEl = document.getElementById('auth-sub');
     const submitEl = document.getElementById('submit-button');
     const passwordReqEl = document.getElementById('password-requirements');
     const passwordConfirmEl = document.getElementById('password-confirm-group');
@@ -320,7 +321,8 @@ if (authToggleLink) {
     if (isRegister) {
       if (authToggleText) authToggleText.textContent = 'Vous avez déjà un compte ?';
       authToggleLink.textContent = 'Se connecter';
-      if (titleEl) titleEl.textContent = 'Créer un compte';
+      if (titleEl) titleEl.textContent = 'Plante ta graine';
+      if (subEl) subEl.textContent = 'Crée ton compte : ton arbre de vie commence ici.';
       if (submitEl) submitEl.textContent = 'Créer un compte';
       if (passwordReqEl) passwordReqEl.style.display = 'block';
       if (passwordConfirmEl) passwordConfirmEl.style.display = 'block';
@@ -329,7 +331,8 @@ if (authToggleLink) {
     } else {
       if (authToggleText) authToggleText.textContent = 'Pas encore de compte ?';
       authToggleLink.textContent = 'Créer un compte';
-      if (titleEl) titleEl.textContent = 'Connexion';
+      if (titleEl) titleEl.textContent = 'Bon retour';
+      if (subEl) subEl.textContent = "Retrouve ton arbre de vie là où tu l'as laissé.";
       if (submitEl) submitEl.textContent = 'Se connecter';
       if (passwordReqEl) passwordReqEl.style.display = 'none';
       if (passwordConfirmEl) passwordConfirmEl.style.display = 'none';
