@@ -1,5 +1,5 @@
-// service-worker.js - v66 (orbite Terre reliée au Soleil + géoloc repli France robuste)
-const CACHE_NAME = 'changeyourlife-v66';
+// service-worker.js - v67 (sol fondu dégradé + orbite Terre ellipse douce)
+const CACHE_NAME = 'changeyourlife-v67';
 const urlsToCache = [
   '/',
   '/app/',

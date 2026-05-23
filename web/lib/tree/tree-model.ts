@@ -233,20 +233,41 @@ export function buildTree(THREE, model, opts) {
   }
 
   // ── Sol herbeux + touffes d'herbe ────────────────────────────────────────
-  // Disque légèrement bosselé (relief organique) sous l'arbre, vert forêt.
-  const groundGeo = new THREE.CircleGeometry(95, 56);
+  // Disque bosselé sous l'arbre. Dégradé radial (cœur vert opaque → bords
+  // transparents) pour se FONDRE dans la surface de la Terre.
+  const groundGeo = new THREE.CircleGeometry(105, 56);
   const gp = groundGeo.attributes.position;
   for (let i = 0; i < gp.count; i++) {
     // displacement en Z avant rotation = Y après → micro-relief du sol
     gp.setZ(i, gp.getZ(i) + (rnd() - 0.5) * 0.7);
   }
   groundGeo.computeVertexNormals();
+  const groundTex = (() => {
+    try {
+      const cnv = document.createElement('canvas');
+      cnv.width = cnv.height = 256;
+      const ctx = cnv.getContext('2d')!;
+      const g = ctx.createRadialGradient(128, 128, 6, 128, 128, 128);
+      g.addColorStop(0.0,  'rgba(74,116,58,0.95)');
+      g.addColorStop(0.45, 'rgba(58,92,44,0.82)');
+      g.addColorStop(0.72, 'rgba(46,72,34,0.40)');
+      g.addColorStop(0.90, 'rgba(40,62,30,0.12)');
+      g.addColorStop(1.0,  'rgba(40,62,30,0.0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
+      const t = new THREE.CanvasTexture(cnv);
+      t.colorSpace = THREE.SRGBColorSpace;
+      return t;
+    } catch (_) { return null; }
+  })();
   const ground = new THREE.Mesh(
     groundGeo,
-    new THREE.MeshStandardMaterial({ color: 0x223d18, roughness: 0.95, metalness: 0 })
+    groundTex
+      ? new THREE.MeshStandardMaterial({ map: groundTex, transparent: true, depthWrite: false, roughness: 1, metalness: 0 })
+      : new THREE.MeshStandardMaterial({ color: 0x2e4d22, roughness: 0.95, metalness: 0, transparent: true, opacity: 0.85 })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.05;
+  ground.renderOrder = 1;
   ground.receiveShadow = false;
   root.add(ground);
 
@@ -483,20 +504,21 @@ export function buildTree(THREE, model, opts) {
   ));
 
   // ── Orbite de la Terre ── la relie au Soleil (même langage visuel que les
-  // planètes). Anneau statique passant par le centre de la Terre, centré sur le
-  // Soleil et incliné pour contenir la direction Soleil→Terre.
+  // planètes), dans le plan le plus PLAT possible passant par la Terre : une
+  // ellipse d'orbite douce, jamais une ligne dure vue par la tranche.
   {
     const earthLocal = earthGroup.position.clone().sub(sunGroup.position);
     const Re = earthLocal.length();
     const u = earthLocal.clone().normalize();
-    let ref = new THREE.Vector3(0, 1, 0);
-    if (Math.abs(u.dot(ref)) > 0.95) ref = new THREE.Vector3(1, 0, 0);
-    const normal = new THREE.Vector3().crossVectors(u, ref).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    let normal = up.clone().addScaledVector(u, -up.dot(u));
+    if (normal.lengthSq() < 1e-4) normal = new THREE.Vector3(1, 0, 0);
+    normal.normalize();
     const yAxis = new THREE.Vector3().crossVectors(normal, u).normalize();
     const basis = new THREE.Matrix4().makeBasis(u, yAxis, normal);
     const orbitE = new THREE.Mesh(
-      new THREE.RingGeometry(Re - 7, Re + 7, 240),
-      new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })
+      new THREE.RingGeometry(Re - 6, Re + 6, 256),
+      new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.10, side: THREE.DoubleSide, depthWrite: false })
     );
     orbitE.quaternion.setFromRotationMatrix(basis);
     sunGroup.add(orbitE);
