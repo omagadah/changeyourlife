@@ -235,9 +235,8 @@ function makeControls(el, camera, target) {
   el.addEventListener('wheel', (e) => {
     if (!enabled()) return;
     e.preventDefault();
-    // Zoom logarithmique : step proportionnel au rayon courant. Permet d'aller
-    // du tronc (~80) jusqu'au système solaire (~1800) sans 200 coups de molette.
-    s.tR = Math.min(4500, Math.max(60, s.tR + e.deltaY * 0.0018 * s.tR));
+    // Zoom logarithmique, plus doux : long pour quitter la Terre, puis l'espace.
+    s.tR = Math.min(7000, Math.max(60, s.tR + e.deltaY * 0.0011 * s.tR));
   }, { passive: false });
   return {
     isDragging: () => dragging,
@@ -249,8 +248,8 @@ function makeControls(el, camera, target) {
       s.po += (s.tPo - s.po) * 0.055;
       s.r += (s.tR - s.r) * 0.055;
       // Dérive de la cible vers la Terre au dézoom (révèle la planète puis l'espace).
-      const frac = Math.min(1, Math.max(0, (s.r - 220) / 3800));
-      const ty = target.y - frac * 560;
+      const frac = Math.min(1, Math.max(0, (s.r - 200) / 6800));
+      const ty = target.y - frac * 1300;
       const sp = Math.sin(s.po), cp = Math.cos(s.po);
       camera.position.set(
         target.x + s.r * sp * Math.sin(s.az),
@@ -536,8 +535,8 @@ export function initTreeWidget(userData, opts) {
   renderer.toneMappingExposure = 1.6;
 
   const scene = new THREE.Scene();
-  // Far plane large : Terre (R 1080), système solaire lointain, étoiles ~6000.
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 14000);
+  // Far plane large : Terre (R 2400), système solaire lointain, étoiles ~6000.
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 24000);
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
   key.position.set(30, 70, 36); scene.add(key);

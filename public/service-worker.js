@@ -1,5 +1,5 @@
-// service-worker.js - v61 (la Terre sous l'arbre + ESP orbites + reveal espace)
-const CACHE_NAME = 'changeyourlife-v61';
+// service-worker.js - v62 (vraie Terre + fix z-fight + reveal plus lent)
+const CACHE_NAME = 'changeyourlife-v62';
 const urlsToCache = [
   '/',
   '/app/',

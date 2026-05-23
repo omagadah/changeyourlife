@@ -433,18 +433,27 @@ export function buildTree(THREE, model, opts) {
   // Énorme sphère sous le sol (pôle nord = y 0). Au zoom normal la surface
   // paraît plate (c'est « le sol ») ; au dézoom la courbure puis la planète
   // entière se révèlent, jusqu'à sortir dans l'espace.
-  const EARTH_R = 1080;
+  // Grande sphère, et surtout posée BIEN en-dessous du sol : le clignotement
+  // précédent venait de la Terre (sommet à y≈0) et du disque d'herbe (y≈0)
+  // coplanaires → z-fighting. On laisse un vrai écart.
+  const EARTH_R = 2400;
   const earthGroup = new THREE.Group();
-  earthGroup.position.set(0, -EARTH_R, 0);
+  earthGroup.position.set(0, -EARTH_R - 3, 0);
   root.add(earthGroup);
-  const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(EARTH_R, 64, 48),
-    new THREE.MeshStandardMaterial({ map: makeEarthTexture(THREE), roughness: 1, metalness: 0 })
+  // Texture réelle si présente (public/textures/earth-day.jpg, ex: Solar System
+  // Scope 2K), sinon repli procédural. Chargement async sans bloquer.
+  const earthMat = new THREE.MeshStandardMaterial({ color: 0x24405e, roughness: 1, metalness: 0 });
+  new THREE.TextureLoader().load(
+    '/textures/earth-day.jpg',
+    (tex) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; earthMat.map = tex; earthMat.color.set(0xffffff); earthMat.needsUpdate = true; },
+    undefined,
+    () => { earthMat.map = makeEarthTexture(THREE); earthMat.color.set(0xffffff); earthMat.needsUpdate = true; }
   );
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R, 96, 64), earthMat);
   earthGroup.add(earth);
   // halo d'atmosphère (rim glow cyan)
   earthGroup.add(new THREE.Mesh(
-    new THREE.SphereGeometry(EARTH_R * 1.025, 48, 32),
+    new THREE.SphereGeometry(EARTH_R * 1.018, 48, 32),
     new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
   ));
 

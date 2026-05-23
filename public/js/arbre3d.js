@@ -118,9 +118,9 @@ function initScene(canvas) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  // Far plane large : Terre (R 1080), système solaire lointain, étoiles ~6000.
+  // Far plane large : Terre (R 2400), système solaire lointain, étoiles ~6000.
   const camera = new THREE.PerspectiveCamera(
-    42, canvas.clientWidth / canvas.clientHeight, 0.1, 14000);
+    42, canvas.clientWidth / canvas.clientHeight, 0.1, 24000);
 
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -140,7 +140,7 @@ function initControls(canvas, camera) {
   const s = {
     azimuth: 0.5, polar: 1.06, radius: 110,
     tAz: 0.5, tPo: 1.06, tR: 110,
-    minR: 64, maxR: 4500, minPo: 0.55, maxPo: 1.45,
+    minR: 64, maxR: 7000, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
@@ -172,9 +172,9 @@ function initControls(canvas, camera) {
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     userZoomed = true;
-    // Zoom logarithmique : step proportionnel au rayon courant (du tronc ~80
-    // jusqu'au système solaire ~1800 sans 200 coups de molette).
-    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.0018 * s.tR));
+    // Zoom logarithmique, plus DOUX : il faut longtemps pour quitter la Terre,
+    // puis on atteint l'espace. Step réduit → plus de molette pour tout traverser.
+    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.0011 * s.tR));
   }, { passive: false });
 
   return {
@@ -186,9 +186,10 @@ function initControls(canvas, camera) {
       s.polar += (s.tPo - s.polar) * 0.055;
       s.radius += (s.tR - s.radius) * 0.055;
       // Dérive de la cible vers la Terre au dézoom → on révèle la courbure,
-      // puis la planète entière, puis le système solaire.
-      const frac = Math.min(1, Math.max(0, (s.radius - 220) / 3800));
-      const ty = tgt.y - frac * 560;
+      // puis la planète entière, puis le système solaire. Étalée sur tout le
+      // (grand) range pour que sortir de la Terre soit long.
+      const frac = Math.min(1, Math.max(0, (s.radius - 200) / 6800));
+      const ty = tgt.y - frac * 1300;
       const sp = Math.sin(s.polar), cp = Math.cos(s.polar);
       camera.position.set(
         tgt.x + s.radius * sp * Math.sin(s.azimuth),
