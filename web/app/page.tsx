@@ -68,7 +68,7 @@ export default function Home() {
           <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-end sm:justify-between">
             <LyaIntro />
             <motion.a
-              href="/login"
+              href="/onboarding"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9, duration: 0.8 }}
@@ -152,7 +152,7 @@ export default function Home() {
           </h3>
           <p className="mt-3 text-muted">Gratuit. Guidé par Lya. Une question pour commencer.</p>
           <a
-            href="/login"
+            href="/onboarding"
             className="mt-8 inline-block rounded-2xl bg-accent px-8 py-4 text-base font-bold text-white shadow-[0_6px_24px_rgba(0,112,243,0.4)] transition-transform hover:-translate-y-0.5"
           >
             Commencer l’aventure
