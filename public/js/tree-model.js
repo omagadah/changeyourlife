@@ -110,6 +110,49 @@ function localCurve(THREE, dir, length, rnd) {
   return new THREE.CatmullRomCurve3(pts);
 }
 
+// ── Texture de Terre procédurale (canvas, zéro téléchargement) ──────────────
+// Océan dégradé + continents (blobs verts/tan) + calottes polaires. Stylisée
+// mais reconnaissable, légère (générée à la volée), pas de fichier image.
+function makeEarthTexture(THREE) {
+  const w = 1024, h = 512;
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext('2d');
+  // océan
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#0b2e5c'); g.addColorStop(0.5, '#0e4f93'); g.addColorStop(1, '#0b2e5c');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  // continents : amas de blobs organiques
+  const land = ['#3d7a3a', '#4a8a3f', '#71873b', '#8a7a4a', '#356a33'];
+  ctx.save();
+  for (let c = 0; c < 24; c++) {
+    const cx = Math.random() * w, cy = h * (0.16 + Math.random() * 0.66);
+    ctx.fillStyle = land[(Math.random() * land.length) | 0];
+    ctx.globalAlpha = 0.9;
+    const blobs = 8 + (Math.random() * 16 | 0);
+    for (let b = 0; b < blobs; b++) {
+      const r = 12 + Math.random() * 46;
+      const x = cx + (Math.random() - 0.5) * 130;
+      const y = cy + (Math.random() - 0.5) * 90;
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r * (0.55 + Math.random() * 0.6), Math.random() * 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+  // calottes polaires
+  let cap = ctx.createLinearGradient(0, 0, 0, h * 0.13);
+  cap.addColorStop(0, 'rgba(238,246,255,0.95)'); cap.addColorStop(1, 'rgba(238,246,255,0)');
+  ctx.fillStyle = cap; ctx.fillRect(0, 0, w, h * 0.13);
+  cap = ctx.createLinearGradient(0, h * 0.87, 0, h);
+  cap.addColorStop(0, 'rgba(238,246,255,0)'); cap.addColorStop(1, 'rgba(238,246,255,0.95)');
+  ctx.fillStyle = cap; ctx.fillRect(0, h * 0.87, w, h * 0.13);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
 /**
  * Construit l'arbre. Renvoie { group, nodes, grow }.
  *   grow(age) — age ∈ [0,1] : anime la pousse, sapling → centenaire.
@@ -309,7 +352,7 @@ export function buildTree(THREE, model, opts) {
     const u = rnd(), v = rnd();
     const theta = 2 * Math.PI * u;
     const phi = Math.acos(2 * v - 1);
-    const r = 1400 * (0.85 + rnd() * 0.3);
+    const r = 6000 * (0.85 + rnd() * 0.3);
     starPos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
     starPos[i * 3 + 1] = r * Math.cos(phi);
     starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
@@ -326,9 +369,9 @@ export function buildTree(THREE, model, opts) {
   }));
   root.add(stars);
 
-  // Soleil — sphère émissive lointaine + halos additifs + lumière warm
+  // Soleil — loin et haut dans l'espace (hors de la Terre), halos + lumière warm
   const sunGroup = new THREE.Group();
-  sunGroup.position.set(-1100, 280, -800);
+  sunGroup.position.set(-2400, 1500, -2800);
   root.add(sunGroup);
   sunGroup.add(new THREE.Mesh(
     new THREE.SphereGeometry(45, 32, 20),
@@ -361,10 +404,20 @@ export function buildTree(THREE, model, opts) {
       new THREE.SphereGeometry(p.radius, 20, 14),
       new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.85, metalness: 0.03 })
     );
+    mesh.scale.setScalar(1.8);             // plus grosses → visibles au dézoom
     const ang = rnd() * Math.PI * 2;
     mesh.userData = { dist: p.dist, speed: p.speed, tilt: p.tilt, angle: ang };
     mesh.position.set(Math.cos(ang) * p.dist, p.tilt * p.dist, Math.sin(ang) * p.dist);
     sunGroup.add(mesh);
+    // ESP : anneau d'orbite — relie visuellement la planète au soleil
+    // (lit comme un schéma de système solaire).
+    const orbit = new THREE.Mesh(
+      new THREE.RingGeometry(p.dist - 1.6, p.dist + 1.6, 128),
+      new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+    );
+    orbit.rotation.x = Math.PI / 2;
+    orbit.position.y = p.tilt * p.dist;
+    sunGroup.add(orbit);
     if (p.ring) {
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(p.radius * 1.5, p.radius * 2.4, 48),
@@ -376,10 +429,30 @@ export function buildTree(THREE, model, opts) {
     planets.push(mesh);
   }
 
+  // ── La Terre ── l'arbre pousse au pôle nord d'une vraie planète ──────────
+  // Énorme sphère sous le sol (pôle nord = y 0). Au zoom normal la surface
+  // paraît plate (c'est « le sol ») ; au dézoom la courbure puis la planète
+  // entière se révèlent, jusqu'à sortir dans l'espace.
+  const EARTH_R = 1080;
+  const earthGroup = new THREE.Group();
+  earthGroup.position.set(0, -EARTH_R, 0);
+  root.add(earthGroup);
+  const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(EARTH_R, 64, 48),
+    new THREE.MeshStandardMaterial({ map: makeEarthTexture(THREE), roughness: 1, metalness: 0 })
+  );
+  earthGroup.add(earth);
+  // halo d'atmosphère (rim glow cyan)
+  earthGroup.add(new THREE.Mesh(
+    new THREE.SphereGeometry(EARTH_R * 1.025, 48, 32),
+    new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
+  ));
+
   // Animation des orbites (appelée chaque frame par l'orchestrateur).
   // Lente exprès : ce n'est pas un écran de veille, c'est un repère mental.
   function animateCosmos(dt) {
     if (!dt || dt > 0.5) dt = 0.016; // garde-fou (onglet en veille…)
+    earth.rotation.y += dt * 0.015;  // la Terre tourne lentement sur elle-même
     for (const p of planets) {
       p.userData.angle += p.userData.speed * dt;
       const a = p.userData.angle;

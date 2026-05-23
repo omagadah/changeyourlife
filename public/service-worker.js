@@ -1,5 +1,5 @@
-// service-worker.js - v60 (cosmos : étoiles + soleil + planètes au dézoom)
-const CACHE_NAME = 'changeyourlife-v60';
+// service-worker.js - v61 (la Terre sous l'arbre + ESP orbites + reveal espace)
+const CACHE_NAME = 'changeyourlife-v61';
 const urlsToCache = [
   '/',
   '/app/',

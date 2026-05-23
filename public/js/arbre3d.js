@@ -118,9 +118,9 @@ function initScene(canvas) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  // Far plane étendu pour le cosmos (soleil ~1100, planètes jusqu'à ~2200, étoiles ~1400).
+  // Far plane large : Terre (R 1080), système solaire lointain, étoiles ~6000.
   const camera = new THREE.PerspectiveCamera(
-    42, canvas.clientWidth / canvas.clientHeight, 0.1, 5000);
+    42, canvas.clientWidth / canvas.clientHeight, 0.1, 14000);
 
   scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -140,7 +140,7 @@ function initControls(canvas, camera) {
   const s = {
     azimuth: 0.5, polar: 1.06, radius: 110,
     tAz: 0.5, tPo: 1.06, tR: 110,
-    minR: 64, maxR: 1800, minPo: 0.55, maxPo: 1.45,
+    minR: 64, maxR: 4500, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
@@ -185,12 +185,16 @@ function initControls(canvas, camera) {
       s.azimuth += (s.tAz - s.azimuth) * 0.055;
       s.polar += (s.tPo - s.polar) * 0.055;
       s.radius += (s.tR - s.radius) * 0.055;
+      // Dérive de la cible vers la Terre au dézoom → on révèle la courbure,
+      // puis la planète entière, puis le système solaire.
+      const frac = Math.min(1, Math.max(0, (s.radius - 220) / 3800));
+      const ty = tgt.y - frac * 560;
       const sp = Math.sin(s.polar), cp = Math.cos(s.polar);
       camera.position.set(
         tgt.x + s.radius * sp * Math.sin(s.azimuth),
-        tgt.y + s.radius * cp,
+        ty + s.radius * cp,
         tgt.z + s.radius * sp * Math.cos(s.azimuth));
-      camera.lookAt(tgt);
+      camera.lookAt(tgt.x, ty, tgt.z);
     },
     // Pendant la croissance : impose le rayon sauf si l'utilisateur a zoomé.
     setRadius(r) {
