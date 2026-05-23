@@ -39,10 +39,14 @@ export function TreeCanvas() {
 
     // Géoloc IP : l'arbre est planté sur le pays du visiteur (cache local).
     (function geolocate() {
+      // Repli France immédiat (jamais bloqué au pôle nord si l'API IP échoue),
+      // affiné ensuite par la géoloc IP si elle répond.
+      let applied = false;
       try {
         const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
-        if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+        if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); applied = true; }
       } catch {}
+      if (!applied) setEarthLocation(46.6, 2.2);
       fetch('https://ipwho.is/').then((r) => r.json()).then((d: any) => {
         if (d && d.success && typeof d.latitude === 'number') {
           setEarthLocation(d.latitude, d.longitude);

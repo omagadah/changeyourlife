@@ -554,12 +554,16 @@ export function initTreeWidget(userData, opts) {
   const { group, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation } = buildTree(THREE, model, { extraGrass });
   scene.add(group);
 
-  // Géoloc IP : l'arbre est planté sur le pays de l'utilisateur (cache local).
+  // Géoloc IP : l'arbre est planté sur le pays de l'utilisateur. Repli France
+  // immédiat (jamais bloqué au pôle nord si l'API IP est injoignable), affiné
+  // ensuite si la géoloc IP répond. Cache local.
   (function geolocate() {
+    let applied = false;
     try {
       const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
-      if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+      if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); applied = true; }
     } catch (_) {}
+    if (!applied) setEarthLocation(46.6, 2.2);
     fetch('https://ipwho.is/').then((r) => r.json()).then((d) => {
       if (d && d.success && typeof d.latitude === 'number') {
         setEarthLocation(d.latitude, d.longitude);

@@ -145,10 +145,16 @@ function initScene(canvas) {
 // Échec silencieux → l'arbre reste au pôle nord (pas bloquant).
 function geolocateTree(setEarthLocation) {
   if (typeof setEarthLocation !== 'function') return;
+  // Repli France (centre) : appliqué TOUT DE SUITE pour que l'arbre ne reste
+  // jamais bloqué au pôle nord si l'API IP est injoignable (VPN, bloqueur de
+  // pub Opera, hors-ligne…). Affiné ensuite si la géoloc IP répond.
+  const FALLBACK = { lat: 46.6, lon: 2.2 };
+  let applied = false;
   try {
     const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
-    if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+    if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); applied = true; }
   } catch (_) {}
+  if (!applied) setEarthLocation(FALLBACK.lat, FALLBACK.lon);
   fetch('https://ipwho.is/')
     .then((r) => r.json())
     .then((d) => {

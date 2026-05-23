@@ -1,5 +1,5 @@
-// service-worker.js - v65 (géoloc corrigée + anti-clignotement logDepth + dézoom plus lent)
-const CACHE_NAME = 'changeyourlife-v65';
+// service-worker.js - v66 (orbite Terre reliée au Soleil + géoloc repli France robuste)
+const CACHE_NAME = 'changeyourlife-v66';
 const urlsToCache = [
   '/',
   '/app/',

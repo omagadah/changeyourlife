@@ -482,6 +482,26 @@ export function buildTree(THREE, model, opts) {
     new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
   ));
 
+  // ── Orbite de la Terre ── la relie au Soleil (même langage visuel que les
+  // planètes). Anneau statique passant par le centre de la Terre, centré sur le
+  // Soleil et incliné pour contenir la direction Soleil→Terre.
+  {
+    const earthLocal = earthGroup.position.clone().sub(sunGroup.position);
+    const Re = earthLocal.length();
+    const u = earthLocal.clone().normalize();
+    let ref = new THREE.Vector3(0, 1, 0);
+    if (Math.abs(u.dot(ref)) > 0.95) ref = new THREE.Vector3(1, 0, 0);
+    const normal = new THREE.Vector3().crossVectors(u, ref).normalize();
+    const yAxis = new THREE.Vector3().crossVectors(normal, u).normalize();
+    const basis = new THREE.Matrix4().makeBasis(u, yAxis, normal);
+    const orbitE = new THREE.Mesh(
+      new THREE.RingGeometry(Re - 7, Re + 7, 240),
+      new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })
+    );
+    orbitE.quaternion.setFromRotationMatrix(basis);
+    sunGroup.add(orbitE);
+  }
+
   // Géolocalisation : place le PAYS de l'utilisateur sous l'arbre (au sommet),
   // au lieu du pôle nord. On oriente la Terre + nuages pour amener (lat,lon)
   // en haut, et on fige l'auto-rotation pour que le pays reste sous l'arbre.
