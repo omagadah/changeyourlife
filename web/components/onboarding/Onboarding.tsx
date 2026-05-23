@@ -61,13 +61,26 @@ export function Onboarding() {
     renderer.toneMappingExposure = 1.7;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 5000);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 24000);
     scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
     const k = new THREE.DirectionalLight(0xffffff, 1.5); k.position.set(30, 70, 36); scene.add(k);
     const f = new THREE.DirectionalLight(0x4a90e2, 0.7); f.position.set(-36, 30, -20); scene.add(f);
 
-    const { group, grow, nodes, animateCosmos } = buildTree(THREE, createDemoModel());
+    const { group, grow, nodes, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel());
     scene.add(group);
+    // Géoloc IP : la Terre montre le pays du visiteur (cache local).
+    (function geolocate() {
+      try {
+        const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
+        if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+      } catch {}
+      fetch('https://ipwho.is/').then((r) => r.json()).then((d: any) => {
+        if (d && d.success && typeof d.latitude === 'number') {
+          setEarthLocation(d.latitude, d.longitude);
+          try { localStorage.setItem('cyl_geo', JSON.stringify({ lat: d.latitude, lon: d.longitude })); } catch {}
+        }
+      }).catch(() => {});
+    })();
     const nodeByKey = new Map<string, any>();
     for (const n of nodes) if (n.userData?.key) nodeByKey.set(n.userData.key, n);
 
@@ -104,7 +117,7 @@ export function Onboarding() {
         setProbe({ label: best.userData.label, color: hex(best.userData.color) });
       }
     };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(1800, Math.max(60, s.tR + e.deltaY * 0.0018 * s.tR)); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(7000, Math.max(60, s.tR + e.deltaY * 0.0011 * s.tR)); };
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);

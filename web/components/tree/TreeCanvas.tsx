@@ -27,15 +27,29 @@ export function TreeCanvas() {
     renderer.toneMappingExposure = 1.7;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 5000);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 24000);
     scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
     const key = new THREE.DirectionalLight(0xffffff, 1.5);
     key.position.set(30, 70, 36); scene.add(key);
     const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
     fill.position.set(-36, 30, -20); scene.add(fill);
 
-    const { group, grow, animateCosmos } = buildTree(THREE, createDemoModel());
+    const { group, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel());
     scene.add(group);
+
+    // Géoloc IP : l'arbre est planté sur le pays du visiteur (cache local).
+    (function geolocate() {
+      try {
+        const c = JSON.parse(localStorage.getItem('cyl_geo') || 'null');
+        if (c && typeof c.lat === 'number') { setEarthLocation(c.lat, c.lon); return; }
+      } catch {}
+      fetch('https://ipwho.is/').then((r) => r.json()).then((d: any) => {
+        if (d && d.success && typeof d.latitude === 'number') {
+          setEarthLocation(d.latitude, d.longitude);
+          try { localStorage.setItem('cyl_geo', JSON.stringify({ lat: d.latitude, lon: d.longitude })); } catch {}
+        }
+      }).catch(() => {});
+    })();
 
     // ── Orbite : drag 1:1 + zoom log (mêmes réglages que le site actuel) ────
     const s = { az: 0.6, po: 1.04, r: 150, tAz: 0.6, tPo: 1.04, tR: 150 };
@@ -50,7 +64,7 @@ export function TreeCanvas() {
       s.tPo = s.po = Math.min(1.4, Math.max(0.5, s.tPo - dy * SENS * 0.85));
     };
     const onUp = (e: PointerEvent) => { dragging = false; try { canvas.releasePointerCapture(e.pointerId); } catch {} };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(1800, Math.max(60, s.tR + e.deltaY * 0.0018 * s.tR)); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(7000, Math.max(60, s.tR + e.deltaY * 0.0011 * s.tR)); };
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
@@ -61,12 +75,15 @@ export function TreeCanvas() {
       s.az += (s.tAz - s.az) * 0.055;
       s.po += (s.tPo - s.po) * 0.055;
       s.r += (s.tR - s.r) * 0.055;
+      // Dérive de la cible vers la Terre au dézoom (reveal arbre → planète → espace).
+      const frac = Math.min(1, Math.max(0, (s.r - 200) / 6800));
+      const ty = ORBIT_TARGET.y - frac * 1300;
       const sp = Math.sin(s.po), cp = Math.cos(s.po);
       camera.position.set(
         ORBIT_TARGET.x + s.r * sp * Math.sin(s.az),
-        ORBIT_TARGET.y + s.r * cp,
+        ty + s.r * cp,
         ORBIT_TARGET.z + s.r * sp * Math.cos(s.az));
-      camera.lookAt(ORBIT_TARGET);
+      camera.lookAt(ORBIT_TARGET.x, ty, ORBIT_TARGET.z);
     }
 
     let lastW = 0, lastH = 0;
