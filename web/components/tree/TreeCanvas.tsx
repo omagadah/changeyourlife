@@ -20,7 +20,7 @@ export function TreeCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
@@ -52,7 +52,7 @@ export function TreeCanvas() {
     })();
 
     // ── Orbite : drag 1:1 + zoom log (mêmes réglages que le site actuel) ────
-    const s = { az: 0.6, po: 1.04, r: 150, tAz: 0.6, tPo: 1.04, tR: 150 };
+    const s = { az: 0.6, po: 1.04, r: 100, tAz: 0.6, tPo: 1.04, tR: 100 };
     let dragging = false, px = 0, py = 0;
     const onDown = (e: PointerEvent) => { dragging = true; px = e.clientX; py = e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch {} };
     const onMove = (e: PointerEvent) => {
@@ -64,7 +64,7 @@ export function TreeCanvas() {
       s.tPo = s.po = Math.min(1.4, Math.max(0.5, s.tPo - dy * SENS * 0.85));
     };
     const onUp = (e: PointerEvent) => { dragging = false; try { canvas.releasePointerCapture(e.pointerId); } catch {} };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(7000, Math.max(60, s.tR + e.deltaY * 0.0011 * s.tR)); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(7000, Math.max(50, s.tR + e.deltaY * 0.00065 * s.tR)); };
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);

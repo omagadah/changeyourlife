@@ -205,7 +205,7 @@ function injectCss() {
 
 // ── Orbite (glisser / molette), active seulement en plein écran ──────────────
 function makeControls(el, camera, target) {
-  const s = { az: 0.6, po: 1.04, r: 150, tAz: 0.6, tPo: 1.04, tR: 150 };
+  const s = { az: 0.6, po: 1.04, r: 100, tAz: 0.6, tPo: 1.04, tR: 100 };
   let dragging = false, moved = false, px = 0, py = 0;
   const enabled = () => el.classList.contains('expanded');
   el.addEventListener('pointerdown', (e) => {
@@ -236,7 +236,7 @@ function makeControls(el, camera, target) {
     if (!enabled()) return;
     e.preventDefault();
     // Zoom logarithmique, plus doux : long pour quitter la Terre, puis l'espace.
-    s.tR = Math.min(7000, Math.max(60, s.tR + e.deltaY * 0.0011 * s.tR));
+    s.tR = Math.min(7000, Math.max(50, s.tR + e.deltaY * 0.00065 * s.tR));
   }, { passive: false });
   return {
     isDragging: () => dragging,
@@ -528,7 +528,7 @@ export function initTreeWidget(userData, opts) {
   }
 
   // ── Three.js ──────────────────────────────────────────────────────────────
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, logarithmicDepthBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NeutralToneMapping;

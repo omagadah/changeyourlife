@@ -110,6 +110,11 @@ const BRANCHES_INFO = {
 function initScene(canvas) {
   const renderer = new THREE.WebGLRenderer({
     canvas, antialias: true, alpha: true, powerPreference: 'high-performance',
+    // Profondeur logarithmique : indispensable avec un far plane énorme (24000)
+    // et un near de 0.1 — sinon z-fighting (clignotement / taches) sur la Terre
+    // et l'herbe au dézoom. Précision répartie sur toute la plage au lieu d'être
+    // écrasée près du near.
+    logarithmicDepthBuffer: true,
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
@@ -158,9 +163,9 @@ function geolocateTree(setEarthLocation) {
 // ── Contrôles : orbite (glisser) + zoom borné (molette) ─────────────────────
 function initControls(canvas, camera) {
   const s = {
-    azimuth: 0.5, polar: 1.06, radius: 110,
-    tAz: 0.5, tPo: 1.06, tR: 110,
-    minR: 64, maxR: 7000, minPo: 0.55, maxPo: 1.45,
+    azimuth: 0.5, polar: 1.06, radius: 78,
+    tAz: 0.5, tPo: 1.06, tR: 78,
+    minR: 50, maxR: 7000, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
@@ -194,7 +199,7 @@ function initControls(canvas, camera) {
     userZoomed = true;
     // Zoom logarithmique, plus DOUX : il faut longtemps pour quitter la Terre,
     // puis on atteint l'espace. Step réduit → plus de molette pour tout traverser.
-    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.0011 * s.tR));
+    s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.00065 * s.tR));
   }, { passive: false });
 
   return {

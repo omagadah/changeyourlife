@@ -458,7 +458,7 @@ export function buildTree(THREE, model, opts) {
   // coplanaires → z-fighting. On laisse un vrai écart.
   const EARTH_R = 2400;
   const earthGroup = new THREE.Group();
-  earthGroup.position.set(0, -EARTH_R - 3, 0);
+  earthGroup.position.set(0, -EARTH_R - 8, 0);
   root.add(earthGroup);
   // Texture réelle si présente (public/textures/earth-day.jpg, ex: Solar System
   // Scope 2K), sinon repli procédural. Chargement async sans bloquer.
@@ -488,13 +488,14 @@ export function buildTree(THREE, model, opts) {
   let geoLocked = false;
   function setEarthLocation(lat, lon) {
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) return;
-    const latR = lat * Math.PI / 180;
-    const lonR = lon * Math.PI / 180;
-    const LON_OFFSET = -Math.PI / 2; // calage du méridien d'origine (ajustable)
+    // Formule équirectangulaire standard Three.js : (lat,lon) → point sur la
+    // sphère, cohérente avec le mapping UV d'une SphereGeometry texturée.
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = (lon + 180) * Math.PI / 180;
     const d = new THREE.Vector3(
-      Math.cos(latR) * Math.sin(lonR + LON_OFFSET),
-      Math.sin(latR),
-      Math.cos(latR) * Math.cos(lonR + LON_OFFSET)
+      -Math.sin(phi) * Math.cos(theta),
+      Math.cos(phi),
+      Math.sin(phi) * Math.sin(theta)
     ).normalize();
     const q = new THREE.Quaternion().setFromUnitVectors(d, new THREE.Vector3(0, 1, 0));
     earth.quaternion.copy(q);
@@ -506,9 +507,9 @@ export function buildTree(THREE, model, opts) {
   // Lente exprès : ce n'est pas un écran de veille, c'est un repère mental.
   function animateCosmos(dt) {
     if (!dt || dt > 0.5) dt = 0.016; // garde-fou (onglet en veille…)
-    if (!geoLocked) {                 // sans géoloc, la Terre tourne sur elle-même
-      earth.rotation.y += dt * 0.015;
-      clouds.rotation.y += dt * 0.022;
+    if (!geoLocked) {                 // sans géoloc, la Terre tourne lentement sur elle-même
+      earth.rotation.y += dt * 0.006;
+      clouds.rotation.y += dt * 0.009;
     }
     for (const p of planets) {
       p.userData.angle += p.userData.speed * dt;

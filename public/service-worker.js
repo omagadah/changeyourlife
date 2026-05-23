@@ -1,5 +1,5 @@
-// service-worker.js - v64 (géoloc : arbre planté sur le pays de l'utilisateur)
-const CACHE_NAME = 'changeyourlife-v64';
+// service-worker.js - v65 (géoloc corrigée + anti-clignotement logDepth + dézoom plus lent)
+const CACHE_NAME = 'changeyourlife-v65';
 const urlsToCache = [
   '/',
   '/app/',

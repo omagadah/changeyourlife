@@ -54,7 +54,7 @@ export function Onboarding() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, logarithmicDepthBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
@@ -85,7 +85,7 @@ export function Onboarding() {
     for (const n of nodes) if (n.userData?.key) nodeByKey.set(n.userData.key, n);
 
     // orbite 1:1
-    const s = { az: 0.6, po: 1.04, r: 150, tAz: 0.6, tPo: 1.04, tR: 150 };
+    const s = { az: 0.6, po: 1.04, r: 100, tAz: 0.6, tPo: 1.04, tR: 100 };
     let dragging = false, moved = false, px = 0, py = 0;
     const onDown = (e: PointerEvent) => { dragging = true; moved = false; px = e.clientX; py = e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch {} };
     const onMove = (e: PointerEvent) => {
@@ -117,7 +117,7 @@ export function Onboarding() {
         setProbe({ label: best.userData.label, color: hex(best.userData.color) });
       }
     };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(7000, Math.max(60, s.tR + e.deltaY * 0.0011 * s.tR)); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); s.tR = Math.min(7000, Math.max(50, s.tR + e.deltaY * 0.00065 * s.tR)); };
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
