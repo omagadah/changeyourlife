@@ -1,5 +1,5 @@
-// service-worker.js - v62 (vraie Terre + fix z-fight + reveal plus lent)
-const CACHE_NAME = 'changeyourlife-v62';
+// service-worker.js - v63 (vraies textures : planètes, soleil, Terre+nuages, Voie lactée)
+const CACHE_NAME = 'changeyourlife-v63';
 const urlsToCache = [
   '/',
   '/app/',

@@ -365,18 +365,36 @@ export function buildTree(THREE, model, opts) {
   starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
   starGeo.setAttribute('color',    new THREE.Float32BufferAttribute(starCol, 3));
   const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({
-    size: 2, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.88,
+    size: 2, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.7,
   }));
   root.add(stars);
+
+  // Helper de chargement de texture (async, non bloquant, repli silencieux).
+  const _texLoader = new THREE.TextureLoader();
+  function applyTexture(mat, path, mode) {
+    _texLoader.load(path, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      if (mode === 'alpha') { mat.alphaMap = tex; mat.transparent = true; }
+      else { mat.map = tex; if (mat.color) mat.color.set(0xffffff); }
+      if (mode === 'sky') mat.opacity = 1;
+      mat.needsUpdate = true;
+    });
+  }
+
+  // Ciel — vraie Voie lactée en fond (sphère inversée géante). Invisible tant
+  // que la texture n'est pas chargée → on garde les points d'étoiles sinon.
+  const skyMat = new THREE.MeshBasicMaterial({ side: THREE.BackSide, depthWrite: false, transparent: true, opacity: 0 });
+  applyTexture(skyMat, '/textures/stars-milky-way.jpg', 'sky');
+  root.add(new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 32), skyMat));
 
   // Soleil — loin et haut dans l'espace (hors de la Terre), halos + lumière warm
   const sunGroup = new THREE.Group();
   sunGroup.position.set(-2400, 1500, -2800);
   root.add(sunGroup);
-  sunGroup.add(new THREE.Mesh(
-    new THREE.SphereGeometry(45, 32, 20),
-    new THREE.MeshBasicMaterial({ color: 0xffd86a })
-  ));
+  const sunMat = new THREE.MeshBasicMaterial({ color: 0xffd86a });
+  applyTexture(sunMat, '/textures/sun.jpg');
+  sunGroup.add(new THREE.Mesh(new THREE.SphereGeometry(45, 48, 32), sunMat));
   sunGroup.add(new THREE.Mesh(
     new THREE.SphereGeometry(85, 32, 20),
     new THREE.MeshBasicMaterial({ color: 0xffb84a, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false })
@@ -390,20 +408,21 @@ export function buildTree(THREE, model, opts) {
 
   // Planètes en orbite (parentées au soleil pour orbite naturelle)
   const planetsData = [
-    { color: 0x9a8a7a, radius:  4, dist: 180, speed: 0.18,  tilt:  0.04 },   // Mercure
-    { color: 0xddc06a, radius:  6, dist: 280, speed: 0.10,  tilt: -0.03 },   // Vénus
-    { color: 0xd17a48, radius:  5, dist: 380, speed: 0.07,  tilt:  0.04 },   // Mars
-    { color: 0xd4a574, radius: 16, dist: 540, speed: 0.04,  tilt:  0.02 },   // Jupiter
-    { color: 0xc9b078, radius: 13, dist: 720, speed: 0.025, tilt:  0.05, ring: true }, // Saturne
-    { color: 0x8fc6d4, radius:  8, dist: 920, speed: 0.018, tilt: -0.04 },   // Uranus
-    { color: 0x4a78d4, radius:  8, dist:1120, speed: 0.014, tilt:  0.02 },   // Neptune
+    { tex: 'mercury', color: 0x9a8a7a, radius:  4, dist: 180, speed: 0.18,  tilt:  0.04 },
+    { tex: 'venus',   color: 0xddc06a, radius:  6, dist: 280, speed: 0.10,  tilt: -0.03 },
+    { tex: 'mars',    color: 0xd17a48, radius:  5, dist: 380, speed: 0.07,  tilt:  0.04 },
+    { tex: 'jupiter', color: 0xd4a574, radius: 16, dist: 540, speed: 0.04,  tilt:  0.02 },
+    { tex: 'saturn',  color: 0xc9b078, radius: 13, dist: 720, speed: 0.025, tilt:  0.05, ring: true },
+    { tex: 'uranus',  color: 0x8fc6d4, radius:  8, dist: 920, speed: 0.018, tilt: -0.04 },
+    { tex: 'neptune', color: 0x4a78d4, radius:  8, dist:1120, speed: 0.014, tilt:  0.02 },
   ];
   const planets = [];
   for (const p of planetsData) {
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(p.radius, 20, 14),
-      new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.85, metalness: 0.03 })
+      new THREE.SphereGeometry(p.radius, 32, 22),
+      new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.9, metalness: 0.0 })
     );
+    if (p.tex) applyTexture(mesh.material, '/textures/' + p.tex + '.jpg');
     mesh.scale.setScalar(1.8);             // plus grosses → visibles au dézoom
     const ang = rnd() * Math.PI * 2;
     mesh.userData = { dist: p.dist, speed: p.speed, tilt: p.tilt, angle: ang };
@@ -451,6 +470,11 @@ export function buildTree(THREE, model, opts) {
   );
   const earth = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R, 96, 64), earthMat);
   earthGroup.add(earth);
+  // Couche de nuages : texture N&B en alphaMap (blanc = nuage opaque, noir = transparent)
+  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false });
+  applyTexture(cloudMat, '/textures/earth-clouds.jpg', 'alpha');
+  const clouds = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R * 1.006, 96, 64), cloudMat);
+  earthGroup.add(clouds);
   // halo d'atmosphère (rim glow cyan)
   earthGroup.add(new THREE.Mesh(
     new THREE.SphereGeometry(EARTH_R * 1.018, 48, 32),
@@ -462,6 +486,7 @@ export function buildTree(THREE, model, opts) {
   function animateCosmos(dt) {
     if (!dt || dt > 0.5) dt = 0.016; // garde-fou (onglet en veille…)
     earth.rotation.y += dt * 0.015;  // la Terre tourne lentement sur elle-même
+    clouds.rotation.y += dt * 0.022; // les nuages dérivent un peu plus vite
     for (const p of planets) {
       p.userData.angle += p.userData.speed * dt;
       const a = p.userData.angle;
