@@ -10,8 +10,8 @@
     <link rel="icon" href="/favicon.ico">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <meta name="theme-color" content="#0070f3">
-    <meta name="msapplication-TileColor" content="#07192f">
+    <meta name="theme-color" content="#0a0f0a">
+    <meta name="msapplication-TileColor" content="#0a0f0a">
     <link rel="modulepreload" href="/vendor/three/three.module.min.js">
     <link rel="modulepreload" href="/js/tree-model.js">
     <style>
@@ -19,11 +19,11 @@
         html, body {
             width: 100%; height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #eef4ff; -webkit-font-smoothing: antialiased;
+            color: #f4efe1; -webkit-font-smoothing: antialiased;
             background:
-                radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,112,243,0.16), transparent 70%),
-                radial-gradient(ellipse 80% 60% at 50% 105%, rgba(0,112,243,0.10), transparent 70%),
-                #060e1a;
+                radial-gradient(ellipse 70% 50% at 50% 0%, rgba(132,194,94,0.16), transparent 70%),
+                radial-gradient(ellipse 80% 60% at 50% 105%, rgba(132,194,94,0.10), transparent 70%),
+                #0a0f0a;
             overflow: hidden;
         }
 
@@ -38,8 +38,8 @@
         .scene-veil {
             position: absolute; inset: 0; pointer-events: none;
             background:
-                radial-gradient(ellipse 60% 70% at 50% 50%, rgba(6,14,26,0.55), transparent 70%),
-                linear-gradient(0deg, rgba(6,14,26,0.45), transparent 55%);
+                radial-gradient(ellipse 60% 70% at 50% 50%, rgba(7,11,6,0.55), transparent 70%),
+                linear-gradient(0deg, rgba(7,11,6,0.45), transparent 55%);
         }
 
         /* ── Bandeau (identique à l'accueil) ── */
@@ -50,10 +50,10 @@
             animation: fadeDown 1s ease both;
         }
         @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
-        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #eef4ff; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f4efe1; }
         .brand img { width: 30px; height: 30px; }
         .brand-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.2px; }
-        .brand-name span { color: #60a5fa; }
+        .brand-name span { color: #84c25e; }
 
         /* ── Carte d'authentification (verre, accordée aux panneaux de l'accueil) ── */
         .auth-wrap {
@@ -62,42 +62,42 @@
             padding: 88px 20px 40px;
         }
         .auth-container {
-            background: rgba(8, 17, 30, 0.82);
+            background: rgba(16, 21, 13, 0.82);
             backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
             padding: 2.5rem; border-radius: 20px;
-            border: 1px solid rgba(0, 112, 243, 0.25);
-            box-shadow: 0 24px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,112,243,0.12);
+            border: 1px solid rgba(132, 194, 94, 0.25);
+            box-shadow: 0 24px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(132,194,94,0.12);
             width: 100%; max-width: 420px; text-align: center;
             animation: cardUp 1s cubic-bezier(0.22,1,0.36,1) 0.15s both;
         }
         @keyframes cardUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
         .auth-container h1 {
             margin-bottom: 0.4rem; font-weight: 800; font-size: 1.7rem; letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 30%, #7fb4ff);
+            background: linear-gradient(135deg, #ffffff 30%, #84c25e);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        .auth-sub { color: #8ba4c8; font-size: 0.92rem; margin-bottom: 1.7rem; line-height: 1.5; }
+        .auth-sub { color: #b4ad94; font-size: 0.92rem; margin-bottom: 1.7rem; line-height: 1.5; }
 
         .input-group { margin-bottom: 1.2rem; text-align: left; }
-        .input-group label { display: block; margin-bottom: 0.45rem; font-size: 0.82rem; color: #8ba4c8; font-weight: 600; letter-spacing: 0.3px; }
+        .input-group label { display: block; margin-bottom: 0.45rem; font-size: 0.82rem; color: #b4ad94; font-weight: 600; letter-spacing: 0.3px; }
         .input-group input {
             width: 100%; padding: 0.85rem 1rem; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1);
             background: rgba(255,255,255,0.05);
-            color: #eef4ff; font-size: 1rem;
+            color: #f4efe1; font-size: 1rem;
             transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
         }
-        .input-group input::placeholder { color: rgba(139,164,200,0.4); }
+        .input-group input::placeholder { color: rgba(180,173,148,0.4); }
         .input-group input:focus {
-            outline: none; border-color: rgba(0,112,243,0.6);
-            background: rgba(0,112,243,0.08); box-shadow: 0 0 0 3px rgba(0,112,243,0.18);
+            outline: none; border-color: rgba(132,194,94,0.6);
+            background: rgba(132,194,94,0.08); box-shadow: 0 0 0 3px rgba(132,194,94,0.18);
         }
 
         .submit-button {
             width: 100%; padding: 0.95rem; border: none; border-radius: 14px;
-            background: #0070f3; color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer;
+            background: #84c25e; color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer;
             font-family: inherit; letter-spacing: 0.2px; margin-top: 0.4rem;
-            box-shadow: 0 6px 24px rgba(0,112,243,0.4);
+            box-shadow: 0 6px 24px rgba(132,194,94,0.4);
             transition: transform 0.2s ease, filter 0.2s ease;
         }
         .submit-button:hover { transform: translateY(-2px); filter: brightness(1.1); }
@@ -105,7 +105,7 @@
 
         .divider {
             display: flex; align-items: center; text-align: center;
-            color: rgba(139,164,200,0.5); margin: 1.4rem 0; font-size: 0.8rem; letter-spacing: 0.5px;
+            color: rgba(180,173,148,0.5); margin: 1.4rem 0; font-size: 0.8rem; letter-spacing: 0.5px;
         }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .divider:not(:empty)::before { margin-right: .6em; }
@@ -116,27 +116,27 @@
             width: 100%; padding: 0.8rem; margin-bottom: 0.8rem; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.12);
             background: rgba(255,255,255,0.05);
-            color: #c8d8ee; font-size: 0.95rem; font-weight: 500; cursor: pointer;
+            color: #d6d0bf; font-size: 0.95rem; font-weight: 500; cursor: pointer;
             font-family: inherit;
             transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
         }
         .social-btn:hover {
             background: rgba(255,255,255,0.09);
-            border-color: rgba(0,112,243,0.4);
+            border-color: rgba(132,194,94,0.4);
             transform: translateY(-1px);
         }
         .social-btn svg { width: 22px; height: 22px; margin-right: 10px; opacity: 0.85; }
 
         #error-message { color: #f87171; margin-top: 1rem; font-size: 0.88rem; min-height: 1.2em; }
 
-        .auth-toggle { margin-top: 1.4rem; font-size: 0.88rem; color: #8ba4c8; }
+        .auth-toggle { margin-top: 1.4rem; font-size: 0.88rem; color: #b4ad94; }
         .auth-toggle a, .highlight-link {
-            color: #60a5fa; text-decoration: none; font-weight: 600; transition: color 0.2s ease;
+            color: #84c25e; text-decoration: none; font-weight: 600; transition: color 0.2s ease;
         }
-        .auth-toggle a:hover, .highlight-link:hover { color: #93c5fd; text-decoration: underline; }
+        .auth-toggle a:hover, .highlight-link:hover { color: #f1cd92; text-decoration: underline; }
 
-        .back-link { display: inline-block; margin-top: 1rem; color: #4a6a8a; font-size: 0.85rem; text-decoration: none; transition: color 0.2s; }
-        .back-link:hover { color: #8ba4c8; }
+        .back-link { display: inline-block; margin-top: 1rem; color: #7c7660; font-size: 0.85rem; text-decoration: none; transition: color 0.2s; }
+        .back-link:hover { color: #b4ad94; }
 
         #password-requirements {
             margin: 0.8rem 0; padding: 0.9rem 1rem; text-align: left;
@@ -144,12 +144,12 @@
             border-radius: 12px; border-left: 3px solid rgba(251,191,36,0.5);
         }
         #password-requirements small { color: #fbbf24; font-weight: 600; font-size: 0.82rem; }
-        #password-requirements ul { margin: 0.4rem 0 0 1.2rem; color: #8aadcc; font-size: 0.82rem; }
+        #password-requirements ul { margin: 0.4rem 0 0 1.2rem; color: #b4ad94; font-size: 0.82rem; }
         #password-requirements li.ok { color: #34d399; }
 
         .extra-links { display: flex; justify-content: center; margin-top: 1rem; }
-        .extra-links a { color: #4a7aa8; font-size: 0.85rem; text-decoration: none; }
-        .extra-links a:hover { color: #8ba4c8; text-decoration: underline; }
+        .extra-links a { color: #7c7660; font-size: 0.85rem; text-decoration: none; }
+        .extra-links a:hover { color: #b4ad94; text-decoration: underline; }
 
         .notification {
             position: fixed; top: 20px; left: 50%; transform: translate(-50%, -100px);
@@ -197,12 +197,12 @@
                 <div class="input-group">
                     <label for="email">Adresse e-mail</label>
                     <input type="email" id="email" name="email" required autocomplete="email" aria-label="Adresse e-mail">
-                    <small id="email-hint" style="color:#8ba4c8;font-size:0.8rem;margin-top:4px;display:block;"></small>
+                    <small id="email-hint" style="color:#b4ad94;font-size:0.8rem;margin-top:4px;display:block;"></small>
                 </div>
                 <div class="input-group">
                     <label for="password">Mot de passe</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password" aria-label="Mot de passe">
-                    <small id="password-hint" style="color:#8ba4c8;font-size:0.8rem;margin-top:4px;display:block;"></small>
+                    <small id="password-hint" style="color:#b4ad94;font-size:0.8rem;margin-top:4px;display:block;"></small>
                 </div>
                 <div id="password-requirements" style="display:none;">
                     <small>Exigences du mot de passe :</small>
@@ -217,7 +217,7 @@
                 <div class="input-group" id="password-confirm-group" style="display:none;">
                     <label for="password-confirm">Confirmer le mot de passe</label>
                     <input type="password" id="password-confirm" name="password-confirm" autocomplete="new-password" aria-label="Confirmer le mot de passe">
-                    <small id="password-confirm-hint" style="color:#8ba4c8;font-size:0.8rem;margin-top:4px;display:block;"></small>
+                    <small id="password-confirm-hint" style="color:#b4ad94;font-size:0.8rem;margin-top:4px;display:block;"></small>
                 </div>
                 <button id="submit-button" type="submit" class="submit-button">Se connecter</button>
             </form>
@@ -234,8 +234,7 @@
         </div>
     </div>
 
-    <script type="module" src="/js/inscription.js?v=17"></script>
+    <script type="module" src="/js/inscription.js?v=18"></script>
     <script type="module" src="/js/login-init.js"></script>
     <script type="module" src="/js/login-bg.js"></script>
 </body>
-</html>

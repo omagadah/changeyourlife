@@ -127,11 +127,12 @@ function initScene(canvas) {
   const camera = new THREE.PerspectiveCamera(
     42, canvas.clientWidth / canvas.clientHeight, 0.1, 24000);
 
-  scene.add(new THREE.HemisphereLight(0x9ecaff, 0x070e1a, 1.15));
-  const key = new THREE.DirectionalLight(0xffffff, 1.5);
+  // Ambiance organique : ciel chaud (lumière dorée tamisée) + rebond vert mousse.
+  scene.add(new THREE.HemisphereLight(0xffe6bf, 0x0c1208, 1.15));
+  const key = new THREE.DirectionalLight(0xfff2dd, 1.5);
   key.position.set(30, 70, 36);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
+  const fill = new THREE.DirectionalLight(0x7faa5a, 0.7);
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
@@ -614,8 +615,4 @@ function init() {
   document.body.classList.add('tree-ready');
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+if (document.readyState === 'lo

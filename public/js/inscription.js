@@ -13,9 +13,16 @@ import './firebase.js';
 // ─── Firebase singleton (centralisé dans /js/firebase.js) ────────────────────
 const { app, auth } = window._cyfFirebase;
 
-// ─── Auth guard: redirect logged-in users away from /login ───────────────────
+// ─── Auth guard ───────────────────────────────────────────────────────────────
+// Sur /login on redirige tout utilisateur déjà connecté. Sur les autres pages
+// (ex. l'accueil, où le formulaire vit dans un modal), on ne redirige QUE suite à
+// une connexion interactive — un visiteur déjà connecté peut rester sur la vitrine.
+const ON_LOGIN_PAGE = location.pathname.replace(/\/+$/, '').endsWith('/login')
+  || location.pathname.replace(/\/+$/, '') === '/login';
+window._cyfInteractiveAuth = false;
 onAuthStateChanged(auth, (user) => {
   if (!user) return;
+  if (!ON_LOGIN_PAGE && !window._cyfInteractiveAuth) return;
   const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
   if (isEmailProvider && !user.emailVerified) {
     window.location.replace('/verify-email');
@@ -190,6 +197,7 @@ if (form) {
     }
 
     if (submitButton) { submitButton.textContent = isRegister ? 'Création…' : 'Connexion…'; submitButton.disabled = true; }
+    window._cyfInteractiveAuth = true;
 
     try {
       if (!isRegister) {
@@ -226,6 +234,7 @@ if (googleBtn) {
   googleBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const provider = new GoogleAuthProvider();
+    window._cyfInteractiveAuth = true;
     try {
       await signInWithPopup(auth, provider);
       showNotification('Connexion Google réussie — redirection…');
@@ -255,6 +264,7 @@ if (githubBtn) {
   githubBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const provider = new GithubAuthProvider();
+    window._cyfInteractiveAuth = true;
     try {
       await signInWithPopup(auth, provider);
       showNotification('Connexion GitHub réussie — redirection…');
@@ -336,25 +346,4 @@ if (authToggleLink) {
       if (submitEl) submitEl.textContent = 'Se connecter';
       if (passwordReqEl) passwordReqEl.style.display = 'none';
       if (passwordConfirmEl) passwordConfirmEl.style.display = 'none';
-      if (emailInput) emailInput.placeholder = 'Adresse e-mail';
-      if (passwordInput) passwordInput.placeholder = 'Mot de passe';
-    }
-  });
-}
-
-// ─── Handle redirect results (Google / GitHub redirect fallback) ──────────────
-(async function handleRedirectResult() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result && result.user) {
-      showNotification('Connexion réussie — redirection…');
-      // onAuthStateChanged will handle the redirect
-    }
-  } catch (err) {
-    if (err?.code === 'auth/unauthorized-domain') {
-      showError('Domaine non autorisé pour OAuth — vérifie Firebase Console');
-    }
-  }
-})();
-
-export default {};
+      if (emai
