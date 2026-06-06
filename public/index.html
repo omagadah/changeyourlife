@@ -95,13 +95,27 @@
 
     .loading-veil {
       position: absolute; inset: 0; display: flex; z-index: 3;
-      align-items: center; justify-content: center;
-      color: var(--moss); font-size: 0.82rem; letter-spacing: 2px;
-      text-transform: uppercase; pointer-events: none;
-      animation: pulse 1.8s ease-in-out infinite;
+      flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+      pointer-events: none;
+      transition: opacity 1s ease;
     }
-    @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 0.7; } }
-    body.tree-ready .loading-veil { display: none; }
+    .loading-veil .lv-seed {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: radial-gradient(circle at 36% 32%, var(--gold-soft), var(--leaf-deep) 92%);
+      box-shadow: 0 0 24px rgba(231,177,92,0.55);
+      animation: seedBreathe 2.4s ease-in-out infinite;
+    }
+    .loading-veil .lv-text {
+      color: var(--text-2); font-size: 0.78rem; letter-spacing: 2.5px;
+      text-transform: uppercase; font-weight: 600;
+      animation: lvText 2.4s ease-in-out infinite;
+    }
+    @keyframes seedBreathe {
+      0%,100% { transform: scale(1);   box-shadow: 0 0 18px rgba(231,177,92,0.4); }
+      50%     { transform: scale(1.5); box-shadow: 0 0 34px rgba(231,177,92,0.75); }
+    }
+    @keyframes lvText { 0%,100% { opacity: 0.4; } 50% { opacity: 0.85; } }
+    body.tree-ready .loading-veil { opacity: 0; visibility: hidden; }
 
     /* ── Bandeau ── */
     .site-header {
@@ -118,7 +132,7 @@
     .header-login {
       font-size: 0.88rem; font-weight: 600; color: var(--text-2);
       background: rgba(255,255,255,0.02); text-decoration: none; cursor: pointer;
-      padding: 9px 18px; border-radius: 11px; font-family: inherit;
+      padding: 10px 20px; border-radius: 99px; font-family: inherit;
       border: 1px solid var(--line); transition: color .25s, border-color .25s, background .25s;
     }
     .header-login:hover { color: var(--text-1); border-color: var(--line-hov); background: rgba(132,194,94,0.1); }
@@ -132,20 +146,25 @@
     }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
     .eyebrow {
-      display: inline-block; margin-bottom: 16px; padding: 6px 13px;
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase;
-      color: var(--gold-soft); border: 1px solid rgba(231,177,92,0.32);
-      border-radius: 99px; background: rgba(231,177,92,0.07);
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-bottom: 18px; padding: 7px 15px;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.8px;
+      color: var(--gold-soft); border: 1px solid rgba(231,177,92,0.28);
+      border-radius: 99px; background: rgba(231,177,92,0.06);
+    }
+    .eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 8px var(--gold);
     }
     .headline h1 {
-      font-size: clamp(1.95rem, 4.8vw, 3.5rem); font-weight: 800;
-      line-height: 1.06; letter-spacing: -1.2px;
-      background: linear-gradient(135deg, #fbf7ec 28%, var(--leaf) 96%);
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      font-size: clamp(2.1rem, 5.2vw, 3.7rem); font-weight: 800;
+      line-height: 1.08; letter-spacing: -1px;
+      color: var(--text-1);
     }
+    .headline h1 br { display: block; }
     .headline p {
-      margin-top: 16px; font-size: clamp(0.94rem, 1.5vw, 1.07rem);
-      line-height: 1.62; color: var(--text-2); max-width: 28rem;
+      margin-top: 18px; font-size: clamp(0.98rem, 1.5vw, 1.12rem);
+      line-height: 1.66; color: var(--text-2); max-width: 30rem;
     }
     .headline p strong { color: var(--gold-soft); font-weight: 600; }
 
@@ -191,18 +210,31 @@
     .tl-range:disabled { cursor: default; opacity: 0.6; }
 
     /* ── Flux de pop-ups « tâche accomplie » ── */
+    .stream-wrap {
+      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px); top: 35%;
+      width: 264px; pointer-events: none;
+    }
+    .stream-cap {
+      display: flex; align-items: center; gap: 8px; margin: 0 4px 12px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--text-2);
+      opacity: 0; animation: fadeUp 0.9s ease 2.4s both;
+    }
+    .stream-cap .sc-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--leaf);
+      box-shadow: 0 0 10px var(--leaf); animation: scDot 2.6s ease-in-out infinite;
+    }
+    @keyframes scDot { 0%,100% { opacity: 0.5; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.1); } }
     .task-stream {
-      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px); top: 37%;
-      width: 252px; display: flex; flex-direction: column; gap: 10px;
-      pointer-events: none;
+      display: flex; flex-direction: column; gap: 10px;
     }
     .task-card {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 15px; border-radius: 14px;
-      background: var(--glass-2); border: 1px solid rgba(132,194,94,0.3);
-      box-shadow: 0 10px 32px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 13px;
+      padding: 13px 16px; border-radius: 18px;
+      background: var(--glass-2); border: 1px solid rgba(132,194,94,0.22);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05);
       transform: translateX(150%); opacity: 0;
-      animation: cardIn .5s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation: cardIn .6s cubic-bezier(0.22,1,0.36,1) forwards;
     }
     .task-card.out { animation: cardOut .45s ease forwards; }
     @keyframes cardIn { to { transform: translateX(0); opacity: 1; } }
@@ -296,15 +328,15 @@
     @keyframes caret { 50% { opacity: 0; } }
     .actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
     .btn-enter {
-      padding: 14px 28px; border-radius: 14px; border: none;
+      padding: 15px 30px; border-radius: 99px; border: none;
       background: linear-gradient(135deg, var(--leaf) 0%, var(--leaf-deep) 100%);
-      color: #08130a; font-size: 0.95rem; font-weight: 800;
+      color: #08130a; font-size: 0.96rem; font-weight: 800;
       font-family: inherit; cursor: pointer; text-decoration: none; white-space: nowrap;
-      box-shadow: 0 8px 26px rgba(74,122,58,0.5); transition: transform .2s, filter .2s, box-shadow .2s;
+      box-shadow: 0 10px 30px rgba(74,122,58,0.42); transition: transform .25s, filter .25s, box-shadow .25s;
     }
-    .btn-enter:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 12px 34px rgba(74,122,58,0.6); }
+    .btn-enter:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 14px 38px rgba(74,122,58,0.55); }
     .lya-voice {
-      padding: 11px 14px; border-radius: 12px; cursor: pointer;
+      padding: 12px 16px; border-radius: 99px; cursor: pointer;
       background: rgba(255,255,255,0.04); border: 1px solid var(--line);
       color: var(--text-2); font-size: 0.82rem; font-family: inherit; white-space: nowrap;
       transition: background .2s, color .2s, border-color .2s;
@@ -370,7 +402,7 @@
       background: rgba(132,194,94,0.07); box-shadow: 0 0 0 3px rgba(132,194,94,0.16);
     }
     .submit-button {
-      width: 100%; padding: 0.95rem; border: none; border-radius: 14px;
+      width: 100%; padding: 0.95rem; border: none; border-radius: 99px;
       background: linear-gradient(135deg, var(--leaf) 0%, var(--leaf-deep) 100%);
       color: #08130a; font-weight: 800; font-size: 1rem; cursor: pointer;
       font-family: inherit; letter-spacing: 0.2px; margin-top: 0.3rem;
@@ -434,7 +466,7 @@
       .lya-top { display: flex; align-items: center; gap: 14px; }
       .actions { justify-content: space-between; }
       .btn-enter { flex: 1; text-align: center; }
-      .hud, .timeline { display: none; }
+      .hud, .timeline, .stream-wrap { display: none; }
     }
     @media (max-width: 480px) {
       .auth-card { padding: 2rem 1.5rem 1.6rem; border-radius: 18px; }
@@ -451,7 +483,10 @@
   <main class="scene">
     <canvas id="arbre-canvas" aria-label="Ton arbre de vie"></canvas>
     <canvas id="aura-canvas" aria-hidden="true"></canvas>
-    <div class="loading-veil" aria-hidden="true">l'arbre s'éveille…</div>
+    <div class="loading-veil" aria-hidden="true">
+      <span class="lv-seed"></span>
+      <span class="lv-text">L'arbre s'éveille</span>
+    </div>
 
     <header class="site-header">
       <div class="brand">
@@ -462,15 +497,15 @@
     </header>
 
     <div class="headline">
-      <span class="eyebrow">Ton organisme vivant</span>
-      <h1>Construis la meilleure version de toi-même.</h1>
-      <p>Ta vie devient un <strong>arbre vivant</strong> qui grandit avec toi —
-        du corps aux racines, jusqu'au sens tout en haut. Lya, ton coach,
-        observe, t'éclaire et te guide à chaque saison.</p>
+      <span class="eyebrow">Ta vie, devenue vivante</span>
+      <h1>Chaque action te fait grandir.<br>Pour de vrai.</h1>
+      <p>Une méditation, une nuit complète, un appel à un proche…
+        <strong>chaque geste de ta vie réelle fait pousser ton arbre.</strong>
+        Tout est relié — et Lya, ton coach, t'accompagne à chaque pas.</p>
     </div>
 
     <div class="hud" id="hud" aria-hidden="true">
-      <div class="hud-stage" id="xp-stage">Sapling</div>
+      <div class="hud-stage" id="xp-stage">Jeune pousse</div>
       <div class="hud-xp"><span id="xp-value">0</span><small>XP</small></div>
     </div>
 
@@ -481,7 +516,10 @@
              disabled aria-label="Évolution de l'arbre" />
     </div>
 
-    <div class="task-stream" id="task-stream" aria-hidden="true"></div>
+    <div class="stream-wrap" aria-hidden="true">
+      <div class="stream-cap"><span class="sc-dot"></span>Tes actions, dans la vraie vie</div>
+      <div class="task-stream" id="task-stream"></div>
+    </div>
 
     <aside class="branch-panel" id="branch-panel" aria-hidden="true">
       <button class="bp-close" id="bp-close" type="button" aria-label="Fermer">✕</button>
@@ -640,6 +678,15 @@
     })();
   </script>
 
+  <!-- Garde-fou : si le module 3D échoue (WebGL absent, import KO), on lève
+       quand même le voile pour ne jamais bloquer l'accueil sur "l'arbre s'éveille". -->
+  <script>
+    setTimeout(function () {
+      if (!document.body.classList.contains('tree-ready')) {
+        document.body.classList.add('tree-ready');
+      }
+    }, 5000);
+  </script>
   <script type="module" src="/js/arbre3d.js"></script>
   <script type="module" src="/js/inscription.js?v=18"></script>
   <!-- CYL accueil organique v3 -->

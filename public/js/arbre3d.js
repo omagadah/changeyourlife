@@ -263,7 +263,7 @@ function initHud() {
   function updateXp(age) {
     if (xpEl) xpEl.textContent = Math.round(easeOut(age) * TOTAL_XP).toLocaleString('fr-FR');
     if (stageEl) {
-      stageEl.textContent = age < 0.12 ? 'Sapling'
+      stageEl.textContent = age < 0.12 ? 'Jeune pousse'
         : age < 0.42 ? 'Jeune arbre'
         : age < 0.78 ? 'Arbre mature' : 'Arbre centenaire';
     }
@@ -293,6 +293,11 @@ function initHud() {
   }
   return {
     updateXp,
+    // Remet à zéro le flux de pop-ups (rejoue la croissance depuis le début).
+    resetBeats() {
+      fired = BEATS.map(() => false);
+      if (stream) stream.innerHTML = '';
+    },
     // Synchronise les pop-ups avec la barre de temps : ils apparaissent quand
     // on franchit leur instant en avant, disparaissent quand on recule.
     syncBeats(age, prev) {
@@ -409,9 +414,9 @@ function initLabels(nodes, subNodes) {
 
 // ── Lya ─────────────────────────────────────────────────────────────────────
 const LYA_LINES = [
-  'Bonjour. Je m’appelle Lya.',
-  'Regarde — chaque chose que tu accomplis fait grandir ton arbre.',
-  'Le voilà adulte. Touche une branche pour l’explorer.',
+  'Bonjour, je suis Lya. Ravie de te rencontrer.',
+  'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.',
+  'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.',
 ];
 let lyaSay = null;
 let typeGen = 0;            // jeton anti-superposition du texte de Lya
@@ -615,4 +620,8 @@ function init() {
   document.body.classList.add('tree-ready');
 }
 
-if (document.readyState === 'lo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

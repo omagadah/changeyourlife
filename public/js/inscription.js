@@ -346,4 +346,25 @@ if (authToggleLink) {
       if (submitEl) submitEl.textContent = 'Se connecter';
       if (passwordReqEl) passwordReqEl.style.display = 'none';
       if (passwordConfirmEl) passwordConfirmEl.style.display = 'none';
-      if (emai
+      if (emailInput) emailInput.placeholder = 'Adresse e-mail';
+      if (passwordInput) passwordInput.placeholder = 'Mot de passe';
+    }
+  });
+}
+
+// ─── Handle redirect results (Google / GitHub redirect fallback) ──────────────
+(async function handleRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result && result.user) {
+      showNotification('Connexion réussie — redirection…');
+      // onAuthStateChanged will handle the redirect
+    }
+  } catch (err) {
+    if (err?.code === 'auth/unauthorized-domain') {
+      showError('Domaine non autorisé pour OAuth — vérifie Firebase Console');
+    }
+  }
+})();
+
+export default {};

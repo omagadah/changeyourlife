@@ -1,5 +1,5 @@
-// service-worker.js - v68 (login accordé à l'accueil : fond 3D arbre/Terre)
-const CACHE_NAME = 'changeyourlife-v69';
+// service-worker.js - v70 (accueil Calm/Headspace : voile pousse, copy vie réelle→arbre, fix loader)
+const CACHE_NAME = 'changeyourlife-v70';
 const urlsToCache = [
   '/',
   '/app/',
