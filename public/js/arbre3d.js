@@ -248,19 +248,20 @@ function initControls(canvas, camera) {
 }
 
 // ── HUD : compteur XP + flux de pop-ups « tâche accomplie » ─────────────────
+// `key` = clé i18n du libellé · `task` = repli FR · l'XP reste international.
 const BEATS = [
-  { at: 0.10, icon: '🌅', task: 'Réveil en pleine forme', xp: '+60 XP' },
-  { at: 0.18, icon: '🧘', task: 'Méditation du matin', xp: '+180 XP' },
-  { at: 0.26, icon: '💧', task: 'Hydratation', xp: '+40 XP' },
-  { at: 0.34, icon: '📓', task: 'Journal du jour', xp: '+120 XP' },
-  { at: 0.42, icon: '🏃', task: 'Séance de sport', xp: '+260 XP' },
-  { at: 0.50, icon: '🎯', task: 'Objectif atteint', xp: '+420 XP' },
-  { at: 0.58, icon: '🙏', task: 'Gratitude notée', xp: '+90 XP' },
-  { at: 0.66, icon: '📚', task: '30 min de lecture', xp: '+140 XP' },
-  { at: 0.73, icon: '🤝', task: 'Appel à un proche', xp: '+160 XP' },
-  { at: 0.80, icon: '😴', task: 'Nuit réparatrice', xp: '+150 XP' },
-  { at: 0.87, icon: '✅', task: 'Habitude tenue 7 jours', xp: '+300 XP' },
-  { at: 0.93, icon: '🏆', task: 'Nouveau palier de niveau', xp: '+500 XP' },
+  { at: 0.10, icon: '🌅', key: 'beat.wake',     task: 'Réveil en pleine forme', xp: '+60 XP' },
+  { at: 0.18, icon: '🧘', key: 'beat.meditate', task: 'Méditation du matin', xp: '+180 XP' },
+  { at: 0.26, icon: '💧', key: 'beat.hydrate',  task: 'Hydratation', xp: '+40 XP' },
+  { at: 0.34, icon: '📓', key: 'beat.journal',  task: 'Journal du jour', xp: '+120 XP' },
+  { at: 0.42, icon: '🏃', key: 'beat.sport',    task: 'Séance de sport', xp: '+260 XP' },
+  { at: 0.50, icon: '🎯', key: 'beat.goal',     task: 'Objectif atteint', xp: '+420 XP' },
+  { at: 0.58, icon: '🙏', key: 'beat.gratitude',task: 'Gratitude notée', xp: '+90 XP' },
+  { at: 0.66, icon: '📚', key: 'beat.reading',  task: '30 min de lecture', xp: '+140 XP' },
+  { at: 0.73, icon: '🤝', key: 'beat.call',     task: 'Appel à un proche', xp: '+160 XP' },
+  { at: 0.80, icon: '😴', key: 'beat.sleep',    task: 'Nuit réparatrice', xp: '+150 XP' },
+  { at: 0.87, icon: '✅', key: 'beat.habit',    task: 'Habitude tenue 7 jours', xp: '+300 XP' },
+  { at: 0.93, icon: '🏆', key: 'beat.levelup',  task: 'Nouveau palier de niveau', xp: '+500 XP' },
 ];
 function initHud() {
   const xpEl = document.getElementById('xp-value');
@@ -285,7 +286,7 @@ function initHud() {
     card.dataset.beat = String(idx);
     card.innerHTML =
       `<span class="ic">${b.icon}</span>` +
-      `<span class="bd"><span class="nm">${b.task}</span><span class="xp">${b.xp}</span></span>` +
+      `<span class="bd"><span class="nm">${T(b.key, b.task)}</span><span class="xp">${b.xp}</span></span>` +
       `<span class="ck">✓</span>`;
     stream.appendChild(card);
     while (stream.children.length > 5) stream.removeChild(stream.firstChild);
