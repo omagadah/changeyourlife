@@ -145,7 +145,7 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel());
+  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel(), { floating: true });
   scene.add(group);
   return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation };
 }
@@ -226,11 +226,9 @@ function initControls(canvas, camera) {
       s.azimuth += (s.tAz - s.azimuth) * 0.055;
       s.polar += (s.tPo - s.polar) * 0.055;
       s.radius += (s.tR - s.radius) * 0.055;
-      // Dérive de la cible vers la Terre au dézoom → on révèle la courbure,
-      // puis la planète entière, puis le système solaire. Étalée sur tout le
-      // (grand) range pour que sortir de la Terre soit long.
-      const frac = Math.min(1, Math.max(0, (s.radius - 200) / 6800));
-      const ty = tgt.y - frac * 1300;
+      // Arbre flottant : pas de dérive vers la Terre. La caméra reste centrée
+      // sur l'arbre ; en dézoomant on découvre le système solaire autour.
+      const ty = tgt.y;
       const sp = Math.sin(s.polar), cp = Math.cos(s.polar);
       camera.position.set(
         tgt.x + s.radius * sp * Math.sin(s.azimuth),

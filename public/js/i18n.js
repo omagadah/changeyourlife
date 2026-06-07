@@ -477,6 +477,15 @@ window.CYL.t = t;
 window.CYL.getLang = () => current;
 window.CYL.setLang = (c) => setLang(c, true);
 
+// Sélection par l'utilisateur : on mémorise le choix puis on RECHARGE toute la
+// page — ainsi l'intégralité du site (DOM + scène 3D) repart proprement dans la
+// nouvelle langue, sans état résiduel.
+function selectLang(code) {
+  if (code === current) { closePop(); return; }
+  try { localStorage.setItem(STORE_KEY, code); } catch (_) {}
+  location.reload();
+}
+
 // ── Sélecteur de langue (bouton + popover avec recherche) ───────────────────
 let elBtn, elPop, elFlag, elCode, elList, elSearch, elEmpty;
 
@@ -502,7 +511,7 @@ function buildList() {
       `<span class="lang-opt-name">${l.label}</span>` +
       `<span class="lang-opt-check" aria-hidden="true">` +
         `<svg viewBox="0 0 14 14"><path d="M2.5 7.5 6 11 11.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-    li.addEventListener('click', () => { setLang(l.code, true); closePop(); });
+    li.addEventListener('click', () => { selectLang(l.code); });
     elList.appendChild(li);
   });
 }

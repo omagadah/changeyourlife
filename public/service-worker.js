@@ -1,5 +1,5 @@
-// service-worker.js - v74 (i18n : étiquettes 3D de l'arbre traduites)
-const CACHE_NAME = 'changeyourlife-v74';
+// service-worker.js - v75 (arbre flottant dans l'espace + reload au changement de langue)
+const CACHE_NAME = 'changeyourlife-v75';
 const urlsToCache = [
   '/',
   '/app/',

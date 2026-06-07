@@ -163,6 +163,10 @@ export function buildTree(THREE, model, opts) {
   opts = opts || {};
   // bonus d'herbe persisté entre sessions (chaque récompense XP ajoute des brins)
   const extraGrass = Math.max(0, Math.min(1500, Math.floor(opts.extraGrass || 0)));
+  // Mode « flottant » : l'arbre ne pousse plus sur le sol/la Terre, il flotte
+  // dans l'espace sur une plateforme cylindrique translucide ; la Terre devient
+  // une planète du système solaire. (Page d'accueil.)
+  const floating = !!opts.floating;
 
   // Tronc en chêne clair plutôt qu'en chocolat sombre : se voit nettement sur
   // fond marine #060e1a, et la grille ESP blanche par-dessus ne « grille » plus
@@ -269,7 +273,50 @@ export function buildTree(THREE, model, opts) {
   ground.position.y = -0.05;
   ground.renderOrder = 1;        // dessiné après la Terre → blend propre
   ground.receiveShadow = false;
-  root.add(ground);
+  if (!floating) root.add(ground);
+
+  // ── Plateforme cylindrique translucide (mode flottant) ──────────────────────
+  // Un « bloc » de verre presque invisible sur lequel l'arbre tient au milieu de
+  // l'espace : on voit les étoiles à travers, seul un fin liseré lumineux sur le
+  // rebord en révèle la forme.
+  if (floating) {
+    const plat = new THREE.Group();
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color: 0xd4ecff, transparent: true, opacity: 0.06, roughness: 0.06, metalness: 0,
+      clearcoat: 1, clearcoatRoughness: 0.12, side: THREE.DoubleSide, depthWrite: false,
+    });
+    // corps cylindrique
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(44, 48, 7, 80, 1, true), glassMat);
+    body.position.y = -3.6;
+    plat.add(body);
+    // face supérieure (verre à peine teinté)
+    const top = new THREE.Mesh(new THREE.CircleGeometry(44, 80), glassMat);
+    top.rotation.x = -Math.PI / 2;
+    plat.add(top);
+    // liseré lumineux sur le rebord supérieur → donne la forme sans casser la transparence
+    const rim = new THREE.Mesh(
+      new THREE.TorusGeometry(44, 0.5, 12, 110),
+      new THREE.MeshBasicMaterial({ color: 0x9ed9ff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    rim.rotation.x = Math.PI / 2;
+    plat.add(rim);
+    // liseré inférieur, plus discret
+    const rimB = new THREE.Mesh(
+      new THREE.TorusGeometry(48, 0.35, 12, 110),
+      new THREE.MeshBasicMaterial({ color: 0x6fb6e8, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    rimB.rotation.x = Math.PI / 2; rimB.position.y = -7;
+    plat.add(rimB);
+    // halo doux sous l'arbre
+    const glow = new THREE.Mesh(
+      new THREE.CircleGeometry(42, 64),
+      new THREE.MeshBasicMaterial({ color: 0x8fd4ff, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
+    );
+    glow.rotation.x = -Math.PI / 2; glow.position.y = 0.06;
+    plat.add(glow);
+    plat.renderOrder = 2;
+    root.add(plat);
+  }
 
   // ── Vraies lames d'herbe (InstancedMesh) ────────────────────────────────
   // Chaque lame = un quad fuselé (5 vertices, 3 triangles) qui se rétrécit
@@ -323,12 +370,13 @@ export function buildTree(THREE, model, opts) {
   }
   grassMesh.instanceMatrix.needsUpdate = true;
   if (grassMesh.instanceColor) grassMesh.instanceColor.needsUpdate = true;
-  root.add(grassMesh);
+  if (!floating) root.add(grassMesh);
 
   // Fonction exposée : ajoute n brins d'herbe live (chaque récompense en
   // pousse quelques-uns). On crée un petit InstancedMesh par appel — c'est
   // léger pour le GPU et ça évite de re-créer le mesh global.
   function addGrassBlades(n) {
+    if (floating) return null;   // pas d'herbe quand l'arbre flotte dans l'espace
     n = Math.max(1, Math.min(20, n | 0));
     const m = new THREE.InstancedMesh(bladeGeo, bladeMat, n);
     const _m2 = new THREE.Matrix4(), _q2 = new THREE.Quaternion(), _p2 = new THREE.Vector3();
@@ -470,61 +518,83 @@ export function buildTree(THREE, model, opts) {
     planets.push(mesh);
   }
 
-  // ── La Terre ── l'arbre pousse au pôle nord d'une vraie planète ──────────
-  // Énorme sphère sous le sol (pôle nord = y 0). Au zoom normal la surface
-  // paraît plate (c'est « le sol ») ; au dézoom la courbure puis la planète
-  // entière se révèlent, jusqu'à sortir dans l'espace.
-  // Grande sphère, et surtout posée BIEN en-dessous du sol : le clignotement
-  // précédent venait de la Terre (sommet à y≈0) et du disque d'herbe (y≈0)
-  // coplanaires → z-fighting. On laisse un vrai écart.
-  const EARTH_R = 2400;
-  const earthGroup = new THREE.Group();
-  earthGroup.position.set(0, -EARTH_R - 8, 0);
-  root.add(earthGroup);
-  // Texture réelle si présente (public/textures/earth-day.jpg, ex: Solar System
-  // Scope 2K), sinon repli procédural. Chargement async sans bloquer.
-  const earthMat = new THREE.MeshStandardMaterial({ color: 0x24405e, roughness: 1, metalness: 0 });
-  new THREE.TextureLoader().load(
-    '/textures/earth-day.jpg',
-    (tex) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; earthMat.map = tex; earthMat.color.set(0xffffff); earthMat.needsUpdate = true; },
-    undefined,
-    () => { earthMat.map = makeEarthTexture(THREE); earthMat.color.set(0xffffff); earthMat.needsUpdate = true; }
-  );
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R, 96, 64), earthMat);
-  earthGroup.add(earth);
-  // Couche de nuages : texture N&B en alphaMap (blanc = nuage opaque, noir = transparent)
-  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false });
-  applyTexture(cloudMat, '/textures/earth-clouds.jpg', 'alpha');
-  const clouds = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R * 1.006, 96, 64), cloudMat);
-  earthGroup.add(clouds);
-  // halo d'atmosphère (rim glow cyan)
-  earthGroup.add(new THREE.Mesh(
-    new THREE.SphereGeometry(EARTH_R * 1.018, 48, 32),
-    new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
-  ));
+  // ── La Terre ────────────────────────────────────────────────────────────────
+  let earth = null, clouds = null;   // mode planté : Terre « sol » géante
+  let earthFloat = null;             // mode flottant : Terre planète
 
-  // ── Orbite de la Terre ── la relie au Soleil (même langage visuel que les
-  // planètes), mais dans le plan le PLUS PLAT possible passant par la Terre :
-  // une ellipse d'orbite douce, jamais une ligne dure vue par la tranche. La
-  // Terre se pose sur l'anneau comme une planète sur son orbite.
-  {
-    const earthLocal = earthGroup.position.clone().sub(sunGroup.position); // repère Soleil
+  if (!floating) {
+    // L'arbre pousse au pôle nord d'une vraie planète. Énorme sphère sous le sol
+    // (pôle nord = y 0). Au zoom normal la surface paraît plate (« le sol ») ;
+    // au dézoom la courbure puis la planète entière se révèlent.
+    const EARTH_R = 2400;
+    const earthGroup = new THREE.Group();
+    earthGroup.position.set(0, -EARTH_R - 8, 0);
+    root.add(earthGroup);
+    const earthMat = new THREE.MeshStandardMaterial({ color: 0x24405e, roughness: 1, metalness: 0 });
+    new THREE.TextureLoader().load(
+      '/textures/earth-day.jpg',
+      (tex) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; earthMat.map = tex; earthMat.color.set(0xffffff); earthMat.needsUpdate = true; },
+      undefined,
+      () => { earthMat.map = makeEarthTexture(THREE); earthMat.color.set(0xffffff); earthMat.needsUpdate = true; }
+    );
+    earth = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R, 96, 64), earthMat);
+    earthGroup.add(earth);
+    const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false });
+    applyTexture(cloudMat, '/textures/earth-clouds.jpg', 'alpha');
+    clouds = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R * 1.006, 96, 64), cloudMat);
+    earthGroup.add(clouds);
+    earthGroup.add(new THREE.Mesh(
+      new THREE.SphereGeometry(EARTH_R * 1.018, 48, 32),
+      new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
+    ));
+    // Orbite de la Terre reliée au Soleil, dans le plan le plus horizontal possible.
+    const earthLocal = earthGroup.position.clone().sub(sunGroup.position);
     const Re = earthLocal.length();
     const u = earthLocal.clone().normalize();
-    // Normale du plan = composante verticale ⟂ à u → plan le plus horizontal
-    // possible (au lieu d'un plan vertical qui s'aplatit en trait à l'écran).
     const up = new THREE.Vector3(0, 1, 0);
     let normal = up.clone().addScaledVector(u, -up.dot(u));
-    if (normal.lengthSq() < 1e-4) normal = new THREE.Vector3(1, 0, 0); // u quasi vertical
+    if (normal.lengthSq() < 1e-4) normal = new THREE.Vector3(1, 0, 0);
     normal.normalize();
     const yAxis = new THREE.Vector3().crossVectors(normal, u).normalize();
-    const basis = new THREE.Matrix4().makeBasis(u, yAxis, normal); // X→Terre, Z→normale
+    const basis = new THREE.Matrix4().makeBasis(u, yAxis, normal);
     const orbitE = new THREE.Mesh(
       new THREE.RingGeometry(Re - 6, Re + 6, 256),
       new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.10, side: THREE.DoubleSide, depthWrite: false })
     );
     orbitE.quaternion.setFromRotationMatrix(basis);
     sunGroup.add(orbitE);
+  } else {
+    // Mode flottant : la Terre est une planète à part entière qui orbite le
+    // Soleil, parmi les autres — l'arbre flotte ailleurs, dans l'espace.
+    const ER = 17;
+    const eMat = new THREE.MeshStandardMaterial({ color: 0x24405e, roughness: 1, metalness: 0 });
+    new THREE.TextureLoader().load(
+      '/textures/earth-day.jpg',
+      (tex) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; eMat.map = tex; eMat.color.set(0xffffff); eMat.needsUpdate = true; },
+      undefined,
+      () => { eMat.map = makeEarthTexture(THREE); eMat.color.set(0xffffff); eMat.needsUpdate = true; }
+    );
+    const eMesh = new THREE.Mesh(new THREE.SphereGeometry(ER, 48, 32), eMat);
+    const ecMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false });
+    applyTexture(ecMat, '/textures/earth-clouds.jpg', 'alpha');
+    eMesh.add(new THREE.Mesh(new THREE.SphereGeometry(ER * 1.01, 48, 32), ecMat));
+    eMesh.add(new THREE.Mesh(
+      new THREE.SphereGeometry(ER * 1.06, 32, 24),
+      new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.18, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
+    ));
+    eMesh.scale.setScalar(1.8);
+    const dist = 470, speed = 0.05, tilt = 0.03, ang = rnd() * Math.PI * 2;
+    eMesh.userData = { dist, speed, tilt, angle: ang };
+    eMesh.position.set(Math.cos(ang) * dist, tilt * dist, Math.sin(ang) * dist);
+    sunGroup.add(eMesh);
+    const orbit = new THREE.Mesh(
+      new THREE.RingGeometry(dist - 1.6, dist + 1.6, 128),
+      new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+    );
+    orbit.rotation.x = Math.PI / 2; orbit.position.y = tilt * dist;
+    sunGroup.add(orbit);
+    planets.push(eMesh);
+    earthFloat = eMesh;
   }
 
   // Géolocalisation : place le PAYS de l'utilisateur sous l'arbre (au sommet),
@@ -532,6 +602,7 @@ export function buildTree(THREE, model, opts) {
   // en haut, et on fige l'auto-rotation pour que le pays reste sous l'arbre.
   let geoLocked = false;
   function setEarthLocation(lat, lon) {
+    if (floating || !earth) return;   // arbre flottant : pas de Terre-sol à orienter
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) return;
     // Formule équirectangulaire standard Three.js : (lat,lon) → point sur la
     // sphère, cohérente avec le mapping UV d'une SphereGeometry texturée.
@@ -554,10 +625,11 @@ export function buildTree(THREE, model, opts) {
   // Lente exprès : ce n'est pas un écran de veille, c'est un repère mental.
   function animateCosmos(dt) {
     if (!dt || dt > 0.5) dt = 0.016; // garde-fou (onglet en veille…)
-    if (!geoLocked) {                 // sans géoloc, la Terre tourne lentement sur elle-même
+    if (!geoLocked && earth) {        // sans géoloc, la Terre tourne lentement sur elle-même
       earth.rotation.y += dt * 0.006;
       clouds.rotation.y += dt * 0.009;
     }
+    // (earthFloat est dans `planets` → déjà animée par la boucle ci-dessous)
     for (const p of planets) {
       p.userData.angle += p.userData.speed * dt;
       const a = p.userData.angle;
