@@ -630,6 +630,7 @@ export function initTreeWidget(userData, opts) {
         <div class="tw-bar-top"><span>Vitalité</span><span>${b.vitality}/100</span></div>
         <div class="tw-bar-bg"><div class="tw-bar-fill" data-w="${b.vitality}" style="background:${vitColor}"></div></div>
       </div>
+      <a class="tw-open-dim" href="/${branchKey}/" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 4px;padding:12px 15px;border-radius:12px;text-decoration:none;background:${col}22;border:1px solid ${col}66;color:${col};font-weight:800;font-size:0.9rem;">Ouvrir l'espace ${b.label} <span>→</span></a>
       <div class="tw-sec-label">Ce qui fait grandir cette branche</div>
       ${(b.sub || []).map((s) => `<div class="tw-sub"><span class="tw-sub-dot" style="background:${col}"></span>${s}</div>`).join('')}
       <div class="tw-sec-label">Tes outils</div>

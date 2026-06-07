@@ -1,10 +1,18 @@
-// service-worker.js - v81 (méditation: accueil Lya par humeur + nouveaux modes)
-const CACHE_NAME = 'changeyourlife-v81';
+// service-worker.js - v82 (8 espaces-branches de l'arbre + liens depuis l'arbre)
+const CACHE_NAME = 'changeyourlife-v82';
 const urlsToCache = [
   '/',
   '/app/',
   '/plan/',
   '/competences/',
+  '/physio/',
+  '/securite/',
+  '/appartenance/',
+  '/estime/',
+  '/cognitif/',
+  '/esthetique/',
+  '/accomplissement/',
+  '/transcendance/',
   '/login/',
   '/signup/',
   '/verify-email/',
@@ -33,6 +41,7 @@ const urlsToCache = [
   '/js/plan.js',
   '/js/skills.js',
   '/js/competences.js',
+  '/js/branche.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',
