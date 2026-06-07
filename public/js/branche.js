@@ -14,6 +14,7 @@ let dim = {};   // { "<branch>.<i>": "YYYY-MM-DD" } — sous-catégorie validée
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
 try { initUserMenu(); } catch (e) {}
+if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); }
 
 const BRANCH_META = {
   physio:          { emoji: '🌱', color: '#2dd4bf' },

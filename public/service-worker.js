@@ -1,5 +1,5 @@
-// service-worker.js - v85 (connecteur Google Agenda dans /app/)
-const CACHE_NAME = 'changeyourlife-v85';
+// service-worker.js - v86 (emojis Twemoji + fix chevauchement icônes haut-droite)
+const CACHE_NAME = 'changeyourlife-v86';
 const urlsToCache = [
   '/',
   '/app/',
@@ -44,6 +44,7 @@ const urlsToCache = [
   '/js/branche.js',
   '/js/quotes.js',
   '/js/agenda.js',
+  '/js/emoji.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',

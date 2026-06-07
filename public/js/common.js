@@ -48,6 +48,9 @@ export function setupThemeToggle() {
  * Met à jour l'icône globale de l'utilisateur avec l'avatar sauvegardé ou une initiale.
  * @param {string} initial - La lettre initiale de l'email de l'utilisateur.
  */
+// Jolis emojis (Twemoji) sur toutes les pages qui chargent common.js.
+try { if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); } } catch (_) {}
+
 export function updateGlobalAvatar(initial) {
     const userPanelTrigger = document.querySelector('.user-panel-trigger');
     if (!userPanelTrigger) return;
