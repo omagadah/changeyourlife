@@ -6,9 +6,11 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { updateGlobalAvatar } from '/js/common.js';
+import { loadSkills, awardSkillXp } from '/js/skills.js';
 
 let auth, db, uid;
 let plan = { rhythm: {}, vitals: {}, tasks: [] };
+let userSkills = {};   // compétences de l'utilisateur (pour taguer une tâche)
 
 if (window._cyfFirebase) {
   ({ auth, db } = window._cyfFirebase);
@@ -72,6 +74,7 @@ onAuthStateChanged(auth, async (user) => {
   const d = document.getElementById('header-date');
   if (d) d.textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   await loadPlan();
+  try { userSkills = await loadSkills(db, uid); } catch (e) { userSkills = {}; }
   initRhythm();
   renderVitals();
   initTasks();
@@ -170,6 +173,12 @@ async function toggleVital(v) {
 function initTasks() {
   const sel = document.getElementById('task-branch');
   if (sel) sel.innerHTML = BRANCHES.map((b) => `<option value="${b.key}">${b.emoji} ${b.label}</option>`).join('');
+  const skSel = document.getElementById('task-skill');
+  if (skSel) {
+    const ids = Object.keys(userSkills);
+    skSel.innerHTML = '<option value="">— compétence (option) —</option>' +
+      ids.map((id) => `<option value="${id}">${escapeHtml((userSkills[id].emoji || '') + ' ' + (userSkills[id].name || id))}</option>`).join('');
+  }
   const btn = document.getElementById('btn-add-task');
   const input = document.getElementById('task-title');
   if (btn) btn.onclick = addTask;
@@ -178,9 +187,10 @@ function initTasks() {
 async function addTask() {
   const input = document.getElementById('task-title');
   const sel = document.getElementById('task-branch');
+  const skSel = document.getElementById('task-skill');
   const title = (input.value || '').trim();
   if (!title) { input.focus(); return; }
-  plan.tasks.push({ id: uid4(), title, branch: (sel && sel.value) || 'accomplissement', done: false, createdAt: Date.now() });
+  plan.tasks.push({ id: uid4(), title, branch: (sel && sel.value) || 'accomplissement', skillId: (skSel && skSel.value) || '', done: false, createdAt: Date.now() });
   input.value = '';
   renderTasks();
   await savePlan();
@@ -193,7 +203,13 @@ async function toggleTask(id) {
   t.doneAt = t.done ? Date.now() : null;
   renderTasks();
   await savePlan();
-  if (t.done && !wasDone) await award(t.branch, TASK_XP, BRANCH_BY_KEY[t.branch] ? BRANCH_BY_KEY[t.branch].label : 'Tâche');
+  if (t.done && !wasDone) {
+    await award(t.branch, TASK_XP, BRANCH_BY_KEY[t.branch] ? BRANCH_BY_KEY[t.branch].label : 'Tâche');
+    if (t.skillId && userSkills[t.skillId]) {
+      const res = await awardSkillXp(db, uid, t.skillId, 25);
+      if (res && res.leveledUp) toast(`🎉 ${userSkills[t.skillId].name} — niveau ${res.level} !`, true);
+    }
+  }
 }
 async function delTask(id) {
   plan.tasks = plan.tasks.filter((x) => x.id !== id);
@@ -221,7 +237,7 @@ function renderTasks() {
     card.innerHTML =
       `<button class="task-check" aria-label="Valider">✓</button>` +
       `<div class="task-body"><div class="task-title">${escapeHtml(t.title)}</div>` +
-      `<div class="task-branch">${b.emoji} ${b.label}</div></div>` +
+      `<div class="task-branch">${b.emoji} ${b.label}${t.skillId && userSkills[t.skillId] ? ' · 🧗 ' + escapeHtml(userSkills[t.skillId].name) : ''}</div></div>` +
       `<button class="task-del" aria-label="Supprimer">Suppr.</button>`;
     card.querySelector('.task-check').onclick = () => toggleTask(t.id);
     card.querySelector('.task-del').onclick = () => delTask(t.id);

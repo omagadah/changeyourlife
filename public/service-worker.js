@@ -1,9 +1,10 @@
-// service-worker.js - v78 (titres : Fondateur + liste intelligente liée à l'arbre)
-const CACHE_NAME = 'changeyourlife-v78';
+// service-worker.js - v79 (module Compétences + intégration au plan)
+const CACHE_NAME = 'changeyourlife-v79';
 const urlsToCache = [
   '/',
   '/app/',
   '/plan/',
+  '/competences/',
   '/login/',
   '/signup/',
   '/verify-email/',
@@ -30,6 +31,8 @@ const urlsToCache = [
   '/js/arbre3d.js',
   '/js/i18n.js',
   '/js/plan.js',
+  '/js/skills.js',
+  '/js/competences.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',

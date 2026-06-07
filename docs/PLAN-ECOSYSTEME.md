@@ -181,6 +181,38 @@ history:[{t,xp}] } }` — même principe que `tree` (brut + dérivé).
 → Étape de build dédiée : **module « Compétences »** + intégration au moteur
 `/plan/` (tag compétence sur une tâche) + capture/matrice Eisenhower.
 
+## 7ter · « La Boussole » — explorateur de voies d'épanouissement (à concevoir)
+
+Demande owner (2026-06-07) : un espace qui **n'est PAS un tableau ni un classement
+d'ego**, mais une présentation **intelligente** des différents **aspects de
+personnalité** possibles et des différentes **pyramides / modèles d'épanouissement**
+(Maslow, mais aussi d'autres cadres : ikigaï, ERG d'Alderfer, autodétermination de
+Deci & Ryan, vertus, etc.) — pour **éclaircir la vision de l'utilisateur** sur où il
+peut aller et qui il peut devenir.
+
+- Pas « Tableau », pas « Classement ». Noms candidats : **La Boussole**, **Les Voies**,
+  **Constellations**, **La Galerie des chemins**.
+- Forme : cartes/constellations explorables, chacune = un modèle d'épanouissement ou
+  un archétype, avec « comment ça se traduit sur ton arbre ». Aide à se situer, pas à
+  se comparer aux autres. Lecture inspirante, jamais culpabilisante.
+- Branche concernée : surtout **Accomplissement** + **Cognitif** (se comprendre).
+
+## 7quater · Approfondir CHAQUE module (refonte totale autorisée)
+
+Constat owner : tous les modules sont « niveau 1 ». Chaque module doit devenir un
+**espace complet**, pas un gadget. Méditation = le modèle de référence.
+
+- **Méditation** → vrai espace de détente : plusieurs **modes** (respiration guidée,
+  ASMR, histoires, réflexions philosophiques, scan corporel, scommeil), **dialogue
+  d'entrée** avec Lya (« stressé ? → respiration » / « besoin de sens ? → philo »),
+  **bilan avant/après** la séance, ambiances sonores, durées adaptatives.
+- **Journal** → prompts guidés, détection d'émotions, insights, recherche, fil de vie.
+- **Habitudes** → calendrier / heatmap de régularité, rappels, séries visuelles.
+- **Humeur** → tendances, déclencheurs, corrélations (sommeil↔humeur), graphes.
+- **Sommeil / Corps** → compléter (nutrition, hydratation, mouvement) + connecteurs.
+
+Chaque module nourrit l'arbre (XP branche) **et** les compétences (§7bis).
+
 ## 8 · Décisions ouvertes (à trancher avec l'owner)
 
 - 🔴 Le moteur `/plan/` : module à part OU intégré directement dans l'arbre connecté ?
