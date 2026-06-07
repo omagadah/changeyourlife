@@ -8,6 +8,15 @@
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 
+// Chaîne traduite via le moteur i18n (window.CYL), avec repli si i18n absent.
+function T(key, fallback) {
+  if (window.CYL && typeof window.CYL.t === 'function') {
+    const v = window.CYL.t(key);
+    if (v && v !== key) return v;
+  }
+  return fallback != null ? fallback : key;
+}
+
 const ORBIT_TARGET = new THREE.Vector3(0, 40, 0);
 const GROWTH_SECONDS = 9;
 const REPLAY_SECONDS = 4.5;
@@ -263,9 +272,9 @@ function initHud() {
   function updateXp(age) {
     if (xpEl) xpEl.textContent = Math.round(easeOut(age) * TOTAL_XP).toLocaleString('fr-FR');
     if (stageEl) {
-      stageEl.textContent = age < 0.12 ? 'Jeune pousse'
-        : age < 0.42 ? 'Jeune arbre'
-        : age < 0.78 ? 'Arbre mature' : 'Arbre centenaire';
+      stageEl.textContent = T(age < 0.12 ? 'stage.sprout'
+        : age < 0.42 ? 'stage.young'
+        : age < 0.78 ? 'stage.mature' : 'stage.old');
     }
   }
   function showBeat(b, idx) {
@@ -413,12 +422,14 @@ function initLabels(nodes, subNodes) {
 }
 
 // ── Lya ─────────────────────────────────────────────────────────────────────
-const LYA_LINES = [
-  'Bonjour, je suis Lya. Ravie de te rencontrer.',
-  'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.',
-  'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.',
+// Répliques d'intro : [clé i18n, repli FR]
+const LYA_INTRO = [
+  ['lya.intro1', 'Bonjour, je suis Lya. Ravie de te rencontrer.'],
+  ['lya.intro2', 'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.'],
+  ['lya.intro3', 'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.'],
 ];
-let lyaSay = null;
+let lyaSay = null;        // (label) => affiche la réplique « branche »
+let lyaState = null;      // mémoire de la réplique courante (pour relocaliser)
 let typeGen = 0;            // jeton anti-superposition du texte de Lya
 function typeLine(el, text, done) {
   const gen = ++typeGen;   // toute frappe précédente est invalidée
@@ -444,31 +455,54 @@ function speak(text, on) {
     speechSynthesis.cancel(); speechSynthesis.speak(u);
   } catch (e) { /* ignore */ }
 }
+// Texte d'une réplique « branche » selon la langue courante.
+function branchLine(label) {
+  return T('lya.branch', '%s — voici ce qui fait grandir cette branche.').replace('%s', label);
+}
+// Texte courant de Lya selon l'état mémorisé (pour relocalisation).
+function lyaCurrentText() {
+  if (!lyaState) return '';
+  if (lyaState.type === 'branch') return branchLine(lyaState.label);
+  return T(lyaState.key, lyaState.fb);
+}
+
 function initLya() {
   const lineEl = document.getElementById('lya-line');
   const voiceBtn = document.getElementById('lya-voice');
   let voiceOn = false;
   const introTimers = [];
+  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de Lya');
   if (voiceBtn) {
+    voiceBtn.textContent = voiceLabel();
     voiceBtn.addEventListener('click', () => {
       voiceOn = !voiceOn;
       voiceBtn.classList.toggle('on', voiceOn);
       voiceBtn.setAttribute('aria-pressed', String(voiceOn));
-      voiceBtn.textContent = voiceOn ? '🔊 Voix de Lya' : '🔇 Voix de Lya';
+      voiceBtn.textContent = voiceLabel();
       if (voiceOn && lineEl) speak(lineEl.textContent, true);
     });
   }
   const beats = [400, 3600, GROWTH_SECONDS * 1000 + 300];
-  LYA_LINES.forEach((text, i) => {
+  LYA_INTRO.forEach(([key, fb], i) => {
     introTimers.push(setTimeout(() => {
+      lyaState = { type: 'key', key, fb };
+      const text = T(key, fb);
       if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); }
     }, beats[i]));
   });
   // une nouvelle réplique annule l'intro encore en attente → plus de saut
-  lyaSay = (text) => {
+  lyaSay = (label) => {
     introTimers.forEach(clearTimeout);
+    lyaState = { type: 'branch', label };
+    const text = branchLine(label);
     if (lineEl) { typeLine(lineEl, text); speak(text, voiceOn); }
   };
+  // Changement de langue : re-typer la réplique courante + relibeller la voix.
+  window.addEventListener('cyl:langchange', () => {
+    if (voiceBtn) voiceBtn.textContent = voiceLabel();
+    const text = lyaCurrentText();
+    if (text && lineEl) typeLine(lineEl, text);
+  });
 }
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
@@ -534,7 +568,7 @@ function initTree3D(canvas) {
       const u = hit.userData;
       branchPanel.open(u.key, u.label, u.color);
       labels.showSubs(u.key);
-      if (lyaSay) lyaSay(`${u.label} — voici ce qui fait grandir cette branche.`);
+      if (lyaSay) lyaSay(u.label);
     }
   });
 

@@ -1,5 +1,5 @@
-// service-worker.js - v70 (accueil Calm/Headspace : voile pousse, copy vie réelle→arbre, fix loader)
-const CACHE_NAME = 'changeyourlife-v70';
+// service-worker.js - v71 (i18n accueil : sélecteur de langue + 7 langues)
+const CACHE_NAME = 'changeyourlife-v71';
 const urlsToCache = [
   '/',
   '/app/',
@@ -27,6 +27,7 @@ const urlsToCache = [
   '/js/inscription.js',
   '/js/firebase.js',
   '/js/arbre3d.js',
+  '/js/i18n.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',
