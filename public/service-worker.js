@@ -1,5 +1,5 @@
-// service-worker.js - v79 (module Compétences + intégration au plan)
-const CACHE_NAME = 'changeyourlife-v79';
+// service-worker.js - v80 (sélecteur de langue auto-injecté + dispo sur /app/)
+const CACHE_NAME = 'changeyourlife-v80';
 const urlsToCache = [
   '/',
   '/app/',

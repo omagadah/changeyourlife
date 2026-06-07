@@ -323,20 +323,20 @@
         <a href="/plan/" id="plan-cta" style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(45,212,191,0.16),rgba(14,165,233,0.07));border:1px solid rgba(45,212,191,0.32);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:18px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden">
           <div style="font-size:2rem;flex-shrink:0">🌅</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:1rem;font-weight:800;color:#e5fbf6;margin-bottom:3px">Aujourd'hui — ton plan du jour</div>
-            <div style="font-size:0.82rem;color:#8fe3d6;line-height:1.4">Ton rythme, tes besoins essentiels et tes tâches — chaque action fait grandir ton arbre.</div>
+            <div style="font-size:1rem;font-weight:800;color:#e5fbf6;margin-bottom:3px" data-i18n="app.plan.title">Aujourd'hui — ton plan du jour</div>
+            <div style="font-size:0.82rem;color:#8fe3d6;line-height:1.4" data-i18n="app.plan.desc">Ton rythme, tes besoins essentiels et tes tâches — chaque action fait grandir ton arbre.</div>
           </div>
-          <div style="font-size:0.82rem;font-weight:700;color:#7fe3d6;white-space:nowrap">Ouvrir →</div>
+          <div style="font-size:0.82rem;font-weight:700;color:#7fe3d6;white-space:nowrap" data-i18n="app.open">Ouvrir →</div>
         </a>
 
         <!-- ── Compétences (module /competences/) ── -->
         <a href="/competences/" id="skills-cta" style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(124,58,237,0.16),rgba(168,85,247,0.07));border:1px solid rgba(124,58,237,0.32);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:18px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden">
           <div style="font-size:2rem;flex-shrink:0">🧗</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:1rem;font-weight:800;color:#f0e9ff;margin-bottom:3px">Mes compétences</div>
-            <div style="font-size:0.82rem;color:#c4b5fd;line-height:1.4">Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.</div>
+            <div style="font-size:1rem;font-weight:800;color:#f0e9ff;margin-bottom:3px" data-i18n="app.skills.title">Mes compétences</div>
+            <div style="font-size:0.82rem;color:#c4b5fd;line-height:1.4" data-i18n="app.skills.desc">Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.</div>
           </div>
-          <div style="font-size:0.82rem;font-weight:700;color:#c4b5fd;white-space:nowrap">Ouvrir →</div>
+          <div style="font-size:0.82rem;font-weight:700;color:#c4b5fd;white-space:nowrap" data-i18n="app.open">Ouvrir →</div>
         </a>
 
         <!-- ── Today's progress ── -->
@@ -427,7 +427,7 @@
         <!-- ── Domain XP rings ── -->
         <div class="rings-section">
           <div class="rings-header">
-            <span class="rings-label">Niveaux par domaine</span>
+            <span class="rings-label" data-i18n="app.domains">Niveaux par domaine</span>
             <a href="/profile/" id="link-profile" style="font-size:0.68rem;color:#4a6a8a;text-decoration:none;transition:color .2s">Voir profil complet →</a>
           </div>
           <div class="rings-grid" id="rings-grid">
@@ -471,7 +471,7 @@
           <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(99,102,241,0.15),transparent);border-radius:50%;pointer-events:none"></div>
         </a>
 
-        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.8px;color:#4a6a8a;font-weight:700;margin-bottom:12px">Tous les modules</div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.8px;color:#4a6a8a;font-weight:700;margin-bottom:12px" data-i18n="app.modules">Tous les modules</div>
         <div class="tools-grid">
 
           <a href="/yourlife" class="tool-card" id="tool-card-1"
@@ -592,6 +592,7 @@
 
         </div>
     </main>
+    <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/app.js"></script>
 </body>
 </html>

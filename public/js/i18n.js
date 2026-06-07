@@ -146,6 +146,13 @@ const DICT = {
     'branch.transcendance.s4.name': 'Transmission', 'branch.transcendance.s4.note': 'Ce que tu passes aux autres.',
     'branch.transcendance.s5.name': 'Héritage', 'branch.transcendance.s5.note': 'La trace que tu laisses.',
     'branch.transcendance.modules': 'Déjà sur le site : Gratitude. Frise chronologique à venir.',
+    'app.open': 'Ouvrir →',
+    'app.plan.title': "Aujourd'hui — ton plan du jour",
+    'app.plan.desc': 'Ton rythme, tes besoins essentiels et tes tâches — chaque action fait grandir ton arbre.',
+    'app.skills.title': 'Mes compétences',
+    'app.skills.desc': 'Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.',
+    'app.modules': 'Tous les modules',
+    'app.domains': 'Niveaux par domaine',
     'ui.langTitle': 'Choisis ta langue',
     'ui.langSearch': 'Rechercher une langue',
     'ui.langNone': 'Aucune langue trouvée',
@@ -585,8 +592,72 @@ function initSwitcher() {
   elList.querySelectorAll('.lang-opt').forEach((o) => o.setAttribute('tabindex', '0'));
 }
 
+// ── Auto-injection du sélecteur (pages sans markup inline, ex. /app/) ────────
+// Couleurs en fallback explicite pour rester correct hors de la palette accueil.
+const SWITCHER_CSS = `
+.lang-switch{position:relative;}
+.lang-switch--floating{position:fixed;top:16px;right:70px;z-index:50;}
+.lang-btn{display:flex;align-items:center;gap:8px;padding:8px 12px 8px 10px;border-radius:99px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid var(--line,rgba(221,205,160,0.18));color:var(--text-2,#b4ad94);font-family:inherit;font-size:0.84rem;font-weight:600;transition:color .25s,border-color .25s,background .25s;}
+.lang-btn:hover{color:var(--text-1,#f4efe1);border-color:rgba(132,194,94,0.42);background:rgba(132,194,94,0.1);}
+.lang-flag{width:21px;height:15px;border-radius:3px;overflow:hidden;flex-shrink:0;display:block;box-shadow:0 0 0 1px rgba(0,0,0,0.25),0 1px 3px rgba(0,0,0,0.35);}
+.lang-flag svg,.lang-opt-flag svg{width:100%;height:100%;display:block;object-fit:cover;}
+.lang-code{letter-spacing:0.5px;}
+.lang-chev{width:12px;height:12px;opacity:0.7;transition:transform .25s;}
+.lang-btn[aria-expanded="true"] .lang-chev{transform:rotate(180deg);}
+.lang-chip{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:8px;font-weight:800;letter-spacing:0.2px;color:#0c130a;background:linear-gradient(135deg,#f1cd92,#6f9a52);}
+.lang-opt-flag .lang-chip{font-size:9px;}
+.lang-pop{position:absolute;top:calc(100% + 10px);right:0;width:264px;z-index:30;padding:8px;border-radius:18px;background:rgba(13,18,11,0.96);backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2);border:1px solid var(--line,rgba(221,205,160,0.18));box-shadow:0 24px 64px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.05);opacity:0;visibility:hidden;transform:translateY(-8px) scale(0.97);transform-origin:top right;transition:opacity .22s ease,transform .26s cubic-bezier(0.22,1,0.36,1),visibility .22s;}
+.lang-pop.open{opacity:1;visibility:visible;transform:none;}
+.lang-search-wrap{display:flex;align-items:center;gap:8px;margin:2px 2px 6px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);}
+.lang-search-wrap svg{width:15px;height:15px;color:var(--text-3,#7c7660);flex-shrink:0;}
+.lang-search-wrap input{flex:1;min-width:0;border:none;background:none;outline:none;color:var(--text-1,#f4efe1);font-family:inherit;font-size:0.88rem;}
+.lang-search-wrap input::placeholder{color:var(--text-3,#7c7660);}
+.lang-list{list-style:none;margin:0;padding:0;max-height:268px;overflow-y:auto;}
+.lang-list::-webkit-scrollbar{width:6px;}
+.lang-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:99px;}
+.lang-opt{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:11px;cursor:pointer;outline:none;transition:background .16s;}
+.lang-opt:hover,.lang-opt:focus-visible{background:rgba(132,194,94,0.12);}
+.lang-opt.active{background:rgba(132,194,94,0.08);}
+.lang-opt-flag{width:23px;height:16px;border-radius:3px;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,0.25);}
+.lang-opt-name{flex:1;font-size:0.9rem;font-weight:600;color:var(--text-1,#f4efe1);}
+.lang-opt-check{width:16px;height:16px;color:#84c25e;opacity:0;flex-shrink:0;}
+.lang-opt-check svg{width:100%;height:100%;}
+.lang-opt.active .lang-opt-check{opacity:1;}
+.lang-empty{padding:18px 12px;text-align:center;color:var(--text-3,#7c7660);font-size:0.86rem;}
+@media (max-width:600px){.lang-switch--floating{right:60px;top:14px;}.lang-switch--floating .lang-code{display:none;}}
+`;
+const SWITCHER_HTML = `
+<div class="lang-switch" id="lang-switch">
+  <button class="lang-btn" id="lang-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Changer de langue">
+    <span class="lang-flag" id="lang-btn-flag"></span>
+    <span class="lang-code" id="lang-btn-code">FR</span>
+    <svg class="lang-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="lang-pop" id="lang-pop" role="dialog" aria-label="Choisir une langue">
+    <div class="lang-search-wrap">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <input type="text" id="lang-search" autocomplete="off" spellcheck="false" data-i18n-ph="ui.langSearch" placeholder="Rechercher une langue" aria-label="Rechercher une langue" />
+    </div>
+    <ul class="lang-list" id="lang-list" role="listbox" aria-label="Langues"></ul>
+    <div class="lang-empty" id="lang-empty" data-i18n="ui.langNone" hidden>Aucune langue trouvée</div>
+  </div>
+</div>`;
+function ensureSwitcherUI() {
+  if (!document.getElementById('cyl-lang-css')) {
+    const s = document.createElement('style'); s.id = 'cyl-lang-css'; s.textContent = SWITCHER_CSS;
+    document.head.appendChild(s);
+  }
+  if (document.getElementById('lang-switch')) return;  // page avec markup inline (accueil)
+  const wrap = document.createElement('div');
+  wrap.innerHTML = SWITCHER_HTML.trim();
+  const el = wrap.firstElementChild;
+  el.classList.add('lang-switch--floating');
+  document.body.appendChild(el);
+}
+
 // ── Boot ─────────────────────────────────────────────────────────────────────
 function boot() {
+  ensureSwitcherUI();
   initSwitcher();
   setLang(pick(), false);   // applique sans réécrire le storage (respecte la détection)
 }
