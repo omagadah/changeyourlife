@@ -247,9 +247,9 @@ function makeControls(el, camera, target) {
       s.az += (s.tAz - s.az) * 0.055;
       s.po += (s.tPo - s.po) * 0.055;
       s.r += (s.tR - s.r) * 0.055;
-      // Dérive de la cible vers la Terre au dézoom (révèle la planète puis l'espace).
-      const frac = Math.min(1, Math.max(0, (s.r - 200) / 6800));
-      const ty = target.y - frac * 1300;
+      // Arbre flottant : la caméra reste centrée sur l'arbre (pas de dérive vers
+      // la Terre) ; en dézoomant on découvre le système solaire autour.
+      const ty = target.y;
       const sp = Math.sin(s.po), cp = Math.cos(s.po);
       camera.position.set(
         target.x + s.r * sp * Math.sin(s.az),
@@ -551,7 +551,7 @@ export function initTreeWidget(userData, opts) {
   try { extraGrass = Math.max(0, Math.min(1500, parseInt(localStorage.getItem('cyl_grass_bonus') || '0', 10) || 0)); } catch (_) {}
   try { branchScales = JSON.parse(localStorage.getItem('cyl_branch_scales') || '{}') || {}; } catch (_) {}
 
-  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation } = buildTree(THREE, model, { extraGrass });
+  const { group, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation } = buildTree(THREE, model, { extraGrass, floating: true });
   scene.add(group);
 
   // Géoloc IP : l'arbre est planté sur le pays de l'utilisateur. Repli France

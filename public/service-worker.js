@@ -1,5 +1,5 @@
-// service-worker.js - v76 (module Aujourd'hui /plan/ : rythme + base vitale + tâches)
-const CACHE_NAME = 'changeyourlife-v76';
+// service-worker.js - v77 (app: arbre flottant + logo unifié + selects lisibles)
+const CACHE_NAME = 'changeyourlife-v77';
 const urlsToCache = [
   '/',
   '/app/',

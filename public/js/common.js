@@ -91,27 +91,22 @@ export function updateGlobalAvatar(initial) {
         document.head.appendChild(s);
     }
 
+    // Logo unifié = le favicon SVG propre (identique à l'accueil), pas l'ancien
+    // SVG 200×120 qui s'écrasait dans le carré 40×40 (aspect « détraqué »).
+    const CYF_LOGO_IMG = `<img data-cyf-logo="1" src="/favicon.svg" alt="ChangeYourLife.ai" style="width:100%;height:100%;object-fit:contain;display:block;" />`;
+
     // If we've already set up the logo once, avoid re-rendering to prevent flicker
     const alreadyReady = userPanelTrigger.getAttribute('data-cyf-ready') === '1';
-    const existingInline = userPanelTrigger.querySelector('svg[data-cyf-logo]');
+    const existingInline = userPanelTrigger.querySelector('[data-cyf-logo]');
     if (alreadyReady && existingInline) {
-        // Ensure only the logo remains
-        Array.from(userPanelTrigger.children).forEach(ch => { if (!ch.querySelector?.('svg[data-cyf-logo]') && ch.tagName !== 'SVG') ch.remove?.(); });
+        Array.from(userPanelTrigger.children).forEach(ch => { if (!ch.querySelector?.('[data-cyf-logo]') && !ch.matches?.('[data-cyf-logo]')) ch.remove?.(); });
         normalizeVantaAndHeader();
         return;
     }
 
-    // Replace the trigger contents with our unified inline logo (idempotent)
-    userPanelTrigger.innerHTML = `<span class="cyf-logo-wrapper" style="display:inline-block;width:100%;height:100%;">${CYF_INLINE_LOGO}</span>`;
+    // Replace the trigger contents with our unified logo (idempotent)
+    userPanelTrigger.innerHTML = `<span class="cyf-logo-wrapper" style="display:inline-block;width:100%;height:100%;">${CYF_LOGO_IMG}</span>`;
     userPanelTrigger.setAttribute('data-cyf-ready', '1');
-
-    // Make sure the inserted SVG scales nicely inside the trigger
-    const svgEl = userPanelTrigger.querySelector('svg[data-cyf-logo]');
-    if (svgEl) {
-        svgEl.style.width = '100%';
-        svgEl.style.height = '100%';
-        svgEl.style.display = 'block';
-    }
 
     // After injecting the logo, ensure Vanta and header stacking/context are normalized
     normalizeVantaAndHeader();
