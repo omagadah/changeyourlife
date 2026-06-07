@@ -406,18 +406,39 @@ function initLabels(nodes, subNodes) {
   wrap.className = 'esp-labels';
   document.querySelector('.scene')?.appendChild(wrap);
 
+  // Clé i18n d'une étiquette : branch.<clé>.label pour une branche, et
+  // branch.<clé>.sN.name pour un sous-élément (index retrouvé via le nom FR).
+  function labelKey(m, sub) {
+    const key = m.userData && m.userData.key;
+    if (!key) return null;
+    if (!sub) return `branch.${key}.label`;
+    const info = BRANCHES_INFO[key];
+    if (info && info.subs) {
+      const i = info.subs.findIndex(([name]) => name === m.userData.label);
+      if (i >= 0) return `branch.${key}.s${i + 1}.name`;
+    }
+    return null;
+  }
+
   function makeLabel(m, sub) {
     const el = document.createElement('div');
     el.className = sub ? 'esp-label sub' : 'esp-label';
-    el.textContent = m.userData.label || '';
+    const fb = m.userData.label || '';
+    const i18nKey = labelKey(m, sub);
+    el.textContent = i18nKey ? T(i18nKey, fb) : fb;
     el.style.color = '#' + (m.userData.color || 0xffffff).toString(16).padStart(6, '0');
     if (!sub && m.userData.state === 'dormant') el.style.opacity = '0.55';
     wrap.appendChild(el);
-    return { el, mesh: m, sub };
+    return { el, mesh: m, sub, i18nKey, fb };
   }
   const labels = nodes.map((m) => makeLabel(m, false))
     .concat((subNodes || []).filter((m) => m.userData && m.userData.label)
       .map((m) => makeLabel(m, true)));
+  // Re-traduit toutes les étiquettes (au changement de langue).
+  function relabel() {
+    for (const l of labels) l.el.textContent = l.i18nKey ? T(l.i18nKey, l.fb) : l.fb;
+  }
+  window.addEventListener('cyl:langchange', relabel);
   const v = new THREE.Vector3();
   // Les sous-labels ne sont visibles que pour la branche sélectionnée.
   let activeSubKey = null;

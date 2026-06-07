@@ -1,5 +1,5 @@
-// service-worker.js - v73 (i18n IA+cache : 16 langues, panneaux de branches)
-const CACHE_NAME = 'changeyourlife-v73';
+// service-worker.js - v74 (i18n : étiquettes 3D de l'arbre traduites)
+const CACHE_NAME = 'changeyourlife-v74';
 const urlsToCache = [
   '/',
   '/app/',
