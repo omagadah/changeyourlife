@@ -58,7 +58,7 @@ export const LANGS = [
 const DICT = {
   fr: {
     'nav.login': 'Se connecter',
-    'hero.eyebrow': 'Ton assistant de vie',
+    'hero.eyebrow': 'Font de toi qui tu es et font grandir ton arbre',
     'hero.title': 'Deviens qui tu rêves d\'être.<br>Un geste après l\'autre.',
     'hero.desc': 'Ici, ta vie prend la forme d\'un arbre numérique.<br>Chaque geste de ta vie réelle s\'y inscrit et le fait grandir, et toi avec lui. <strong>SYL, ton assistant personnel, t\'aide à mener tes projets à bien</strong> et à t\'épanouir dans le style de vie qui est le tien.',
     'stream.caption': 'Tes actions, dans la vraie vie',
@@ -178,7 +178,7 @@ const DICT = {
   },
   en: {
     'nav.login': 'Sign in',
-    'hero.eyebrow': 'Your life, brought to life',
+    'hero.eyebrow': 'They make you who you are - and grow your tree',
     'hero.title': 'Every action makes you grow.<br>For real.',
     'hero.desc': 'A meditation, a full night\'s sleep, a call to a loved one… <strong>every act of your real life makes your tree grow.</strong> Everything is connected - and SYL, your coach, walks with you every step.',
     'stream.caption': 'Your actions, in real life',
@@ -210,7 +210,7 @@ const DICT = {
   },
   es: {
     'nav.login': 'Iniciar sesión',
-    'hero.eyebrow': 'Tu vida, cobra vida',
+    'hero.eyebrow': 'Te hacen quien eres y hacen crecer tu árbol',
     'hero.title': 'Cada acción te hace crecer.<br>De verdad.',
     'hero.desc': 'Una meditación, una noche completa, una llamada a un ser querido… <strong>cada gesto de tu vida real hace crecer tu árbol.</strong> Todo está conectado, y SYL, tu coach, te acompaña en cada paso.',
     'stream.caption': 'Tus acciones, en la vida real',
@@ -242,7 +242,7 @@ const DICT = {
   },
   de: {
     'nav.login': 'Anmelden',
-    'hero.eyebrow': 'Dein Leben, lebendig geworden',
+    'hero.eyebrow': 'Sie machen dich zu dem, der du bist, und lassen deinen Baum wachsen',
     'hero.title': 'Jede Handlung lässt dich wachsen.<br>Wirklich.',
     'hero.desc': 'Eine Meditation, eine durchschlafene Nacht, ein Anruf bei einem geliebten Menschen… <strong>jede Handlung deines echten Lebens lässt deinen Baum wachsen.</strong> Alles ist verbunden - und SYL, dein Coach, begleitet dich bei jedem Schritt.',
     'stream.caption': 'Deine Taten, im echten Leben',
@@ -274,7 +274,7 @@ const DICT = {
   },
   it: {
     'nav.login': 'Accedi',
-    'hero.eyebrow': 'La tua vita, diventata viva',
+    'hero.eyebrow': 'Ti rendono chi sei e fanno crescere il tuo albero',
     'hero.title': 'Ogni azione ti fa crescere.<br>Davvero.',
     'hero.desc': 'Una meditazione, una notte intera, una telefonata a una persona cara… <strong>ogni gesto della tua vita reale fa crescere il tuo albero.</strong> Tutto è collegato, e SYL, il tuo coach, ti accompagna a ogni passo.',
     'stream.caption': 'Le tue azioni, nella vita reale',
@@ -306,7 +306,7 @@ const DICT = {
   },
   pt: {
     'nav.login': 'Entrar',
-    'hero.eyebrow': 'A tua vida, ganha vida',
+    'hero.eyebrow': 'Fazem de ti quem és e fazem crescer a tua árvore',
     'hero.title': 'Cada ação faz-te crescer.<br>A sério.',
     'hero.desc': 'Uma meditação, uma noite inteira, uma chamada a alguém querido… <strong>cada gesto da tua vida real faz crescer a tua árvore.</strong> Está tudo ligado - e a SYL, o teu coach, acompanha-te a cada passo.',
     'stream.caption': 'As tuas ações, na vida real',
@@ -338,7 +338,7 @@ const DICT = {
   },
   nl: {
     'nav.login': 'Inloggen',
-    'hero.eyebrow': 'Jouw leven, tot leven gewekt',
+    'hero.eyebrow': 'Ze maken je wie je bent en laten je boom groeien',
     'hero.title': 'Elke actie laat je groeien.<br>Echt waar.',
     'hero.desc': 'Een meditatie, een volledige nacht slaap, een telefoontje naar een dierbare… <strong>elke daad uit je echte leven laat je boom groeien.</strong> Alles is verbonden - en SYL, je coach, loopt bij elke stap met je mee.',
     'stream.caption': 'Jouw acties, in het echte leven',
@@ -387,7 +387,7 @@ function pick() {
 // ── Cache des traductions IA (langues sans dictionnaire écrit à la main, ou
 //    clés manquantes d'une langue principale comme les panneaux de branches). ──
 // Bump SRC_VERSION si on modifie une chaîne source FR → invalide les caches.
-const SRC_VERSION = 4;
+const SRC_VERSION = 5;
 const ai = {};                 // ai[lang] = { clé: traduction }
 const translating = new Set(); // langues dont une traduction IA est en cours
 
