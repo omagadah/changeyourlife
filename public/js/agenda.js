@@ -155,7 +155,8 @@ function injectCSS() {
     .ag-head{display:flex;align-items:flex-start;gap:13px;margin-bottom:12px;}
     .ag-ic{font-size:1.7rem;flex-shrink:0;}
     .ag-title{font-size:1rem;font-weight:800;color:#eef4ff;}
-    .ag-sub{font-size:0.82rem;color:#9db8e8;line-height:1.4;margin-top:2px;text-transform:capitalize;}
+    .ag-sub{font-size:0.82rem;color:#9db8e8;line-height:1.4;margin-top:2px;}
+    #ag-date::first-letter{text-transform:uppercase;}
     .ag-x{margin-left:auto;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#9db8e8;cursor:pointer;flex-shrink:0;}
     .ag-x:hover{background:rgba(255,255,255,0.1);color:#fff;}
     .ag-btn{width:100%;padding:11px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:0.88rem;

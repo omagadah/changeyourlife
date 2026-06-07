@@ -1,5 +1,5 @@
-// service-worker.js - v89 (ORGANIZER : drag&drop SortableJS, titres inline, tri figee)
-const CACHE_NAME = 'changeyourlife-v89';
+// service-worker.js - v90 (fix flash au chargement + hierarchie /app/ + police agenda)
+const CACHE_NAME = 'changeyourlife-v90';
 const urlsToCache = [
   '/',
   '/app/',
@@ -73,18 +73,10 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil((async () => {
-    await clients.claim();
-    // Auto-recharge les onglets contrôlés : sans ça, l'utilisateur reste
-    // bloqué sur d'anciens assets en cache après un déploiement. Une seule
-    // recharge par mise à jour du SW (pas de boucle).
-    try {
-      const all = await clients.matchAll({ type: 'window' });
-      for (const c of all) {
-        try { c.navigate(c.url); } catch (_) { /* ignore */ }
-      }
-    } catch (_) { /* matchAll/navigate non supporté → tant pis */ }
-  })());
+  event.waitUntil(clients.claim());
+  // NB : on ne force PLUS de rechargement des onglets ici (c'était la cause du
+  // "flash"/refresh au chargement à chaque déploiement). La stratégie fetch est
+  // network-first pour HTML/JS/CSS : le contenu frais est servi sans recharger.
 });
 
 // Stratégie de cache :

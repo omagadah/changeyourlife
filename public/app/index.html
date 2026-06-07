@@ -25,7 +25,17 @@
           box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset, 0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 56px rgba(0,0,0,0.5);
           padding:28px 28px 24px;
           z-index:1; overflow-y:auto;
+          display:flex; flex-direction:column;
         }
+        /* Hiérarchie : le récap (XP, niveaux, stats) remonte en haut. */
+        .welcome-row    { order:-6; }
+        .stats-row      { order:-5; }
+        .rings-section  { order:-4; }
+        #today-progress-card { order:-3; }
+        #agenda-card    { order:-2; }
+        #tree-stage     { order:-1; }
+        /* Badge XP du coin masqué (redondant avec le récap) -> coin propre. */
+        .welcome-right  { display:none; }
 
         /* ── Welcome ── */
         .welcome-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; gap:12px; margin-top:20px; padding-right:96px; }
