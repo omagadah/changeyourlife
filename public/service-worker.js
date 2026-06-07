@@ -1,5 +1,5 @@
-// service-worker.js - v84 (475 citations du jour)
-const CACHE_NAME = 'changeyourlife-v84';
+// service-worker.js - v85 (connecteur Google Agenda dans /app/)
+const CACHE_NAME = 'changeyourlife-v85';
 const urlsToCache = [
   '/',
   '/app/',
@@ -43,6 +43,7 @@ const urlsToCache = [
   '/js/competences.js',
   '/js/branche.js',
   '/js/quotes.js',
+  '/js/agenda.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',
