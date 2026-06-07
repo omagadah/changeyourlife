@@ -631,7 +631,7 @@ function initSwitcher() {
 // Couleurs en fallback explicite pour rester correct hors de la palette accueil.
 const SWITCHER_CSS = `
 .lang-switch{position:relative;}
-.lang-switch--floating{position:fixed;top:12px;right:62px;z-index:9000;}
+.lang-switch--floating{position:fixed;top:14px;right:78px;z-index:9000;}
 .lang-btn{display:flex;align-items:center;gap:8px;padding:8px 12px 8px 10px;border-radius:99px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid var(--line,rgba(221,205,160,0.18));color:var(--text-2,#b4ad94);font-family:inherit;font-size:0.84rem;font-weight:600;transition:color .25s,border-color .25s,background .25s;}
 .lang-btn:hover{color:var(--text-1,#f4efe1);border-color:rgba(132,194,94,0.42);background:rgba(132,194,94,0.1);}
 .lang-flag{width:21px;height:15px;border-radius:3px;overflow:hidden;flex-shrink:0;display:block;box-shadow:0 0 0 1px rgba(0,0,0,0.25),0 1px 3px rgba(0,0,0,0.35);}

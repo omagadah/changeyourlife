@@ -597,6 +597,166 @@ export function buildTree(THREE, model, opts) {
     earthFloat = eMesh;
   }
 
+  // ── Satellites + étoiles filantes ─────────────────────────────────────────
+  // Trafic discret dans le ciel de l'accueil : quelques satellites qui croisent
+  // lentement en orbite autour de l'arbre, et des étoiles filantes occasionnelles
+  // (élégantes, pas clignotantes). Visibles au zoom normal, derrière l'arbre.
+  // Coût négligeable (quelques meshes + blending additif, textures procédurales).
+
+  // Texture procédurale d'une traînée de comète (dégradé queue→tête, sans asset).
+  function makeStreakTexture() {
+    const c = document.createElement('canvas');
+    c.width = 128; c.height = 16;
+    const g = c.getContext('2d');
+    const grad = g.createLinearGradient(0, 0, 128, 0);
+    grad.addColorStop(0.0,  'rgba(255,255,255,0)');
+    grad.addColorStop(0.65, 'rgba(160,200,255,0.25)');
+    grad.addColorStop(0.92, 'rgba(220,235,255,0.85)');
+    grad.addColorStop(1.0,  'rgba(255,255,255,1)');
+    g.fillStyle = grad; g.fillRect(0, 0, 128, 16);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+
+  // Glint additif radial réutilisable pour faire briller les satellites de loin.
+  const glintTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d');
+    const rad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    rad.addColorStop(0,   'rgba(255,255,255,1)');
+    rad.addColorStop(0.4, 'rgba(200,225,255,0.5)');
+    rad.addColorStop(1,   'rgba(200,225,255,0)');
+    g.fillStyle = rad; g.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  })();
+
+  // Construit un petit satellite : corps + 2 panneaux solaires + antenne + glint.
+  function makeSatellite() {
+    const sat = new THREE.Group();
+    const body = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 2.2, 3.2),
+      new THREE.MeshStandardMaterial({ color: 0xdfe7f0, roughness: 0.5, metalness: 0.6 })
+    );
+    sat.add(body);
+    const panelMat = new THREE.MeshStandardMaterial({
+      color: 0x2b3f6b, roughness: 0.4, metalness: 0.3, emissive: 0x10306a, emissiveIntensity: 0.4,
+    });
+    const pL = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.15, 2.6), panelMat);
+    pL.position.x = -4.6; sat.add(pL);
+    const pR = pL.clone(); pR.position.x = 4.6; sat.add(pR);
+    const ant = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.08, 0.08, 2.4, 6),
+      new THREE.MeshStandardMaterial({ color: 0xcfd8e6, roughness: 0.6 })
+    );
+    ant.position.y = 1.8; sat.add(ant);
+    const glint = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glintTex, color: 0xbfe0ff, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    glint.scale.setScalar(7);
+    sat.add(glint);
+    sat.userData.glint = glint;
+    return sat;
+  }
+
+  // 3 satellites en orbite autour du centre de la scène (≈ l'arbre), chacun sur
+  // un plan incliné différent, vitesses lentes → ils « traversent » le ciel.
+  const SAT_CENTER = new THREE.Vector3(0, 38, 0);
+  const satellites = [];
+  const satCfg = [
+    { dist: 150, speed: 0.085, incl:  0.50, phase: 0.0, node: 0.6, scale: 1.0 },
+    { dist: 190, speed: 0.068, incl: -0.85, phase: 2.1, node: 2.4, scale: 0.7 },
+    { dist: 235, speed: 0.052, incl:  1.15, phase: 4.0, node: 5.0, scale: 0.65 },
+    { dist: 300, speed: 0.040, incl: -0.35, phase: 1.2, node: 3.3, scale: 0.6 },
+    { dist: 360, speed: 0.032, incl:  0.80, phase: 5.2, node: 1.1, scale: 0.55 },
+    { dist: 430, speed: 0.026, incl: -1.05, phase: 3.0, node: 4.2, scale: 0.5 },
+  ];
+  for (const c of satCfg) {
+    const s = makeSatellite();
+    // base orthonormée (ax, ay) du plan orbital incliné
+    const cosN = Math.cos(c.node), sinN = Math.sin(c.node);
+    const cosI = Math.cos(c.incl), sinI = Math.sin(c.incl);
+    s.userData.cfg = c;
+    s.userData.ax = new THREE.Vector3(cosN, 0, sinN);
+    s.userData.ay = new THREE.Vector3(-sinN * cosI, sinI, cosN * cosI);
+    s.userData.angle = c.phase;
+    s.scale.setScalar(c.scale || 1);
+    root.add(s);
+    satellites.push(s);
+  }
+
+  // Pool d'étoiles filantes réutilisées (≈ une visible à la fois).
+  const streakTex = makeStreakTexture();
+  const shooters = [];
+  for (let i = 0; i < 3; i++) {
+    const mat = new THREE.MeshBasicMaterial({
+      map: streakTex, color: 0xdbe8ff, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+    });
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+    m.visible = false;
+    root.add(m);
+    shooters.push({ mesh: m, mat, active: false, t: 0, dur: 1, len: 0, vel: new THREE.Vector3() });
+  }
+  let nextShooter = 1.5 + rnd() * 2;   // 1ère étoile filante après ~1.5-3.5 s
+  const _qx = new THREE.Vector3(1, 0, 0);
+
+  function launchShooter(s) {
+    // Départ haut dans le ciel, à distance moyenne, direction « tombante » +
+    // latérale, vitesse rapide. Orientation : +X local = sens de déplacement,
+    // tête lumineuse en avant (cohérent avec le dégradé de la texture).
+    const dist = 700 + rnd() * 700;
+    const az = rnd() * Math.PI * 2;
+    const el = 0.55 + rnd() * 0.6;
+    const start = new THREE.Vector3(
+      Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az)
+    ).multiplyScalar(dist).add(new THREE.Vector3(0, 40, 0));
+    const dir = new THREE.Vector3(-Math.sin(az), -0.5 - rnd() * 0.5, Math.cos(az)).normalize();
+    const len = 110 + rnd() * 170;
+    const speed = 650 + rnd() * 550;
+    s.len = len;
+    s.vel.copy(dir).multiplyScalar(speed);
+    s.dur = 0.7 + rnd() * 0.8;
+    s.t = 0; s.active = true;
+    s.mesh.position.copy(start);
+    s.mesh.scale.set(len, 2.2 + rnd() * 1.8, 1);
+    s.mesh.quaternion.setFromUnitVectors(_qx, dir);
+    s.mesh.visible = true;
+  }
+
+  function updateSkyTraffic(dt) {
+    // satellites : avancent sur leur orbite inclinée + léger spin + glint pulsé
+    for (const s of satellites) {
+      const c = s.userData.cfg;
+      s.userData.angle += c.speed * dt;
+      const a = s.userData.angle;
+      s.position.copy(SAT_CENTER)
+        .addScaledVector(s.userData.ax, Math.cos(a) * c.dist)
+        .addScaledVector(s.userData.ay, Math.sin(a) * c.dist);
+      s.rotation.y += dt * 0.25;
+      const gl = s.userData.glint;
+      if (gl) gl.material.opacity = 0.55 + 0.35 * (0.5 + 0.5 * Math.sin(a * 3.0));
+    }
+    // étoiles filantes : déclenchement espacé, fondu in/out, pas de clignotement
+    nextShooter -= dt;
+    if (nextShooter <= 0) {
+      const free = shooters.find((x) => !x.active);
+      if (free) launchShooter(free);
+      nextShooter = 3 + rnd() * 5;   // une toutes les ~3-8 s
+    }
+    for (const s of shooters) {
+      if (!s.active) continue;
+      s.t += dt;
+      const k = s.t / s.dur;
+      if (k >= 1) { s.active = false; s.mesh.visible = false; s.mat.opacity = 0; continue; }
+      s.mesh.position.addScaledVector(s.vel, dt);
+      const fadeIn = Math.min(1, k / 0.12);
+      const fadeOut = k > 0.6 ? Math.max(0, 1 - (k - 0.6) / 0.4) : 1;
+      s.mat.opacity = fadeIn * fadeOut * 0.95;
+    }
+  }
+
   // Géolocalisation : place le PAYS de l'utilisateur sous l'arbre (au sommet),
   // au lieu du pôle nord. On oriente la Terre + nuages pour amener (lat,lon)
   // en haut, et on fige l'auto-rotation pour que le pays reste sous l'arbre.
@@ -640,6 +800,7 @@ export function buildTree(THREE, model, opts) {
       );
       p.rotation.y += dt * 0.3;
     }
+    updateSkyTraffic(dt);
   }
 
   // ── Tronc ─────────────────────────────────────────────────────────────────

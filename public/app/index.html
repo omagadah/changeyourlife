@@ -36,6 +36,9 @@
         #tree-stage     { order:-1; }
         /* Badge XP du coin masqué (redondant avec le récap) -> coin propre. */
         .welcome-right  { display:none; }
+        /* En colonne flex, les enfants ne doivent PAS se compresser (sinon texte
+           ecrase) : hauteur naturelle + scroll du conteneur. */
+        .app-container > * { flex-shrink: 0; }
 
         /* ── Welcome ── */
         .welcome-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; gap:12px; margin-top:20px; padding-right:96px; }
