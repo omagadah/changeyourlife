@@ -1,13 +1,13 @@
-// /js/lya-overlay.js - Syl « addossée » à toutes les interfaces.
+// /js/lya-overlay.js - SYL « addossée » à toutes les interfaces.
 //
 // Orb flottant + panneau de chat, présent sur toutes les pages
-// authentifiées. Syl reçoit en contexte la page courante + l'état réel de
+// authentifiées. SYL reçoit en contexte la page courante + l'état réel de
 // l'arbre, donc elle peut répondre avec connaissance de cause.
 //
 // Auto-import depuis common.js sur toutes les pages SAUF la landing, login,
 // signup, verify-email. Le module est self-contained (CSS injectée, DOM créé).
 //
-// Cf. ROADMAP.md → « Syl overlay sur TOUTES les interfaces ».
+// Cf. ROADMAP.md → « SYL overlay sur TOUTES les interfaces ».
 
 import { auth, db } from '/js/firebase.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -154,7 +154,7 @@ function appendMsg(role, text, isThinking) {
   return el;
 }
 
-// ── Envoi d'un message à Syl via /api/coach ─────────────────────────────────
+// ── Envoi d'un message à SYL via /api/coach ─────────────────────────────────
 async function sendMessage(text) {
   const msg = (text || '').trim();
   if (!msg || busy) return;
@@ -163,7 +163,7 @@ async function sendMessage(text) {
   inputEl.value = '';
   appendMsg('user', msg);
   history.push({ role: 'user', content: msg });
-  const thinking = appendMsg('lya', 'Syl réfléchit…', true);
+  const thinking = appendMsg('lya', 'SYL réfléchit…', true);
   try {
     const u = auth.currentUser;
     if (!u) throw new Error('not-signed-in');
@@ -191,10 +191,10 @@ async function sendMessage(text) {
         }
       } catch (_) {}
       appendMsg('lya', res.status === 429
-        ? `Syl a besoin d’une minute - réessaie.${detail}`
+        ? `SYL a besoin d’une minute - réessaie.${detail}`
         : (res.status === 401 || res.status === 403)
-          ? `Reconnecte-toi pour parler à Syl.${detail}`
-          : `Syl est indisponible pour l’instant${detail}`);
+          ? `Reconnecte-toi pour parler à SYL.${detail}`
+          : `SYL est indisponible pour l’instant${detail}`);
       return;
     }
     const data = await res.json();
@@ -204,7 +204,7 @@ async function sendMessage(text) {
   } catch (e) {
     thinking.remove();
     history.pop();
-    appendMsg('lya', 'Syl est hors ligne pour l’instant.');
+    appendMsg('lya', 'SYL est hors ligne pour l’instant.');
   } finally {
     busy = false;
     sendBtn.disabled = false;
@@ -241,8 +241,8 @@ function buildUI() {
   orb = document.createElement('button');
   orb.className = 'lyaov-orb';
   orb.type = 'button';
-  orb.title = 'Parler à Syl';
-  orb.setAttribute('aria-label', 'Ouvrir la conversation avec Syl');
+  orb.title = 'Parler à SYL';
+  orb.setAttribute('aria-label', 'Ouvrir la conversation avec SYL');
   orb.addEventListener('click', (e) => {
     e.stopPropagation();
     if (chatOpen) closeChat(); else openChat();
@@ -252,16 +252,16 @@ function buildUI() {
   panel = document.createElement('div');
   panel.className = 'lyaov-panel';
   panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-label', 'Conversation avec Syl');
+  panel.setAttribute('aria-label', 'Conversation avec SYL');
   panel.innerHTML =
     '<div class="lyaov-head">' +
       '<div class="lyaov-head-orb" aria-hidden="true"></div>' +
-      '<div class="lyaov-head-name">Syl</div>' +
+      '<div class="lyaov-head-name">SYL</div>' +
       '<button class="lyaov-head-close" type="button" aria-label="Fermer">✕</button>' +
     '</div>' +
     '<div class="lyaov-msgs"></div>' +
     '<form class="lyaov-form">' +
-      '<input class="lyaov-input" type="text" autocomplete="off" placeholder="Demande à Syl…" />' +
+      '<input class="lyaov-input" type="text" autocomplete="off" placeholder="Demande à SYL…" />' +
       '<button class="lyaov-send" type="submit" aria-label="Envoyer">➤</button>' +
     '</form>';
   document.body.appendChild(panel);
@@ -282,7 +282,7 @@ function buildUI() {
     closeChat();
   });
 
-  // Cache l'orb quand l'arbre est en plein écran (le tree-widget a sa propre Syl).
+  // Cache l'orb quand l'arbre est en plein écran (le tree-widget a sa propre SYL).
   function syncWithTree() {
     const stage = document.getElementById('tree-stage');
     const fullscreen = stage && stage.classList.contains('expanded');

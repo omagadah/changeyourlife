@@ -1,7 +1,7 @@
-// /js/arbre3d.js - Page d'accueil : arbre de vie procédural + croissance + Syl.
+// /js/arbre3d.js - Page d'accueil : arbre de vie procédural + croissance + SYL.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v7 - fix du texte de Syl (plus de superposition au clic rapide), flux de
+// v7 - fix du texte de SYL (plus de superposition au clic rapide), flux de
 // pop-ups « tâche accomplie » (satisfaisant), panneau explicatif au clic sur
 // une branche. Barre de temps + caméra cinématique conservées.
 
@@ -461,16 +461,16 @@ function initLabels(nodes, subNodes) {
   };
 }
 
-// ── Syl ─────────────────────────────────────────────────────────────────────
+// ── SYL ─────────────────────────────────────────────────────────────────────
 // Répliques d'intro : [clé i18n, repli FR]
 const LYA_INTRO = [
-  ['lya.intro1', 'Bonjour, je suis Syl. Ravie de te rencontrer.'],
+  ['lya.intro1', 'Bonjour, je suis SYL. Ravie de te rencontrer.'],
   ['lya.intro2', 'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.'],
   ['lya.intro3', 'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.'],
 ];
 let lyaSay = null;        // (label) => affiche la réplique « branche »
 let lyaState = null;      // mémoire de la réplique courante (pour relocaliser)
-let typeGen = 0;            // jeton anti-superposition du texte de Syl
+let typeGen = 0;            // jeton anti-superposition du texte de SYL
 function typeLine(el, text, done) {
   const gen = ++typeGen;   // toute frappe précédente est invalidée
   if (!el) return;
@@ -499,19 +499,19 @@ function speak(text, on) {
 function branchLine(label) {
   return T('lya.branch', '%s - voici ce qui fait grandir cette branche.').replace('%s', label);
 }
-// Texte courant de Syl selon l'état mémorisé (pour relocalisation).
+// Texte courant de SYL selon l'état mémorisé (pour relocalisation).
 function lyaCurrentText() {
   if (!lyaState) return '';
   if (lyaState.type === 'branch') return branchLine(lyaState.label);
   return T(lyaState.key, lyaState.fb);
 }
 
-function initSyl() {
+function initSYL() {
   const lineEl = document.getElementById('lya-line');
   const voiceBtn = document.getElementById('lya-voice');
   let voiceOn = false;
   const introTimers = [];
-  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de Syl');
+  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de SYL');
   if (voiceBtn) {
     voiceBtn.textContent = voiceLabel();
     voiceBtn.addEventListener('click', () => {
@@ -690,7 +690,7 @@ function init() {
     try { initTree3D(canvas); }
     catch (e) { console.error('[arbre3d] init failed', e); }
   }
-  initSyl();
+  initSYL();
   document.body.classList.add('tree-ready');
 }
 

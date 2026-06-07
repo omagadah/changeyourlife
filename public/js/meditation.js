@@ -171,11 +171,11 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login'; return; }
   uid = user.uid;
   renderSessions();
-  initSylWelcome();
+  initSYLWelcome();
   await loadStats();
 });
 
-// Accueil Syl : selon l'humeur, recommande un mode et le pré-charge.
+// Accueil SYL : selon l'humeur, recommande un mode et le pré-charge.
 const MOOD_RECO = {
   stress:  { id: 'sos',       line: 'Respirons. 3 minutes pour faire redescendre la pression - je te guide.' },
   agite:   { id: 'coherence', line: 'On apaise le système nerveux : cohérence cardiaque, 5 minutes.' },
@@ -184,7 +184,7 @@ const MOOD_RECO = {
   sens:    { id: 'philo',     line: 'Prends un instant pour réfléchir. Une question, et le silence.' },
   bien:    { id: 'calm',      line: "Profitons-en pour ancrer ce calme. Une séance sérénité ?" },
 };
-function initSylWelcome() {
+function initSYLWelcome() {
   document.querySelectorAll('#la-moods button').forEach((b) => {
     b.addEventListener('click', () => {
       const reco = MOOD_RECO[b.dataset.mood];

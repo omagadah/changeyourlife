@@ -80,7 +80,7 @@ onAuthStateChanged(auth, async (user) => {
   renderVitals();
   initTasks();
   renderTasks();
-  updateSyl();
+  updateSYL();
 });
 
 async function loadPlan() {
@@ -138,7 +138,7 @@ async function saveRhythm() {
     savedDate: today,
   };
   await savePlan();
-  updateSyl();
+  updateSYL();
   if (!already) { await award('physio', RHYTHM_XP, 'Rythme du jour'); }
   else { toast('Rythme mis à jour'); }
 }
@@ -166,7 +166,7 @@ async function toggleVital(v) {
   plan.vitals.date = todayStr();
   renderVitals();
   await savePlan();
-  updateSyl();
+  updateSYL();
   if (!wasDone) await award('physio', VITAL_XP, v.label); // XP seulement à la validation
 }
 
@@ -246,8 +246,8 @@ function renderTasks() {
   });
 }
 
-// ── Syl - message contextuel selon le rythme et la base vitale ──────────────
-function updateSyl() {
+// ── SYL - message contextuel selon le rythme et la base vitale ──────────────
+function updateSYL() {
   const el = document.getElementById('lya-line');
   if (!el) return;
   const r = plan.rhythm || {};

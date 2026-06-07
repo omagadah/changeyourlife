@@ -218,9 +218,9 @@ if (typeof window !== 'undefined') {
     } catch (e) { /* ignore in non-browser contexts */ }
 }
 
-// ── Syl overlay (orb + chat) - chargée sur toutes les pages auth ────────────
-// Pas sur la landing, login, signup, verify-email (pages publiques sans Syl).
-(function maybeLoadSylOverlay() {
+// ── SYL overlay (orb + chat) - chargée sur toutes les pages auth ────────────
+// Pas sur la landing, login, signup, verify-email (pages publiques sans SYL).
+(function maybeLoadSYLOverlay() {
   try {
     var p = location.pathname;
     if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0) return;

@@ -180,9 +180,9 @@ export const DEMO_STATE = {
   },
 };
 
-// ── Syl - présence + parole d'ouverture ─────────────────────────────────────
+// ── SYL - présence + parole d'ouverture ─────────────────────────────────────
 const LYA_LINES = [
-  'Bonjour. Je m’appelle Syl.',
+  'Bonjour. Je m’appelle SYL.',
   'Cet arbre, c’est toi. Aujourd’hui, il commence.',
   'Chaque chose que tu fais dans la vraie vie le fait pousser. Avance à ton rythme.',
 ];
@@ -228,12 +228,12 @@ export function initArbrePage() {
       voiceOn = !voiceOn;
       voiceBtn.classList.toggle('on', voiceOn);
       voiceBtn.setAttribute('aria-pressed', String(voiceOn));
-      voiceBtn.textContent = voiceOn ? '🔊 Voix de Syl' : '🔇 Voix de Syl';
+      voiceBtn.textContent = voiceOn ? '🔊 Voix de SYL' : '🔇 Voix de SYL';
       if (voiceOn && lineEl) speak(lineEl.textContent, true);
     });
   }
 
-  // déroulé des lignes de Syl
+  // déroulé des lignes de SYL
   let idx = 0;
   const next = () => {
     if (!lineEl || idx >= LYA_LINES.length) return;

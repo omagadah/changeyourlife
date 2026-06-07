@@ -1,5 +1,5 @@
-// service-worker.js - v90 (fix flash au chargement + hierarchie /app/ + police agenda)
-const CACHE_NAME = 'changeyourlife-v90';
+// service-worker.js - v91 (SYL en majuscules + accroche d'accueil humaine)
+const CACHE_NAME = 'changeyourlife-v91';
 const urlsToCache = [
   '/',
   '/app/',
