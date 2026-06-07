@@ -1,6 +1,23 @@
 {
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
+      "Edit",
+      "Write",
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git show*)",
+      "Bash(grep *)",
+      "Bash(grep:*)",
+      "Bash(ls *)",
+      "Bash(ls:*)",
+      "Bash(cat *)",
+      "Bash(echo *)",
+      "Bash(node --check *)",
       "Bash(git add *)",
       "Bash(git add:*)",
       "Bash(git commit *)",
@@ -57,7 +74,18 @@
       "mcp__claude_ai_Vercel__get_runtime_logs",
       "mcp__claude_ai_Vercel__search_vercel_documentation",
       "mcp__claude_ai_Vercel__deploy_to_vercel",
-      "mcp__claude_ai_Vercel__check_domain_availability_and_price"
+      "mcp__claude_ai_Vercel__check_domain_availability_and_price",
+      "Bash(ls -la .git/index.lock 2>&1; rm -f .git/index.lock && echo \"lock retiré\")",
+      "Bash(rm -f .git/HEAD.lock .git/index.lock)",
+      "Bash(rm -f .git/CYL_COMMIT_MSG.txt)",
+      "Bash(rm -f .git/HEAD.lock .git/index.lock; git push origin main 2>&1 | grep -v warning)",
+      "Bash(rm -f .git/HEAD.lock .git/index.lock; git add public/js/i18n.js public/js/arbre3d.js public/service-worker.js && git commit -m \"feat\\(i18n\\): traduit les pop-ups de taches de l'accueil \\(7 langues\\) *)",
+      "Bash(rm -f .git/HEAD.lock)",
+      "Bash(rm -f .git/HEAD.lock .git/index.lock; git add docs/PLAN-ECOSYSTEME.md && git commit -m \"docs: plan directeur de l'écosystème \\(action réelle -> XP -> arbre\\) *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\romai\\Desktop\\ChangeYourLife.ai\\.git",
+      "c:\\Users\\romai\\Desktop\\ChangeYourLife.ai\\.git"
     ]
   }
 }

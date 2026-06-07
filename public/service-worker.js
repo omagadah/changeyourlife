@@ -1,8 +1,9 @@
-// service-worker.js - v75 (arbre flottant dans l'espace + reload au changement de langue)
-const CACHE_NAME = 'changeyourlife-v75';
+// service-worker.js - v76 (module Aujourd'hui /plan/ : rythme + base vitale + tâches)
+const CACHE_NAME = 'changeyourlife-v76';
 const urlsToCache = [
   '/',
   '/app/',
+  '/plan/',
   '/login/',
   '/signup/',
   '/verify-email/',
@@ -28,6 +29,7 @@ const urlsToCache = [
   '/js/firebase.js',
   '/js/arbre3d.js',
   '/js/i18n.js',
+  '/js/plan.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',
