@@ -181,7 +181,10 @@ function initControls(canvas, camera) {
   const s = {
     azimuth: 0.5, polar: 1.06, radius: 78,
     tAz: 0.5, tPo: 1.06, tR: 78,
-    minR: 50, maxR: 7000, minPo: 0.55, maxPo: 1.45,
+    // minR = zoom AVANT maximum : on s'arrête au cadrage « toutes les branches
+    // visibles » (cf. capture owner) pour que la 3D n'empiète jamais sur le texte
+    // de présentation. Le zoom ARRIÈRE reste libre (on découvre l'espace).
+    minR: 95, maxR: 7000, minPo: 0.55, maxPo: 1.45,
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom

@@ -293,20 +293,17 @@
 
     /* ── Flux de pop-ups « tâche accomplie » ── */
     .stream-wrap {
-      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px); top: 35%;
-      width: 264px; pointer-events: none;
+      position: absolute; z-index: 5; right: clamp(20px, 5vw, 64px);
+      top: clamp(180px, 24vh, 224px);
+      width: 286px; pointer-events: none;
     }
-    .stream-cap {
-      display: flex; align-items: center; gap: 8px; margin: 0 4px 10px;
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.6px;
-      text-transform: uppercase; color: var(--gold-soft);
-      opacity: 0; animation: fadeUp 0.9s ease 2.4s both;
+    /* les 2 encarts, empilés et alignés à droite, symétriques */
+    .stream-wrap .eyebrow {
+      display: flex; width: fit-content; max-width: 100%;
+      margin: 0 0 10px auto; opacity: 0; animation: fadeUp 0.9s ease 2.4s both;
     }
-    .stream-cap .sc-dot {
-      width: 7px; height: 7px; border-radius: 50%; background: var(--gold);
-      box-shadow: 0 0 10px var(--gold); animation: scDot 2.6s ease-in-out infinite;
-    }
-    .eyebrow--leaf { opacity: 0; animation: fadeUp 0.9s ease 2.6s both; margin-bottom: 14px; }
+    .stream-wrap .eyebrow--leaf { margin-bottom: 14px; animation-delay: 2.55s; }
+    .task-stream { align-items: flex-end; }
     @keyframes scDot { 0%,100% { opacity: 0.5; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.1); } }
     .task-stream {
       display: flex; flex-direction: column; gap: 10px;
@@ -619,7 +616,7 @@
     </div>
 
     <div class="stream-wrap" aria-hidden="true">
-      <div class="stream-cap"><span class="sc-dot"></span><span data-i18n="stream.caption">Tes actions, dans la vraie vie</span></div>
+      <span class="eyebrow eyebrow--gold" data-i18n="stream.caption">Tes actions, dans la vraie vie</span>
       <span class="eyebrow eyebrow--leaf" data-i18n="hero.eyebrow">Font de toi qui tu es et font grandir ton arbre</span>
       <div class="task-stream" id="task-stream"></div>
     </div>
