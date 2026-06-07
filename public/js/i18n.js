@@ -20,17 +20,35 @@ const FLAGS = {
   it: '<svg viewBox="0 0 3 2"><rect width="3" height="2" fill="#fff"/><rect width="1" height="2" fill="#009246"/><rect x="2" width="1" height="2" fill="#CE2B37"/></svg>',
   pt: '<svg viewBox="0 0 5 3"><rect width="5" height="3" fill="#DA291C"/><rect width="2" height="3" fill="#046A38"/><circle cx="2" cy="1.5" r="0.5" fill="#FFE000" stroke="#DA291C" stroke-width="0.12"/></svg>',
   nl: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect width="3" height="1" fill="#AE1C28"/><rect y="2" width="3" height="1" fill="#21468B"/></svg>',
+  pl: '<svg viewBox="0 0 5 3"><rect width="5" height="3" fill="#fff"/><rect y="1.5" width="5" height="1.5" fill="#DC143C"/></svg>',
+  ru: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect y="1" width="3" height="1" fill="#0039A6"/><rect y="2" width="3" height="1" fill="#D52B1E"/></svg>',
+  sv: '<svg viewBox="0 0 16 10"><rect width="16" height="10" fill="#006AA7"/><rect x="5" width="2" height="10" fill="#FECC00"/><rect y="4" width="16" height="2" fill="#FECC00"/></svg>',
+  tr: '<svg viewBox="0 0 6 4"><rect width="6" height="4" fill="#E30A17"/><circle cx="2.35" cy="2" r="0.95" fill="#fff"/><circle cx="2.62" cy="2" r="0.76" fill="#E30A17"/></svg>',
+  ja: '<svg viewBox="0 0 5 3"><rect width="5" height="3" fill="#fff"/><circle cx="2.5" cy="1.5" r="0.9" fill="#BC002D"/></svg>',
+  zh: '<svg viewBox="0 0 6 4"><rect width="6" height="4" fill="#DE2910"/><circle cx="1.2" cy="1.1" r="0.55" fill="#FFDE00"/></svg>',
+  hi: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect width="3" height="1" fill="#FF9933"/><rect y="2" width="3" height="1" fill="#138808"/><circle cx="1.5" cy="1.5" r="0.27" fill="none" stroke="#0a3a8c" stroke-width="0.07"/></svg>',
 };
 
 // ── Registre des langues proposées (ordre = ordre d'affichage). ─────────────
+// `en` = nom anglais (sert d'indication au traducteur IA). Pas de drapeau →
+// une pastille avec le code s'affiche à la place.
 export const LANGS = [
-  { code: 'fr', label: 'Français',   en: 'French',  dir: 'ltr' },
-  { code: 'en', label: 'English',    en: 'English', dir: 'ltr' },
-  { code: 'es', label: 'Español',    en: 'Spanish', dir: 'ltr' },
-  { code: 'de', label: 'Deutsch',    en: 'German',  dir: 'ltr' },
-  { code: 'it', label: 'Italiano',   en: 'Italian', dir: 'ltr' },
+  { code: 'fr', label: 'Français',   en: 'French',     dir: 'ltr' },
+  { code: 'en', label: 'English',    en: 'English',    dir: 'ltr' },
+  { code: 'es', label: 'Español',    en: 'Spanish',    dir: 'ltr' },
+  { code: 'de', label: 'Deutsch',    en: 'German',     dir: 'ltr' },
+  { code: 'it', label: 'Italiano',   en: 'Italian',    dir: 'ltr' },
   { code: 'pt', label: 'Português',  en: 'Portuguese', dir: 'ltr' },
-  { code: 'nl', label: 'Nederlands', en: 'Dutch',   dir: 'ltr' },
+  { code: 'nl', label: 'Nederlands', en: 'Dutch',      dir: 'ltr' },
+  { code: 'pl', label: 'Polski',     en: 'Polish',     dir: 'ltr' },
+  { code: 'ru', label: 'Русский',    en: 'Russian',    dir: 'ltr' },
+  { code: 'sv', label: 'Svenska',    en: 'Swedish',    dir: 'ltr' },
+  { code: 'tr', label: 'Türkçe',     en: 'Turkish',    dir: 'ltr' },
+  { code: 'ja', label: '日本語',      en: 'Japanese',   dir: 'ltr' },
+  { code: 'zh', label: '中文',        en: 'Chinese (Simplified)', dir: 'ltr' },
+  { code: 'ko', label: '한국어',      en: 'Korean',     dir: 'ltr' },
+  { code: 'hi', label: 'हिन्दी',       en: 'Hindi',      dir: 'ltr' },
+  { code: 'ar', label: 'العربية',     en: 'Arabic',     dir: 'rtl' },
 ];
 
 // ── Dictionnaires ───────────────────────────────────────────────────────────
@@ -63,6 +81,71 @@ const DICT = {
     'beat.sleep': 'Nuit réparatrice',
     'beat.habit': 'Habitude tenue 7 jours',
     'beat.levelup': 'Nouveau palier de niveau',
+    // ── Panneaux de branches (8 dimensions = pyramide de Maslow) ──
+    'branch.physio.label': 'Physiologique',
+    'branch.physio.desc': 'Le besoin vital — la base de tout. Sans énergie ni sommeil, rien d’autre ne tient debout.',
+    'branch.physio.s1.name': 'Sommeil', 'branch.physio.s1.note': '7 à 9 h règlent l’humeur, le focus, la santé.',
+    'branch.physio.s2.name': 'Nutrition', 'branch.physio.s2.note': 'Le carburant du cerveau et du corps.',
+    'branch.physio.s3.name': 'Hydratation', 'branch.physio.s3.note': 'Le premier réflexe, trop souvent oublié.',
+    'branch.physio.s4.name': 'Mouvement', 'branch.physio.s4.note': 'Le corps est fait pour bouger, chaque jour.',
+    'branch.physio.s5.name': 'Repos', 'branch.physio.s5.note': 'Récupérer fait partie de la performance.',
+    'branch.physio.modules': 'Déjà sur le site : Sommeil, Habitudes.',
+    'branch.securite.label': 'Sécurité',
+    'branch.securite.desc': 'Se sentir à l’abri — un toit, des ressources, un lendemain serein.',
+    'branch.securite.s1.name': 'Logement', 'branch.securite.s1.note': 'Un lieu stable, le point d’ancrage.',
+    'branch.securite.s2.name': 'Stabilité', 'branch.securite.s2.note': 'Un cadre prévisible où se poser.',
+    'branch.securite.s3.name': 'Finances', 'branch.securite.s3.note': 'Un coussin, c’est de la sérénité.',
+    'branch.securite.s4.name': 'Santé', 'branch.securite.s4.note': 'Prévenir, écouter les signaux du corps.',
+    'branch.securite.s5.name': 'Sérénité', 'branch.securite.s5.note': 'L’esprit libre, parce que la base est tenue.',
+    'branch.securite.modules': 'Module dédié à venir.',
+    'branch.appartenance.label': 'Appartenance',
+    'branch.appartenance.desc': 'Aimer et être aimé. Personne ne s’épanouit seul.',
+    'branch.appartenance.s1.name': 'Famille', 'branch.appartenance.s1.note': 'Tes racines, ton premier cercle.',
+    'branch.appartenance.s2.name': 'Amis', 'branch.appartenance.s2.note': 'Ceux qui te choisissent.',
+    'branch.appartenance.s3.name': 'Amour', 'branch.appartenance.s3.note': 'L’intimité, le lien profond.',
+    'branch.appartenance.s4.name': 'Empathie', 'branch.appartenance.s4.note': 'Comprendre et accueillir l’autre.',
+    'branch.appartenance.s5.name': 'Communauté', 'branch.appartenance.s5.note': 'Appartenir à plus grand que soi.',
+    'branch.appartenance.modules': 'Module dédié à venir.',
+    'branch.estime.label': 'Estime',
+    'branch.estime.desc': 'Être reconnu — et d’abord se reconnaître soi-même de la valeur.',
+    'branch.estime.s1.name': 'Confiance', 'branch.estime.s1.note': 'Croire en sa capacité d’agir.',
+    'branch.estime.s2.name': 'Compétence', 'branch.estime.s2.note': 'Ce que tu sais faire, vraiment.',
+    'branch.estime.s3.name': 'Réussite', 'branch.estime.s3.note': 'Atteindre ce que tu vises.',
+    'branch.estime.s4.name': 'Reconnaissance', 'branch.estime.s4.note': 'Être vu et apprécié pour ce que tu fais.',
+    'branch.estime.s5.name': 'Fierté', 'branch.estime.s5.note': 'Le respect que tu te portes.',
+    'branch.estime.modules': 'Déjà sur le site : Autoévaluation, Bilan.',
+    'branch.cognitif.label': 'Cognitif',
+    'branch.cognitif.desc': 'Le besoin de savoir, de comprendre, d’explorer le monde et soi.',
+    'branch.cognitif.s1.name': 'Savoir', 'branch.cognitif.s1.note': 'Nourrir l’esprit en continu.',
+    'branch.cognitif.s2.name': 'Curiosité', 'branch.cognitif.s2.note': 'Le moteur de toute découverte.',
+    'branch.cognitif.s3.name': 'Compréhension', 'branch.cognitif.s3.note': 'Relier les choses, voir clair.',
+    'branch.cognitif.s4.name': 'Apprentissage', 'branch.cognitif.s4.note': 'Grandir, toujours.',
+    'branch.cognitif.s5.name': 'Lucidité', 'branch.cognitif.s5.note': 'Penser net, décider juste.',
+    'branch.cognitif.modules': 'Déjà sur le site : Codex, Journal.',
+    'branch.esthetique.label': 'Esthétique',
+    'branch.esthetique.desc': 'Le besoin de beauté, d’harmonie et d’ordre — autour de soi et en soi.',
+    'branch.esthetique.s1.name': 'Beauté', 'branch.esthetique.s1.note': 'Ce qui élève le regard.',
+    'branch.esthetique.s2.name': 'Harmonie', 'branch.esthetique.s2.note': 'L’équilibre entre les choses.',
+    'branch.esthetique.s3.name': 'Ordre', 'branch.esthetique.s3.note': 'Un cadre clair libère l’esprit.',
+    'branch.esthetique.s4.name': 'Créativité', 'branch.esthetique.s4.note': 'Mettre de la forme au monde.',
+    'branch.esthetique.s5.name': 'Émerveillement', 'branch.esthetique.s5.note': 'Savoir encore s’étonner.',
+    'branch.esthetique.modules': 'Module dédié à venir.',
+    'branch.accomplissement.label': 'Accomplissement',
+    'branch.accomplissement.desc': 'Devenir pleinement soi — réaliser son potentiel.',
+    'branch.accomplissement.s1.name': 'Croissance', 'branch.accomplissement.s1.note': 'Toujours un cran plus loin.',
+    'branch.accomplissement.s2.name': 'Projets', 'branch.accomplissement.s2.note': 'Ce que tu mets au monde.',
+    'branch.accomplissement.s3.name': 'Maîtrise', 'branch.accomplissement.s3.note': 'L’excellence dans ce qui compte.',
+    'branch.accomplissement.s4.name': 'Authenticité', 'branch.accomplissement.s4.note': 'Vivre aligné avec qui tu es.',
+    'branch.accomplissement.s5.name': 'Vision', 'branch.accomplissement.s5.note': 'Savoir où tu vas.',
+    'branch.accomplissement.modules': 'Déjà sur le site : Objectifs, Méditation.',
+    'branch.transcendance.label': 'Transcendance',
+    'branch.transcendance.desc': 'Aller au-delà de soi — donner du sens, contribuer, transmettre. La cime s’épanouit tard, et c’est normal.',
+    'branch.transcendance.s1.name': 'Spiritualité', 'branch.transcendance.s1.note': 'Le lien à plus vaste que soi.',
+    'branch.transcendance.s2.name': 'Contribution', 'branch.transcendance.s2.note': 'Ce que tu apportes au monde.',
+    'branch.transcendance.s3.name': 'Sens', 'branch.transcendance.s3.note': 'Le pourquoi de tout le reste.',
+    'branch.transcendance.s4.name': 'Transmission', 'branch.transcendance.s4.note': 'Ce que tu passes aux autres.',
+    'branch.transcendance.s5.name': 'Héritage', 'branch.transcendance.s5.note': 'La trace que tu laisses.',
+    'branch.transcendance.modules': 'Déjà sur le site : Gratitude. Frise chronologique à venir.',
     'ui.langTitle': 'Choisis ta langue',
     'ui.langSearch': 'Rechercher une langue',
     'ui.langNone': 'Aucune langue trouvée',
@@ -266,17 +349,94 @@ const STORE_KEY = 'cyl_lang';
 let current = 'fr';
 
 function pick() {
+  const has = (c) => LANGS.some((l) => l.code === c);
   try {
     const saved = localStorage.getItem(STORE_KEY);
-    if (saved && DICT[saved]) return saved;
+    if (saved && has(saved)) return saved;
   } catch (_) {}
   const nav = (navigator.language || 'fr').slice(0, 2).toLowerCase();
-  return DICT[nav] ? nav : 'fr';
+  return has(nav) ? nav : 'fr';
+}
+
+// ── Cache des traductions IA (langues sans dictionnaire écrit à la main, ou
+//    clés manquantes d'une langue principale comme les panneaux de branches). ──
+// Bump SRC_VERSION si on modifie une chaîne source FR → invalide les caches.
+const SRC_VERSION = 1;
+const ai = {};                 // ai[lang] = { clé: traduction }
+const translating = new Set(); // langues dont une traduction IA est en cours
+
+function cacheName(lang) { return 'cyl_i18n:' + lang; }
+function loadCache(lang) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(cacheName(lang)) || 'null');
+    if (raw && raw.v === SRC_VERSION && raw.m) return raw.m;
+  } catch (_) {}
+  return {};
+}
+function saveCache(lang) {
+  try { localStorage.setItem(cacheName(lang), JSON.stringify({ v: SRC_VERSION, m: ai[lang] || {} })); } catch (_) {}
 }
 
 function t(key) {
-  const d = DICT[current] || DICT.fr;
-  return (d && d[key]) || (DICT.fr[key]) || key;
+  const hand = DICT[current] && DICT[current][key];
+  if (hand) return hand;
+  const cached = ai[current] && ai[current][key];
+  if (cached) return cached;
+  return DICT.fr[key] || key;   // repli FR le temps que l'IA traduise
+}
+
+// Drapeau SVG si dispo, sinon pastille avec le code (langues « exotiques »).
+function flagHTML(code) {
+  return FLAGS[code] || `<span class="lang-chip">${code.toUpperCase()}</span>`;
+}
+
+// Traduit (via /api/translate) toutes les clés FR encore non couvertes pour
+// `lang`, par lots, en mettant à jour le DOM + le cache au fur et à mesure.
+async function ensureTranslations(lang) {
+  if (lang === 'fr' || translating.has(lang)) return;
+  const missing = {};
+  for (const k in DICT.fr) {
+    const hand = DICT[lang] && DICT[lang][k];
+    const cached = ai[lang] && ai[lang][k];
+    if (!hand && !cached) missing[k] = DICT.fr[k];
+  }
+  const keys = Object.keys(missing);
+  if (!keys.length) return;
+  translating.add(lang);
+  ai[lang] = ai[lang] || {};
+  const CHUNK = 50;
+  const name = meta(lang).en || lang;
+  try {
+    for (let i = 0; i < keys.length; i += CHUNK) {
+      const slice = keys.slice(i, i + CHUNK);
+      const items = {};
+      slice.forEach((k) => { items[k] = missing[k]; });
+      let data;
+      try {
+        const r = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target: lang, targetName: name, items }),
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        data = await r.json();
+      } catch (e) {
+        console.warn('[i18n] traduction IA indisponible pour', lang, e?.message || e);
+        break;   // on garde le repli FR, sans boucler
+      }
+      const tr = data && data.translations;
+      if (tr) {
+        Object.assign(ai[lang], tr);
+        saveCache(lang);
+        if (lang === current) {
+          applyDom();
+          window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang } }));
+        }
+      }
+    }
+  } finally {
+    translating.delete(lang);
+  }
 }
 
 function applyDom(root) {
@@ -295,17 +455,20 @@ function applyDom(root) {
 function meta(code) { return LANGS.find((l) => l.code === code) || LANGS[0]; }
 
 function setLang(code, persist) {
-  if (!DICT[code]) return;
+  if (!meta(code) || !LANGS.some((l) => l.code === code)) return;
   current = code;
   const m = meta(code);
   document.documentElement.lang = code;
   document.documentElement.dir = m.dir || 'ltr';
   if (persist !== false) { try { localStorage.setItem(STORE_KEY, code); } catch (_) {} }
+  if (!ai[code]) ai[code] = loadCache(code);   // cache IA éventuel
   applyDom();
   syncButton();
   syncList();
-  // La 3D (Lya, stades) se met à jour via cet évènement.
+  // La 3D (Lya, stades, panneaux) se met à jour via cet évènement.
   window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang: code } }));
+  // Complète les clés manquantes via l'IA (langues exotiques, branches…).
+  ensureTranslations(code);
 }
 
 // Exposé global pour arbre3d.js (Lya, stades).
@@ -319,7 +482,7 @@ let elBtn, elPop, elFlag, elCode, elList, elSearch, elEmpty;
 
 function syncButton() {
   const m = meta(current);
-  if (elFlag) elFlag.innerHTML = FLAGS[current] || '';
+  if (elFlag) elFlag.innerHTML = flagHTML(current);
   if (elCode) elCode.textContent = current.toUpperCase();
   if (elBtn) elBtn.setAttribute('aria-label', `${t('ui.langTitle')} (${m.label})`);
 }
@@ -335,7 +498,7 @@ function buildList() {
     li.setAttribute('data-search', (l.label + ' ' + l.en + ' ' + l.code).toLowerCase());
     li.setAttribute('aria-selected', l.code === current ? 'true' : 'false');
     li.innerHTML =
-      `<span class="lang-opt-flag">${FLAGS[l.code] || ''}</span>` +
+      `<span class="lang-opt-flag">${flagHTML(l.code)}</span>` +
       `<span class="lang-opt-name">${l.label}</span>` +
       `<span class="lang-opt-check" aria-hidden="true">` +
         `<svg viewBox="0 0 14 14"><path d="M2.5 7.5 6 11 11.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;

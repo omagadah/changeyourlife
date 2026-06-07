@@ -333,6 +333,8 @@ function initBranchPanel(onClose) {
   const modsEl = document.getElementById('bp-modules');
   const closeBtn = document.getElementById('bp-close');
 
+  let lastOpen = null;   // dernière branche ouverte (pour relocaliser)
+
   function close() {
     if (panel) panel.classList.remove('open');
     if (onClose) onClose();
@@ -341,27 +343,45 @@ function initBranchPanel(onClose) {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
   function open(key, label, colorHex) {
-    const info = BRANCHES_INFO[key];
-    if (!panel || !info) return;
+    if (!panel) return;
+    const info = BRANCHES_INFO[key] || {};   // repli FR si i18n indisponible
+    lastOpen = { key, label, colorHex };
     const col = '#' + colorHex.toString(16).padStart(6, '0');
     if (dot) dot.style.background = col;
-    if (title) { title.textContent = label; title.style.color = col; }
-    if (desc) desc.textContent = info.desc;
+    if (title) { title.textContent = T(`branch.${key}.label`, label); title.style.color = col; }
+    if (desc) desc.textContent = T(`branch.${key}.desc`, info.desc || '');
     if (subsEl) {
       subsEl.innerHTML = '';
-      info.subs.forEach(([name, note], i) => {
+      for (let i = 0; i < 5; i++) {
+        const fb = (info.subs && info.subs[i]) || ['', ''];
+        const name = T(`branch.${key}.s${i + 1}.name`, fb[0]);
+        const note = T(`branch.${key}.s${i + 1}.note`, fb[1]);
+        if (!name && !note) continue;
         const row = document.createElement('div');
         row.className = 'bp-sub';
         row.style.animationDelay = (0.12 + i * 0.09) + 's';
-        row.innerHTML =
-          `<span class="bp-sub-dot" style="background:${col}"></span>` +
-          `<span class="bp-sub-txt"><b>${name}</b>${note}</span>`;
+        const dotEl = document.createElement('span');
+        dotEl.className = 'bp-sub-dot'; dotEl.style.background = col;
+        const txt = document.createElement('span');
+        txt.className = 'bp-sub-txt';
+        const b = document.createElement('b'); b.textContent = name;
+        txt.appendChild(b);
+        txt.appendChild(document.createTextNode(note));
+        row.appendChild(dotEl); row.appendChild(txt);
         subsEl.appendChild(row);
-      });
+      }
     }
-    if (modsEl) modsEl.textContent = info.modules;
+    if (modsEl) modsEl.textContent = T(`branch.${key}.modules`, info.modules || '');
     panel.classList.add('open');
   }
+
+  // Changement de langue : si le panneau est ouvert, on le re-remplit.
+  window.addEventListener('cyl:langchange', () => {
+    if (panel && panel.classList.contains('open') && lastOpen) {
+      open(lastOpen.key, lastOpen.label, lastOpen.colorHex);
+    }
+  });
+
   return { open, close };
 }
 

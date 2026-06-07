@@ -1,5 +1,5 @@
-// service-worker.js - v72 (i18n : pop-ups de tâches traduits)
-const CACHE_NAME = 'changeyourlife-v72';
+// service-worker.js - v73 (i18n IA+cache : 16 langues, panneaux de branches)
+const CACHE_NAME = 'changeyourlife-v73';
 const urlsToCache = [
   '/',
   '/app/',

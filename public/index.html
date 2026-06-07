@@ -152,6 +152,13 @@
       width: 21px; height: 15px; border-radius: 3px; overflow: hidden; flex-shrink: 0;
       display: block; box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.35);
     }
+    .lang-flag svg, .lang-opt-flag svg { object-fit: cover; }
+    .lang-chip {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%; font-size: 8px; font-weight: 800; letter-spacing: 0.2px;
+      color: #0c130a; background: linear-gradient(135deg, var(--gold-soft), var(--moss));
+    }
+    .lang-opt-flag .lang-chip { font-size: 9px; }
     .lang-flag svg { width: 100%; height: 100%; display: block; object-fit: cover; }
     .lang-code { letter-spacing: 0.5px; }
     .lang-chev { width: 12px; height: 12px; opacity: 0.7; transition: transform .25s; }
