@@ -1,5 +1,5 @@
 /**
- * Theme initializer — applique le thème stocké en localStorage très tôt
+ * Theme initializer - applique le thème stocké en localStorage très tôt
  * pour éviter le flash blanc/sombre au chargement.
  *
  * Inclus dans <head> via :
@@ -28,6 +28,6 @@
     if (document.body) apply();
     else document.addEventListener('DOMContentLoaded', apply, { once: true });
   } catch (e) {
-    /* localStorage may throw in private browsing — ignore */
+    /* localStorage may throw in private browsing - ignore */
   }
 })();

@@ -1,5 +1,5 @@
 /**
- * Firebase singleton — unique source de vérité pour auth + db + functions.
+ * Firebase singleton - unique source de vérité pour auth + db + functions.
  * Toutes les pages doivent importer depuis ce module.
  *
  * Usage:
@@ -29,13 +29,13 @@ export const auth      = getAuth(app);
 export const db        = getFirestore(app);
 export const functions = getFunctions(app);
 
-// ── XP — écriture de l'arbre côté client ────────────────────────────────────
+// ── XP - écriture de l'arbre côté client ────────────────────────────────────
 // Le projet est sur le plan Firebase gratuit (Spark) : les Cloud Functions ne
 // sont pas déployables. `addXp` (functions/src/index.ts) reste la référence
 // canonique ; on en reproduit ici la logique via tree-data.js (`applyXp` =
 // miroir exact). Écriture transactionnelle → pas de course entre deux actions.
 // Sécurité : les Firestore rules autorisent l'owner à écrire SON `tree`. Un
-// utilisateur averti pourrait gonfler son propre XP — sans intérêt, il ne
+// utilisateur averti pourrait gonfler son propre XP - sans intérêt, il ne
 // triche que lui-même. L'anti-triche serveur reviendra avec le plan Blaze.
 const DOMAIN_ALIASES   = { corps: 'body', coeur: 'heart', ordre: 'order', mind: 'etre' };
 const BRANCH_TO_LEGACY = { physio: 'body', appartenance: 'heart', cognitif: 'etre', securite: 'order' };
@@ -58,11 +58,11 @@ export async function awardXp(domain, amount) {
       const data = snap.exists() ? snap.data() : {};
       const now = Date.now();
 
-      // 1. `tree` — modèle source de vérité (xp cumulé + lastActionAt par branche)
+      // 1. `tree` - modèle source de vérité (xp cumulé + lastActionAt par branche)
       const next = applyXp(treeFromUserDoc(data, now), branch, a, now);
       const patch = { tree: next };
 
-      // 2. `levels` — miroir legacy (anneaux du dashboard, anciennes pages)
+      // 2. `levels` - miroir legacy (anneaux du dashboard, anciennes pages)
       const legacyKey = BRANCH_TO_LEGACY[branch];
       if (legacyKey) {
         const levels = (data.levels && typeof data.levels === 'object')

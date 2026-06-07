@@ -292,7 +292,7 @@ function totalXp(d) {
 function activeBranches(d) { return TREE_BRANCHES.filter((k) => branchXp(d, k) > 0).length; }
 const BRANCH_T = 300;   // ~niveau 3 d'une branche
 
-// { id, emoji, name, desc, check(userData) } — l'ordre = ordre d'affichage.
+// { id, emoji, name, desc, check(userData) } - l'ordre = ordre d'affichage.
 const TITLE_DEFS = [
     { id:'fondateur',   emoji:'👑', name:'Fondateur',          desc:'Bâtisseur de ChangeYourLife',                check:d => d.founder === true || d.role === 'admin' },
     { id:'graine',      emoji:'🌱', name:'Graine éveillée',    desc:'Gagne ton premier XP',                       check:d => totalXp(d) >= 1 },

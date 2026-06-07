@@ -1,4 +1,4 @@
-// /js/landing.js — bootstrap pour la landing page (/).
+// /js/landing.js - bootstrap pour la landing page (/).
 // Module ESM : Vanta birds + lazy-load Tidio + scroll reveal + état auth CTA.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { updateGlobalAvatar } from '/js/common.js';
@@ -79,6 +79,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// updateGlobalAvatar non utilisé sur landing public — réservé aux pages logged-in.
+// updateGlobalAvatar non utilisé sur landing public - réservé aux pages logged-in.
 // Import préservé pour cohérence si on l'ajoute plus tard.
 void updateGlobalAvatar;

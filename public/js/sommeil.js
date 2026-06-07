@@ -1,4 +1,4 @@
-// /js/sommeil.js — externalisé depuis sommeil/index.html
+// /js/sommeil.js - externalisé depuis sommeil/index.html
 
     import { auth, db } from '/js/firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -51,7 +51,7 @@
       return mins;
     }
     function fmtDuration(mins) {
-      if (mins === null) return '—';
+      if (mins === null) return '-';
       const h = Math.floor(mins / 60), m = mins % 60;
       return `${h}h${m > 0 ? String(m).padStart(2,'0') : '00'}`;
     }
@@ -188,7 +188,7 @@
         const pct = log ? Math.min(100, Math.round((log.duration||0) / maxMins * 100)) : 0;
         fill.style.height = pct + '%';
         if (log) fill.style.background = `linear-gradient(180deg, ${QUALITY_COLOR[log.quality||3]}, ${QUALITY_COLOR[log.quality||3]}88)`;
-        fill.title = log ? `${fmtDuration(log.duration)} — ${QUALITY_LABEL[log.quality||3]}` : 'Pas de données';
+        fill.title = log ? `${fmtDuration(log.duration)} - ${QUALITY_LABEL[log.quality||3]}` : 'Pas de données';
         bg.appendChild(fill);
         const label = document.createElement('div'); label.className = 'bar-day';
         label.textContent = DAY[d.getDay()];

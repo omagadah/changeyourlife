@@ -1,4 +1,4 @@
-// /coach/ — IA Coach Gemini 2.0 + arbre de vie + stats par axe.
+// /coach/ - IA Coach Gemini 2.0 + arbre de vie + stats par axe.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { updateGlobalAvatar } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
@@ -52,7 +52,7 @@ const BRANCHES = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// CANVAS — Life Tree
+// CANVAS - Life Tree
 // ═══════════════════════════════════════════════════════════
 const canvas = document.getElementById('tree-canvas');
 const ctx    = canvas.getContext('2d');
@@ -372,8 +372,8 @@ document.getElementById('onboard-start').addEventListener('click', () => {
   chatInput.focus();
   // Auto-send greeting
   setTimeout(() => {
-    appendMsg('assistant', 'Salut ! Je suis ton coach IA sur Change Your Life. Parle-moi de toi — tes objectifs, tes défis, ce que tu veux transformer dans ta vie. Ton arbre va pousser au fil de notre conversation. 🌱');
-    state.messages.push({ role:'assistant', content:'Salut ! Je suis ton coach IA sur Change Your Life. Parle-moi de toi — tes objectifs, tes défis, ce que tu veux transformer dans ta vie. Ton arbre va pousser au fil de notre conversation. 🌱' });
+    appendMsg('assistant', 'Salut ! Je suis ton coach IA sur Change Your Life. Parle-moi de toi - tes objectifs, tes défis, ce que tu veux transformer dans ta vie. Ton arbre va pousser au fil de notre conversation. 🌱');
+    state.messages.push({ role:'assistant', content:'Salut ! Je suis ton coach IA sur Change Your Life. Parle-moi de toi - tes objectifs, tes défis, ce que tu veux transformer dans ta vie. Ton arbre va pousser au fil de notre conversation. 🌱' });
   }, 300);
 });
 

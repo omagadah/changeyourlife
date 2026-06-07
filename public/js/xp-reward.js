@@ -1,4 +1,4 @@
-// /js/xp-reward.js — carte de récompense affichée à chaque gain d'XP.
+// /js/xp-reward.js - carte de récompense affichée à chaque gain d'XP.
 //
 // Appelée par `awardXp()` (firebase.js) → un seul point, donc TOUS les
 // modules (méditation, journal, sommeil…) ont le même retour visuel : une

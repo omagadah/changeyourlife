@@ -1,4 +1,4 @@
-// /js/skills.js — Socle des compétences : modèle + niveaux + attribution d'XP.
+// /js/skills.js - Socle des compétences : modèle + niveaux + attribution d'XP.
 // Une compétence grandit avec le temps (tâches accomplies, pratiques répétées).
 // Firestore : users/{uid}.skills = { <id>: { name, emoji, branch, xp, lastAt } }.
 

@@ -1,4 +1,4 @@
-// /js/branche.js — Espace-dimension d'une branche de l'arbre.
+// /js/branche.js - Espace-dimension d'une branche de l'arbre.
 // Une page par branche (body[data-branch]) : ses 5 sous-catégories deviennent
 // des actions concrètes → awardXp(branche) → l'arbre grandit. Contenu tiré de
 // l'i18n (window.CYL.t) donc traduit automatiquement.
@@ -9,7 +9,7 @@ import { initUserMenu } from '/js/userMenu.js';
 import { updateGlobalAvatar } from '/js/common.js';
 
 let auth, db, uid;
-let dim = {};   // { "<branch>.<i>": "YYYY-MM-DD" } — sous-catégorie validée ce jour
+let dim = {};   // { "<branch>.<i>": "YYYY-MM-DD" } - sous-catégorie validée ce jour
 
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
@@ -74,7 +74,7 @@ function render() {
   const col = meta.color;
   const label = T(`branch.${key}.label`, key);
   const desc = T(`branch.${key}.desc`, '');
-  document.title = label + ' — Change Your Life';
+  document.title = label + ' - Change Your Life';
 
   // sous-catégories (s1..s5)
   let subs = '';
@@ -93,7 +93,7 @@ function render() {
   const tools = (TOOLS[key] || []);
   const toolsHtml = tools.length
     ? tools.map((t) => `<a class="dim-tool" href="${t.h}"><span class="dim-tool-ic">${t.i}</span><span class="dim-tool-l">${t.l}</span><span class="dim-tool-go">Ouvrir →</span></a>`).join('')
-    : `<div class="dim-empty">Module dédié à venir — cette dimension grandira bientôt.</div>`;
+    : `<div class="dim-empty">Module dédié à venir - cette dimension grandira bientôt.</div>`;
 
   root.innerHTML =
     `<div class="dim-head" style="--c:${col}">` +

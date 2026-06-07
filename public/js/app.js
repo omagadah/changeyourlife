@@ -1,4 +1,4 @@
-// /js/app.js — bootstrap pour /app/ (dashboard logged-in).
+// /js/app.js - bootstrap pour /app/ (dashboard logged-in).
 // Module ESM externalisé depuis app/index.html.
 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -29,7 +29,7 @@
             window.location.replace('/verify-email');
             return;
         }
-        // L'ancien panneau utilisateur a été remplacé par le user-menu — ce champ
+        // L'ancien panneau utilisateur a été remplacé par le user-menu - ce champ
         // n'existe plus dans le DOM. Garde-fou pour ne pas casser toute la suite
         // (notamment initTreeWidget) sur un getElementById nul.
         const userEmailEl = document.getElementById('user-email');
@@ -94,7 +94,7 @@
             } else { window.location.href = '/login'; }
         });
 
-        // L'onboarding est désormais conversationnel : Lya accueille le nouvel
+        // L'onboarding est désormais conversationnel : Syl accueille le nouvel
         // utilisateur et plante l'arbre avec lui (cf. tree-widget.js). L'ancien
         // tutoriel guidé Shepherd a été retiré.
 
@@ -116,7 +116,7 @@
                 const todayStr = new Date().toDateString();
                 const habitsDoneToday = habits.filter(h => h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === todayStr).length;
                 const hEl = document.getElementById('stat-habits');
-                if (hEl) hEl.textContent = habits.length ? `${habitsDoneToday}/${habits.length}` : '—';
+                if (hEl) hEl.textContent = habits.length ? `${habitsDoneToday}/${habits.length}` : '-';
 
                 // ── Meditation streak + sessions ──
                 const med = userData.meditation || {};
@@ -127,7 +127,7 @@
                 const streakEl = document.getElementById('stat-streak');
                 if (streakEl) streakEl.textContent = streak;
                 const medSessEl = document.getElementById('stat-med-sessions');
-                if (medSessEl) medSessEl.textContent = med.totalSessions || '—';
+                if (medSessEl) medSessEl.textContent = med.totalSessions || '-';
                 const cardMed = document.getElementById('card-stat-med');
                 if (cardMed) {
                     const mins = med.totalMinutes || 0;
@@ -147,9 +147,9 @@
                         });
                         const pct = total ? Math.round(done/total*100) : 0;
                         const mlEl = document.getElementById('stat-mylife');
-                        if (mlEl) mlEl.textContent = total ? `${pct}%` : '—';
+                        if (mlEl) mlEl.textContent = total ? `${pct}%` : '-';
                         const cardMl = document.getElementById('card-stat-mylife');
-                        if (cardMl) cardMl.textContent = total ? `Score : ${pct}% — ${done}/${total} compétences` : '';
+                        if (cardMl) cardMl.textContent = total ? `Score : ${pct}% - ${done}/${total} compétences` : '';
                     }
                 } catch(e) {}
 
@@ -161,7 +161,7 @@
                     const cardJ = document.getElementById('card-stat-journal');
                     if (cardJ) cardJ.textContent = jSnap.size ? `${jSnap.size} entrée${jSnap.size>1?'s':''} · Journal actif` : '';
                 } catch(e) {
-                    const jEl = document.getElementById('stat-journal'); if (jEl) jEl.textContent = '—';
+                    const jEl = document.getElementById('stat-journal'); if (jEl) jEl.textContent = '-';
                 }
             } catch(e) { console.warn('stats load failed', e); }
         }
@@ -187,7 +187,7 @@
             const scores = d.scores || {};
             const date = d.createdAt?.toDate
               ? d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})
-              : '—';
+              : '-';
 
             const sec = document.getElementById('wheel-section');
             if (sec) sec.style.display = 'block';
@@ -439,7 +439,7 @@
             <span class="quote-mark">"</span>
             <div class="quote-body">
               <div class="quote-text">${q.t}</div>
-              <div class="quote-author">— ${q.a}</div>
+              <div class="quote-author">- ${q.a}</div>
             </div>
           </div>`;
         }
@@ -454,7 +454,7 @@
             card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)'; });
         }
 
-// ── Vanta birds (background) — bootstrap après les imports/init ──
+// ── Vanta birds (background) - bootstrap après les imports/init ──
 function bootVanta() {
   try {
     if (window.VANTA && window.VANTA.BIRDS) {

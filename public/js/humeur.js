@@ -1,4 +1,4 @@
-// /humeur/ — tracker quotidien d'humeur + heatmap + stats.
+// /humeur/ - tracker quotidien d'humeur + heatmap + stats.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { auth, db } from '/js/firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -101,7 +101,7 @@ function todayDateStr() {
 }
 
 function showAlreadyLogged(entry) {
-  document.getElementById('mood-question').textContent = `Déjà enregistré aujourd'hui — ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
+  document.getElementById('mood-question').textContent = `Déjà enregistré aujourd'hui - ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
   document.getElementById('mood-row').style.opacity = '0.4';
   document.getElementById('mood-row').style.pointerEvents = 'none';
   document.getElementById('mood-note').value = entry.note || '';
@@ -173,7 +173,7 @@ function renderHeatmap() {
     cell.className = 'heatmap-cell';
     if (entry) {
       cell.setAttribute('data-mood', entry.mood);
-      const label = `${d.getDate()}/${d.getMonth()+1} — ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
+      const label = `${d.getDate()}/${d.getMonth()+1} - ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
       cell.innerHTML = `<span class="cell-tooltip">${label}</span>`;
     } else {
       const label = `${d.getDate()}/${d.getMonth()+1}`;
@@ -191,7 +191,7 @@ function renderEntries() {
     .slice(0, 10);
 
   if (!sorted.length) {
-    list.innerHTML = '<div class="empty-entries">Aucune entrée encore — commence dès aujourd\'hui !</div>';
+    list.innerHTML = '<div class="empty-entries">Aucune entrée encore - commence dès aujourd\'hui !</div>';
     return;
   }
 
@@ -244,9 +244,9 @@ function computeStats() {
     const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     if (allEntries[ds]) last7.push(allEntries[ds].mood);
   }
-  const avg = last7.length ? (last7.reduce((a,b)=>a+b,0)/last7.length).toFixed(1) : '—';
+  const avg = last7.length ? (last7.reduce((a,b)=>a+b,0)/last7.length).toFixed(1) : '-';
   document.getElementById('stat-avg').textContent = avg;
-  if (avg !== '—') {
+  if (avg !== '-') {
     const avgNum = parseFloat(avg);
     const avgColor = avgNum >= 4 ? '#22c55e' : avgNum >= 3 ? '#eab308' : '#f87171';
     document.getElementById('stat-avg').style.color = avgColor;

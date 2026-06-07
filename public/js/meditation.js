@@ -1,4 +1,4 @@
-// /meditation/ — sessions guidées + respiration + sons d'ambiance + stats.
+// /meditation/ - sessions guidées + respiration + sons d'ambiance + stats.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { updateGlobalAvatar } from '/js/common.js';
 import { showXpFloat } from '/js/xp.js';
@@ -37,7 +37,7 @@ const sessions = [
   { id:'sleep',     title:'Sommeil profond',          desc:'Prépare-toi à une nuit réparatrice',           duration:15, icon:'🌙', type:'guided',    color:'#a78bfa' },
   { id:'gratitude', title:'Gratitude & Positivité',  desc:'Cultive la reconnaissance et la joie',          duration:7,  icon:'✨', type:'guided',    color:'#fbbf24' },
   { id:'breathing', title:'Respiration 4-7-8',       desc:'Technique rapide pour réduire le stress',       duration:5,  icon:'💨', type:'breathing', color:'#60a5fa' },
-  { id:'coherence', title:'Cohérence cardiaque',      desc:'5 s inspire, 5 s expire — apaise le système nerveux', duration:5, icon:'🫁', type:'breathing', color:'#22d3ee',
+  { id:'coherence', title:'Cohérence cardiaque',      desc:'5 s inspire, 5 s expire - apaise le système nerveux', duration:5, icon:'🫁', type:'breathing', color:'#22d3ee',
     pattern:[ { text:'Inspire doucement…', label:'Inspiration', cls:'inhale', duration:5000, dot:0 }, { text:'Expire doucement…', label:'Expiration', cls:'exhale', duration:5000, dot:2 } ] },
   { id:'sos',       title:'SOS stress',               desc:'3 minutes pour redescendre, tout de suite',     duration:3,  icon:'🆘', type:'breathing', color:'#fb7185' },
   { id:'body-scan', title:'Scan corporel',            desc:'Relâche chaque partie de ton corps',            duration:12, icon:'🧘', type:'guided',    color:'#f87171' },
@@ -46,7 +46,7 @@ const sessions = [
   { id:'custom',    title:'Durée personnalisée',      desc:'Choisis ton propre rythme',                     duration:20, icon:'⏱️', type:'guided',    color:'#34d399' },
 ];
 
-// Questions de réflexion (mode philosophique) — une au hasard à la sélection.
+// Questions de réflexion (mode philosophique) - une au hasard à la sélection.
 const REFLECTIONS = [
   "Qu'est-ce qui compte vraiment pour toi, aujourd'hui ?",
   "De quoi peux-tu te libérer pour avancer plus léger ?",
@@ -171,20 +171,20 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login'; return; }
   uid = user.uid;
   renderSessions();
-  initLyaWelcome();
+  initSylWelcome();
   await loadStats();
 });
 
-// Accueil Lya : selon l'humeur, recommande un mode et le pré-charge.
+// Accueil Syl : selon l'humeur, recommande un mode et le pré-charge.
 const MOOD_RECO = {
-  stress:  { id: 'sos',       line: 'Respirons. 3 minutes pour faire redescendre la pression — je te guide.' },
+  stress:  { id: 'sos',       line: 'Respirons. 3 minutes pour faire redescendre la pression - je te guide.' },
   agite:   { id: 'coherence', line: 'On apaise le système nerveux : cohérence cardiaque, 5 minutes.' },
   fatigue: { id: 'sleep',     line: 'Accorde-toi du repos. Une descente douce vers le sommeil.' },
-  triste:  { id: 'gratitude', line: 'Ramenons un peu de lumière — une parenthèse de gratitude.' },
+  triste:  { id: 'gratitude', line: 'Ramenons un peu de lumière - une parenthèse de gratitude.' },
   sens:    { id: 'philo',     line: 'Prends un instant pour réfléchir. Une question, et le silence.' },
   bien:    { id: 'calm',      line: "Profitons-en pour ancrer ce calme. Une séance sérénité ?" },
 };
-function initLyaWelcome() {
+function initSylWelcome() {
   document.querySelectorAll('#la-moods button').forEach((b) => {
     b.addEventListener('click', () => {
       const reco = MOOD_RECO[b.dataset.mood];
@@ -341,9 +341,9 @@ async function completeSession() {
   document.getElementById('breathing-guide').classList.remove('active');
   document.getElementById('breathing-rings')?.classList.remove('inhale','hold','exhale');
   document.querySelectorAll('.session-card').forEach(c => c.classList.remove('playing'));
-  showToast(`🧘 Session terminée — ${currentSession.duration} min ✓`);
+  showToast(`🧘 Session terminée - ${currentSession.duration} min ✓`);
   const _la = document.getElementById('la-line');
-  if (_la) _la.textContent = 'Belle séance 🌿 Prends un instant — comment te sens-tu maintenant ?';
+  if (_la) _la.textContent = 'Belle séance 🌿 Prends un instant - comment te sens-tu maintenant ?';
   try { showXpFloat(15, document.getElementById('timer')); } catch(e) {}
 
   try {

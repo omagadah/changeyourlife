@@ -42,7 +42,7 @@ export function setupThemeToggle() {
  * Gère l'ouverture/fermeture du panel utilisateur et la déconnexion.
  * @param {object} auth - L'instance d'authentification Firebase.
  */
-// setupUserPanel removed — replaced by public/js/userMenu.js which provides a fresh modern menu.
+// setupUserPanel removed - replaced by public/js/userMenu.js which provides a fresh modern menu.
 
 /**
  * Met à jour l'icône globale de l'utilisateur avec l'avatar sauvegardé ou une initiale.
@@ -218,9 +218,9 @@ if (typeof window !== 'undefined') {
     } catch (e) { /* ignore in non-browser contexts */ }
 }
 
-// ── Lya overlay (orb + chat) — chargée sur toutes les pages auth ────────────
-// Pas sur la landing, login, signup, verify-email (pages publiques sans Lya).
-(function maybeLoadLyaOverlay() {
+// ── Syl overlay (orb + chat) - chargée sur toutes les pages auth ────────────
+// Pas sur la landing, login, signup, verify-email (pages publiques sans Syl).
+(function maybeLoadSylOverlay() {
   try {
     var p = location.pathname;
     if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0) return;

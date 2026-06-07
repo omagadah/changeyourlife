@@ -1,4 +1,4 @@
-// /js/agenda.js — Connecteur Google Agenda (encart central de /app/).
+// /js/agenda.js - Connecteur Google Agenda (encart central de /app/).
 // OAuth via Firebase Google provider (scopes calendar) → lit les événements du
 // jour et envoie les tâches du jour (module /plan/) vers l'agenda.
 
@@ -77,7 +77,7 @@ async function pushTasks() {
   for (const t of tasks) {
     await api('/calendars/primary/events', {
       method: 'POST',
-      body: JSON.stringify({ summary: '✓ ' + t.title, start: { date: today }, end: { date: tomorrow }, description: 'Tâche — ChangeYourLife.ai' }),
+      body: JSON.stringify({ summary: '✓ ' + t.title, start: { date: today }, end: { date: tomorrow }, description: 'Tâche - ChangeYourLife.ai' }),
     });
     n++;
   }
@@ -130,7 +130,7 @@ async function refreshEvents() {
   const box = document.getElementById('ag-events'); if (!box) return;
   try {
     const items = await listToday();
-    if (!items.length) { box.innerHTML = `<div class="ag-empty">Aucun événement aujourd'hui — belle page blanche ✨</div>`; return; }
+    if (!items.length) { box.innerHTML = `<div class="ag-empty">Aucun événement aujourd'hui - belle page blanche ✨</div>`; return; }
     box.innerHTML = items.map((ev) =>
       `<div class="ag-ev"><span class="ag-ev-t">${escapeHtml(fmtTime(ev))}</span>` +
       `<span class="ag-ev-n">${escapeHtml(ev.summary || '(sans titre)')}</span></div>`).join('');

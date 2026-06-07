@@ -1,4 +1,4 @@
-// /js/tree-model.js — Arbre de vie procédural CYL.
+// /js/tree-model.js - Arbre de vie procédural CYL.
 // Modèle de données + génération de géométrie + animation de croissance.
 // AUCUN import : reçoit THREE en paramètre → réutilisable (landing ET app).
 //
@@ -155,7 +155,7 @@ function makeEarthTexture(THREE) {
 
 /**
  * Construit l'arbre. Renvoie { group, nodes, grow }.
- *   grow(age) — age ∈ [0,1] : anime la pousse, sapling → centenaire.
+ *   grow(age) - age ∈ [0,1] : anime la pousse, sapling → centenaire.
  */
 export function buildTree(THREE, model, opts) {
   const root = new THREE.Group();
@@ -170,7 +170,7 @@ export function buildTree(THREE, model, opts) {
 
   // Tronc en chêne clair plutôt qu'en chocolat sombre : se voit nettement sur
   // fond marine #060e1a, et la grille ESP blanche par-dessus ne « grille » plus
-  // le tronc par contraste — on lit enfin l'arbre comme un arbre.
+  // le tronc par contraste - on lit enfin l'arbre comme un arbre.
   const barkActive = new THREE.MeshStandardMaterial({ color: 0xa67c52, roughness: 0.7, metalness: 0.05 });
   const barkDormant = new THREE.MeshStandardMaterial({ color: 0x5d6677, roughness: 0.95 });
   const barkBroken = new THREE.MeshStandardMaterial({ color: 0x8a3c3c, roughness: 0.85 });
@@ -215,7 +215,7 @@ export function buildTree(THREE, model, opts) {
     return core;
   }
   // dépose des feuilles (monde) autour d'un point, écloses à `birth`
-  // Teintées vers le vert (55%) pour qu'on lise un feuillage d'arbre — sans
+  // Teintées vers le vert (55%) pour qu'on lise un feuillage d'arbre - sans
   // perdre l'identité couleur de la branche (qui reste discernable).
   const _e = new THREE.Euler();
   const _foliageGreen = new THREE.Color(0x4a7a3a);
@@ -373,7 +373,7 @@ export function buildTree(THREE, model, opts) {
   if (!floating) root.add(grassMesh);
 
   // Fonction exposée : ajoute n brins d'herbe live (chaque récompense en
-  // pousse quelques-uns). On crée un petit InstancedMesh par appel — c'est
+  // pousse quelques-uns). On crée un petit InstancedMesh par appel - c'est
   // léger pour le GPU et ça évite de re-créer le mesh global.
   function addGrassBlades(n) {
     if (floating) return null;   // pas d'herbe quand l'arbre flotte dans l'espace
@@ -413,7 +413,7 @@ export function buildTree(THREE, model, opts) {
   // quand l'utilisateur dézoome : « tu es minuscule sur une petite planète,
   // remets-toi en perspective ». Coût quasi nul (Points + sphères basiques).
 
-  // Champ d'étoiles — 2200 points sur une coquille lointaine
+  // Champ d'étoiles - 2200 points sur une coquille lointaine
   const STAR_COUNT = 2200;
   const starPos = new Float32Array(STAR_COUNT * 3);
   const starCol = new Float32Array(STAR_COUNT * 3);
@@ -452,13 +452,13 @@ export function buildTree(THREE, model, opts) {
     });
   }
 
-  // Ciel — vraie Voie lactée en fond (sphère inversée géante). Invisible tant
+  // Ciel - vraie Voie lactée en fond (sphère inversée géante). Invisible tant
   // que la texture n'est pas chargée → on garde les points d'étoiles sinon.
   const skyMat = new THREE.MeshBasicMaterial({ side: THREE.BackSide, depthWrite: false, transparent: true, opacity: 0 });
   applyTexture(skyMat, '/textures/stars-milky-way.jpg', 'sky');
   root.add(new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 32), skyMat));
 
-  // Soleil — loin et haut dans l'espace (hors de la Terre), halos + lumière warm
+  // Soleil - loin et haut dans l'espace (hors de la Terre), halos + lumière warm
   const sunGroup = new THREE.Group();
   sunGroup.position.set(-2400, 1500, -2800);
   root.add(sunGroup);
@@ -498,7 +498,7 @@ export function buildTree(THREE, model, opts) {
     mesh.userData = { dist: p.dist, speed: p.speed, tilt: p.tilt, angle: ang };
     mesh.position.set(Math.cos(ang) * p.dist, p.tilt * p.dist, Math.sin(ang) * p.dist);
     sunGroup.add(mesh);
-    // ESP : anneau d'orbite — relie visuellement la planète au soleil
+    // ESP : anneau d'orbite - relie visuellement la planète au soleil
     // (lit comme un schéma de système solaire).
     const orbit = new THREE.Mesh(
       new THREE.RingGeometry(p.dist - 1.6, p.dist + 1.6, 128),
@@ -565,7 +565,7 @@ export function buildTree(THREE, model, opts) {
     sunGroup.add(orbitE);
   } else {
     // Mode flottant : la Terre est une planète à part entière qui orbite le
-    // Soleil, parmi les autres — l'arbre flotte ailleurs, dans l'espace.
+    // Soleil, parmi les autres - l'arbre flotte ailleurs, dans l'espace.
     const ER = 17;
     const eMat = new THREE.MeshStandardMaterial({ color: 0x24405e, roughness: 1, metalness: 0 });
     new THREE.TextureLoader().load(
@@ -691,7 +691,7 @@ export function buildTree(THREE, model, opts) {
     nodes.push(node);
 
     // Canopée : feuillage vert épais autour de l'extrémité de chaque branche
-    // active — c'est ce qui fait qu'on lit un arbre et non un schéma.
+    // active - c'est ce qui fait qu'on lit un arbre et non un schéma.
     if (b.state === 'active') {
       const folGroup = new THREE.Group();
       folGroup.position.copy(tipLocal);
@@ -795,7 +795,7 @@ export function buildTree(THREE, model, opts) {
     root.add(leafMesh);
   }
 
-  // ── grow(age) — applique l'état de croissance ────────────────────────────
+  // ── grow(age) - applique l'état de croissance ────────────────────────────
   const _m = new THREE.Matrix4(), _ts = new THREE.Vector3();
   function grow(age) {
     for (const g of growables) {

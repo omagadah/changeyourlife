@@ -1,4 +1,4 @@
-// /autoevaluation/ — Roue de Vie 4 axes, quiz + radar + historique.
+// /autoevaluation/ - Roue de Vie 4 axes, quiz + radar + historique.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -192,16 +192,16 @@ function showResults(){
     insightsHtml=`
       <div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);">
         <h4><span style="color:#60aeff">⚖️ Équilibre parfait</span></h4>
-        <p>Tous tes domaines sont au même niveau (${scores[low.key]}/10). C'est rare — choisis le domaine qui te tient le plus à cœur pour commencer à progresser.</p>
+        <p>Tous tes domaines sont au même niveau (${scores[low.key]}/10). C'est rare - choisis le domaine qui te tient le plus à cœur pour commencer à progresser.</p>
       </div>`;
   } else {
     insightsHtml=`
       <div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
-        <h4><span style="color:${low.color}">${low.emoji} Priorité — ${low.label}</span></h4>
+        <h4><span style="color:${low.color}">${low.emoji} Priorité - ${low.label}</span></h4>
         <p>Score <strong>${scores[low.key]}/10</strong>. C'est le domaine qui mérite le plus ton attention. Fixe un objectif concret cette semaine.</p>
       </div>
       <div class="insight" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);margin-top:10px;">
-        <h4><span style="color:#34d399">${high.emoji} Point fort — ${high.label}</span></h4>
+        <h4><span style="color:#34d399">${high.emoji} Point fort - ${high.label}</span></h4>
         <p>Score <strong>${scores[high.key]}/10</strong>. C'est ta base solide. Utilise cette énergie pour faire progresser les autres domaines.</p>
       </div>`;
   }
@@ -239,8 +239,8 @@ function showResults(){
 window.showHistDetail=(i)=>{
   const d=window._histDocs?.[i];if(!d)return;
   const scores=d.scores||{};
-  const global=d.globalScore??'—';
-  const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  const global=d.globalScore??'-';
+  const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'-';
 
   document.getElementById('detail-title').textContent='Évaluation du '+date;
   show('s-hist-detail');
@@ -251,7 +251,7 @@ window.showHistDetail=(i)=>{
   const grid=document.getElementById('detail-grid');
   grid.innerHTML=`
     <div class="rcard wide">
-      <h3>🕸 Roue de Vie — ${date}</h3>
+      <h3>🕸 Roue de Vie - ${date}</h3>
       <div class="chart-box"><canvas id="radar-chart-detail"></canvas></div>
       <div class="global-score"><div class="global-num">${global}</div><div class="global-label">Score global / 10</div></div>
     </div>
@@ -277,7 +277,7 @@ window.showHistDetail=(i)=>{
       <div class="ds-dot" style="background:${dm.color}"></div>
       <div class="ds-name">${dm.label}</div>
       <div class="ds-bar-bg"><div class="ds-bar" style="width:${(scores[dm.key]??0)*10}%;background:${dm.color}"></div></div>
-      <div class="ds-val" style="color:${dm.color}">${scores[dm.key]??'—'}</div>
+      <div class="ds-val" style="color:${dm.color}">${scores[dm.key]??'-'}</div>
     </div>`).join('');
 
   const sorted=[...DOMAINS].sort((a,b)=>(scores[a.key]??0)-(scores[b.key]??0));
@@ -289,12 +289,12 @@ window.showHistDetail=(i)=>{
     : allSame
     ?`<div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);"><h4><span style="color:#60aeff">⚖️ Équilibre parfait</span></h4><p>Tous les domaines à ${scores[low.key]}/10.</p></div>`
     :`<div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
-        <h4><span style="color:${low.color}">${low.emoji} Priorité — ${low.label}</span></h4>
-        <p>Score <strong>${scores[low.key]}/10</strong> — domaine le plus à travailler.</p>
+        <h4><span style="color:${low.color}">${low.emoji} Priorité - ${low.label}</span></h4>
+        <p>Score <strong>${scores[low.key]}/10</strong> - domaine le plus à travailler.</p>
       </div>
       <div class="insight" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);margin-top:10px;">
-        <h4><span style="color:#34d399">${high.emoji} Point fort — ${high.label}</span></h4>
-        <p>Score <strong>${scores[high.key]}/10</strong> — ton meilleur domaine à cette date.</p>
+        <h4><span style="color:#34d399">${high.emoji} Point fort - ${high.label}</span></h4>
+        <p>Score <strong>${scores[high.key]}/10</strong> - ton meilleur domaine à cette date.</p>
       </div>`;
 };
 
@@ -317,7 +317,7 @@ async function loadHistory(){
     if(!currentUser){cont.innerHTML='<div class="empty"><div class="ei">🔒</div><p>Connecte-toi pour voir ton historique</p></div>';return;}
   }
   try{
-    // No orderBy to avoid composite index requirement — sort in JS
+    // No orderBy to avoid composite index requirement - sort in JS
     const q=query(collection(db,'assessments'),where('uid','==',currentUser.uid));
     const snap=await getDocs(q);
     if(snap.empty){cont.innerHTML='<div class="empty"><div class="ei">📊</div><p>Aucune évaluation encore.<br>Lance ta première !</p></div>';return;}
@@ -332,12 +332,12 @@ async function loadHistory(){
 
     cont.innerHTML=docs.map((doc,i)=>{
       const d=doc.data();
-      const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
-      const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'—'}</div>`).join('');
+      const date=d.createdAt?.toDate?d.createdAt.toDate().toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'-';
+      const chips=DOMAINS.map(dm=>`<div class="hchip"><div class="hchip-dot" style="background:${dm.color}"></div>${dm.emoji} ${d.scores?.[dm.key]??'-'}</div>`).join('');
       return `<div class="hist-item" data-hist-idx="${i}" title="Voir le détail">
         <div class="hist-date">${date}</div>
         <div class="hist-chips">${chips}</div>
-        <div class="hist-global">${d.globalScore??'—'}/10</div>
+        <div class="hist-global">${d.globalScore??'-'}/10</div>
         <div style="color:var(--muted);font-size:0.8rem;flex-shrink:0;">→</div>
       </div>`;
     }).join('');
@@ -348,7 +348,7 @@ async function loadHistory(){
 }
 
 // ── Event listeners (remplacent les onclick/onmouseover inline pour CSP stricte) ──
-// Boutons statiques avec data-action — délégation sur le document pour gérer aussi les boutons injectés (insight refaire honnêtement)
+// Boutons statiques avec data-action - délégation sur le document pour gérer aussi les boutons injectés (insight refaire honnêtement)
 document.addEventListener('click', (e) => {
   const target = e.target.closest('[data-action]');
   if (!target) return;
@@ -362,7 +362,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Hist list — délégation pour showHistDetail (items injectés via innerHTML)
+// Hist list - délégation pour showHistDetail (items injectés via innerHTML)
 const histList = document.getElementById('hist-list');
 if (histList) {
   histList.addEventListener('click', (e) => {
@@ -373,7 +373,7 @@ if (histList) {
   });
 }
 
-// Hover shadow effect (remplace onmouseover/onmouseout sur le CTA injecté) — délégation sur action-bridge
+// Hover shadow effect (remplace onmouseover/onmouseout sur le CTA injecté) - délégation sur action-bridge
 const actionBridge = document.getElementById('action-bridge');
 if (actionBridge) {
   actionBridge.addEventListener('mouseover', (e) => {

@@ -1,4 +1,4 @@
-// /codex/ — base de connaissances + notes user.
+// /codex/ - base de connaissances + notes user.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -38,7 +38,7 @@ const BUILT_IN=[
   // CORPS
   {id:'b1',cat:'corps',emoji:'😴',title:'Hygiène du sommeil',tagline:'La qualité de ton sommeil détermine 80% de ta performance.',
   summary:'Le sommeil est le levier n°1 de la récupération physique et mentale. 7 à 9 heures par nuit, avec une heure de coucher régulière.',
-  body:`<h4>Principes clés</h4><ul><li>Couche-toi et lève-toi à la même heure chaque jour (même le week-end)</li><li>Évite les écrans 60 min avant de dormir (lumière bleue bloque la mélatonine)</li><li>Chambre fraîche (16-19°C) et entièrement sombre</li><li>Pas de caféine après 14h</li><li>Exposition à la lumière naturelle dès le matin</li></ul><h4>Protocole simple</h4><ul><li>21h30 : baisse les lumières, coupe les notifications</li><li>22h00 : lecture, stretching ou méditation</li><li>22h30 : extinction des lumières</li></ul><blockquote>"Le sommeil n'est pas une perte de temps, c'est la charge de ta batterie." — Matthew Walker</blockquote>`,
+  body:`<h4>Principes clés</h4><ul><li>Couche-toi et lève-toi à la même heure chaque jour (même le week-end)</li><li>Évite les écrans 60 min avant de dormir (lumière bleue bloque la mélatonine)</li><li>Chambre fraîche (16-19°C) et entièrement sombre</li><li>Pas de caféine après 14h</li><li>Exposition à la lumière naturelle dès le matin</li></ul><h4>Protocole simple</h4><ul><li>21h30 : baisse les lumières, coupe les notifications</li><li>22h00 : lecture, stretching ou méditation</li><li>22h30 : extinction des lumières</li></ul><blockquote>"Le sommeil n'est pas une perte de temps, c'est la charge de ta batterie." - Matthew Walker</blockquote>`,
   tags:['sommeil','récupération','énergie','routine']},
 
   {id:'b2',cat:'corps',emoji:'🏃',title:'Entraînement par zone 2',tagline:'La base de la forme physique durable.',
@@ -54,7 +54,7 @@ const BUILT_IN=[
   // CŒUR
   {id:'b4',cat:'coeur',emoji:'🧠',title:'Régulation émotionnelle',tagline:'Tes émotions sont des données, pas des ordres.',
   summary:'Apprendre à identifier et réguler ses émotions est la compétence de vie la plus sous-estimée. Elle se travaille comme un muscle.',
-  body:`<h4>Le modèle STOP</h4><ul><li><strong>S</strong>top : pause volontaire dans la réaction</li><li><strong>T</strong>hink : qu'est-ce que je ressens vraiment ?</li><li><strong>O</strong>bserve : d'où vient cette émotion ?</li><li><strong>P</strong>roceed : quelle est la réponse utile ?</li></ul><h4>Techniques de régulation</h4><ul><li><strong>Respiration 4-7-8</strong> : inspire 4s, retiens 7s, expire 8s (active le parasympathique)</li><li><strong>Labeling</strong> : nommer précisément l'émotion réduit son intensité de 50%</li><li><strong>Journaling</strong> : écrire 10 min libère l'anxiété</li></ul><blockquote>"Entre le stimulus et la réponse, il y a un espace. Dans cet espace réside notre liberté." — Viktor Frankl</blockquote>`,
+  body:`<h4>Le modèle STOP</h4><ul><li><strong>S</strong>top : pause volontaire dans la réaction</li><li><strong>T</strong>hink : qu'est-ce que je ressens vraiment ?</li><li><strong>O</strong>bserve : d'où vient cette émotion ?</li><li><strong>P</strong>roceed : quelle est la réponse utile ?</li></ul><h4>Techniques de régulation</h4><ul><li><strong>Respiration 4-7-8</strong> : inspire 4s, retiens 7s, expire 8s (active le parasympathique)</li><li><strong>Labeling</strong> : nommer précisément l'émotion réduit son intensité de 50%</li><li><strong>Journaling</strong> : écrire 10 min libère l'anxiété</li></ul><blockquote>"Entre le stimulus et la réponse, il y a un espace. Dans cet espace réside notre liberté." - Viktor Frankl</blockquote>`,
   tags:['émotions','mindset','stress','intelligence émotionnelle']},
 
   {id:'b5',cat:'coeur',emoji:'💬',title:'Communication non-violente (CNV)',tagline:'Exprimer ses besoins sans blesser ni se taire.',
@@ -68,19 +68,19 @@ const BUILT_IN=[
   tags:['relations','psychologie','attachement','couple']},
 
   // ÊTRE
-  {id:'b7',cat:'etre',emoji:'🧭',title:'Ikigai — Raison d\'être',tagline:'Trouver l\'intersection de ce que tu aimes, sais faire, peux monétiser et dont le monde a besoin.',
+  {id:'b7',cat:'etre',emoji:'🧭',title:'Ikigai - Raison d\'être',tagline:'Trouver l\'intersection de ce que tu aimes, sais faire, peux monétiser et dont le monde a besoin.',
   summary:'L\'Ikigai est un concept japonais pour trouver son sens profond. Il se situe à l\'intersection de 4 cercles.',
   body:`<h4>Les 4 cercles</h4><ul><li>Ce que tu <strong>aimes</strong> (passion)</li><li>Ce en quoi tu es <strong>bon(ne)</strong> (talent)</li><li>Ce dont le <strong>monde a besoin</strong> (mission)</li><li>Ce pour quoi tu peux être <strong>payé(e)</strong> (vocation)</li></ul><h4>Comment le trouver</h4><ul><li>Fais la liste de 20 activités qui te font perdre la notion du temps</li><li>Quels problèmes du monde t'indignent ou t'inspirent ?</li><li>Quels compliments reçois-tu régulièrement sans effort de ta part ?</li><li>L'intersection des réponses = ton Ikigai</li></ul><blockquote>"Un ikigai ne se trouve pas, il se construit dans l'action."</blockquote>`,
   tags:['sens','purpose','identité','carrière']},
 
-  {id:'b8',cat:'etre',emoji:'🪞',title:'Modèle de croissance — Growth Mindset',tagline:'L\'intelligence n\'est pas fixe, elle se développe.',
+  {id:'b8',cat:'etre',emoji:'🪞',title:'Modèle de croissance - Growth Mindset',tagline:'L\'intelligence n\'est pas fixe, elle se développe.',
   summary:'Carol Dweck a montré que croire que ses capacités sont modifiables (growth mindset) change radicalement les résultats à long terme.',
   body:`<h4>Fixed vs Growth</h4><ul><li><strong>Fixed</strong> : "Je suis nul en maths" → évite les défis, peur de l'échec</li><li><strong>Growth</strong> : "Je ne suis pas encore bon en maths" → cherche les défis, apprend de l'échec</li></ul><h4>Comment cultiver le Growth Mindset</h4><ul><li>Ajoute "encore" à chaque phrase limitative ("Je n'arrive pas encore à…")</li><li>Celebrate l'effort, pas le résultat</li><li>Vois les critiques comme un GPS, pas une attaque</li><li>Entoure-toi de personnes qui te challengent</li></ul>`,
   tags:['mindset','croissance','apprentissage','résilience']},
 
   {id:'b9',cat:'etre',emoji:'🧘',title:'Pleine conscience (Mindfulness)',tagline:'Être présent, pas parfait.',
   summary:'La pleine conscience est la capacité à observer ses pensées et émotions sans s\'y identifier. Pratique scientifiquement validée contre l\'anxiété et le stress.',
-  body:`<h4>Les bases</h4><ul><li>Observer sans juger : les pensées sont des nuages, pas toi</li><li>Revenir au présent via les sens (respiration, corps, sons)</li><li>Pratiquer 10 min/jour = changements cérébraux mesurables en 8 semaines (MBSR)</li></ul><h4>Exercice de base — Scan corporel</h4><ul><li>Assieds-toi, ferme les yeux, respire naturellement</li><li>Dirige ton attention des pieds vers la tête</li><li>Note les sensations sans les analyser</li><li>Si une pensée arrive, observe-la et reviens au corps</li></ul><blockquote>"Tu ne peux pas arrêter les vagues, mais tu peux apprendre à surfer." — Jon Kabat-Zinn</blockquote>`,
+  body:`<h4>Les bases</h4><ul><li>Observer sans juger : les pensées sont des nuages, pas toi</li><li>Revenir au présent via les sens (respiration, corps, sons)</li><li>Pratiquer 10 min/jour = changements cérébraux mesurables en 8 semaines (MBSR)</li></ul><h4>Exercice de base - Scan corporel</h4><ul><li>Assieds-toi, ferme les yeux, respire naturellement</li><li>Dirige ton attention des pieds vers la tête</li><li>Note les sensations sans les analyser</li><li>Si une pensée arrive, observe-la et reviens au corps</li></ul><blockquote>"Tu ne peux pas arrêter les vagues, mais tu peux apprendre à surfer." - Jon Kabat-Zinn</blockquote>`,
   tags:['méditation','présence','stress','bien-être']},
 
   // ORDRE
@@ -96,7 +96,7 @@ const BUILT_IN=[
 
   {id:'b12',cat:'ordre',emoji:'💰',title:'Règle des 50/30/20',tagline:'La base de toute liberté financière.',
   summary:'Budgétisation simple et universelle : 50% besoins, 30% envies, 20% épargne/investissement.',
-  body:`<h4>La répartition</h4><ul><li><strong>50% — Besoins</strong> : loyer, nourriture, transport, assurances</li><li><strong>30% — Envies</strong> : restaurants, sorties, abonnements, voyage</li><li><strong>20% — Épargne</strong> : fonds d'urgence (3-6 mois de dépenses), investissement, remboursement dettes</li></ul><h4>Ordre de priorité pour l'épargne</h4><ul><li>D'abord : fonds d'urgence (3 mois de dépenses)</li><li>Ensuite : rembourser les dettes à taux élevé (>5%)</li><li>Puis : investissements long terme (index funds, immobilier)</li></ul><blockquote>"Ce n'est pas votre revenu qui vous rend riche, c'est vos habitudes." — Robert Kiyosaki</blockquote>`,
+  body:`<h4>La répartition</h4><ul><li><strong>50% - Besoins</strong> : loyer, nourriture, transport, assurances</li><li><strong>30% - Envies</strong> : restaurants, sorties, abonnements, voyage</li><li><strong>20% - Épargne</strong> : fonds d'urgence (3-6 mois de dépenses), investissement, remboursement dettes</li></ul><h4>Ordre de priorité pour l'épargne</h4><ul><li>D'abord : fonds d'urgence (3 mois de dépenses)</li><li>Ensuite : rembourser les dettes à taux élevé (>5%)</li><li>Puis : investissements long terme (index funds, immobilier)</li></ul><blockquote>"Ce n'est pas votre revenu qui vous rend riche, c'est vos habitudes." - Robert Kiyosaki</blockquote>`,
   tags:['finances','épargne','budget','liberté']},
 
   {id:'b13',cat:'ordre',emoji:'📦',title:'Méthode GTD (Getting Things Done)',tagline:'Vider son esprit pour mieux penser.',
@@ -295,7 +295,7 @@ document.querySelectorAll('[data-action="save-note"]').forEach(el => {
   el.addEventListener('click', () => window.saveNote());
 });
 
-// Cards container — event delegation pour openConcept (cards générées dynamiquement)
+// Cards container - event delegation pour openConcept (cards générées dynamiquement)
 const cardsContainer = document.getElementById('cards-container');
 if (cardsContainer) {
   cardsContainer.addEventListener('click', (e) => {

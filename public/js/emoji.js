@@ -1,4 +1,4 @@
-// /js/emoji.js — Remplace les emojis système (« cheap », surtout sous Windows)
+// /js/emoji.js - Remplace les emojis système (« cheap », surtout sous Windows)
 // par Twemoji : des emojis SVG propres, cohérents et identiques partout.
 // Open source (Twitter/jdecked, CC-BY 4.0). Chargé via /js/emoji.js sur les pages.
 (function () {

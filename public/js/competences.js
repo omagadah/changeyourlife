@@ -1,4 +1,4 @@
-// /js/competences.js — Module « Mes compétences ».
+// /js/competences.js - Module « Mes compétences ».
 // Des savoir-faire qui montent de niveau avec le temps (pratiques, tâches).
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -104,7 +104,7 @@ async function practice(id) {
   render();
   const res = await awardSkillXp(db, uid, id, PRACTICE_SKILL_XP);
   try { const fn = window._cyfFirebase && window._cyfFirebase.awardXp; if (fn) await fn(s.branch || 'accomplissement', PRACTICE_BRANCH_XP); } catch (e) {}
-  if (res && res.leveledUp) toast(`🎉 ${s.name} — niveau ${res.level} !`, 'up');
+  if (res && res.leveledUp) toast(`🎉 ${s.name} - niveau ${res.level} !`, 'up');
   else toast(`+${PRACTICE_SKILL_XP} ${s.name}`, 'xp');
 }
 
@@ -120,7 +120,7 @@ function render() {
   if (!ids.length) {
     host.innerHTML =
       `<div class="empty"><div class="ic">🌱</div>` +
-      `<div>Aucune compétence pour l'instant. Ajoute celles qui comptent pour toi — elles grandiront à chaque pratique.</div>` +
+      `<div>Aucune compétence pour l'instant. Ajoute celles qui comptent pour toi - elles grandiront à chaque pratique.</div>` +
       `<div class="suggest">${SUGGEST.map((s, i) => `<button class="sug-chip" data-i="${i}">${s.emoji} ${s.name}</button>`).join('')}</div></div>`;
     host.querySelectorAll('.sug-chip').forEach((c) => { c.onclick = () => addSkill(SUGGEST[Number(c.dataset.i)]); });
     return;

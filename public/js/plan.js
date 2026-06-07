@@ -1,4 +1,4 @@
-// /js/plan.js — Module « Aujourd'hui » : poste de pilotage quotidien.
+// /js/plan.js - Module « Aujourd'hui » : poste de pilotage quotidien.
 // Rythme de vie + besoins essentiels (garde-fous) + tâches du jour.
 // Chaque action validée → awardXp(branche) → l'arbre pousse.
 
@@ -80,7 +80,7 @@ onAuthStateChanged(auth, async (user) => {
   renderVitals();
   initTasks();
   renderTasks();
-  updateLya();
+  updateSyl();
 });
 
 async function loadPlan() {
@@ -138,7 +138,7 @@ async function saveRhythm() {
     savedDate: today,
   };
   await savePlan();
-  updateLya();
+  updateSyl();
   if (!already) { await award('physio', RHYTHM_XP, 'Rythme du jour'); }
   else { toast('Rythme mis à jour'); }
 }
@@ -166,7 +166,7 @@ async function toggleVital(v) {
   plan.vitals.date = todayStr();
   renderVitals();
   await savePlan();
-  updateLya();
+  updateSyl();
   if (!wasDone) await award('physio', VITAL_XP, v.label); // XP seulement à la validation
 }
 
@@ -177,7 +177,7 @@ function initTasks() {
   const skSel = document.getElementById('task-skill');
   if (skSel) {
     const ids = Object.keys(userSkills);
-    skSel.innerHTML = '<option value="">— compétence (option) —</option>' +
+    skSel.innerHTML = '<option value="">- compétence (option) -</option>' +
       ids.map((id) => `<option value="${id}">${escapeHtml((userSkills[id].emoji || '') + ' ' + (userSkills[id].name || id))}</option>`).join('');
   }
   const btn = document.getElementById('btn-add-task');
@@ -208,7 +208,7 @@ async function toggleTask(id) {
     await award(t.branch, TASK_XP, BRANCH_BY_KEY[t.branch] ? BRANCH_BY_KEY[t.branch].label : 'Tâche');
     if (t.skillId && userSkills[t.skillId]) {
       const res = await awardSkillXp(db, uid, t.skillId, 25);
-      if (res && res.leveledUp) toast(`🎉 ${userSkills[t.skillId].name} — niveau ${res.level} !`, true);
+      if (res && res.leveledUp) toast(`🎉 ${userSkills[t.skillId].name} - niveau ${res.level} !`, true);
     }
   }
 }
@@ -246,8 +246,8 @@ function renderTasks() {
   });
 }
 
-// ── Lya — message contextuel selon le rythme et la base vitale ──────────────
-function updateLya() {
+// ── Syl - message contextuel selon le rythme et la base vitale ──────────────
+function updateSyl() {
   const el = document.getElementById('lya-line');
   if (!el) return;
   const r = plan.rhythm || {};
@@ -256,7 +256,7 @@ function updateLya() {
   const vitalsDone = VITALS.filter((v) => plan.vitals[v.key]).length;
   let msg;
   if (sleep && sleep < 6) {
-    msg = `Tu n'as dormi que ${sleep} h. Aujourd'hui, priorité au repos — on garde une journée légère, 1 ou 2 tâches suffisent.`;
+    msg = `Tu n'as dormi que ${sleep} h. Aujourd'hui, priorité au repos - on garde une journée légère, 1 ou 2 tâches suffisent.`;
   } else if (en && en <= 2) {
     msg = `Énergie basse aujourd'hui. Choisis l'essentiel et avance pas à pas, sans te surcharger.`;
   } else if (vitalsDone < 2) {
@@ -264,7 +264,7 @@ function updateLya() {
   } else if (r.focus) {
     msg = `Belle énergie. Garde le cap sur ton focus : « ${escapeHtml(r.focus)} ».`;
   } else if (r.savedDate) {
-    msg = `Ton rythme est calé. Ajoute tes tâches du jour, et coche-les au fur et à mesure — l'arbre grandira.`;
+    msg = `Ton rythme est calé. Ajoute tes tâches du jour, et coche-les au fur et à mesure - l'arbre grandira.`;
   } else {
     msg = `Bonjour. Commençons par caler ton rythme du jour.`;
   }

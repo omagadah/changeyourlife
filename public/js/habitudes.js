@@ -1,4 +1,4 @@
-// /js/habitudes.js — externalisé depuis habitudes/index.html
+// /js/habitudes.js - externalisé depuis habitudes/index.html
 
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -78,7 +78,7 @@
 
       let html = `<div class="daily-progress-wrap">
         <div class="dp-row">
-          <span class="dp-title">Aujourd'hui — ${doneCount}/${totalCount} complétées</span>
+          <span class="dp-title">Aujourd'hui - ${doneCount}/${totalCount} complétées</span>
           <span class="dp-count">${pct}%</span>
         </div>
         <div class="dp-bar-bg"><div class="dp-bar" style="width:${pct}%"></div></div>

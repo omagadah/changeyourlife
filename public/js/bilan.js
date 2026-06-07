@@ -1,4 +1,4 @@
-// /bilan/ — récap hebdomadaire (XP, journal, méditation, habitudes, réflexion).
+// /bilan/ - récap hebdomadaire (XP, journal, méditation, habitudes, réflexion).
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { auth, db } from '/js/firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -117,7 +117,7 @@ async function renderWeek() {
   await renderStats(monday, sunday);
 }
 
-// ── Activity grid (7 cells = Mon–Sun) ──
+// ── Activity grid (7 cells = Mon-Sun) ──
 function renderActivityGrid(monday) {
   const grid = document.getElementById('activity-grid');
   const labels = document.getElementById('activity-day-labels');
@@ -194,7 +194,7 @@ async function renderStats(monday, sunday) {
     });
   } catch(e) {}
 
-  // XP this week — estimate from journal*10 + habits*5 + med*15 + moods*5
+  // XP this week - estimate from journal*10 + habits*5 + med*15 + moods*5
   const xpEstimate = journalCount * 10 + habitsDoneCount * 5 + medCount * 15 + moodEntries.length * 5;
 
   // Display stats

@@ -1,4 +1,4 @@
-// /journal/ — journal de bord, gestion des entrées + stats + filtres.
+// /journal/ - journal de bord, gestion des entrées + stats + filtres.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { updateGlobalAvatar } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
@@ -507,7 +507,7 @@ const DRAFT_KEY = 'cyf_journal_draft';
 function updateWC() {
   const wc = (document.getElementById('editor-content').value||'').trim().split(/\s+/).filter(Boolean).length;
   document.getElementById('wc-label').textContent = `${wc} mot${wc!==1?'s':''}`;
-  // Fill bar: 0–300 words = 0–100%
+  // Fill bar: 0-300 words = 0-100%
   const pct = Math.min(100, Math.round(wc / 3));
   document.getElementById('wc-bar').style.width = pct + '%';
 }

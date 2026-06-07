@@ -1,4 +1,4 @@
-// /js/organizer.js — ORGANIZER : board type Trello (matrice d'Eisenhower).
+// /js/organizer.js - ORGANIZER : board type Trello (matrice d'Eisenhower).
 // Colonnes + fiches déplaçables (drag & drop), échéances, étapes (checklist),
 // logs d'activité par fiche. Fiche → Terminé = XP sur la branche Accomplissement.
 // Données : users/{uid}.organizer.
@@ -21,10 +21,10 @@ const FINISH_ID = 'finish';
 const FINISH_XP = 50;
 const DEFAULT_COLUMNS = [
   { id: 'tri',    title: 'Idées à trier',                              color: '#8aa0bf' },
-  { id: 'ui',     title: 'Urgent · Important — à faire',               color: '#f87171' },
-  { id: 'ni',     title: 'Important, non urgent — à planifier',        color: '#38bdf8' },
-  { id: 'up',     title: 'Urgent, peu important — vite fait / déléguer',color: '#fbbf24' },
-  { id: 'nn',     title: 'Non urgent · non important — plus tard',     color: '#7e9ab5' },
+  { id: 'ui',     title: 'Urgent · Important - à faire',               color: '#f87171' },
+  { id: 'ni',     title: 'Important, non urgent - à planifier',        color: '#38bdf8' },
+  { id: 'up',     title: 'Urgent, peu important - vite fait / déléguer',color: '#fbbf24' },
+  { id: 'nn',     title: 'Non urgent · non important - plus tard',     color: '#7e9ab5' },
   { id: FINISH_ID, title: 'Terminé ✅',                                 color: '#4ade80' },
 ];
 
@@ -252,7 +252,7 @@ async function addToAgenda(card) {
   try {
     const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
       method: 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ summary: '🗂 ' + card.title, start: { date: d }, end: { date: dn }, description: 'ORGANIZER — ChangeYourLife.ai' }),
+      body: JSON.stringify({ summary: '🗂 ' + card.title, start: { date: d }, end: { date: dn }, description: 'ORGANIZER - ChangeYourLife.ai' }),
     });
     if (!r.ok) throw new Error('http');
     log(card, 'Ajoutée à Google Agenda'); save(); toast('Ajoutée à ton Agenda ✓');

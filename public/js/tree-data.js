@@ -1,4 +1,4 @@
-// /js/tree-data.js — Le socle : modèle de données de l'arbre de vie.
+// /js/tree-data.js - Le socle : modèle de données de l'arbre de vie.
 //
 // Schéma Firestore `users/{uid}.tree` + migration depuis le legacy `levels`
 // + dérivations (dev, vitalité, stade) + modèle visuel pour buildTree().
@@ -24,7 +24,7 @@ import { DIMENSIONS } from '/js/tree-model.js';
 export const TREE_SCHEMA_VERSION = 1;
 export const BRANCH_KEYS = DIMENSIONS.map((d) => d.key);
 
-// Modèle 4-axes legacy → 8 branches Maslow (au mieux — données pré-refonte)
+// Modèle 4-axes legacy → 8 branches Maslow (au mieux - données pré-refonte)
 export const LEGACY_DOMAIN_MAP = {
   body: 'physio', heart: 'appartenance', etre: 'cognitif', mind: 'cognitif', order: 'securite',
 };
@@ -112,7 +112,7 @@ export function stageOf(tree) {
   return 'centenaire';
 }
 
-// ── Application d'XP (pure — miroir exact de la Cloud Function addXp) ────────
+// ── Application d'XP (pure - miroir exact de la Cloud Function addXp) ────────
 export function applyXp(tree, branchKey, amount, now = Date.now()) {
   const key = BRANCH_KEYS.includes(branchKey) ? branchKey : LEGACY_DOMAIN_MAP[branchKey];
   if (!key) return normalizeTree(tree, now);

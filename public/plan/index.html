@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aujourd'hui - Change Your Life</title>
-  <meta name="description" content="Ton poste de pilotage quotidien : ton rythme de vie, tes besoins essentiels et tes tâches du jour — chaque action validée fait grandir ton arbre." />
+  <meta name="description" content="Ton poste de pilotage quotidien : ton rythme de vie, tes besoins essentiels et tes tâches du jour - chaque action validée fait grandir ton arbre." />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -32,7 +32,7 @@
     .sec-line { flex:1; height:1px; background:rgba(255,255,255,0.06); }
     .card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:18px 20px; }
 
-    /* ── Lya bandeau ── */
+    /* ── Syl bandeau ── */
     .lya-bar { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:16px;
       background:linear-gradient(135deg,rgba(99,102,241,0.14),rgba(45,212,191,0.06)); border:1px solid rgba(99,102,241,0.22); }
     .lya-orb { width:42px; height:42px; flex-shrink:0; border-radius:50%;
@@ -125,17 +125,17 @@
     <div class="header-bar">
       <div>
         <h1>🌅 Aujourd'hui</h1>
-        <div class="header-sub">Ton poste de pilotage — à ton rythme</div>
+        <div class="header-sub">Ton poste de pilotage - à ton rythme</div>
         <div class="header-date" id="header-date"></div>
       </div>
     </div>
 
     <div class="content-area">
-      <!-- Lya -->
+      <!-- Syl -->
       <div class="lya-bar">
         <div class="lya-orb" aria-hidden="true"></div>
         <div class="lya-txt">
-          <div class="lya-name">Lya</div>
+          <div class="lya-name">Syl</div>
           <div class="lya-line" id="lya-line">Bonjour. Commençons par caler ton rythme du jour.</div>
         </div>
       </div>
@@ -152,7 +152,7 @@
             <div>
               <label class="rf-label" for="r-sleep">Sommeil (h)</label>
               <select class="rf-select" id="r-sleep">
-                <option value="">—</option>
+                <option value="">-</option>
                 <option>4</option><option>5</option><option>6</option><option>7</option>
                 <option>8</option><option>9</option><option>10</option>
               </select>
@@ -170,7 +170,7 @@
             <div>
               <label class="rf-label" for="r-time">Temps disponible</label>
               <select class="rf-select" id="r-time">
-                <option value="">—</option>
+                <option value="">-</option>
                 <option value="1">Moins d'1 h</option>
                 <option value="3">1 à 3 h</option>
                 <option value="6">3 à 6 h</option>
@@ -190,7 +190,7 @@
 
       <!-- Base vitale -->
       <section>
-        <div class="sec-head"><span class="sec-title">Tes besoins essentiels — la base</span><span class="sec-line"></span></div>
+        <div class="sec-head"><span class="sec-title">Tes besoins essentiels - la base</span><span class="sec-line"></span></div>
         <div class="vitals-grid" id="vitals-grid"></div>
       </section>
 
@@ -199,7 +199,7 @@
         <div class="sec-head"><span class="sec-title">Tes tâches du jour</span><span class="sec-line"></span></div>
         <div class="card">
           <div class="tasks-head">
-            <span class="tasks-progress" id="tasks-progress">—</span>
+            <span class="tasks-progress" id="tasks-progress">-</span>
           </div>
           <div class="task-list" id="task-list"></div>
           <div class="add-task-row">

@@ -1,4 +1,4 @@
-// public/js/inscription.js — v17
+// public/js/inscription.js - v17
 // Gestion de l'authentification : connexion / inscription / vérification email
 
 import {
@@ -16,7 +16,7 @@ const { app, auth } = window._cyfFirebase;
 // ─── Auth guard ───────────────────────────────────────────────────────────────
 // Sur /login on redirige tout utilisateur déjà connecté. Sur les autres pages
 // (ex. l'accueil, où le formulaire vit dans un modal), on ne redirige QUE suite à
-// une connexion interactive — un visiteur déjà connecté peut rester sur la vitrine.
+// une connexion interactive - un visiteur déjà connecté peut rester sur la vitrine.
 const ON_LOGIN_PAGE = location.pathname.replace(/\/+$/, '').endsWith('/login')
   || location.pathname.replace(/\/+$/, '') === '/login';
 window._cyfInteractiveAuth = false;
@@ -202,7 +202,7 @@ if (form) {
     try {
       if (!isRegister) {
         await signInWithEmailAndPassword(auth, email, password);
-        showNotification('Connexion réussie — redirection…');
+        showNotification('Connexion réussie - redirection…');
         // onAuthStateChanged handles redirect
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -237,11 +237,11 @@ if (googleBtn) {
     window._cyfInteractiveAuth = true;
     try {
       await signInWithPopup(auth, provider);
-      showNotification('Connexion Google réussie — redirection…');
+      showNotification('Connexion Google réussie - redirection…');
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/unauthorized-domain') {
-        showError('Domaine non autorisé — vérifie les Authorized domains dans Firebase Console');
+        showError('Domaine non autorisé - vérifie les Authorized domains dans Firebase Console');
         return;
       }
       if (['auth/operation-not-supported-in-this-environment','auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(code)) {
@@ -250,7 +250,7 @@ if (googleBtn) {
       }
       console.error('[Google signin] code:', err?.code, 'message:', err?.message, err);
       if (err?.code === 'auth/internal-error') {
-        showError('Erreur OAuth Google — vérifiez que les popups ne sont pas bloquées par votre navigateur ou VPN');
+        showError('Erreur OAuth Google - vérifiez que les popups ne sont pas bloquées par votre navigateur ou VPN');
       } else {
         showError(err.message || 'Erreur lors de la connexion Google');
       }
@@ -267,12 +267,12 @@ if (githubBtn) {
     window._cyfInteractiveAuth = true;
     try {
       await signInWithPopup(auth, provider);
-      showNotification('Connexion GitHub réussie — redirection…');
+      showNotification('Connexion GitHub réussie - redirection…');
     } catch (err) {
       const code = err?.code || '';
       console.error('[GitHub signin] code:', code, 'message:', err?.message, err);
       if (code === 'auth/unauthorized-domain') {
-        showError('Domaine non autorisé — vérifie les Authorized domains dans Firebase Console');
+        showError('Domaine non autorisé - vérifie les Authorized domains dans Firebase Console');
         return;
       }
       if (['auth/operation-not-supported-in-this-environment','auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(code)) {
@@ -280,7 +280,7 @@ if (githubBtn) {
         return;
       }
       if (code === 'auth/internal-error') {
-        showError('Erreur OAuth GitHub — vérifiez que les popups ne sont pas bloquées par votre navigateur ou VPN');
+        showError('Erreur OAuth GitHub - vérifiez que les popups ne sont pas bloquées par votre navigateur ou VPN');
       } else {
         showError(err.message || 'Erreur lors de la connexion GitHub');
       }
@@ -357,12 +357,12 @@ if (authToggleLink) {
   try {
     const result = await getRedirectResult(auth);
     if (result && result.user) {
-      showNotification('Connexion réussie — redirection…');
+      showNotification('Connexion réussie - redirection…');
       // onAuthStateChanged will handle the redirect
     }
   } catch (err) {
     if (err?.code === 'auth/unauthorized-domain') {
-      showError('Domaine non autorisé pour OAuth — vérifie Firebase Console');
+      showError('Domaine non autorisé pour OAuth - vérifie Firebase Console');
     }
   }
 })();

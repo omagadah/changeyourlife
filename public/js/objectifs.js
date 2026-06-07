@@ -1,4 +1,4 @@
-// /objectifs/ — gestion d'objectifs avec sous-tâches + filtres + templates.
+// /objectifs/ - gestion d'objectifs avec sous-tâches + filtres + templates.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { updateGlobalAvatar } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';

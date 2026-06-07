@@ -1,5 +1,5 @@
 /**
- * XP utilities — floating +XP animation.
+ * XP utilities - floating +XP animation.
  * Usage: import { showXpFloat } from '/js/xp.js';
  */
 

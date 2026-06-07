@@ -1,16 +1,16 @@
-// /js/i18n.js — Internationalisation de l'accueil + sélecteur de langue.
+// /js/i18n.js - Internationalisation de l'accueil + sélecteur de langue.
 //
 // Principe : chaque texte traduisible porte un attribut data-i18n="clé"
 // (textContent), data-i18n-html="clé" (innerHTML, pour <br>/<strong>) ou
 // data-i18n-ph="clé" (placeholder). Au chargement et à chaque changement de
-// langue, on parcourt le DOM et on remplace. La 3D (Lya, stades) lit les
+// langue, on parcourt le DOM et on remplace. La 3D (Syl, stades) lit les
 // chaînes via window.CYL.t(). Choix mémorisé dans localStorage.
 //
 // Ajouter une langue = ajouter une entrée dans LANGS + un bloc dans DICT.
 // Les langues plus « exotiques » se branchent ainsi en quelques lignes ;
 // le sélecteur a déjà la recherche pour absorber une longue liste.
 
-// Jolis emojis (Twemoji) — chargé une fois par page.
+// Jolis emojis (Twemoji) - chargé une fois par page.
 if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); }
 
 // ── Drapeaux (SVG inline → s'affichent partout, y compris Windows où les
@@ -60,14 +60,14 @@ const DICT = {
     'nav.login': 'Se connecter',
     'hero.eyebrow': 'Ta vie, devenue vivante',
     'hero.title': 'Chaque action te fait grandir.<br>Pour de vrai.',
-    'hero.desc': 'Une méditation, une nuit complète, un appel à un proche… <strong>chaque geste de ta vie réelle fait pousser ton arbre.</strong> Tout est relié — et Lya, ton coach, t\'accompagne à chaque pas.',
+    'hero.desc': 'Une méditation, une nuit complète, un appel à un proche… <strong>chaque geste de ta vie réelle fait pousser ton arbre.</strong> Tout est relié - et Syl, ton coach, t\'accompagne à chaque pas.',
     'stream.caption': 'Tes actions, dans la vraie vie',
     'cta.start': 'Commencer l\'aventure',
-    'lya.voice': 'Voix de Lya',
-    'lya.intro1': 'Bonjour, je suis Lya. Ravie de te rencontrer.',
+    'lya.voice': 'Voix de Syl',
+    'lya.intro1': 'Bonjour, je suis Syl. Ravie de te rencontrer.',
     'lya.intro2': 'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.',
     'lya.intro3': 'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.',
-    'lya.branch': '%s — voici ce qui fait grandir cette branche.',
+    'lya.branch': '%s - voici ce qui fait grandir cette branche.',
     'stage.sprout': 'Jeune pousse',
     'stage.young': 'Jeune arbre',
     'stage.mature': 'Arbre mature',
@@ -86,7 +86,7 @@ const DICT = {
     'beat.levelup': 'Nouveau palier de niveau',
     // ── Panneaux de branches (8 dimensions = pyramide de Maslow) ──
     'branch.physio.label': 'Physiologique',
-    'branch.physio.desc': 'Le besoin vital — la base de tout. Sans énergie ni sommeil, rien d’autre ne tient debout.',
+    'branch.physio.desc': 'Le besoin vital - la base de tout. Sans énergie ni sommeil, rien d’autre ne tient debout.',
     'branch.physio.s1.name': 'Sommeil', 'branch.physio.s1.note': '7 à 9 h règlent l’humeur, le focus, la santé.',
     'branch.physio.s2.name': 'Nutrition', 'branch.physio.s2.note': 'Le carburant du cerveau et du corps.',
     'branch.physio.s3.name': 'Hydratation', 'branch.physio.s3.note': 'Le premier réflexe, trop souvent oublié.',
@@ -94,7 +94,7 @@ const DICT = {
     'branch.physio.s5.name': 'Repos', 'branch.physio.s5.note': 'Récupérer fait partie de la performance.',
     'branch.physio.modules': 'Déjà sur le site : Sommeil, Habitudes.',
     'branch.securite.label': 'Sécurité',
-    'branch.securite.desc': 'Se sentir à l’abri — un toit, des ressources, un lendemain serein.',
+    'branch.securite.desc': 'Se sentir à l’abri - un toit, des ressources, un lendemain serein.',
     'branch.securite.s1.name': 'Logement', 'branch.securite.s1.note': 'Un lieu stable, le point d’ancrage.',
     'branch.securite.s2.name': 'Stabilité', 'branch.securite.s2.note': 'Un cadre prévisible où se poser.',
     'branch.securite.s3.name': 'Finances', 'branch.securite.s3.note': 'Un coussin, c’est de la sérénité.',
@@ -110,7 +110,7 @@ const DICT = {
     'branch.appartenance.s5.name': 'Communauté', 'branch.appartenance.s5.note': 'Appartenir à plus grand que soi.',
     'branch.appartenance.modules': 'Module dédié à venir.',
     'branch.estime.label': 'Estime',
-    'branch.estime.desc': 'Être reconnu — et d’abord se reconnaître soi-même de la valeur.',
+    'branch.estime.desc': 'Être reconnu - et d’abord se reconnaître soi-même de la valeur.',
     'branch.estime.s1.name': 'Confiance', 'branch.estime.s1.note': 'Croire en sa capacité d’agir.',
     'branch.estime.s2.name': 'Compétence', 'branch.estime.s2.note': 'Ce que tu sais faire, vraiment.',
     'branch.estime.s3.name': 'Réussite', 'branch.estime.s3.note': 'Atteindre ce que tu vises.',
@@ -126,7 +126,7 @@ const DICT = {
     'branch.cognitif.s5.name': 'Lucidité', 'branch.cognitif.s5.note': 'Penser net, décider juste.',
     'branch.cognitif.modules': 'Déjà sur le site : Codex, Journal.',
     'branch.esthetique.label': 'Esthétique',
-    'branch.esthetique.desc': 'Le besoin de beauté, d’harmonie et d’ordre — autour de soi et en soi.',
+    'branch.esthetique.desc': 'Le besoin de beauté, d’harmonie et d’ordre - autour de soi et en soi.',
     'branch.esthetique.s1.name': 'Beauté', 'branch.esthetique.s1.note': 'Ce qui élève le regard.',
     'branch.esthetique.s2.name': 'Harmonie', 'branch.esthetique.s2.note': 'L’équilibre entre les choses.',
     'branch.esthetique.s3.name': 'Ordre', 'branch.esthetique.s3.note': 'Un cadre clair libère l’esprit.',
@@ -134,7 +134,7 @@ const DICT = {
     'branch.esthetique.s5.name': 'Émerveillement', 'branch.esthetique.s5.note': 'Savoir encore s’étonner.',
     'branch.esthetique.modules': 'Module dédié à venir.',
     'branch.accomplissement.label': 'Accomplissement',
-    'branch.accomplissement.desc': 'Devenir pleinement soi — réaliser son potentiel.',
+    'branch.accomplissement.desc': 'Devenir pleinement soi - réaliser son potentiel.',
     'branch.accomplissement.s1.name': 'Croissance', 'branch.accomplissement.s1.note': 'Toujours un cran plus loin.',
     'branch.accomplissement.s2.name': 'Projets', 'branch.accomplissement.s2.note': 'Ce que tu mets au monde.',
     'branch.accomplissement.s3.name': 'Maîtrise', 'branch.accomplissement.s3.note': 'L’excellence dans ce qui compte.',
@@ -142,7 +142,7 @@ const DICT = {
     'branch.accomplissement.s5.name': 'Vision', 'branch.accomplissement.s5.note': 'Savoir où tu vas.',
     'branch.accomplissement.modules': 'Déjà sur le site : Objectifs, Méditation.',
     'branch.transcendance.label': 'Transcendance',
-    'branch.transcendance.desc': 'Aller au-delà de soi — donner du sens, contribuer, transmettre. La cime s’épanouit tard, et c’est normal.',
+    'branch.transcendance.desc': 'Aller au-delà de soi - donner du sens, contribuer, transmettre. La cime s’épanouit tard, et c’est normal.',
     'branch.transcendance.s1.name': 'Spiritualité', 'branch.transcendance.s1.note': 'Le lien à plus vaste que soi.',
     'branch.transcendance.s2.name': 'Contribution', 'branch.transcendance.s2.note': 'Ce que tu apportes au monde.',
     'branch.transcendance.s3.name': 'Sens', 'branch.transcendance.s3.note': 'Le pourquoi de tout le reste.',
@@ -150,14 +150,14 @@ const DICT = {
     'branch.transcendance.s5.name': 'Héritage', 'branch.transcendance.s5.note': 'La trace que tu laisses.',
     'branch.transcendance.modules': 'Déjà sur le site : Gratitude. Frise chronologique à venir.',
     'app.open': 'Ouvrir →',
-    'app.plan.title': "Aujourd'hui — ton plan du jour",
-    'app.plan.desc': 'Ton rythme, tes besoins essentiels et tes tâches — chaque action fait grandir ton arbre.',
+    'app.plan.title': "Aujourd'hui - ton plan du jour",
+    'app.plan.desc': 'Ton rythme, tes besoins essentiels et tes tâches - chaque action fait grandir ton arbre.',
     'app.skills.title': 'Mes compétences',
     'app.skills.desc': 'Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.',
     'app.modules': 'Tous les modules',
     'app.domains': 'Niveaux par domaine',
     'app.organizer.title': 'ORGANIZER',
-    'app.organizer.desc': 'Déverse tes idées, trie-les par priorité, planifie — façon Trello, relié à ton arbre.',
+    'app.organizer.desc': 'Déverse tes idées, trie-les par priorité, planifie - façon Trello, relié à ton arbre.',
     'auth.title': 'Bon retour',
     'auth.sub': "Retrouve ton arbre de vie là où tu l'as laissé.",
     'auth.email': 'Adresse e-mail',
@@ -180,14 +180,14 @@ const DICT = {
     'nav.login': 'Sign in',
     'hero.eyebrow': 'Your life, brought to life',
     'hero.title': 'Every action makes you grow.<br>For real.',
-    'hero.desc': 'A meditation, a full night\'s sleep, a call to a loved one… <strong>every act of your real life makes your tree grow.</strong> Everything is connected — and Lya, your coach, walks with you every step.',
+    'hero.desc': 'A meditation, a full night\'s sleep, a call to a loved one… <strong>every act of your real life makes your tree grow.</strong> Everything is connected - and Syl, your coach, walks with you every step.',
     'stream.caption': 'Your actions, in real life',
     'cta.start': 'Begin the journey',
-    'lya.voice': 'Lya\'s voice',
-    'lya.intro1': 'Hello, I\'m Lya. So glad to meet you.',
+    'lya.voice': 'Syl\'s voice',
+    'lya.intro1': 'Hello, I\'m Syl. So glad to meet you.',
     'lya.intro2': 'Look: everything you do in your real life makes your tree grow.',
     'lya.intro3': 'There it is, in full bloom. Tap a branch to see what feeds it.',
-    'lya.branch': '%s — here\'s what makes this branch grow.',
+    'lya.branch': '%s - here\'s what makes this branch grow.',
     'stage.sprout': 'Sprout',
     'stage.young': 'Young tree',
     'stage.mature': 'Mature tree',
@@ -212,14 +212,14 @@ const DICT = {
     'nav.login': 'Iniciar sesión',
     'hero.eyebrow': 'Tu vida, cobra vida',
     'hero.title': 'Cada acción te hace crecer.<br>De verdad.',
-    'hero.desc': 'Una meditación, una noche completa, una llamada a un ser querido… <strong>cada gesto de tu vida real hace crecer tu árbol.</strong> Todo está conectado, y Lya, tu coach, te acompaña en cada paso.',
+    'hero.desc': 'Una meditación, una noche completa, una llamada a un ser querido… <strong>cada gesto de tu vida real hace crecer tu árbol.</strong> Todo está conectado, y Syl, tu coach, te acompaña en cada paso.',
     'stream.caption': 'Tus acciones, en la vida real',
     'cta.start': 'Comenzar la aventura',
-    'lya.voice': 'Voz de Lya',
-    'lya.intro1': 'Hola, soy Lya. Encantada de conocerte.',
+    'lya.voice': 'Voz de Syl',
+    'lya.intro1': 'Hola, soy Syl. Encantada de conocerte.',
     'lya.intro2': 'Mira: todo lo que haces en tu vida real hace crecer tu árbol.',
     'lya.intro3': 'Ahí está, pleno. Toca una rama para ver qué la nutre.',
-    'lya.branch': '%s — esto es lo que hace crecer esta rama.',
+    'lya.branch': '%s - esto es lo que hace crecer esta rama.',
     'stage.sprout': 'Brote',
     'stage.young': 'Árbol joven',
     'stage.mature': 'Árbol maduro',
@@ -244,14 +244,14 @@ const DICT = {
     'nav.login': 'Anmelden',
     'hero.eyebrow': 'Dein Leben, lebendig geworden',
     'hero.title': 'Jede Handlung lässt dich wachsen.<br>Wirklich.',
-    'hero.desc': 'Eine Meditation, eine durchschlafene Nacht, ein Anruf bei einem geliebten Menschen… <strong>jede Handlung deines echten Lebens lässt deinen Baum wachsen.</strong> Alles ist verbunden – und Lya, dein Coach, begleitet dich bei jedem Schritt.',
+    'hero.desc': 'Eine Meditation, eine durchschlafene Nacht, ein Anruf bei einem geliebten Menschen… <strong>jede Handlung deines echten Lebens lässt deinen Baum wachsen.</strong> Alles ist verbunden - und Syl, dein Coach, begleitet dich bei jedem Schritt.',
     'stream.caption': 'Deine Taten, im echten Leben',
     'cta.start': 'Das Abenteuer beginnen',
-    'lya.voice': 'Lyas Stimme',
-    'lya.intro1': 'Hallo, ich bin Lya. Schön, dich kennenzulernen.',
+    'lya.voice': 'Syls Stimme',
+    'lya.intro1': 'Hallo, ich bin Syl. Schön, dich kennenzulernen.',
     'lya.intro2': 'Schau: alles, was du in deinem echten Leben tust, lässt deinen Baum wachsen.',
     'lya.intro3': 'Da ist er, voll erblüht. Tippe auf einen Ast, um zu sehen, was ihn nährt.',
-    'lya.branch': '%s — das lässt diesen Ast wachsen.',
+    'lya.branch': '%s - das lässt diesen Ast wachsen.',
     'stage.sprout': 'Junger Spross',
     'stage.young': 'Junger Baum',
     'stage.mature': 'Reifer Baum',
@@ -276,14 +276,14 @@ const DICT = {
     'nav.login': 'Accedi',
     'hero.eyebrow': 'La tua vita, diventata viva',
     'hero.title': 'Ogni azione ti fa crescere.<br>Davvero.',
-    'hero.desc': 'Una meditazione, una notte intera, una telefonata a una persona cara… <strong>ogni gesto della tua vita reale fa crescere il tuo albero.</strong> Tutto è collegato, e Lya, il tuo coach, ti accompagna a ogni passo.',
+    'hero.desc': 'Una meditazione, una notte intera, una telefonata a una persona cara… <strong>ogni gesto della tua vita reale fa crescere il tuo albero.</strong> Tutto è collegato, e Syl, il tuo coach, ti accompagna a ogni passo.',
     'stream.caption': 'Le tue azioni, nella vita reale',
     'cta.start': 'Inizia l\'avventura',
-    'lya.voice': 'Voce di Lya',
-    'lya.intro1': 'Ciao, sono Lya. Felice di conoscerti.',
+    'lya.voice': 'Voce di Syl',
+    'lya.intro1': 'Ciao, sono Syl. Felice di conoscerti.',
     'lya.intro2': 'Guarda: ogni cosa che fai nella tua vita reale fa crescere il tuo albero.',
     'lya.intro3': 'Eccolo, rigoglioso. Tocca un ramo per vedere cosa lo nutre.',
-    'lya.branch': '%s — ecco cosa fa crescere questo ramo.',
+    'lya.branch': '%s - ecco cosa fa crescere questo ramo.',
     'stage.sprout': 'Germoglio',
     'stage.young': 'Albero giovane',
     'stage.mature': 'Albero maturo',
@@ -308,14 +308,14 @@ const DICT = {
     'nav.login': 'Entrar',
     'hero.eyebrow': 'A tua vida, ganha vida',
     'hero.title': 'Cada ação faz-te crescer.<br>A sério.',
-    'hero.desc': 'Uma meditação, uma noite inteira, uma chamada a alguém querido… <strong>cada gesto da tua vida real faz crescer a tua árvore.</strong> Está tudo ligado — e a Lya, o teu coach, acompanha-te a cada passo.',
+    'hero.desc': 'Uma meditação, uma noite inteira, uma chamada a alguém querido… <strong>cada gesto da tua vida real faz crescer a tua árvore.</strong> Está tudo ligado - e a Syl, o teu coach, acompanha-te a cada passo.',
     'stream.caption': 'As tuas ações, na vida real',
     'cta.start': 'Começar a aventura',
-    'lya.voice': 'Voz da Lya',
-    'lya.intro1': 'Olá, sou a Lya. Muito prazer em conhecer-te.',
+    'lya.voice': 'Voz da Syl',
+    'lya.intro1': 'Olá, sou a Syl. Muito prazer em conhecer-te.',
     'lya.intro2': 'Olha: tudo o que fazes na tua vida real faz crescer a tua árvore.',
     'lya.intro3': 'Aqui está, florescente. Toca num ramo para ver o que o alimenta.',
-    'lya.branch': '%s — eis o que faz crescer este ramo.',
+    'lya.branch': '%s - eis o que faz crescer este ramo.',
     'stage.sprout': 'Rebento',
     'stage.young': 'Árvore jovem',
     'stage.mature': 'Árvore madura',
@@ -340,14 +340,14 @@ const DICT = {
     'nav.login': 'Inloggen',
     'hero.eyebrow': 'Jouw leven, tot leven gewekt',
     'hero.title': 'Elke actie laat je groeien.<br>Echt waar.',
-    'hero.desc': 'Een meditatie, een volledige nacht slaap, een telefoontje naar een dierbare… <strong>elke daad uit je echte leven laat je boom groeien.</strong> Alles is verbonden — en Lya, je coach, loopt bij elke stap met je mee.',
+    'hero.desc': 'Een meditatie, een volledige nacht slaap, een telefoontje naar een dierbare… <strong>elke daad uit je echte leven laat je boom groeien.</strong> Alles is verbonden - en Syl, je coach, loopt bij elke stap met je mee.',
     'stream.caption': 'Jouw acties, in het echte leven',
     'cta.start': 'Begin het avontuur',
-    'lya.voice': 'Stem van Lya',
-    'lya.intro1': 'Hallo, ik ben Lya. Leuk je te ontmoeten.',
+    'lya.voice': 'Stem van Syl',
+    'lya.intro1': 'Hallo, ik ben Syl. Leuk je te ontmoeten.',
     'lya.intro2': 'Kijk: alles wat je in je echte leven doet, laat je boom groeien.',
     'lya.intro3': 'Daar is hij, volgroeid. Tik op een tak om te zien wat hem voedt.',
-    'lya.branch': '%s — dit laat deze tak groeien.',
+    'lya.branch': '%s - dit laat deze tak groeien.',
     'stage.sprout': 'Jonge scheut',
     'stage.young': 'Jonge boom',
     'stage.mature': 'Volgroeide boom',
@@ -387,7 +387,7 @@ function pick() {
 // ── Cache des traductions IA (langues sans dictionnaire écrit à la main, ou
 //    clés manquantes d'une langue principale comme les panneaux de branches). ──
 // Bump SRC_VERSION si on modifie une chaîne source FR → invalide les caches.
-const SRC_VERSION = 1;
+const SRC_VERSION = 2;
 const ai = {};                 // ai[lang] = { clé: traduction }
 const translating = new Set(); // langues dont une traduction IA est en cours
 
@@ -498,20 +498,20 @@ function setLang(code, persist) {
   applyDom();
   syncButton();
   syncList();
-  // La 3D (Lya, stades, panneaux) se met à jour via cet évènement.
+  // La 3D (Syl, stades, panneaux) se met à jour via cet évènement.
   window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang: code } }));
   // Complète les clés manquantes via l'IA (langues exotiques, branches…).
   ensureTranslations(code);
 }
 
-// Exposé global pour arbre3d.js (Lya, stades).
+// Exposé global pour arbre3d.js (Syl, stades).
 window.CYL = window.CYL || {};
 window.CYL.t = t;
 window.CYL.getLang = () => current;
 window.CYL.setLang = (c) => setLang(c, true);
 
 // Sélection par l'utilisateur : on mémorise le choix puis on RECHARGE toute la
-// page — ainsi l'intégralité du site (DOM + scène 3D) repart proprement dans la
+// page - ainsi l'intégralité du site (DOM + scène 3D) repart proprement dans la
 // nouvelle langue, sans état résiduel.
 function selectLang(code) {
   if (code === current) { closePop(); return; }

@@ -1,4 +1,4 @@
-// /js/quotes.js — 365 citations (épanouissement, confiance en soi, sagesse).
+// /js/quotes.js - 365 citations (épanouissement, confiance en soi, sagesse).
 // Une citation différente par jour de l'année. window.CYL_QUOTES + quoteOfDay().
 // Script simple (non-module) : chargé avant app.js, expose window.CYL_QUOTES.
 (function () {

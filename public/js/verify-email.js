@@ -1,4 +1,4 @@
-// /verify-email/ — bootstrap : Vanta birds + OTP flow.
+// /verify-email/ - bootstrap : Vanta birds + OTP flow.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged, signOut, reload } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
@@ -111,14 +111,14 @@ async function sendOtp(user) {
       body: JSON.stringify({ idToken }),
     });
 
-    // Try to parse JSON — if it fails, the API returned HTML (crash)
+    // Try to parse JSON - if it fails, the API returned HTML (crash)
     let data;
     try {
       data = await res.json();
     } catch (jsonErr) {
       const statusText = `HTTP ${res.status}`;
       console.error('sendOtp: API returned non-JSON', statusText);
-      otpHint.innerHTML = `⚠️ Erreur serveur (${statusText}) — contactez le support`;
+      otpHint.innerHTML = `⚠️ Erreur serveur (${statusText}) - contactez le support`;
       otpHint.style.color = '#ef4444';
       showNotif(`Erreur serveur ${statusText}`, 'error');
       return;
@@ -140,11 +140,11 @@ async function sendOtp(user) {
     showNotif('Code envoyé ! Vérifiez votre boîte mail 📧', 'info');
     startResendCooldown(60);
     otpHint.style.color = '';
-    otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé — vérifiez vos spams si besoin';
+    otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé - vérifiez vos spams si besoin';
     otpBoxes[0].focus();
   } catch (err) {
     console.error('sendOtp fetch error', err);
-    otpHint.innerHTML = '⚠️ Erreur réseau — vérifiez votre connexion internet';
+    otpHint.innerHTML = '⚠️ Erreur réseau - vérifiez votre connexion internet';
     otpHint.style.color = '#ef4444';
     showNotif('Erreur réseau. Réessayez.', 'error');
   }

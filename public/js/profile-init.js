@@ -1,4 +1,4 @@
-// /js/profile-init.js — bootstrap pour /profile/.
+// /js/profile-init.js - bootstrap pour /profile/.
 // Module ESM : Vanta birds + tabs handling + bio counter + global avatar/menu.
 import { updateGlobalAvatar } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';

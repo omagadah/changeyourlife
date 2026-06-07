@@ -1,4 +1,4 @@
-// /js/settings.js — bootstrap pour /settings/ (dashboard & paramètres).
+// /js/settings.js - bootstrap pour /settings/ (dashboard & paramètres).
 // Module ESM externalisé depuis settings/index.html.
 
 import { onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -76,17 +76,17 @@ async function loadDashboardStats(uid) {
             const entryTs = e => { const ts = e.createdAt?.toDate ? e.createdAt.toDate() : new Date(e.createdAt || 0); return ts; };
             const avgMood = list => list.length ? Math.round(list.reduce((s, e) => s + (MOOD_SCORE_MAP[e.emotion]||5), 0) / list.length * 10) / 10 : null;
 
-            // 7J — daily
+            // 7J - daily
             const labels7 = [], data7 = [];
             for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); labels7.push(d.toLocaleDateString('fr-FR', {weekday:'narrow'})); data7.push(avgMood(entries.filter(e => localIso(entryTs(e)) === localIso(d)))); }
             chartDataSets['7J'] = { labels: labels7, data: data7 };
 
-            // 30J — daily
+            // 30J - daily
             const labels30 = [], data30 = [];
             for (let i = 29; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); labels30.push(i % 5 === 0 ? d.toLocaleDateString('fr-FR', {day:'numeric',month:'short'}) : ''); data30.push(avgMood(entries.filter(e => localIso(entryTs(e)) === localIso(d)))); }
             chartDataSets['30J'] = { labels: labels30, data: data30 };
 
-            // 3M — weekly average
+            // 3M - weekly average
             const labels3M = [], data3M = [];
             for (let w = 11; w >= 0; w--) {
                 const wEnd = new Date(); wEnd.setDate(wEnd.getDate() - w * 7);
@@ -116,7 +116,7 @@ function initAuth() {
             initUserMenu();
             updateGlobalAvatar((user.email || "U").charAt(0).toUpperCase());
             
-            // ── Fallback admin (CHOIX INTENTIONNEL — pas une dette technique) ──
+            // ── Fallback admin (CHOIX INTENTIONNEL - pas une dette technique) ──
             // Firebase est en plan Spark (gratuit), donc Secret Manager indisponible.
             // Plutôt que de payer Blaze pour stocker ROOT_ADMIN_UID côté serveur,
             // on garde la liste ici. Un UID Firebase n'est pas un secret (inutile

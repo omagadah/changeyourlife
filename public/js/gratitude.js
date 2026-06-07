@@ -1,4 +1,4 @@
-// /js/gratitude.js — externalisé depuis gratitude/index.html
+// /js/gratitude.js - externalisé depuis gratitude/index.html
 
     import { auth, db } from '/js/firebase.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';

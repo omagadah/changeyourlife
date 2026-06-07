@@ -1,10 +1,10 @@
-// /js/tree-widget.js — L'arbre de vie de l'utilisateur, sur le dashboard /app/.
+// /js/tree-widget.js - L'arbre de vie de l'utilisateur, sur le dashboard /app/.
 //
 // Affiche le VRAI arbre (données Firestore `users/{uid}.tree`, sinon migration
 // du legacy `levels`). L'arbre est évolutif : chaque branche pousse selon son XP.
 //
 // Widget compact dans le dashboard → clic → plein écran interactif (orbite,
-// clic sur une branche = sa progression réelle + ses outils). Lya contextuelle.
+// clic sur une branche = sa progression réelle + ses outils). Syl contextuelle.
 //
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md §6.
 
@@ -14,14 +14,14 @@ import { treeFromUserDoc, toVisualModel } from '/js/tree-data.js';
 
 // ── Contenu éditorial des 8 branches (desc + outils qui les nourrissent) ─────
 const BRANCH_DESC = {
-  physio: 'Le besoin vital — sommeil, énergie, mouvement. La base de tout.',
-  securite: 'Se sentir à l’abri — logement, stabilité, finances, santé.',
-  appartenance: 'Aimer et être aimé — famille, amis, communauté.',
+  physio: 'Le besoin vital - sommeil, énergie, mouvement. La base de tout.',
+  securite: 'Se sentir à l’abri - logement, stabilité, finances, santé.',
+  appartenance: 'Aimer et être aimé - famille, amis, communauté.',
   estime: 'Être reconnu, et d’abord se reconnaître de la valeur.',
   cognitif: 'Le besoin de savoir, de comprendre, d’explorer.',
   esthetique: 'Le besoin de beauté, d’harmonie et d’ordre.',
-  accomplissement: 'Devenir pleinement soi — réaliser son potentiel.',
-  transcendance: 'Aller au-delà de soi — sens, contribution, transmission.',
+  accomplissement: 'Devenir pleinement soi - réaliser son potentiel.',
+  transcendance: 'Aller au-delà de soi - sens, contribution, transmission.',
 };
 // Les outils existants rangés sous leur branche Maslow (cf. ARCHITECTURE §3).
 const BRANCH_TOOLS = {
@@ -55,7 +55,7 @@ const STAGE_LABEL = {
   mature: 'Arbre mature', centenaire: 'Arbre centenaire',
 };
 
-// ── Onboarding conversationnel : Lya plante les 8 branches en discutant ─────
+// ── Onboarding conversationnel : Syl plante les 8 branches en discutant ─────
 const ONBOARD_XP = 250;   // XP « de plantation » par branche (1 question = 1 branche)
 // Une seule question pour planter la première branche et faire comprendre le
 // mécanisme (action → branche pousse). Les 7 autres grandiront naturellement
@@ -73,7 +73,7 @@ function levelProgress(xp) {
   return { level, inLevel: xp - acc, need, pct: Math.round(((xp - acc) / need) * 100) };
 }
 
-// ── CSS (injecté — CSP-safe : style-src autorise l'inline sur /app/) ─────────
+// ── CSS (injecté - CSP-safe : style-src autorise l'inline sur /app/) ─────────
 function injectCss() {
   if (document.getElementById('tree-widget-css')) return;
   const css = document.createElement('style');
@@ -155,7 +155,7 @@ function injectCss() {
   .tw-tool-go{font-size:0.78rem;font-weight:700;color:#60a5fa;}
   .tw-empty{font-size:0.82rem;color:#7e9ab5;font-style:italic;
     padding:11px 13px;border-radius:12px;border:1px dashed rgba(255,255,255,0.1);}
-  /* Lya */
+  /* Syl */
   .tw-lya{position:absolute;left:0;right:0;bottom:0;z-index:6;
     display:none;align-items:flex-end;gap:14px;
     padding:20px clamp(20px,4vw,40px) 24px;
@@ -185,7 +185,7 @@ function injectCss() {
   .tw-lya.thinking .tw-lya-input{opacity:.6;}
   .tw-lya.thinking .tw-lya-orb{animation:twPulse 1s ease-in-out infinite;}
   @keyframes twPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
-  /* onboarding — chips de réponse */
+  /* onboarding - chips de réponse */
   .tw-onb{display:none;flex-wrap:wrap;gap:8px;margin-top:10px;}
   .tw-onb.on{display:flex;}
   .tw-onb-chip{padding:9px 16px;border-radius:11px;cursor:pointer;
@@ -221,7 +221,7 @@ function makeControls(el, camera, target) {
     // Suivi 1:1 du doigt : sensibilité adaptative à la largeur du canvas
     // (~75° de rotation pour un drag d'une largeur d'écran complète) et
     // mise à jour DIRECTE de s.az/s.po (pas de lerp pendant le drag, donc
-    // pas d'inertie après release — l'arbre s'arrête où ton doigt s'arrête).
+    // pas d'inertie après release - l'arbre s'arrête où ton doigt s'arrête).
     const dim = Math.max(el.clientWidth, 320);
     const SENS = (Math.PI * 0.75) / dim;
     const newAz = s.tAz - dx * SENS;
@@ -260,23 +260,23 @@ function makeControls(el, camera, target) {
   };
 }
 
-// ── Lya — message contextuel depuis l'état réel de l'arbre ──────────────────
+// ── Syl - message contextuel depuis l'état réel de l'arbre ──────────────────
 function lyaMessage(model, name) {
   const greet = name ? `Bonjour ${name}.` : 'Bonjour.';
   if (model.branches.every((b) => (b.xp || 0) === 0)) {
-    return `${greet} Ton arbre vient de prendre racine. Chaque action validée le fera grandir — choisis une branche pour commencer.`;
+    return `${greet} Ton arbre vient de prendre racine. Chaque action validée le fera grandir - choisis une branche pour commencer.`;
   }
   const active = model.branches.filter((b) => b.state === 'active');
   const weak = active.slice().sort((a, b) => a.vitality - b.vitality)[0];
   if (weak && weak.vitality < 40) {
-    return `${greet} Ta branche ${weak.label} faiblit — rien depuis un moment. On lui redonne de la sève aujourd'hui ?`;
+    return `${greet} Ta branche ${weak.label} faiblit - rien depuis un moment. On lui redonne de la sève aujourd'hui ?`;
   }
   const dormant = model.branches.filter((b) => b.state === 'dormant');
   if (dormant.length) {
     const n = dormant.length;
     return `${greet} ${n > 1 ? `${n} branches dorment` : '1 branche dort'} encore. Un seul geste suffit à ${n > 1 ? 'les' : 'la'} réveiller.`;
   }
-  return `${greet} Ton arbre est vivant et bien équilibré. Continue — la régularité fait le chêne.`;
+  return `${greet} Ton arbre est vivant et bien équilibré. Continue - la régularité fait le chêne.`;
 }
 
 // ── Entrée publique ─────────────────────────────────────────────────────────
@@ -289,7 +289,7 @@ export function initTreeWidget(userData, opts) {
   const onOnboardingComplete = opts.onOnboardingComplete;
   // Diagnostic : visible dans la console pour vérifier que la nouvelle version
   // tourne et que l'onboarding est bien attendu pour ce compte.
-  try { console.log('[CYL] tree-widget v47 — needsOnboarding:', needsOnboarding); } catch (_) {}
+  try { console.log('[CYL] tree-widget v47 - needsOnboarding:', needsOnboarding); } catch (_) {}
 
   const realTree = treeFromUserDoc(userData || {});
   // En onboarding, on bâtit l'arbre « destination » (8 branches plantées) ;
@@ -297,7 +297,7 @@ export function initTreeWidget(userData, opts) {
   let srcTree = realTree;
   if (needsOnboarding) {
     // Seules les branches qu'on va planter dans l'onboarding sont seedées.
-    // Les autres restent dormantes — elles grandiront avec l'usage du site.
+    // Les autres restent dormantes - elles grandiront avec l'usage du site.
     const seededBranches = new Set(ONBOARDING.map((o) => o.branch));
     srcTree = { v: realTree.v, createdAt: realTree.createdAt, branches: {} };
     for (const k of Object.keys(realTree.branches)) {
@@ -310,7 +310,7 @@ export function initTreeWidget(userData, opts) {
   const name = (userData && (userData.displayName || userData.username) || '').trim();
   const totalXp = model.branches.reduce((s, b) => s + (b.xp || 0), 0);
 
-  // « Qu'est-ce qui a poussé depuis la dernière visite ? » — diff localStorage.
+  // « Qu'est-ce qui a poussé depuis la dernière visite ? » - diff localStorage.
   const SEEN_KEY = 'cyl_tree_seen_xp';
   let grownBranches = [];
   try {
@@ -324,9 +324,9 @@ export function initTreeWidget(userData, opts) {
     const snap = {};
     model.branches.forEach((b) => { snap[b.key] = b.xp || 0; });
     localStorage.setItem(SEEN_KEY, JSON.stringify(snap));
-  } catch (_) { /* localStorage indisponible — sans gravité */ }
+  } catch (_) { /* localStorage indisponible - sans gravité */ }
 
-  // ── Chrome (créé en JS — index.html ne fournit qu'un <div> vide) ──────────
+  // ── Chrome (créé en JS - index.html ne fournit qu'un <div> vide) ──────────
   const canvas = document.createElement('canvas');
   stage.appendChild(canvas);
 
@@ -341,7 +341,7 @@ export function initTreeWidget(userData, opts) {
     </div>
     <div class="tw-hint">
       <div class="tw-hint-l">
-        <span class="tw-hint-stage">🌳 Ton arbre de vie — ${STAGE_LABEL[model.stage] || ''}</span>
+        <span class="tw-hint-stage">🌳 Ton arbre de vie - ${STAGE_LABEL[model.stage] || ''}</span>
         <span class="tw-hint-xp">${totalXp.toLocaleString('fr-FR')} XP cumulés · 8 branches</span>
       </div>
       <span class="tw-hint-cta">Clique pour explorer →</span>
@@ -351,11 +351,11 @@ export function initTreeWidget(userData, opts) {
     <section class="tw-lya">
       <div class="tw-lya-orb" aria-hidden="true"></div>
       <div class="tw-lya-body">
-        <div class="tw-lya-name">Lya</div>
+        <div class="tw-lya-name">Syl</div>
         <div class="tw-lya-line" id="tw-lya-line"></div>
         <form class="tw-lya-form" id="tw-lya-form">
           <input class="tw-lya-input" id="tw-lya-input" type="text" autocomplete="off"
-                 placeholder="Parle à Lya — pose-lui une question sur ton arbre…" />
+                 placeholder="Parle à Syl - pose-lui une question sur ton arbre…" />
           <button class="tw-lya-send" id="tw-lya-send" type="submit" aria-label="Envoyer">➤</button>
         </form>
         <div class="tw-onb" id="tw-onb"></div>
@@ -370,14 +370,14 @@ export function initTreeWidget(userData, opts) {
   const lyaSend = stage.querySelector('#tw-lya-send');
   const onbBox = stage.querySelector('#tw-onb');
 
-  // Le panneau et la zone de Lya ne doivent pas déclencher l'orbite / le clic
-  // sur une branche — on isole leurs événements pointeur de la scène.
+  // Le panneau et la zone de Syl ne doivent pas déclencher l'orbite / le clic
+  // sur une branche - on isole leurs événements pointeur de la scène.
   ['pointerdown', 'pointerup', 'pointermove', 'wheel', 'click'].forEach((ev) => {
     lyaSection.addEventListener(ev, (e) => e.stopPropagation());
     panel.addEventListener(ev, (e) => e.stopPropagation());
   });
 
-  // ── Lya parle (machine à écrire) ──────────────────────────────────────────
+  // ── Syl parle (machine à écrire) ──────────────────────────────────────────
   let lyaTypeTok = 0;
   function lyaSay(text) {
     const tok = ++lyaTypeTok;
@@ -390,24 +390,24 @@ export function initTreeWidget(userData, opts) {
   }
   if (!needsOnboarding) lyaSay(lyaMessage(model, name));
 
-  // ── Lya en conversation libre (Gemini via /api/coach) ─────────────────────
+  // ── Syl en conversation libre (Gemini via /api/coach) ─────────────────────
   const lyaHistory = [];
   let lyaBusy = false;
-  async function sendToLya(text) {
+  async function sendToSyl(text) {
     const msg = (text || '').trim();
     if (!msg || lyaBusy) return;
     lyaBusy = true;
     lyaSend.disabled = true;
     lyaInput.value = '';
     lyaSection.classList.add('thinking');
-    lyaSay('Lya réfléchit…');
+    lyaSay('Syl réfléchit…');
     lyaHistory.push({ role: 'user', content: msg });
     try {
       const fb = window._cyfFirebase;
       const user = fb && fb.auth && fb.auth.currentUser;
       if (!user) throw new Error('not-signed-in');
       const idToken = await user.getIdToken();
-      // contexte : l'état réel de l'arbre → Lya « voit » l'arbre
+      // contexte : l'état réel de l'arbre → Syl « voit » l'arbre
       const userProfile = {
         prenom: name || undefined,
         arbre: {
@@ -429,29 +429,29 @@ export function initTreeWidget(userData, opts) {
         let detail = '';
         try { const j = await res.json(); detail = j && (j.error || j.details) ? ` (${(j.error || '') + (j.geminiStatus ? ' · Gemini ' + j.geminiStatus : '')})` : ''; } catch (_) {}
         lyaSay(res.status === 429
-          ? `Lya a besoin d’une minute — réessaie dans un instant.${detail}`
+          ? `Syl a besoin d’une minute - réessaie dans un instant.${detail}`
           : (res.status === 401 || res.status === 403)
-            ? `Reconnecte-toi pour parler à Lya.${detail}`
-            : `Lya est indisponible pour l’instant${detail}`);
+            ? `Reconnecte-toi pour parler à Syl.${detail}`
+            : `Syl est indisponible pour l’instant${detail}`);
         return;
       }
       const data = await res.json();
       const reply = (data && data.reply)
-        ? String(data.reply) : 'Je n’ai pas su quoi répondre — reformule ?';
+        ? String(data.reply) : 'Je n’ai pas su quoi répondre - reformule ?';
       lyaHistory.push({ role: 'assistant', content: reply });
       lyaSay(reply);
     } catch (e) {
       lyaHistory.pop();
-      lyaSay('Lya est hors ligne pour l’instant.');
+      lyaSay('Syl est hors ligne pour l’instant.');
     } finally {
       lyaBusy = false;
       lyaSend.disabled = false;
       lyaSection.classList.remove('thinking');
     }
   }
-  lyaForm.addEventListener('submit', (e) => { e.preventDefault(); sendToLya(lyaInput.value); });
+  lyaForm.addEventListener('submit', (e) => { e.preventDefault(); sendToSyl(lyaInput.value); });
 
-  // ── Onboarding conversationnel — Lya plante l'arbre avec l'utilisateur ────
+  // ── Onboarding conversationnel - Syl plante l'arbre avec l'utilisateur ────
   // mode : 'intro' (pousse auto) · 'onboarding' (pousse pilotée) · 'live'
   let mode = needsOnboarding ? 'onboarding' : 'intro';
   let curAge = needsOnboarding ? 0.10 : 0;
@@ -489,7 +489,7 @@ export function initTreeWidget(userData, opts) {
   function runOnboarding() {
     lyaSection.classList.add('onb');
     const greet = name ? `Bonjour ${name}.` : 'Bonjour.';
-    lyaSay(`${greet} Je suis Lya. Plantons ensemble la première branche de ton arbre — il grandira au fil de tes actions. Une question pour commencer.`);
+    lyaSay(`${greet} Je suis Syl. Plantons ensemble la première branche de ton arbre - il grandira au fil de tes actions. Une question pour commencer.`);
     showChips(['C’est parti 🌱'], () => askQuestion(0));
 
     function askQuestion(i) {
@@ -497,7 +497,7 @@ export function initTreeWidget(userData, opts) {
         // Filet de sécurité (n'est plus atteint avec le flow à 1 question :
         // la clôture se fait juste après la réponse, en deux temps).
         clearChips();
-        lyaSay('Voilà — ton arbre a pris racine. À toi de le faire pousser maintenant.');
+        lyaSay('Voilà - ton arbre a pris racine. À toi de le faire pousser maintenant.');
         endOnboarding(true);
         return;
       }
@@ -515,8 +515,8 @@ export function initTreeWidget(userData, opts) {
             window._cyfFirebase.awardXp(o.branch, ONBOARD_XP);
           }
         } catch (_) { /* l'XP est non bloquant pour le déroulé */ }
-        // 2) Lya célèbre + pointe la carte pour que l'utilisateur la repère.
-        lyaSay(`+${ONBOARD_XP} XP ✨ Ta branche ${b ? b.label : ''} vient de pousser. Regarde la carte qui glisse en haut à droite — c'est ta récompense. Chaque action sur le site fera pareil.`);
+        // 2) Syl célèbre + pointe la carte pour que l'utilisateur la repère.
+        lyaSay(`+${ONBOARD_XP} XP ✨ Ta branche ${b ? b.label : ''} vient de pousser. Regarde la carte qui glisse en haut à droite - c'est ta récompense. Chaque action sur le site fera pareil.`);
         // 3) Après lecture (~3,4 s) : invitation à explorer + fin de l'onboarding
         //    pour rendre les autres branches cliquables.
         setTimeout(() => {
@@ -636,7 +636,7 @@ export function initTreeWidget(userData, opts) {
       <div class="tw-sec-label">Tes outils</div>
       ${tools.length
         ? tools.map((t) => `<a class="tw-tool" href="${t.href}"><span class="tw-tool-ic">${t.icon}</span><span class="tw-tool-nm">${t.label}</span><span class="tw-tool-go">Ouvrir →</span></a>`).join('')
-        : '<div class="tw-empty">Module dédié à venir — cette branche grandira bientôt.</div>'}
+        : '<div class="tw-empty">Module dédié à venir - cette branche grandira bientôt.</div>'}
     `;
     panel.classList.add('open');
     lyaSection.classList.add('shifted');
@@ -646,7 +646,7 @@ export function initTreeWidget(userData, opts) {
     requestAnimationFrame(() => {
       panel.querySelectorAll('.tw-bar-fill').forEach((f) => { f.style.width = (f.dataset.w || 0) + '%'; });
     });
-    lyaSay(`${b.label} — voici sa progression réelle et les outils pour la nourrir.`);
+    lyaSay(`${b.label} - voici sa progression réelle et les outils pour la nourrir.`);
   }
   function closeBranch() {
     panel.classList.remove('open');
@@ -787,7 +787,7 @@ export function initTreeWidget(userData, opts) {
       celebrateStart = clock.getElapsedTime();
       celebrateKeys = new Set([d.branch]);
     }
-    bumpGrass(2);                                // 2 brins par récompense — léger
+    bumpGrass(2);                                // 2 brins par récompense - léger
   });
 
   // ── Boucle : croissance (intro / onboarding) puis vie ─────────────────────
@@ -804,7 +804,7 @@ export function initTreeWidget(userData, opts) {
       if (curAge >= 1) {
         mode = 'live'; grow(1);
         applyPersistedBranchScales();
-        // pousse depuis la dernière visite : pulsation festive + bilan de Lya
+        // pousse depuis la dernière visite : pulsation festive + bilan de Syl
         if (grownBranches.length) {
           celebrateStart = t;
           celebrateKeys = new Set(grownBranches.map((g) => g.key));
@@ -838,6 +838,6 @@ export function initTreeWidget(userData, opts) {
   }
   frame();
 
-  // un nouvel utilisateur : Lya l'accueille et plante l'arbre avec lui
+  // un nouvel utilisateur : Syl l'accueille et plante l'arbre avec lui
   if (needsOnboarding) { expand(); runOnboarding(); }
 }

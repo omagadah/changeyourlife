@@ -1,4 +1,4 @@
-// /js/login-bg.js — Fond 3D de la page de connexion : la MÊME scène arbre/Terre
+// /js/login-bg.js - Fond 3D de la page de connexion : la MÊME scène arbre/Terre
 // que la landing (moteur tree-model.js), mais non interactive et en rotation
 // lente. Objectif : continuité visuelle parfaite entre l'accueil et le login.
 

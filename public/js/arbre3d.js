@@ -1,7 +1,7 @@
-// /js/arbre3d.js — Page d'accueil : arbre de vie procédural + croissance + Lya.
+// /js/arbre3d.js - Page d'accueil : arbre de vie procédural + croissance + Syl.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v7 — fix du texte de Lya (plus de superposition au clic rapide), flux de
+// v7 - fix du texte de Syl (plus de superposition au clic rapide), flux de
 // pop-ups « tâche accomplie » (satisfaisant), panneau explicatif au clic sur
 // une branche. Barre de temps + caméra cinématique conservées.
 
@@ -26,7 +26,7 @@ const easeOut = (x) => 1 - Math.pow(1 - x, 3);
 // ── Contenu des 8 dimensions = 8 niveaux de la pyramide de Maslow ───────────
 const BRANCHES_INFO = {
   physio: {
-    desc: 'Le besoin vital — la base de tout. Sans énergie ni sommeil, rien d’autre ne tient debout.',
+    desc: 'Le besoin vital - la base de tout. Sans énergie ni sommeil, rien d’autre ne tient debout.',
     subs: [
       ['Sommeil', '7 à 9 h règlent l’humeur, le focus, la santé.'],
       ['Nutrition', 'Le carburant du cerveau et du corps.'],
@@ -37,7 +37,7 @@ const BRANCHES_INFO = {
     modules: 'Déjà sur le site : Sommeil, Habitudes.',
   },
   securite: {
-    desc: 'Se sentir à l’abri — un toit, des ressources, un lendemain serein.',
+    desc: 'Se sentir à l’abri - un toit, des ressources, un lendemain serein.',
     subs: [
       ['Logement', 'Un lieu stable, le point d’ancrage.'],
       ['Stabilité', 'Un cadre prévisible où se poser.'],
@@ -59,7 +59,7 @@ const BRANCHES_INFO = {
     modules: 'Module dédié à venir.',
   },
   estime: {
-    desc: 'Être reconnu — et d’abord se reconnaître soi-même de la valeur.',
+    desc: 'Être reconnu - et d’abord se reconnaître soi-même de la valeur.',
     subs: [
       ['Confiance', 'Croire en sa capacité d’agir.'],
       ['Compétence', 'Ce que tu sais faire, vraiment.'],
@@ -81,7 +81,7 @@ const BRANCHES_INFO = {
     modules: 'Déjà sur le site : Codex, Journal.',
   },
   esthetique: {
-    desc: 'Le besoin de beauté, d’harmonie et d’ordre — autour de soi et en soi.',
+    desc: 'Le besoin de beauté, d’harmonie et d’ordre - autour de soi et en soi.',
     subs: [
       ['Beauté', 'Ce qui élève le regard.'],
       ['Harmonie', 'L’équilibre entre les choses.'],
@@ -92,7 +92,7 @@ const BRANCHES_INFO = {
     modules: 'Module dédié à venir.',
   },
   accomplissement: {
-    desc: 'Devenir pleinement soi — réaliser son potentiel.',
+    desc: 'Devenir pleinement soi - réaliser son potentiel.',
     subs: [
       ['Croissance', 'Toujours un cran plus loin.'],
       ['Projets', 'Ce que tu mets au monde.'],
@@ -103,7 +103,7 @@ const BRANCHES_INFO = {
     modules: 'Déjà sur le site : Objectifs, Méditation.',
   },
   transcendance: {
-    desc: 'Aller au-delà de soi — donner du sens, contribuer, transmettre. La cime s’épanouit tard, et c’est normal.',
+    desc: 'Aller au-delà de soi - donner du sens, contribuer, transmettre. La cime s’épanouit tard, et c’est normal.',
     subs: [
       ['Spiritualité', 'Le lien à plus vaste que soi.'],
       ['Contribution', 'Ce que tu apportes au monde.'],
@@ -120,7 +120,7 @@ function initScene(canvas) {
   const renderer = new THREE.WebGLRenderer({
     canvas, antialias: true, alpha: true, powerPreference: 'high-performance',
     // Profondeur logarithmique : indispensable avec un far plane énorme (24000)
-    // et un near de 0.1 — sinon z-fighting (clignotement / taches) sur la Terre
+    // et un near de 0.1 - sinon z-fighting (clignotement / taches) sur la Terre
     // et l'herbe au dézoom. Précision répartie sur toute la plage au lieu d'être
     // écrasée près du near.
     logarithmicDepthBuffer: true,
@@ -219,7 +219,7 @@ function initControls(canvas, camera) {
   }, { passive: false });
 
   return {
-    // `target` (optionnel) : centre d'orbite — suit la cime pendant la pousse.
+    // `target` (optionnel) : centre d'orbite - suit la cime pendant la pousse.
     apply(target) {
       const tgt = target || ORBIT_TARGET;
       // Lerp encore plus doux : inertie, arrivée à la cible en douceur.
@@ -461,16 +461,16 @@ function initLabels(nodes, subNodes) {
   };
 }
 
-// ── Lya ─────────────────────────────────────────────────────────────────────
+// ── Syl ─────────────────────────────────────────────────────────────────────
 // Répliques d'intro : [clé i18n, repli FR]
 const LYA_INTRO = [
-  ['lya.intro1', 'Bonjour, je suis Lya. Ravie de te rencontrer.'],
+  ['lya.intro1', 'Bonjour, je suis Syl. Ravie de te rencontrer.'],
   ['lya.intro2', 'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.'],
   ['lya.intro3', 'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.'],
 ];
 let lyaSay = null;        // (label) => affiche la réplique « branche »
 let lyaState = null;      // mémoire de la réplique courante (pour relocaliser)
-let typeGen = 0;            // jeton anti-superposition du texte de Lya
+let typeGen = 0;            // jeton anti-superposition du texte de Syl
 function typeLine(el, text, done) {
   const gen = ++typeGen;   // toute frappe précédente est invalidée
   if (!el) return;
@@ -497,21 +497,21 @@ function speak(text, on) {
 }
 // Texte d'une réplique « branche » selon la langue courante.
 function branchLine(label) {
-  return T('lya.branch', '%s — voici ce qui fait grandir cette branche.').replace('%s', label);
+  return T('lya.branch', '%s - voici ce qui fait grandir cette branche.').replace('%s', label);
 }
-// Texte courant de Lya selon l'état mémorisé (pour relocalisation).
+// Texte courant de Syl selon l'état mémorisé (pour relocalisation).
 function lyaCurrentText() {
   if (!lyaState) return '';
   if (lyaState.type === 'branch') return branchLine(lyaState.label);
   return T(lyaState.key, lyaState.fb);
 }
 
-function initLya() {
+function initSyl() {
   const lineEl = document.getElementById('lya-line');
   const voiceBtn = document.getElementById('lya-voice');
   let voiceOn = false;
   const introTimers = [];
-  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de Lya');
+  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de Syl');
   if (voiceBtn) {
     voiceBtn.textContent = voiceLabel();
     voiceBtn.addEventListener('click', () => {
@@ -576,7 +576,7 @@ function initTree3D(canvas) {
   }
 
   // ── Facilitateur de clic : on cible le nœud le plus PROCHE du curseur ────
-  // (pas besoin de viser pile au centre — seuil généreux en pixels écran)
+  // (pas besoin de viser pile au centre - seuil généreux en pixels écran)
   const _proj = new THREE.Vector3();
   const growTarget = new THREE.Vector3();
   let hovered = null;
@@ -690,7 +690,7 @@ function init() {
     try { initTree3D(canvas); }
     catch (e) { console.error('[arbre3d] init failed', e); }
   }
-  initLya();
+  initSyl();
   document.body.classList.add('tree-ready');
 }
 

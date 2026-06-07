@@ -1,6 +1,6 @@
-// /js/arbre.js — Composant Arbre procédural + landing Phase 1.1
+// /js/arbre.js - Composant Arbre procédural + landing Phase 1.1
 // L'arbre EST l'interface (cf. docs/VISION.md §5, docs/ARCHITECTURE.md).
-// Rendu SVG procédural, data-driven : chaque branche dérive de 2 signaux —
+// Rendu SVG procédural, data-driven : chaque branche dérive de 2 signaux -
 //   dev (développement, cumulatif → longueur/épaisseur)
 //   vitality (vitalité, décroît si négligé → couleur/feuilles)
 
@@ -70,12 +70,12 @@ function branchSVG(b, st, trunkH) {
   };
   const width = 5 + (dev / 100) * 17;
 
-  // limbe — couleur bois, légèrement teintée vers la couleur de branche
+  // limbe - couleur bois, légèrement teintée vers la couleur de branche
   let svg = `<path d="M ${Pa.x},${Pa.y} Q ${ctrl.x},${ctrl.y} ${tip.x},${tip.y}"
     fill="none" stroke="${dormant ? '#3d4657' : '#5a4636'}"
     stroke-width="${width}" stroke-linecap="round" opacity="${dormant ? 0.7 : 1}"/>`;
 
-  // feuilles — densité ∝ vitalité, le long de la moitié haute de la branche
+  // feuilles - densité ∝ vitalité, le long de la moitié haute de la branche
   if (vit > 6 && !dormant) {
     const clusters = Math.round(1 + (vit / 100) * 4);
     const leafOp = 0.35 + (vit / 100) * 0.55;
@@ -165,7 +165,7 @@ export function renderTree(el, state) {
 </svg>`;
 }
 
-// ── État de démo — un jeune arbre (sapling) plein de potentiel ──────────────
+// ── État de démo - un jeune arbre (sapling) plein de potentiel ──────────────
 // Phase 1.1 : état statique. Le câblage aux données réelles viendra plus tard.
 export const DEMO_STATE = {
   stage: 'sapling',
@@ -180,9 +180,9 @@ export const DEMO_STATE = {
   },
 };
 
-// ── Lya — présence + parole d'ouverture ─────────────────────────────────────
+// ── Syl - présence + parole d'ouverture ─────────────────────────────────────
 const LYA_LINES = [
-  'Bonjour. Je m’appelle Lya.',
+  'Bonjour. Je m’appelle Syl.',
   'Cet arbre, c’est toi. Aujourd’hui, il commence.',
   'Chaque chose que tu fais dans la vraie vie le fait pousser. Avance à ton rythme.',
 ];
@@ -228,12 +228,12 @@ export function initArbrePage() {
       voiceOn = !voiceOn;
       voiceBtn.classList.toggle('on', voiceOn);
       voiceBtn.setAttribute('aria-pressed', String(voiceOn));
-      voiceBtn.textContent = voiceOn ? '🔊 Voix de Lya' : '🔇 Voix de Lya';
+      voiceBtn.textContent = voiceOn ? '🔊 Voix de Syl' : '🔇 Voix de Syl';
       if (voiceOn && lineEl) speak(lineEl.textContent, true);
     });
   }
 
-  // déroulé des lignes de Lya
+  // déroulé des lignes de Syl
   let idx = 0;
   const next = () => {
     if (!lineEl || idx >= LYA_LINES.length) return;

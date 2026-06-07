@@ -1,5 +1,5 @@
-// service-worker.js - v87 (module ORGANIZER : board Eisenhower drag&drop)
-const CACHE_NAME = 'changeyourlife-v87';
+// service-worker.js - v88 (IA renommee Syl + suppression des em-dash partout)
+const CACHE_NAME = 'changeyourlife-v88';
 const urlsToCache = [
   '/',
   '/app/',

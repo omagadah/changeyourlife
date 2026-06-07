@@ -1,4 +1,4 @@
-// /yourlife/ — Pyramide de Maslow interactive (skills par niveau, mindmap, timeline).
+// /yourlife/ - Pyramide de Maslow interactive (skills par niveau, mindmap, timeline).
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { updateGlobalAvatar } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
@@ -139,7 +139,7 @@ function renderGlobalScore() {
 // ── Export progression ────────────────────────────────────────────────────
 document.getElementById('btn-export-life').addEventListener('click', () => {
   let total=0, done=0;
-  const lines = [`# Ma Progression — Change Your Life\nDate : ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}\n`];
+  const lines = [`# Ma Progression - Change Your Life\nDate : ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}\n`];
   LEVELS.forEach(lvl => {
     const skills = skillData[lvl.id] || [];
     const lvlDone = skills.filter(s=>s.done).length;
@@ -148,7 +148,7 @@ document.getElementById('btn-export-life').addEventListener('click', () => {
     skills.forEach(s => lines.push(`- [${s.done?'x':' '}] ${s.label}${s.doneAt ? ` (${new Date(s.doneAt).toLocaleDateString('fr-FR')})` : ''}`));
   });
   const pct = total ? Math.round(done/total*100) : 0;
-  lines.unshift(`**Score global : ${pct}% — ${done}/${total} compétences acquises**\n`);
+  lines.unshift(`**Score global : ${pct}% - ${done}/${total} compétences acquises**\n`);
   const blob = new Blob([lines.join('\n')], { type:'text/markdown' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -265,7 +265,7 @@ function makeAddBtn(lvl, area) {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-// MINDMAP VIEW  — SVG radial tree
+// MINDMAP VIEW  - SVG radial tree
 // ════════════════════════════════════════════════════════════════════════
 function renderMindmap() {
   const container = document.getElementById('mindmap-container');
