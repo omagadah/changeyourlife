@@ -19,7 +19,7 @@ Translate the given user-interface strings from French into ${targetName}.
 
 STRICT RULES:
 - Return ONLY a valid JSON object mapping each id to its translated string. No markdown, no commentary.
-- Keep the SAME ids as the input.
+- Keep the SAME ids as the input. Include EVERY id from the input in your output - never omit, merge or rename a single id, even short ones.
 - Preserve any HTML tags exactly (<br>, <strong>…) and their position.
 - Preserve placeholders like %s exactly.
 - Do NOT translate these: "ChangeYourLife.ai", "Syl", "XP".

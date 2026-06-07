@@ -420,18 +420,19 @@ function flagHTML(code) {
 // `lang`, par lots, en mettant à jour le DOM + le cache au fur et à mesure.
 async function ensureTranslations(lang) {
   if (lang === 'fr' || translating.has(lang)) return;
-  const missing = {};
-  for (const k in DICT.fr) {
-    const hand = DICT[lang] && DICT[lang][k];
-    const cached = ai[lang] && ai[lang][k];
-    if (!hand && !cached) missing[k] = DICT.fr[k];
-  }
-  const keys = Object.keys(missing);
-  if (!keys.length) return;
   translating.add(lang);
   ai[lang] = ai[lang] || {};
-  const CHUNK = 24;          // lots plus petits = JSON IA plus fiable
+  const CHUNK = 16;          // lots petits = JSON IA fiable
   const name = meta(lang).en || lang;
+  function computeMissing() {
+    const m = {};
+    for (const k in DICT.fr) {
+      const hand = DICT[lang] && DICT[lang][k];
+      const cached = ai[lang] && ai[lang][k];
+      if (!hand && !cached) m[k] = DICT.fr[k];
+    }
+    return m;
+  }
   async function translateChunk(items) {
     for (let attempt = 0; attempt < 2; attempt++) {   // 1 réessai
       try {
@@ -451,21 +452,29 @@ async function ensureTranslations(lang) {
     return null;
   }
   try {
-    for (let i = 0; i < keys.length; i += CHUNK) {
-      const slice = keys.slice(i, i + CHUNK);
-      const items = {};
-      slice.forEach((k) => { items[k] = missing[k]; });
-      const tr = await translateChunk(items);
-      if (tr) {
-        Object.assign(ai[lang], tr);
-        saveCache(lang);
-        if (lang === current) {
-          applyDom();
-          window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang } }));
+    // Boucle jusqu'à ce que TOUTES les clés soient traduites : l'IA peut omettre
+    // des clés d'un lot (-> elles restent "manquantes" et sont redemandées).
+    let rounds = 0;
+    let missing = computeMissing();
+    while (Object.keys(missing).length && rounds < 6) {
+      rounds++;
+      const keys = Object.keys(missing);
+      let added = 0;
+      for (let i = 0; i < keys.length; i += CHUNK) {
+        const slice = keys.slice(i, i + CHUNK);
+        const items = {}; slice.forEach((k) => { items[k] = missing[k]; });
+        const tr = await translateChunk(items);
+        if (tr) {
+          let n = 0;
+          for (const k of slice) { if (tr[k] != null && tr[k] !== '') { ai[lang][k] = tr[k]; n++; } }
+          if (n) {
+            added += n; saveCache(lang);
+            if (lang === current) { applyDom(); window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang } })); }
+          }
         }
       }
-      // on continue même si un lot échoue : les clés restantes seront
-      // retentées au prochain chargement (elles ne sont pas mises en cache).
+      missing = computeMissing();
+      if (!added) break;   // aucun progrès ce round : on évite la boucle infinie
     }
   } finally {
     translating.delete(lang);

@@ -1,5 +1,5 @@
-// service-worker.js - v91 (SYL en majuscules + accroche d'accueil humaine)
-const CACHE_NAME = 'changeyourlife-v91';
+// service-worker.js - v92 (i18n: traduction complete de l'arbre, boucle anti-omission)
+const CACHE_NAME = 'changeyourlife-v92';
 const urlsToCache = [
   '/',
   '/app/',
