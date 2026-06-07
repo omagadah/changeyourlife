@@ -145,9 +145,9 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel(), { floating: true });
+  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat } = buildTree(THREE, createDemoModel(), { floating: true });
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -464,6 +464,71 @@ function initLabels(nodes, subNodes) {
   };
 }
 
+// ── Étiquette « schéma » sur le satellite (transparence / vie privée) ───────
+// Une petite fiche reliée par un trait blanc au satellite, qui le suit dans sa
+// course. But : prévenir l'utilisateur que ses données restent locales et que
+// le code est ouvert/vérifiable (preuves : dépôt GitHub public). Style « légende
+// de schéma » pour ne pas surcharger la scène.
+function initSatInfo(infoSat) {
+  if (!infoSat) return { update() {} };
+  const css = document.createElement('style');
+  css.textContent = `
+    .sat-info{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .8s;}
+    .sat-info.on{opacity:1;}
+    .sat-info svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+    .sat-info-line{stroke:rgba(255,255,255,0.6);stroke-width:1;stroke-dasharray:3 3;}
+    .sat-info-dot{fill:#fff;}
+    .sat-info-card{position:absolute;width:210px;transform:translateY(-50%);
+      background:rgba(6,14,26,0.84);border:1px solid rgba(255,255,255,0.16);
+      border-radius:10px;padding:9px 11px;backdrop-filter:blur(6px);pointer-events:auto;}
+    .sat-info-title{font:800 11px Segoe UI,Roboto,sans-serif;letter-spacing:.4px;color:#cfe0ff;
+      display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+    .sat-info-card p{font:500 10.5px Segoe UI,Roboto,sans-serif;line-height:1.45;color:#b9c7dc;margin:0 0 6px;}
+    .sat-info-card a{font:700 10.5px Segoe UI,Roboto,sans-serif;color:#7fd1ff;text-decoration:none;}
+    .sat-info-card a:hover{text-decoration:underline;}
+    @media (max-width:880px){ .sat-info{display:none;} }
+  `;
+  document.head.appendChild(css);
+  const wrap = document.createElement('div');
+  wrap.className = 'sat-info';
+  wrap.innerHTML =
+    `<svg><line class="sat-info-line" x1="0" y1="0" x2="0" y2="0"></line>` +
+    `<circle class="sat-info-dot" cx="0" cy="0" r="2.5"></circle></svg>` +
+    `<div class="sat-info-card">` +
+      `<div class="sat-info-title">🛰 100% transparent</div>` +
+      `<p>Tes données restent sur ton appareil. Rien n'est revendu. Le code est ouvert et vérifiable.</p>` +
+      `<a href="https://github.com/omagadah/changeyourlife" target="_blank" rel="noopener">Voir le code (GitHub) ↗</a>` +
+    `</div>`;
+  document.querySelector('.scene')?.appendChild(wrap);
+  const line = wrap.querySelector('.sat-info-line');
+  const dot = wrap.querySelector('.sat-info-dot');
+  const card = wrap.querySelector('.sat-info-card');
+  const CW = 210;
+  const v = new THREE.Vector3();
+  let shown = false;
+  return {
+    update(camera, canvas) {
+      infoSat.getWorldPosition(v).project(camera);
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      const sx = (v.x * 0.5 + 0.5) * w;
+      const sy = (-v.y * 0.5 + 0.5) * h;
+      const onScreen = v.z <= 1 && sx > -40 && sx < w + 40 && sy > -40 && sy < h + 40;
+      if (!onScreen) { if (shown) { wrap.classList.remove('on'); shown = false; } return; }
+      // carte décalée du satellite ; bascule à gauche si elle déborderait à droite
+      let cx = sx + 28, anchorRight = false;
+      if (cx + CW > w - 12) { cx = sx - 28 - CW; anchorRight = true; }
+      const cy = Math.max(10, Math.min(h - 84, sy - 34));
+      card.style.left = cx + 'px';
+      card.style.top = cy + 'px';
+      const lx = anchorRight ? cx + CW : cx;
+      line.setAttribute('x1', sx); line.setAttribute('y1', sy);
+      line.setAttribute('x2', lx); line.setAttribute('y2', cy);
+      dot.setAttribute('cx', sx); dot.setAttribute('cy', sy);
+      if (!shown) { wrap.classList.add('on'); shown = true; }
+    },
+  };
+}
+
 // ── SYL ─────────────────────────────────────────────────────────────────────
 // Répliques d'intro : [clé i18n, repli FR]
 const LYA_INTRO = [
@@ -550,10 +615,11 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat } = initScene(canvas);
   geolocateTree(setEarthLocation);
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
+  const satInfo = initSatInfo(infoSat);
   const hud = initHud();
   const branchPanel = initBranchPanel(() => labels.hideSubs());
 
@@ -652,6 +718,7 @@ function initTree3D(canvas) {
 
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
+    satInfo.update(camera, canvas);   // l'étiquette suit le satellite
 
     if (phase === 'live') {
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;

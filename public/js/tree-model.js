@@ -975,5 +975,5 @@ export function buildTree(THREE, model, opts) {
   }
   grow(0);
 
-  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation };
+  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation, infoSat: satellites[0] || null };
 }
