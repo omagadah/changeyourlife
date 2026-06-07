@@ -56,6 +56,8 @@ async function load() {
   } catch (e) { board = null; }
   if (!board) board = { v: 1, columns: DEFAULT_COLUMNS.map((c) => ({ ...c, cards: [] })) };
   board.columns.forEach((c) => { if (!Array.isArray(c.cards)) c.cards = []; });
+  board.lockCols = !!board.lockCols;   // verrou colonnes (déplacement/édition/suppression)
+  board.lockCards = !!board.lockCards; // verrou fiches (déplacement/ajout)
   // garantit que 'tri' existe et passe en tête
   if (!col(TRI_ID)) board.columns.unshift({ ...DEFAULT_COLUMNS[0], cards: [] });
   board.columns.sort((a, b) => (a.id === TRI_ID ? -1 : b.id === TRI_ID ? 1 : 0));
@@ -72,6 +74,20 @@ function render() {
   boardEl.innerHTML = '';
   board.columns.filter((c) => c.id !== TRI_ID).forEach((c) => boardEl.appendChild(renderColumn(c)));
   initSortables();
+  updateLockUI();
+}
+
+// Reflète l'état des deux verrous sur les boutons (cadenas ouvert/fermé + libellé).
+function updateLockUI() {
+  const set = (id, locked, nom) => {
+    const b = document.getElementById(id); if (!b) return;
+    b.classList.toggle('locked', locked);
+    b.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    b.title = (locked ? 'Déverrouiller' : 'Verrouiller') + ' ' + nom;
+    const ic = b.querySelector('.org-lock-ic'); if (ic) ic.textContent = locked ? '🔒' : '🔓';
+  };
+  set('org-lock-cols', board.lockCols, 'les colonnes');
+  set('org-lock-cards', board.lockCards, 'les fiches');
 }
 
 function renderColumn(c, into) {
@@ -84,23 +100,25 @@ function renderColumn(c, into) {
       `<span class="org-col-dot"></span>` +
       `<div class="org-col-title" spellcheck="false">${escapeHtml(c.title)}</div>` +
       `<span class="org-col-count">${c.cards.length}</span>` +
-      (c.id === TRI_ID || c.id === FINISH_ID ? '' : `<button class="org-col-menu" title="Supprimer la colonne">⋯</button>`) +
+      (c.id === TRI_ID || c.id === FINISH_ID || board.lockCols ? '' : `<button class="org-col-menu" title="Supprimer la colonne">⋯</button>`) +
     `</div>` +
     `<div class="org-cards" data-col="${c.id}"></div>` +
-    `<button class="org-add">+ Ajouter une fiche</button>`;
-  // titre éditable en direct
+    (board.lockCards ? '' : `<button class="org-add">+ Ajouter une fiche</button>`);
+  // titre éditable en direct (sauf si colonnes verrouillées)
   const titleEl = el.querySelector('.org-col-title');
-  titleEl.setAttribute('contenteditable', 'true');
-  titleEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
-  titleEl.addEventListener('blur', () => {
-    const v = titleEl.textContent.trim();
-    if (v && v !== c.title) { c.title = v; save(); }
-    else if (!v) titleEl.textContent = c.title;
-  });
+  titleEl.setAttribute('contenteditable', board.lockCols ? 'false' : 'true');
+  if (!board.lockCols) {
+    titleEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
+    titleEl.addEventListener('blur', () => {
+      const v = titleEl.textContent.trim();
+      if (v && v !== c.title) { c.title = v; save(); }
+      else if (!v) titleEl.textContent = c.title;
+    });
+  }
   const menu = el.querySelector('.org-col-menu'); if (menu) menu.onclick = () => deleteColumn(c);
   const cardsBox = el.querySelector('.org-cards');
   c.cards.forEach((card) => cardsBox.appendChild(renderCard(card)));
-  el.querySelector('.org-add').onclick = (ev) => openAdd(c, ev.currentTarget);
+  const addBtn = el.querySelector('.org-add'); if (addBtn) addBtn.onclick = (ev) => openAdd(c, ev.currentTarget);
   return el;
 }
 
@@ -132,14 +150,14 @@ function initSortables() {
   document.querySelectorAll('.org-cards').forEach((cc) => {
     sortables.push(window.Sortable.create(cc, {
       group: 'cards', animation: 160, ghostClass: 'org-ghost', dragClass: 'org-drag',
-      delay: 60, delayOnTouchOnly: true,
+      delay: 60, delayOnTouchOnly: true, disabled: board.lockCards,
       onEnd: handleCardEnd,
     }));
   });
   const b = document.getElementById('org-board');
   if (b) sortables.push(window.Sortable.create(b, {
     group: 'cols', handle: '.org-col-head', draggable: '.org-col', filter: '.org-col-title,.org-col-menu',
-    preventOnFilter: false, animation: 160, ghostClass: 'org-col-ghost', onEnd: reorderColumns,
+    preventOnFilter: false, animation: 160, ghostClass: 'org-col-ghost', disabled: board.lockCols, onEnd: reorderColumns,
   }));
 }
 
@@ -207,6 +225,7 @@ function deleteColumn(c) {
   board.columns = board.columns.filter((x) => x.id !== c.id); save(); render();
 }
 function addColumn() {
+  if (board.lockCols) return;
   const colors = ['#a78bfa', '#34d399', '#f472b6', '#22d3ee', '#fb923c'];
   const c = { id: uid6('col'), title: 'Nouvelle colonne', color: colors[board.columns.length % colors.length], cards: [] };
   // insère avant 'Terminé' si présent, sinon à la fin
@@ -326,6 +345,16 @@ async function addToAgenda(card) {
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 document.getElementById('org-add-col').onclick = addColumn;
+const _lockCols = document.getElementById('org-lock-cols');
+if (_lockCols) _lockCols.onclick = () => {
+  board.lockCols = !board.lockCols; save(); render();
+  toast(board.lockCols ? 'Colonnes verrouillées 🔒' : 'Colonnes déverrouillées 🔓');
+};
+const _lockCards = document.getElementById('org-lock-cards');
+if (_lockCards) _lockCards.onclick = () => {
+  board.lockCards = !board.lockCards; save(); render();
+  toast(board.lockCards ? 'Fiches verrouillées 🔒' : 'Fiches déverrouillées 🔓');
+};
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login/'; return; }

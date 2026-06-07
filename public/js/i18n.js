@@ -58,9 +58,9 @@ export const LANGS = [
 const DICT = {
   fr: {
     'nav.login': 'Se connecter',
-    'hero.eyebrow': 'Ta vie, vivante',
+    'hero.eyebrow': 'Ton assistant de vie',
     'hero.title': 'Deviens qui tu rêves d\'être.<br>Un geste après l\'autre.',
-    'hero.desc': 'Ici, ta vie prend la forme d\'un arbre. La nuit où tu dors enfin, le projet que tu oses lancer, le proche que tu rappelles : <strong>chacun de ces gestes le fait grandir, et toi avec lui.</strong> Tu ne remplis pas une appli, tu construis ta vie. Et SYL veille à tes côtés, saison après saison.',
+    'hero.desc': 'Ici, ta vie prend la forme d\'un arbre numérique.<br>Chaque geste de ta vie réelle s\'y inscrit et le fait grandir, et toi avec lui. <strong>SYL, ton assistant personnel, t\'aide à mener tes projets à bien</strong> et à t\'épanouir dans le style de vie qui est le tien.',
     'stream.caption': 'Tes actions, dans la vraie vie',
     'cta.start': 'Commencer l\'aventure',
     'lya.voice': 'Voix de SYL',
@@ -387,7 +387,7 @@ function pick() {
 // ── Cache des traductions IA (langues sans dictionnaire écrit à la main, ou
 //    clés manquantes d'une langue principale comme les panneaux de branches). ──
 // Bump SRC_VERSION si on modifie une chaîne source FR → invalide les caches.
-const SRC_VERSION = 3;
+const SRC_VERSION = 4;
 const ai = {};                 // ai[lang] = { clé: traduction }
 const translating = new Set(); // langues dont une traduction IA est en cours
 

@@ -18,6 +18,13 @@
     .org-sub { font-size:0.84rem; color:var(--text-2,#aab7cf); margin-top:3px; max-width:46rem; }
     .org-addcol { padding:9px 16px; border-radius:99px; border:1px dashed rgba(255,255,255,0.25); background:rgba(255,255,255,0.04); color:var(--text-2,#aab7cf); font-weight:700; font-size:0.84rem; cursor:pointer; font-family:inherit; white-space:nowrap; }
     .org-addcol:hover { background:rgba(255,255,255,0.09); color:#fff; }
+    .org-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .org-lock { display:inline-flex; align-items:center; gap:6px; padding:9px 14px; border-radius:99px;
+      border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.04); color:var(--text-2,#aab7cf);
+      font-weight:700; font-size:0.82rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .18s; }
+    .org-lock .org-lock-ic { font-size:0.95rem; line-height:1; }
+    .org-lock:hover { background:rgba(255,255,255,0.09); color:#fff; }
+    .org-lock.locked { background:rgba(245,158,11,0.16); border-color:rgba(245,158,11,0.5); color:#fcd34d; }
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; box-shadow:0 8px 28px rgba(0,0,0,.35); }
     .toast.show { transform:translate(-50%,0); } .toast.xp { background:rgba(59,130,246,.92); }
 
@@ -114,7 +121,15 @@
         <h1>🗂️ ORGANIZER</h1>
         <div class="org-sub">Déverse toutes tes idées, trie-les par priorité, planifie - chaque fiche terminée fait grandir ton arbre.</div>
       </div>
-      <button class="org-addcol" id="org-add-col">+ Colonne</button>
+      <div class="org-actions">
+        <button class="org-lock" id="org-lock-cols" title="Verrouiller les colonnes" aria-pressed="false">
+          <span class="org-lock-ic">🔓</span> Colonnes
+        </button>
+        <button class="org-lock" id="org-lock-cards" title="Verrouiller les fiches" aria-pressed="false">
+          <span class="org-lock-ic">🔓</span> Fiches
+        </button>
+        <button class="org-addcol" id="org-add-col">+ Colonne</button>
+      </div>
     </div>
     <div class="org-wrap">
       <div class="org-tri" id="org-tri"></div>
