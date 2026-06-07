@@ -1,10 +1,11 @@
-// service-worker.js - v86 (emojis Twemoji + fix chevauchement icônes haut-droite)
-const CACHE_NAME = 'changeyourlife-v86';
+// service-worker.js - v87 (module ORGANIZER : board Eisenhower drag&drop)
+const CACHE_NAME = 'changeyourlife-v87';
 const urlsToCache = [
   '/',
   '/app/',
   '/plan/',
   '/competences/',
+  '/organizer/',
   '/physio/',
   '/securite/',
   '/appartenance/',
@@ -45,6 +46,7 @@ const urlsToCache = [
   '/js/quotes.js',
   '/js/agenda.js',
   '/js/emoji.js',
+  '/js/organizer.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',

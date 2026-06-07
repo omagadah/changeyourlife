@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORGANIZER — Change Your Life</title>
+  <meta name="description" content="ORGANIZER : déverse toutes tes idées, trie-les par priorité (matrice d'Eisenhower), planifie, et vois-toi accomplir — chaque fiche terminée fait grandir ton arbre." />
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#0070f3">
+  <meta name="robots" content="noindex" />
+  <style>
+    body { color:var(--text-1,#e5eef8); }
+    .page-shell { position:fixed; inset:20px; background:var(--glass-bg); backdrop-filter:blur(15px); border-radius:20px; border:1px solid var(--glass-border); padding:18px 18px 10px; display:grid; grid-template-rows:auto 1fr; gap:14px; overflow:hidden; }
+    .org-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .org-head h1 { font-size:1.45rem; letter-spacing:-.4px; }
+    .org-sub { font-size:0.84rem; color:var(--text-2,#aab7cf); margin-top:3px; max-width:46rem; }
+    .org-addcol { padding:9px 16px; border-radius:99px; border:1px dashed rgba(255,255,255,0.25); background:rgba(255,255,255,0.04); color:var(--text-2,#aab7cf); font-weight:700; font-size:0.84rem; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .org-addcol:hover { background:rgba(255,255,255,0.09); color:#fff; }
+    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; box-shadow:0 8px 28px rgba(0,0,0,.35); }
+    .toast.show { transform:translate(-50%,0); } .toast.xp { background:rgba(59,130,246,.92); }
+
+    /* ── Board ── */
+    .org-board { display:flex; gap:14px; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:flex-start; }
+    .org-col { flex:0 0 290px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); }
+    .org-col.drag-over { border-color:var(--cc,#60a5fa); background:rgba(96,165,250,0.06); }
+    .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
+    .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#8aa0bf); flex-shrink:0; box-shadow:0 0 8px var(--cc,#8aa0bf); }
+    .org-col-title { flex:1; font-size:0.82rem; font-weight:800; color:#e5eef8; line-height:1.25; cursor:text; }
+    .org-col-count { font-size:0.72rem; font-weight:700; color:var(--text-3,#7e9ab5); background:rgba(255,255,255,0.06); padding:1px 8px; border-radius:99px; }
+    .org-col-menu { border:none; background:none; color:var(--text-3,#7e9ab5); cursor:pointer; font-size:1rem; padding:0 4px; border-radius:6px; }
+    .org-col-menu:hover { color:#fff; background:rgba(255,255,255,0.08); }
+    .org-cards { flex:1; overflow-y:auto; padding:4px 10px; display:flex; flex-direction:column; gap:8px; min-height:24px; }
+    .org-add { margin:8px 10px 12px; padding:9px 12px; border-radius:10px; border:1px dashed rgba(255,255,255,0.15); background:transparent; color:var(--text-3,#7e9ab5); font-size:0.82rem; cursor:pointer; text-align:left; font-family:inherit; }
+    .org-add:hover { background:rgba(255,255,255,0.05); color:#cdd9ec; }
+    .org-add-input { margin:6px 10px 12px; }
+    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:10px; border:1px solid rgba(96,165,250,0.4); background:rgba(255,255,255,0.06); color:#e5eef8; font-family:inherit; font-size:0.85rem; padding:9px 11px; outline:none; }
+    .org-add-row { display:flex; gap:8px; margin-top:6px; }
+    .org-add-row button { padding:7px 14px; border-radius:9px; border:none; cursor:pointer; font-weight:700; font-size:0.8rem; font-family:inherit; }
+    .org-add-ok { background:#3b82f6; color:#fff; } .org-add-ok:hover{ filter:brightness(1.1); }
+    .org-add-cancel { background:rgba(255,255,255,0.06); color:var(--text-2,#aab7cf); }
+
+    /* ── Card ── */
+    .org-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:11px 12px; cursor:grab;
+      position:relative; transition:background .15s, transform .12s, box-shadow .15s; }
+    .org-card:hover { background:rgba(255,255,255,0.08); box-shadow:0 6px 18px rgba(0,0,0,0.28); }
+    .org-card:active { cursor:grabbing; }
+    .org-card.dragging { opacity:0.45; }
+    .org-card.done .org-card-title { text-decoration:line-through; opacity:0.7; }
+    .org-card-title { font-size:0.88rem; color:#e9f0fa; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
+    .org-card-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .org-badge { display:inline-flex; align-items:center; gap:4px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,0.07); color:#9db8d8; }
+    .org-badge.due-soon { background:rgba(251,191,36,0.15); color:#fcd34d; }
+    .org-badge.due-late { background:rgba(239,68,68,0.16); color:#fca5a5; }
+
+    /* ── Modal ── */
+    .org-modal { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;
+      background:rgba(3,8,18,0.6); backdrop-filter:blur(8px); }
+    .org-modal.hidden { display:none; }
+    .org-card-detail { width:100%; max-width:540px; max-height:90vh; overflow-y:auto; background:rgba(12,22,40,0.98); border:1px solid rgba(255,255,255,0.1);
+      border-radius:18px; padding:22px; box-shadow:0 30px 80px rgba(0,0,0,0.6); }
+    .org-d-title { width:100%; font-size:1.1rem; font-weight:800; color:#eef4ff; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+      border-radius:10px; padding:10px 12px; font-family:inherit; resize:vertical; min-height:44px; outline:none; }
+    .org-d-label { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3,#7e9ab5); margin:18px 0 8px; }
+    .org-d-input { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#e5eef8; font-family:inherit; font-size:0.9rem; padding:9px 11px; outline:none; }
+    .org-d-input:focus { border-color:rgba(96,165,250,0.5); }
+    textarea.org-d-input { resize:vertical; min-height:70px; }
+    .org-check { display:flex; align-items:center; gap:9px; padding:5px 0; }
+    .org-check input[type=checkbox] { width:17px; height:17px; accent-color:#22c55e; cursor:pointer; flex-shrink:0; }
+    .org-check span { flex:1; font-size:0.88rem; color:#dbe6f5; }
+    .org-check span.done { text-decoration:line-through; color:#7e9ab5; }
+    .org-check .del { cursor:pointer; color:#7e9ab5; border:none; background:none; font-size:0.8rem; }
+    .org-check .del:hover { color:#f87171; }
+    .org-prog { height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; margin:4px 0 8px; }
+    .org-prog div { height:100%; background:#22c55e; border-radius:4px; transition:width .4s; }
+    .org-logs { display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; }
+    .org-log { font-size:0.76rem; color:#8ea6c4; display:flex; gap:8px; }
+    .org-log .t { color:#5b738f; white-space:nowrap; flex-shrink:0; }
+    .org-d-actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
+    .org-btn { padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:0.85rem; font-family:inherit; }
+    .org-btn.move { background:rgba(255,255,255,0.06); color:#cdd9ec; }
+    .org-btn.cal { background:rgba(66,133,244,0.16); color:#8ab4f8; border:1px solid rgba(66,133,244,0.4); }
+    .org-btn.del { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.3); margin-left:auto; }
+    .org-btn.close { background:#3b82f6; color:#fff; }
+    .org-d-move { border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#e5eef8; font-family:inherit; font-size:0.85rem; padding:9px 11px; }
+    .org-d-move option { background:#0c1628; }
+
+    @media (max-width:600px){ .page-shell{ inset:8px; padding:12px 10px 6px; border-radius:16px; } .org-col{ flex-basis:80vw; } }
+  </style>
+</head>
+<body>
+  <div id="vanta-birds-bg"></div>
+  <div id="toast" class="toast"></div>
+  <nav class="site-nav">
+    <a href="/app/" class="site-nav__back">← Mon espace</a>
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
+  </nav>
+  <main class="page-shell page-shell-nav">
+    <div class="org-head">
+      <div>
+        <h1>🗂️ ORGANIZER</h1>
+        <div class="org-sub">Déverse toutes tes idées, trie-les par priorité, planifie — chaque fiche terminée fait grandir ton arbre.</div>
+      </div>
+      <button class="org-addcol" id="org-add-col">+ Colonne</button>
+    </div>
+    <div class="org-board" id="org-board"></div>
+  </main>
+
+  <div class="org-modal hidden" id="org-modal"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js"></script>
+  <script type="module" src="/js/organizer.js"></script>
+</body>
+</html>

@@ -156,6 +156,8 @@ const DICT = {
     'app.skills.desc': 'Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.',
     'app.modules': 'Tous les modules',
     'app.domains': 'Niveaux par domaine',
+    'app.organizer.title': 'ORGANIZER',
+    'app.organizer.desc': 'Déverse tes idées, trie-les par priorité, planifie — façon Trello, relié à ton arbre.',
     'auth.title': 'Bon retour',
     'auth.sub': "Retrouve ton arbre de vie là où tu l'as laissé.",
     'auth.email': 'Adresse e-mail',
