@@ -22,10 +22,21 @@
     .toast.show { transform:translate(-50%,0); } .toast.xp { background:rgba(59,130,246,.92); }
 
     /* ── Board ── */
-    .org-board { display:flex; gap:14px; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:flex-start; }
+    .org-wrap { display:flex; gap:0; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:flex-start; }
+    .org-board { display:flex; gap:14px; align-items:flex-start; height:100%; }
+    .org-sep { flex:0 0 1px; align-self:stretch; margin:6px 14px; width:2px; border-radius:2px;
+      background:linear-gradient(180deg,transparent,rgba(255,255,255,0.18),transparent); }
     .org-col { flex:0 0 290px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
       background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); }
-    .org-col.drag-over { border-color:var(--cc,#60a5fa); background:rgba(96,165,250,0.06); }
+    /* Colonne « Idées à trier » : figée à gauche, mise en avant */
+    .org-tri { flex:0 0 296px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
+      background:linear-gradient(180deg,rgba(138,160,191,0.12),rgba(138,160,191,0.04)); border:1px solid rgba(138,160,191,0.32);
+      box-shadow:0 0 0 1px rgba(138,160,191,0.08) inset; }
+    .org-col.drag-over, .org-tri.drag-over { border-color:var(--cc,#60a5fa); background:rgba(96,165,250,0.08); }
+    /* SortableJS : fiche fantôme + fiche en mouvement */
+    .org-ghost { opacity:0.35; background:rgba(96,165,250,0.12) !important; border:1px dashed rgba(96,165,250,0.6) !important; }
+    .org-drag { transform:rotate(2deg); box-shadow:0 14px 34px rgba(0,0,0,0.5) !important; cursor:grabbing; }
+    .org-col-ghost { opacity:0.4; }
     .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
     .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#8aa0bf); flex-shrink:0; box-shadow:0 0 8px var(--cc,#8aa0bf); }
     .org-col-title { flex:1; font-size:0.82rem; font-weight:800; color:#e5eef8; line-height:1.25; cursor:text; }
@@ -105,13 +116,18 @@
       </div>
       <button class="org-addcol" id="org-add-col">+ Colonne</button>
     </div>
-    <div class="org-board" id="org-board"></div>
+    <div class="org-wrap">
+      <div class="org-tri" id="org-tri"></div>
+      <div class="org-sep" aria-hidden="true"></div>
+      <div class="org-board" id="org-board"></div>
+    </div>
   </main>
 
   <div class="org-modal hidden" id="org-modal"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
   <script type="module" src="/js/organizer.js"></script>
 </body>
 </html>

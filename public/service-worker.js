@@ -1,5 +1,5 @@
-// service-worker.js - v88 (IA renommee Syl + suppression des em-dash partout)
-const CACHE_NAME = 'changeyourlife-v88';
+// service-worker.js - v89 (ORGANIZER : drag&drop SortableJS, titres inline, tri figee)
+const CACHE_NAME = 'changeyourlife-v89';
 const urlsToCache = [
   '/',
   '/app/',

@@ -1,6 +1,7 @@
 // /js/organizer.js - ORGANIZER : board type Trello (matrice d'Eisenhower).
-// Colonnes + fiches déplaçables (drag & drop), échéances, étapes (checklist),
-// logs d'activité par fiche. Fiche → Terminé = XP sur la branche Accomplissement.
+// Colonnes + fiches déplaçables (drag & drop via SortableJS), échéances, étapes
+// (checklist), logs d'activité par fiche. Fiche -> Terminé = XP (Accomplissement).
+// "Idées à trier" est figée à gauche ; les autres colonnes sont réordonnables.
 // Données : users/{uid}.organizer.
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -10,22 +11,23 @@ import { updateGlobalAvatar } from '/js/common.js';
 
 let auth, db, uid;
 let board = null;
-let dragId = null;
+let sortables = [];
 
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
 try { initUserMenu(); } catch (e) {}
 if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); }
 
+const TRI_ID = 'tri';
 const FINISH_ID = 'finish';
 const FINISH_XP = 50;
 const DEFAULT_COLUMNS = [
-  { id: 'tri',    title: 'Idées à trier',                              color: '#8aa0bf' },
-  { id: 'ui',     title: 'Urgent · Important - à faire',               color: '#f87171' },
-  { id: 'ni',     title: 'Important, non urgent - à planifier',        color: '#38bdf8' },
+  { id: TRI_ID,   title: 'Idées à trier',                               color: '#8aa0bf' },
+  { id: 'ui',     title: 'Urgent · Important - à faire',                color: '#f87171' },
+  { id: 'ni',     title: 'Important, non urgent - à planifier',         color: '#38bdf8' },
   { id: 'up',     title: 'Urgent, peu important - vite fait / déléguer',color: '#fbbf24' },
-  { id: 'nn',     title: 'Non urgent · non important - plus tard',     color: '#7e9ab5' },
-  { id: FINISH_ID, title: 'Terminé ✅',                                 color: '#4ade80' },
+  { id: 'nn',     title: 'Non urgent · non important - plus tard',      color: '#7e9ab5' },
+  { id: FINISH_ID, title: 'Terminé ✅',                                  color: '#4ade80' },
 ];
 
 const now = () => Date.now();
@@ -34,14 +36,17 @@ function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&
 function toast(msg, cls) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = 'toast' + (cls ? ' ' + cls : ''); t.classList.add('show'); clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('show'), 2200); }
 function fmtDate(ts) { try { return new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }); } catch (_) { return ''; } }
 function fmtLogTime(ts) { try { return new Date(ts).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (_) { return ''; } }
+function stripEmoji(s) { return String(s || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}✅✔️]/gu, '').trim(); }
 
 // ── Données ──────────────────────────────────────────────────────────────────
 function col(id) { return board.columns.find((c) => c.id === id); }
+function colTitle(id) { const c = col(id); return c ? c.title : ''; }
 function findCard(id) {
   for (const c of board.columns) { const k = c.cards.find((x) => x.id === id); if (k) return { card: k, col: c }; }
   return null;
 }
 function log(card, m) { card.logs = card.logs || []; card.logs.unshift({ at: now(), m }); if (card.logs.length > 60) card.logs.length = 60; }
+async function awardXp() { try { const fn = window._cyfFirebase && window._cyfFirebase.awardXp; if (fn) await fn('accomplissement', FINISH_XP); } catch (e) {} }
 
 async function load() {
   try {
@@ -51,48 +56,60 @@ async function load() {
   } catch (e) { board = null; }
   if (!board) board = { v: 1, columns: DEFAULT_COLUMNS.map((c) => ({ ...c, cards: [] })) };
   board.columns.forEach((c) => { if (!Array.isArray(c.cards)) c.cards = []; });
+  // garantit que 'tri' existe et passe en tête
+  if (!col(TRI_ID)) board.columns.unshift({ ...DEFAULT_COLUMNS[0], cards: [] });
+  board.columns.sort((a, b) => (a.id === TRI_ID ? -1 : b.id === TRI_ID ? 1 : 0));
 }
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => { setDoc(doc(db, 'users', uid), { organizer: board }, { merge: true }).catch(() => {}); }, 250); }
 
-// ── Rendu du board ───────────────────────────────────────────────────────────
+// ── Rendu ────────────────────────────────────────────────────────────────────
 function render() {
-  const root = document.getElementById('org-board'); if (!root) return;
-  root.innerHTML = '';
-  board.columns.forEach((c) => root.appendChild(renderColumn(c)));
+  const triHost = document.getElementById('org-tri');
+  const boardEl = document.getElementById('org-board');
+  if (!boardEl) return;
+  if (triHost) renderColumn(col(TRI_ID), triHost);
+  boardEl.innerHTML = '';
+  board.columns.filter((c) => c.id !== TRI_ID).forEach((c) => boardEl.appendChild(renderColumn(c)));
+  initSortables();
 }
 
-function renderColumn(c) {
-  const el = document.createElement('div');
-  el.className = 'org-col'; el.style.setProperty('--cc', c.color || '#8aa0bf'); el.dataset.col = c.id;
-  const head = document.createElement('div'); head.className = 'org-col-head';
-  head.innerHTML = `<span class="org-col-dot"></span><div class="org-col-title">${escapeHtml(c.title)}</div>` +
-    `<span class="org-col-count">${c.cards.length}</span><button class="org-col-menu" title="Options">⋯</button>`;
-  head.querySelector('.org-col-title').onclick = () => renameColumn(c);
-  head.querySelector('.org-col-menu').onclick = () => columnMenu(c);
-  el.appendChild(head);
-
-  const cards = document.createElement('div'); cards.className = 'org-cards'; cards.dataset.col = c.id;
-  c.cards.forEach((card) => cards.appendChild(renderCard(card, c)));
-  // drop zone
-  cards.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('drag-over'); });
-  cards.addEventListener('dragleave', () => el.classList.remove('drag-over'));
-  cards.addEventListener('drop', (e) => { e.preventDefault(); el.classList.remove('drag-over'); if (dragId) moveCard(dragId, c.id); });
-  el.appendChild(cards);
-
-  const add = document.createElement('button'); add.className = 'org-add'; add.textContent = '+ Ajouter une fiche';
-  add.onclick = () => openAdd(c, add);
-  el.appendChild(add);
+function renderColumn(c, into) {
+  const el = into || document.createElement('div');
+  if (!into) el.className = 'org-col';
+  el.style.setProperty('--cc', c.color || '#8aa0bf');
+  el.dataset.col = c.id;
+  el.innerHTML =
+    `<div class="org-col-head">` +
+      `<span class="org-col-dot"></span>` +
+      `<div class="org-col-title" spellcheck="false">${escapeHtml(c.title)}</div>` +
+      `<span class="org-col-count">${c.cards.length}</span>` +
+      (c.id === TRI_ID || c.id === FINISH_ID ? '' : `<button class="org-col-menu" title="Supprimer la colonne">⋯</button>`) +
+    `</div>` +
+    `<div class="org-cards" data-col="${c.id}"></div>` +
+    `<button class="org-add">+ Ajouter une fiche</button>`;
+  // titre éditable en direct
+  const titleEl = el.querySelector('.org-col-title');
+  titleEl.setAttribute('contenteditable', 'true');
+  titleEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
+  titleEl.addEventListener('blur', () => {
+    const v = titleEl.textContent.trim();
+    if (v && v !== c.title) { c.title = v; save(); }
+    else if (!v) titleEl.textContent = c.title;
+  });
+  const menu = el.querySelector('.org-col-menu'); if (menu) menu.onclick = () => deleteColumn(c);
+  const cardsBox = el.querySelector('.org-cards');
+  c.cards.forEach((card) => cardsBox.appendChild(renderCard(card)));
+  el.querySelector('.org-add').onclick = (ev) => openAdd(c, ev.currentTarget);
   return el;
 }
 
-function renderCard(card, c) {
+function renderCard(card) {
   const el = document.createElement('div');
   el.className = 'org-card' + (card.done ? ' done' : '');
-  el.draggable = true; el.dataset.id = card.id;
+  el.dataset.id = card.id;
   const title = document.createElement('div'); title.className = 'org-card-title'; title.textContent = card.title;
   el.appendChild(title);
-  // badges
   const checked = (card.checklist || []).filter((s) => s.done).length;
   const total = (card.checklist || []).length;
   const badges = [];
@@ -103,16 +120,70 @@ function renderCard(card, c) {
   }
   if (total) badges.push(`<span class="org-badge">☑ ${checked}/${total}</span>`);
   if (badges.length) { const b = document.createElement('div'); b.className = 'org-card-badges'; b.innerHTML = badges.join(''); el.appendChild(b); }
-  el.addEventListener('dragstart', (e) => { dragId = card.id; el.classList.add('dragging'); try { e.dataTransfer.setData('text/plain', card.id); } catch (_) {} });
-  el.addEventListener('dragend', () => { dragId = null; el.classList.remove('dragging'); });
   el.addEventListener('click', () => openCard(card.id));
   return el;
+}
+
+// ── Drag & drop (SortableJS) ─────────────────────────────────────────────────
+function initSortables() {
+  if (!window.Sortable) return;
+  sortables.forEach((s) => { try { s.destroy(); } catch (e) {} });
+  sortables = [];
+  document.querySelectorAll('.org-cards').forEach((cc) => {
+    sortables.push(window.Sortable.create(cc, {
+      group: 'cards', animation: 160, ghostClass: 'org-ghost', dragClass: 'org-drag',
+      delay: 60, delayOnTouchOnly: true,
+      onEnd: handleCardEnd,
+    }));
+  });
+  const b = document.getElementById('org-board');
+  if (b) sortables.push(window.Sortable.create(b, {
+    group: 'cols', handle: '.org-col-head', draggable: '.org-col', filter: '.org-col-title,.org-col-menu',
+    preventOnFilter: false, animation: 160, ghostClass: 'org-col-ghost', onEnd: reorderColumns,
+  }));
+}
+
+function syncFromDom() {
+  const all = {}; board.columns.forEach((c) => c.cards.forEach((k) => { all[k.id] = k; }));
+  document.querySelectorAll('.org-cards').forEach((cc) => {
+    const c = col(cc.dataset.col); if (!c) return;
+    const ids = Array.from(cc.querySelectorAll(':scope > .org-card')).map((x) => x.dataset.id);
+    c.cards = ids.map((id) => all[id]).filter(Boolean);
+  });
+}
+function refreshCounts() {
+  document.querySelectorAll('[data-col]').forEach((el) => {
+    const c = col(el.dataset.col); const n = el.querySelector(':scope > .org-col-head > .org-col-count');
+    if (c && n) n.textContent = c.cards.length;
+  });
+}
+function handleCardEnd(evt) {
+  const cardId = evt.item.dataset.id;
+  const fromCol = evt.from.dataset.col, toCol = evt.to.dataset.col;
+  syncFromDom();
+  if (fromCol !== toCol) {
+    const f = findCard(cardId);
+    if (f) {
+      log(f.card, `Déplacée : ${stripEmoji(colTitle(fromCol))} → ${stripEmoji(colTitle(toCol))}`);
+      if (toCol === FINISH_ID && !f.card.done) { f.card.done = true; log(f.card, 'Terminé 🎉'); awardXp(); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp'); }
+      else if (toCol !== FINISH_ID && f.card.done) { f.card.done = false; }
+      evt.item.classList.toggle('done', !!f.card.done);
+    }
+  }
+  save(); refreshCounts();
+}
+function reorderColumns() {
+  const order = Array.from(document.querySelectorAll('#org-board > .org-col')).map((e) => e.dataset.col);
+  const tri = col(TRI_ID);
+  const rest = order.map((id) => col(id)).filter(Boolean);
+  board.columns = [tri].filter(Boolean).concat(rest);
+  save();
 }
 
 // ── Ajout de fiche ───────────────────────────────────────────────────────────
 function openAdd(c, btn) {
   const wrap = document.createElement('div'); wrap.className = 'org-add-input';
-  wrap.innerHTML = `<textarea placeholder="Une idée, une tâche…"></textarea>` +
+  wrap.innerHTML = `<textarea placeholder="Une idée, une tâche..."></textarea>` +
     `<div class="org-add-row"><button class="org-add-ok">Ajouter</button><button class="org-add-cancel">Annuler</button></div>`;
   btn.replaceWith(wrap);
   const ta = wrap.querySelector('textarea'); ta.focus();
@@ -129,43 +200,37 @@ function openAdd(c, btn) {
   ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(); } });
 }
 
-// ── Déplacement ──────────────────────────────────────────────────────────────
+// ── Colonnes ─────────────────────────────────────────────────────────────────
+function deleteColumn(c) {
+  if (c.id === TRI_ID || c.id === FINISH_ID) return;
+  if (c.cards.length && !confirm(`Supprimer « ${stripEmoji(c.title)} » et ses ${c.cards.length} fiche(s) ?`)) return;
+  board.columns = board.columns.filter((x) => x.id !== c.id); save(); render();
+}
+function addColumn() {
+  const colors = ['#a78bfa', '#34d399', '#f472b6', '#22d3ee', '#fb923c'];
+  const c = { id: uid6('col'), title: 'Nouvelle colonne', color: colors[board.columns.length % colors.length], cards: [] };
+  // insère avant 'Terminé' si présent, sinon à la fin
+  const fi = board.columns.findIndex((x) => x.id === FINISH_ID);
+  if (fi >= 0) board.columns.splice(fi, 0, c); else board.columns.push(c);
+  save(); render();
+  setTimeout(() => {
+    const el = document.querySelector(`#org-board > .org-col[data-col="${c.id}"] .org-col-title`);
+    if (el) { el.focus(); try { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (_) {} }
+  }, 60);
+}
+
+// ── Détail d'une fiche (modal) ───────────────────────────────────────────────
 function moveCard(cardId, toColId) {
   const f = findCard(cardId); if (!f || f.col.id === toColId) return;
   const dest = col(toColId); if (!dest) return;
   f.col.cards = f.col.cards.filter((x) => x.id !== cardId);
   dest.cards.push(f.card);
   log(f.card, `Déplacée : ${stripEmoji(f.col.title)} → ${stripEmoji(dest.title)}`);
-  if (toColId === FINISH_ID && !f.card.done) {
-    f.card.done = true; log(f.card, 'Terminé 🎉');
-    awardXp(); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp');
-  } else if (toColId !== FINISH_ID && f.card.done) {
-    f.card.done = false;
-  }
-  save(); render();
-}
-function stripEmoji(s) { return String(s || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}✅✔️]/gu, '').trim(); }
-async function awardXp() { try { const fn = window._cyfFirebase && window._cyfFirebase.awardXp; if (fn) await fn('accomplissement', FINISH_XP); } catch (e) {} }
-
-// ── Colonnes ─────────────────────────────────────────────────────────────────
-function renameColumn(c) {
-  const t = prompt('Renommer la colonne :', c.title);
-  if (t && t.trim()) { c.title = t.trim(); save(); render(); }
-}
-function columnMenu(c) {
-  if (c.cards.length) { if (!confirm(`Supprimer « ${stripEmoji(c.title)} » et ses ${c.cards.length} fiche(s) ?`)) return; }
-  else if (!confirm(`Supprimer la colonne « ${stripEmoji(c.title)} » ?`)) return;
-  board.columns = board.columns.filter((x) => x.id !== c.id); save(); render();
-}
-function addColumn() {
-  const t = prompt('Nom de la nouvelle colonne :', 'Nouvelle colonne');
-  if (!t || !t.trim()) return;
-  const colors = ['#a78bfa', '#34d399', '#f472b6', '#22d3ee', '#fb923c'];
-  board.columns.push({ id: uid6('col'), title: t.trim(), color: colors[board.columns.length % colors.length], cards: [] });
+  if (toColId === FINISH_ID && !f.card.done) { f.card.done = true; log(f.card, 'Terminé 🎉'); awardXp(); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp'); }
+  else if (toColId !== FINISH_ID && f.card.done) { f.card.done = false; }
   save(); render();
 }
 
-// ── Détail d'une fiche (modal) ───────────────────────────────────────────────
 function openCard(cardId) {
   const f = findCard(cardId); if (!f) return;
   const card = f.card;
@@ -178,7 +243,7 @@ function openCard(cardId) {
     <div class="org-card-detail">
       <textarea class="org-d-title" id="d-title" rows="1">${escapeHtml(card.title)}</textarea>
       <div class="org-d-label">Description</div>
-      <textarea class="org-d-input" id="d-desc" placeholder="Détaille cette idée…">${escapeHtml(card.desc || '')}</textarea>
+      <textarea class="org-d-input" id="d-desc" placeholder="Détaille cette idée...">${escapeHtml(card.desc || '')}</textarea>
       <div class="org-d-label">Échéance</div>
       <input type="date" class="org-d-input" id="d-due" value="${dueVal}" />
       <div class="org-d-label">Étapes ${total ? `· ${checked}/${total}` : ''}</div>
