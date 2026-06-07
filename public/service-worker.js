@@ -1,5 +1,5 @@
-// service-worker.js - v80 (sélecteur de langue auto-injecté + dispo sur /app/)
-const CACHE_NAME = 'changeyourlife-v80';
+// service-worker.js - v81 (méditation: accueil Lya par humeur + nouveaux modes)
+const CACHE_NAME = 'changeyourlife-v81';
 const urlsToCache = [
   '/',
   '/app/',
