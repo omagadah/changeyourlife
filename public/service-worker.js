@@ -1,5 +1,5 @@
-// service-worker.js - v83 (i18n robuste: tout traduit + page de connexion)
-const CACHE_NAME = 'changeyourlife-v83';
+// service-worker.js - v84 (475 citations du jour)
+const CACHE_NAME = 'changeyourlife-v84';
 const urlsToCache = [
   '/',
   '/app/',
@@ -42,6 +42,7 @@ const urlsToCache = [
   '/js/skills.js',
   '/js/competences.js',
   '/js/branche.js',
+  '/js/quotes.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',

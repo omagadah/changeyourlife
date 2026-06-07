@@ -432,13 +432,14 @@
             { text: "Croire en soi est la première étape vers la réussite.", author: "Anonyme" },
             { text: "Le meilleur investissement que tu puisses faire est en toi-même.", author: "Warren Buffett" },
           ];
-          const dayIdx = Math.floor(Date.now() / 86400000) % QUOTES.length;
-          const q = QUOTES[dayIdx];
+          // 475 citations dans /js/quotes.js (une par jour). Repli sur la liste locale.
+          const q = (window.CYL_quoteOfDay && window.CYL_quoteOfDay())
+            || (function () { const x = QUOTES[Math.floor(Date.now() / 86400000) % QUOTES.length]; return { t: x.text, a: x.author }; })();
           el.innerHTML = `<div class="quote-card">
             <span class="quote-mark">"</span>
             <div class="quote-body">
-              <div class="quote-text">${q.text}</div>
-              <div class="quote-author">— ${q.author}</div>
+              <div class="quote-text">${q.t}</div>
+              <div class="quote-author">— ${q.a}</div>
             </div>
           </div>`;
         }
