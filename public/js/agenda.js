@@ -111,6 +111,7 @@ async function renderConnected() {
   el.innerHTML = `
     <div class="ag-head"><span class="ag-ic">📅</span><div style="flex:1"><div class="ag-title">Aujourd'hui · Agenda</div>
       <div class="ag-sub" id="ag-date"></div></div>
+      <a class="ag-open" href="/agenda/" title="Ouvrir mon agenda en grand">⤢</a>
       <button class="ag-x" id="ag-disc" title="Déconnecter">✕</button></div>
     <div id="ag-events" class="ag-events"><div class="ag-empty">Chargement…</div></div>
     <button class="ag-btn" id="ag-push">↗ Envoyer mes tâches du jour vers l'Agenda</button>`;
@@ -157,7 +158,9 @@ function injectCSS() {
     .ag-title{font-size:1rem;font-weight:800;color:#eef4ff;}
     .ag-sub{font-size:0.82rem;color:#9db8e8;line-height:1.4;margin-top:2px;}
     #ag-date::first-letter{text-transform:uppercase;}
-    .ag-x{margin-left:auto;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#9db8e8;cursor:pointer;flex-shrink:0;}
+    .ag-open{margin-left:auto;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#9db8e8;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.95rem;}
+    .ag-open:hover{background:rgba(66,133,244,0.18);color:#fff;}
+    .ag-x{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#9db8e8;cursor:pointer;flex-shrink:0;}
     .ag-x:hover{background:rgba(255,255,255,0.1);color:#fff;}
     .ag-btn{width:100%;padding:11px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:0.88rem;
       background:linear-gradient(135deg,#4285f4,#1a73e8);color:#fff;transition:filter .2s,transform .2s;}
