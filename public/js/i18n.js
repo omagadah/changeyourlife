@@ -153,6 +153,20 @@ const DICT = {
     'app.skills.desc': 'Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.',
     'app.modules': 'Tous les modules',
     'app.domains': 'Niveaux par domaine',
+    'auth.title': 'Bon retour',
+    'auth.sub': "Retrouve ton arbre de vie là où tu l'as laissé.",
+    'auth.email': 'Adresse e-mail',
+    'auth.password': 'Mot de passe',
+    'auth.pwconfirm': 'Confirmer le mot de passe',
+    'auth.submit': 'Se connecter',
+    'auth.forgot': 'Mot de passe oublié ?',
+    'auth.or': 'OU',
+    'auth.google': 'Continuer avec Google',
+    'auth.github': 'Continuer avec GitHub',
+    'auth.noaccount': 'Pas encore de compte ?',
+    'auth.createaccount': 'Créer un compte',
+    'auth.pwreq': 'Exigences du mot de passe :',
+    'auth.back': "Retour à l'accueil",
     'ui.langTitle': 'Choisis ta langue',
     'ui.langSearch': 'Rechercher une langue',
     'ui.langNone': 'Aucune langue trouvée',
@@ -411,14 +425,10 @@ async function ensureTranslations(lang) {
   if (!keys.length) return;
   translating.add(lang);
   ai[lang] = ai[lang] || {};
-  const CHUNK = 50;
+  const CHUNK = 24;          // lots plus petits = JSON IA plus fiable
   const name = meta(lang).en || lang;
-  try {
-    for (let i = 0; i < keys.length; i += CHUNK) {
-      const slice = keys.slice(i, i + CHUNK);
-      const items = {};
-      slice.forEach((k) => { items[k] = missing[k]; });
-      let data;
+  async function translateChunk(items) {
+    for (let attempt = 0; attempt < 2; attempt++) {   // 1 réessai
       try {
         const r = await fetch('/api/translate', {
           method: 'POST',
@@ -426,12 +436,21 @@ async function ensureTranslations(lang) {
           body: JSON.stringify({ target: lang, targetName: name, items }),
         });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        data = await r.json();
+        const data = await r.json();
+        if (data && data.translations) return data.translations;
+        throw new Error('no translations');
       } catch (e) {
-        console.warn('[i18n] traduction IA indisponible pour', lang, e?.message || e);
-        break;   // on garde le repli FR, sans boucler
+        if (attempt === 1) { console.warn('[i18n] lot non traduit', lang, e?.message || e); return null; }
       }
-      const tr = data && data.translations;
+    }
+    return null;
+  }
+  try {
+    for (let i = 0; i < keys.length; i += CHUNK) {
+      const slice = keys.slice(i, i + CHUNK);
+      const items = {};
+      slice.forEach((k) => { items[k] = missing[k]; });
+      const tr = await translateChunk(items);
       if (tr) {
         Object.assign(ai[lang], tr);
         saveCache(lang);
@@ -440,6 +459,8 @@ async function ensureTranslations(lang) {
           window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang } }));
         }
       }
+      // on continue même si un lot échoue : les clés restantes seront
+      // retentées au prochain chargement (elles ne sont pas mises en cache).
     }
   } finally {
     translating.delete(lang);

@@ -1,5 +1,5 @@
-// service-worker.js - v82 (8 espaces-branches de l'arbre + liens depuis l'arbre)
-const CACHE_NAME = 'changeyourlife-v82';
+// service-worker.js - v83 (i18n robuste: tout traduit + page de connexion)
+const CACHE_NAME = 'changeyourlife-v83';
 const urlsToCache = [
   '/',
   '/app/',
