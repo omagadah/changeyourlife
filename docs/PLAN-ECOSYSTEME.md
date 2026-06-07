@@ -153,6 +153,34 @@ sapling, avec eux il devient un chêne (VISION §8).
 
 ---
 
+## 7bis · Le système de COMPÉTENCES + le flux Eisenhower (vision owner, 2026-06-07)
+
+C'est le manque ressenti par l'owner : *« j'accomplis mes tâches mais elles sont
+perdues dans le vent — je ne vois pas mes compétences évoluer au fil de ma vie. »*
+
+**Boucle cible (comme son usage perso Trello + matrice d'Eisenhower) :**
+1. **Capture en vrac** — toutes les idées/tâches jetées sans friction (texte, voix).
+2. **Tri par matrice d'Eisenhower** — Urgent/Important × 4 quadrants → priorisation.
+3. **Planification** — la tâche triée part dans l'agenda (Google Calendar à terme).
+4. **Accomplissement** — on coche → XP sur la branche **ET** sur une COMPÉTENCE.
+5. **Trace permanente** — l'accomplissement ne se perd plus : il s'inscrit dans
+   l'historique (frise) et fait **monter une compétence**.
+
+**Modèle « Compétences » (à construire) :**
+- Une **compétence** = un savoir-faire nommé librement (Cuisine, Informatique,
+  Prise de parole, Finance…), rattachée à une branche de l'arbre.
+- Chaque tâche accomplie peut être taguée d'une compétence → +XP compétence →
+  **niveau de compétence qui monte avec le temps** (Débutant → … → Pro).
+- Vue « Mes compétences » : courbe d'évolution par compétence sur la durée de vie.
+- Visuel arbre : les compétences = **sous-nœuds qui se densifient** sur la branche
+  (cf. ARCHITECTURE §2 « densité / nombre de nœuds »).
+
+Firestore (proposé) : `users/{uid}.skills = { <id>: { name, branch, xp, lastAt,
+history:[{t,xp}] } }` — même principe que `tree` (brut + dérivé).
+
+→ Étape de build dédiée : **module « Compétences »** + intégration au moteur
+`/plan/` (tag compétence sur une tâche) + capture/matrice Eisenhower.
+
 ## 8 · Décisions ouvertes (à trancher avec l'owner)
 
 - 🔴 Le moteur `/plan/` : module à part OU intégré directement dans l'arbre connecté ?

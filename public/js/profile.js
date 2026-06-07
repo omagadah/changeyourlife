@@ -203,8 +203,18 @@ async function loadUserData(uid, userDocRef, user) {
                 }
                 renderBadges(mergedIds);
                 // titles
-                const titles = Array.isArray(data.titles) ? data.titles : deriveTitlesFromLevels(data.levels || defaultLevels());
-                renderTitles(titles, data.selectedTitle || null, uid);
+                // Réclamation du titre Fondateur via /profile#fondateur (réservé au fondateur).
+                if (!data.founder && (location.hash || '').toLowerCase() === '#fondateur') {
+                    data.founder = true;
+                    setDoc(doc(db,'users',uid), { founder: true }, { merge: true }).catch(()=>{});
+                }
+                const earnedTitles = computeTitles(data);
+                const storedTitles = Array.isArray(data.titles) ? data.titles : [];
+                const mergedTitles = Array.from(new Set([...storedTitles, ...earnedTitles]));
+                if (mergedTitles.length > storedTitles.length) {
+                    setDoc(doc(db,'users',uid), { titles: mergedTitles }, { merge: true }).catch(()=>{});
+                }
+                renderTitles(mergedTitles, data.selectedTitle || null, uid);
         } else {
             // fallback to localStorage
             const avatarUrl = localStorage.getItem('userAvatarUrl');
@@ -267,36 +277,71 @@ function renderBadges(badgeIds) {
     });
 }
 
-function deriveTitlesFromLevels(levels) {
-    const t = new Set();
-    const l = normalizeLevels(levels);
-    const lvl = k => xpToLevel(l[k]).level;
-    if (lvl('body') >= 2) t.add('Corps discipliné');
-    if (lvl('etre') >= 2) t.add('Être centré');
-    if (lvl('heart') >= 2) t.add('Cœur ouvert');
-    if (lvl('order') >= 2) t.add('Esprit organisé');
-    if (lvl('body') >= 4 && lvl('heart') >= 4) t.add('Force & Bienveillance');
-    if (['body','etre','heart','order'].every(k => lvl(k) >= 3)) t.add('Harmonie');
-    if (['body','etre','heart','order'].every(k => lvl(k) >= 5)) t.add('Maître de soi');
-    return Array.from(t);
+// ── Titres : liste intelligente liée à l'arbre (8 branches Maslow) + XP ──────
+// XP par branche (source de vérité = users/{uid}.tree.branches), repli levels.
+const TREE_BRANCHES = ['physio','securite','appartenance','estime','cognitif','esthetique','accomplissement','transcendance'];
+function branchXp(d, key) {
+    const b = d && d.tree && d.tree.branches && d.tree.branches[key];
+    return (b && Number(b.xp)) || 0;
 }
+function totalXp(d) {
+    let t = TREE_BRANCHES.reduce((s, k) => s + branchXp(d, k), 0);
+    if (!t && d && d.levels) t = ['body','etre','heart','order'].reduce((s, k) => s + ((d.levels[k] && d.levels[k].xp) || 0), 0);
+    return t;
+}
+function activeBranches(d) { return TREE_BRANCHES.filter((k) => branchXp(d, k) > 0).length; }
+const BRANCH_T = 300;   // ~niveau 3 d'une branche
 
-function renderTitles(titles, selectedTitle, uid) {
+// { id, emoji, name, desc, check(userData) } — l'ordre = ordre d'affichage.
+const TITLE_DEFS = [
+    { id:'fondateur',   emoji:'👑', name:'Fondateur',          desc:'Bâtisseur de ChangeYourLife',                check:d => d.founder === true || d.role === 'admin' },
+    { id:'graine',      emoji:'🌱', name:'Graine éveillée',    desc:'Gagne ton premier XP',                       check:d => totalXp(d) >= 1 },
+    { id:'pousse',      emoji:'🌿', name:'Jeune pousse',       desc:'Atteins 100 XP',                             check:d => totalXp(d) >= 100 },
+    { id:'jardinier',   emoji:'🪴', name:'Jardinier de soi',   desc:'Fais vivre au moins 4 branches',             check:d => activeBranches(d) >= 4 },
+    { id:'gardien',     emoji:'💪', name:'Gardien du corps',   desc:'Développe la branche Physiologique',         check:d => branchXp(d,'physio') >= BRANCH_T },
+    { id:'ancre',       emoji:'🛡️', name:'Ancré',              desc:'Développe la branche Sécurité',              check:d => branchXp(d,'securite') >= BRANCH_T },
+    { id:'tisseur',     emoji:'🤝', name:'Tisseur de liens',   desc:'Développe la branche Appartenance',          check:d => branchXp(d,'appartenance') >= BRANCH_T },
+    { id:'eclaire',     emoji:'🧠', name:'Esprit éclairé',     desc:'Développe la branche Cognitif',              check:d => branchXp(d,'cognitif') >= BRANCH_T },
+    { id:'createur',    emoji:'🎨', name:'Créateur',           desc:'Développe la branche Esthétique',            check:d => branchXp(d,'esthetique') >= BRANCH_T },
+    { id:'batisseur',   emoji:'🚀', name:'Bâtisseur',          desc:'Développe la branche Accomplissement',       check:d => branchXp(d,'accomplissement') >= BRANCH_T },
+    { id:'sage',        emoji:'✨', name:'Sage',               desc:'Développe la branche Transcendance',         check:d => branchXp(d,'transcendance') >= BRANCH_T },
+    { id:'equilibre',   emoji:'⚖️', name:'Équilibriste',       desc:'Garde les 8 branches vivantes',              check:d => activeBranches(d) >= 8 },
+    { id:'constant',    emoji:'🔥', name:'Constant',           desc:'Tiens une série de 7 jours',                 check:d => (d.meditation?.streak||0) >= 7 || (d.habits||[]).some(h=>(h.streak||0)>=7) },
+    { id:'accompli',    emoji:'🎯', name:'Accompli',           desc:'Termine 5 objectifs',                        check:d => (d.goals||[]).filter(g=>g.completed).length >= 5 },
+    { id:'chene',       emoji:'🌳', name:'Cœur de chêne',      desc:'Atteins 2 000 XP cumulés',                   check:d => totalXp(d) >= 2000 },
+    { id:'centenaire',  emoji:'🏛️', name:'Arbre centenaire',   desc:'Atteins 12 000 XP cumulés',                  check:d => totalXp(d) >= 12000 },
+];
+function computeTitles(d) {
+    return TITLE_DEFS.filter(t => { try { return t.check(d || {}); } catch(e){ return false; } }).map(t => t.name);
+}
+// Compat : anciens appels passant `levels`
+function deriveTitlesFromLevels(levels) { return computeTitles({ levels }); }
+
+function renderTitles(unlockedNames, selectedTitle, uid) {
     if (!titlesGrid) return;
     titlesGrid.innerHTML = '';
-    const list = Array.isArray(titles) ? titles : [];
-    if (!list.length) {
-        const d = document.createElement('div'); d.className='subtle'; d.textContent='Aucun titre débloqué pour le moment.'; titlesGrid.appendChild(d); return;
-    }
-    list.forEach(title => {
+    const unlocked = new Set(Array.isArray(unlockedNames) ? unlockedNames : []);
+    titlesGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
+    TITLE_DEFS.forEach(def => {
+        const isUnlocked = unlocked.has(def.name);
         const pill = document.createElement('button');
-        pill.textContent = title;
-        pill.className = 'title-pill';
-        pill.style.cssText = 'border:1px solid rgba(255,255,255,0.15);padding:8px 12px;border-radius:999px;background:transparent;color:#e5eef8;cursor:pointer;';
-        if (selectedTitle === title) pill.style.background = 'rgba(59,130,246,0.18)';
-        pill.addEventListener('click', async () => {
-            try { await setDoc(doc(db,'users',uid), { selectedTitle: title, titles: list }, { merge: true }); showToast('Titre sélectionné'); renderTitles(list, title, uid); } catch(e){}
-        });
+        pill.className = 'title-pill' + (isUnlocked ? '' : ' locked');
+        pill.title = def.desc;
+        pill.innerHTML = `<span style="margin-right:6px">${def.emoji}</span>${def.name}`;
+        pill.style.cssText = 'border:1px solid rgba(255,255,255,0.14);padding:8px 13px;border-radius:999px;background:transparent;color:#e5eef8;cursor:pointer;font-weight:600;font-size:.84rem;transition:background .15s,border-color .15s,opacity .15s;';
+        if (!isUnlocked) { pill.style.opacity = '0.38'; pill.style.cursor = 'default'; }
+        if (def.id === 'fondateur' && isUnlocked) { pill.style.borderColor = 'rgba(231,177,92,0.6)'; pill.style.color = '#f1cd92'; }
+        if (selectedTitle === def.name) { pill.style.background = 'rgba(59,130,246,0.2)'; pill.style.borderColor = 'rgba(59,130,246,0.5)'; }
+        if (isUnlocked) {
+            pill.addEventListener('click', async () => {
+                try {
+                    await setDoc(doc(db,'users',uid), { selectedTitle: def.name }, { merge: true });
+                    if (titleDisplay) titleDisplay.textContent = def.name;
+                    showToast('Titre sélectionné : ' + def.name);
+                    renderTitles(Array.from(unlocked), def.name, uid);
+                } catch(e){}
+            });
+        }
         titlesGrid.appendChild(pill);
     });
 }
@@ -380,8 +425,11 @@ onAuthStateChanged(auth, (user) => {
                                     renderBadges(merged);
                                 } catch(e) { /* non-blocking */ }
                                 // titles
-                                const titles = Array.isArray(data.titles) ? data.titles : deriveTitlesFromLevels(data.levels || defaultLevels());
-                                renderTitles(titles, data.selectedTitle || null, user.uid);
+                                const earnedT = computeTitles(data);
+                                const storedT = Array.isArray(data.titles) ? data.titles : [];
+                                const mergedT = Array.from(new Set([...storedT, ...earnedT]));
+                                if (mergedT.length !== storedT.length) { await setDoc(userRef, { titles: mergedT }, { merge: true }); }
+                                renderTitles(mergedT, data.selectedTitle || null, user.uid);
                             }
                             showToast('+10 XP ajouté à ' + domain);
                         } catch (e) {

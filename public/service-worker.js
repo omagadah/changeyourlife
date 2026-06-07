@@ -1,5 +1,5 @@
-// service-worker.js - v77 (app: arbre flottant + logo unifié + selects lisibles)
-const CACHE_NAME = 'changeyourlife-v77';
+// service-worker.js - v78 (titres : Fondateur + liste intelligente liée à l'arbre)
+const CACHE_NAME = 'changeyourlife-v78';
 const urlsToCache = [
   '/',
   '/app/',
