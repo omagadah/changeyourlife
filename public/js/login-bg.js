@@ -26,7 +26,7 @@ if (canvas) {
   const fill = new THREE.DirectionalLight(0x4a90e2, 0.7);
   fill.position.set(-36, 30, -20); scene.add(fill);
 
-  const { group, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel());
+  const { group, grow, animateCosmos, setEarthLocation } = buildTree(THREE, createDemoModel(), { floating: true });
   scene.add(group);
 
   // Géoloc : repli France immédiat (jamais bloqué au pôle nord), affiné par IP.
@@ -45,9 +45,10 @@ if (canvas) {
     }).catch(() => {});
   })();
 
-  // Caméra : vue calme de l'arbre planté sur la Terre, rotation très lente.
-  const target = new THREE.Vector3(0, 40, 0);
-  const radius = 158, polar = 1.04;
+  // Caméra : on se connecte "dans l'arbre" - vue rapprochée, l'arbre flotte en
+  // grand derrière la carte, base (socle translucide) basse, branches qui débordent.
+  const target = new THREE.Vector3(0, 56, 0);
+  const radius = 108, polar = 1.12;
   let az = 0.5;
   const reduceMotion = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
