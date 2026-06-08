@@ -194,7 +194,32 @@ function initScene(canvas) {
     } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
   }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, gfx: { tier: gfxTier, basePR } };
+
+  // ── Faille dimensionnelle : la plaque de Pioneer flotte dans l'espace ───────
+  // (message d'humanité gravé envoyé en 1972). Teintée gris « pierre ancienne »,
+  // halo de portail, cliquable -> explication.
+  const plaque = (function () {
+    const grp = new THREE.Group();
+    grp.position.set(-250, 165, -90);
+    // halo "faille"
+    const gc = document.createElement('canvas'); gc.width = gc.height = 128;
+    const gg = gc.getContext('2d');
+    const rad = gg.createRadialGradient(64, 64, 0, 64, 64, 64);
+    rad.addColorStop(0, 'rgba(160,195,255,0.5)'); rad.addColorStop(0.5, 'rgba(120,90,220,0.22)'); rad.addColorStop(1, 'rgba(0,0,0,0)');
+    gg.fillStyle = rad; gg.fillRect(0, 0, 128, 128);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gc), transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(165, 165, 1); grp.add(glow);
+    // la plaque elle-même
+    const W = 100, H = W / 1.262;
+    const tex = new THREE.TextureLoader().load('/textures/pioneer-plaque.png');
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xc2cad6, transparent: true, depthWrite: false }));
+    sp.scale.set(W, H, 1); grp.add(sp);
+    scene.add(grp);
+    return { obj: grp, glow };
+  })();
+
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, plaque, gfx: { tier: gfxTier, basePR } };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -726,7 +751,7 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, gfx } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, plaque, gfx } = initScene(canvas);
   geolocateTree(setEarthLocation);
   let orbitT = 0;   // avancement de la révélation des tracés d'orbites (0..1)
 
@@ -838,16 +863,34 @@ function initTree3D(canvas) {
     }
     return bestD < 48 ? best : null;
   }
+  // La plaque de Pioneer est-elle cliquée ? (projection écran de son centre)
+  function hitPlaque(clientX, clientY) {
+    if (!plaque || !plaque.obj) return false;
+    plaque.obj.getWorldPosition(_proj).project(camera);
+    if (_proj.z > 1) return false;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const sx = (_proj.x * 0.5 + 0.5) * w, sy = (-_proj.y * 0.5 + 0.5) * h;
+    return Math.hypot(sx - clientX, sy - clientY) < 64;
+  }
   canvas.addEventListener('pointerdown', () => { pointerDown = true; });
   canvas.addEventListener('pointermove', (e) => {
     if (pointerDown || phase !== 'live') return;
     hovered = nearestNode(e.clientX, e.clientY);
-    const overSat = !hovered && nearestSat(e.clientX, e.clientY);
+    const overSat = !hovered && (nearestSat(e.clientX, e.clientY) || hitPlaque(e.clientX, e.clientY));
     canvas.style.cursor = (hovered || overSat) ? 'pointer' : '';
   });
   canvas.addEventListener('pointerup', (e) => {
     pointerDown = false;
     if (phase !== 'live' || controls.wasDrag()) return;
+    // 0) clic sur la plaque de Pioneer -> explication
+    if (hitPlaque(e.clientX, e.clientY)) {
+      branchPanel.openInfo({
+        title: '🛸 La plaque de Pioneer',
+        body: "Gravée et envoyée dans l'espace en 1972 sur les sondes Pioneer : un message d'humanité aux étoiles. Elle dit qui nous sommes (un homme, une femme), où se trouve la Terre (carte de 14 pulsars) et notre système solaire. Comme cet arbre : une trace de ce que tu es, lancée vers l'avenir.",
+        color: '#bcd0ff', link: { label: 'En savoir plus (Wikipédia) ↗', href: 'https://fr.wikipedia.org/wiki/Plaque_de_Pioneer' },
+      });
+      return;
+    }
     // 1) clic sur un satellite explicatif -> panneau (comme une branche)
     const sat = nearestSat(e.clientX, e.clientY);
     if (sat) {
