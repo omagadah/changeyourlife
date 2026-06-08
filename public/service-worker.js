@@ -1,5 +1,5 @@
-// service-worker.js - v135 (badge pixel-art retro + ORGANIZER vue Canvas + croissance par branche Maslow sur /app)
-const CACHE_NAME = 'changeyourlife-v135';
+// service-worker.js - v136 (emojis Fluent 3D + systeme solaire a l'echelle + panneaux satellites masques au dezoom)
+const CACHE_NAME = 'changeyourlife-v136';
 const urlsToCache = [
   '/',
   '/app/',

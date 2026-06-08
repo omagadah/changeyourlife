@@ -147,11 +147,24 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
 
 ## 🌳 Arbre vivant — raffinements restants
 
-- [ ] **Croissance PAR BRANCHE Maslow** : chaque dimension fait pousser SA branche
-  (aujourd'hui : croissance globale par XP total).
+- [x] **Croissance PAR BRANCHE Maslow** ✅ (FAIT sur `/app` : 8 nœuds Maslow autour de
+  l'arbre, taille/halo ∝ XP réel de chaque branche `tree.branches[key].xp`, croissance
+  LIVE via l'événement `cyl:xp-gained`, clic → page de la branche).
 - [ ] **Croissance animée (plan de coupe)** aussi sur `/app` quand l'XP monte.
 - [ ] **Optimisation** : lazy-load ez-tree (4 Mo) après 1er paint ; arbre allégé sur
   l'accueil ; dispose des géométries au changement.
+
+## 🪐 Cosmos / accueil — qualité visuelle
+
+- [x] **Système solaire à l'échelle** ✅ (Soleil ENORME + 7 planètes proportionnelles
+  entre elles, distances croissantes, anneaux d'orbite visibles). Échelle compressée
+  (à la vraie échelle le Soleil ferait 109× la Terre) → réglable dans `tree-model.js`.
+- [x] **Panneaux satellites masqués au dézoom** ✅ (disparaissent passé la plaque de
+  Pioneer, réapparaissent en rezoomant ; seuil = rayon caméra 360 dans `arbre3d.js`).
+- [x] **Emojis premium Fluent 3D (Microsoft)** ✅ (`emoji.js` : moteur Twemoji + assets
+  Fluent 3D webp via @lobehub/fluent-emoji-3d, repli en cascade → jamais de 404).
+- [ ] **Références visuelles owner** (sites/templates donnés en session) — à ré-appliquer
+  une par une (l'owner doit re-partager les liens ; non conservés entre sessions).
 
 ## Principes de priorisation
 
