@@ -170,29 +170,35 @@ function initScene(canvas) {
   // restent cliquables (fournis par buildTree en mode ezTree). On le fait grandir
   // avec `age` dans la boucle d'animation (ezTreeObj.scale).
   const EZ_SCALE = 0.95;
-  const ez = { obj: null, clip: null };   // rempli en différé quand la lib est chargée
-  import('/js/ez-tree-build.js').then((mod) => {
-    try {
-      const obj = mod.buildEzTree(mod.getTreeType(), { growth: 1 });
-      const box = new THREE.Box3().setFromObject(obj);
-      obj.position.x -= (box.min.x + box.max.x) / 2;
-      obj.position.z -= (box.min.z + box.max.z) / 2;
-      obj.position.y -= box.min.y;            // base sur la plateforme (y=0)
-      obj.scale.setScalar(EZ_SCALE);
-      group.add(obj);
-      // Croissance ANIMÉE par plan de coupe (tronc -> branches -> cime).
-      renderer.localClippingEnabled = true;
-      const wbox = new THREE.Box3().setFromObject(obj);
-      const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wbox.min.y);
-      obj.traverse((o) => {
-        if (o.isMesh && o.material) {
-          const mats = Array.isArray(o.material) ? o.material : [o.material];
-          mats.forEach((m) => { m.clippingPlanes = [plane]; m.clipShadows = true; });
-        }
-      });
-      ez.obj = obj; ez.clip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
-    } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
-  }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
+  const ez = { obj: null, clip: null };   // objet central (arbre OU architecture), chargé en différé
+  // Pose l'objet central : centré sur la plateforme, mis à l'échelle, avec
+  // croissance ANIMÉE par plan de coupe (révélation bas -> haut).
+  function setupCentral(obj) {
+    if (!obj) return;
+    const box = new THREE.Box3().setFromObject(obj);
+    obj.position.x -= (box.min.x + box.max.x) / 2;
+    obj.position.z -= (box.min.z + box.max.z) / 2;
+    obj.position.y -= box.min.y;
+    obj.scale.setScalar(EZ_SCALE);
+    group.add(obj);
+    renderer.localClippingEnabled = true;
+    const wbox = new THREE.Box3().setFromObject(obj);
+    const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wbox.min.y);
+    obj.traverse((o) => {
+      if (o.isMesh && o.material) {
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach((m) => { m.clippingPlanes = [plane]; m.clipShadows = true; });
+      }
+    });
+    ez.obj = obj; ez.clip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
+  }
+  let universe = 'arbre';
+  try { if (localStorage.getItem('cyl_universe') === 'archi') universe = 'archi'; } catch (_) {}
+  if (universe === 'archi') {
+    import('/js/archi-build.js').then((m) => setupCentral(m.buildArchi(THREE))).catch((e) => console.error('[arbre3d] archi import failed', e));
+  } else {
+    import('/js/ez-tree-build.js').then((m) => setupCentral(m.buildEzTree(m.getTreeType(), { growth: 1 }))).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
+  }
   scene.add(group);
 
   // ── Faille dimensionnelle : la plaque de Pioneer flotte dans l'espace ───────

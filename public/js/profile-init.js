@@ -53,11 +53,22 @@ if (bio && bioCounter) {
   const cur = (localStorage.getItem(KEY) === 'frene') ? 'frene' : 'chene';
   const paint = (v) => opts.forEach((b) => b.classList.toggle('active', b.dataset.tree === v));
   paint(cur);
+  const toast = (msg) => { const t = document.getElementById('toast'); if (t) { t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); } };
   opts.forEach((b) => b.addEventListener('click', () => {
     try { localStorage.setItem(KEY, b.dataset.tree); } catch (_) {}
     paint(b.dataset.tree);
-    const t = document.getElementById('toast');
-    if (t) { t.textContent = 'Univers mis à jour - recharge l\'accueil pour le voir'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); }
+    toast('Essence mise à jour - recharge l\'accueil pour la voir');
+  }));
+  // Univers : Arbre vivant / Architecture (clé cyl_universe)
+  const WKEY = 'cyl_universe';
+  const worldOpts = document.querySelectorAll('.world-opt');
+  const curW = (localStorage.getItem(WKEY) === 'archi') ? 'archi' : 'arbre';
+  const paintW = (v) => worldOpts.forEach((b) => b.classList.toggle('active', b.dataset.world === v));
+  paintW(curW);
+  worldOpts.forEach((b) => b.addEventListener('click', () => {
+    try { localStorage.setItem(WKEY, b.dataset.world); } catch (_) {}
+    paintW(b.dataset.world);
+    toast(b.dataset.world === 'archi' ? '🏙️ Univers Architecture - recharge l\'accueil' : '🌳 Univers Arbre - recharge l\'accueil');
   }));
 })();
 

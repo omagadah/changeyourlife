@@ -1,5 +1,5 @@
 // service-worker.js - v93 (accueil: satellites en orbite + etoiles filantes)
-const CACHE_NAME = 'changeyourlife-v132';
+const CACHE_NAME = 'changeyourlife-v133';
 const urlsToCache = [
   '/',
   '/app/',
@@ -58,6 +58,7 @@ const urlsToCache = [
   '/js/login-init.js',
   '/js/particle-avatar.js',
   '/js/pixel-badge.js',
+  '/js/archi-build.js',
   '/js/syl-chat.js',
   '/js/ez-tree-build.js',
   '/js/tree-lab.js',
