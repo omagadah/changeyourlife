@@ -1,5 +1,5 @@
-// service-worker.js - v144 (squelette ESP : tronc bas + halo local autour des 8 noeuds-categories seulement, plus de sapin de noel)
-const CACHE_NAME = 'changeyourlife-v144';
+// service-worker.js - v145 (panneaux satellites : seuil 3000 tunable nomme ; squelette halos reduits 13%->7%)
+const CACHE_NAME = 'changeyourlife-v145';
 const urlsToCache = [
   '/',
   '/app/',

@@ -804,6 +804,13 @@ function initTree3D(canvas) {
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
   const satInfo = initSatInfo(infoSats);
+  // ┌─────────────────────────────────────────────────────────────────────────┐
+  // │ RÉGLAGE PANNEAUX SATELLITES : distance caméra au-delà de laquelle les     │
+  // │ panneaux (SYL, connecté, open source, transparent) DISPARAISSENT au       │
+  // │ dézoom. Ils RÉAPPARAISSENT en-dessous. Zoom min = 95, zoom max = 7000.    │
+  // │ Augmente ce nombre pour pouvoir dézoomer plus avant qu'ils disparaissent. │
+  // └─────────────────────────────────────────────────────────────────────────┘
+  const SAT_PANEL_HIDE_RADIUS = 3000;
   const hud = initHud();
   const branchPanel = initBranchPanel(() => { labels.hideSubs(); controls.setAutoRotate(true); });
 
@@ -964,9 +971,8 @@ function initTree3D(canvas) {
 
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
-    // l'étiquette suit le satellite ; reste visible TRÈS longtemps au dézoom
-    // (c'est le seul repère explicatif quand on s'éloigne).
-    satInfo.update(camera, canvas, controls.getRadius() > 1200);
+    // l'étiquette suit le satellite ; disparaît au-delà de SAT_PANEL_HIDE_RADIUS.
+    satInfo.update(camera, canvas, controls.getRadius() > SAT_PANEL_HIDE_RADIUS);
     // Tracés d'orbites (atome) : se révèlent 1 par 1 au début, puis RESTENT.
     if (orbits) {
       orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet

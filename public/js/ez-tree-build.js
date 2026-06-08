@@ -136,9 +136,9 @@ export function addEspSkeletonCorridors(THREE, treeObj, tipsWorld, opts = {}) {
   const box = new THREE.Box3().setFromObject(treeObj);
   const H = (box.max.y - box.min.y) || 1, baseY = box.min.y;
   const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
-  const rTrunk = (opts.trunkRadius != null) ? opts.trunkRadius : H * 0.05;     // colonne du tronc
-  const trunkTopY = baseY + H * ((opts.trunkFrac != null) ? opts.trunkFrac : 0.32);   // tronc BAS seulement
-  const Rnode = (opts.nodeRadius != null) ? opts.nodeRadius : H * 0.13;        // halo local autour d'un nœud
+  const rTrunk = (opts.trunkRadius != null) ? opts.trunkRadius : H * 0.045;    // colonne du tronc
+  const trunkTopY = baseY + H * ((opts.trunkFrac != null) ? opts.trunkFrac : 0.30);   // tronc BAS seulement
+  const Rnode = (opts.nodeRadius != null) ? opts.nodeRadius : H * 0.07;        // halo local serré autour d'un nœud
   const Rnode2 = Rnode * Rnode;
   const mat = new THREE.LineBasicMaterial({ color: opts.color != null ? opts.color : 0xffffff, transparent: true, opacity, depthTest: false });
   if (opts.clippingPlanes) { mat.clippingPlanes = opts.clippingPlanes; mat.clipShadows = true; }
