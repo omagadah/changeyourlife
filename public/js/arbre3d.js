@@ -7,7 +7,7 @@
 
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
-import { buildEzTree, getTreeType } from '/js/ez-tree-build.js';
+// ez-tree (~4 Mo) chargé en DIFFÉRÉ via import() dynamique -> page rapide.
 
 // Chaîne traduite via le moteur i18n (window.CYL), avec repli si i18n absent.
 function T(key, fallback) {
@@ -151,32 +151,32 @@ function initScene(canvas) {
   // Bel arbre ez-tree (le visuel) posé sur la plateforme. Les 8 nœuds Maslow
   // restent cliquables (fournis par buildTree en mode ezTree). On le fait grandir
   // avec `age` dans la boucle d'animation (ezTreeObj.scale).
-  let ezTreeObj = null;
-  let ezClip = null;
   const EZ_SCALE = 0.95;
-  try {
-    ezTreeObj = buildEzTree(getTreeType(), { growth: 1 });
-    const box = new THREE.Box3().setFromObject(ezTreeObj);
-    ezTreeObj.position.x -= (box.min.x + box.max.x) / 2;
-    ezTreeObj.position.z -= (box.min.z + box.max.z) / 2;
-    ezTreeObj.position.y -= box.min.y;            // base sur la plateforme (y=0)
-    ezTreeObj.scale.setScalar(EZ_SCALE);
-    group.add(ezTreeObj);
-    // Croissance ANIMÉE par plan de coupe : on révèle l'arbre du bas vers le haut
-    // (tronc -> branches -> cime), au lieu d'un scale uniforme qui « étire ».
-    renderer.localClippingEnabled = true;
-    const wbox = new THREE.Box3().setFromObject(ezTreeObj);
-    const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wbox.min.y); // garde y <= constant
-    ezTreeObj.traverse((o) => {
-      if (o.isMesh && o.material) {
-        const mats = Array.isArray(o.material) ? o.material : [o.material];
-        mats.forEach((m) => { m.clippingPlanes = [plane]; m.clipShadows = true; });
-      }
-    });
-    ezClip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
-  } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
+  const ez = { obj: null, clip: null };   // rempli en différé quand la lib est chargée
+  import('/js/ez-tree-build.js').then((mod) => {
+    try {
+      const obj = mod.buildEzTree(mod.getTreeType(), { growth: 1 });
+      const box = new THREE.Box3().setFromObject(obj);
+      obj.position.x -= (box.min.x + box.max.x) / 2;
+      obj.position.z -= (box.min.z + box.max.z) / 2;
+      obj.position.y -= box.min.y;            // base sur la plateforme (y=0)
+      obj.scale.setScalar(EZ_SCALE);
+      group.add(obj);
+      // Croissance ANIMÉE par plan de coupe (tronc -> branches -> cime).
+      renderer.localClippingEnabled = true;
+      const wbox = new THREE.Box3().setFromObject(obj);
+      const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wbox.min.y);
+      obj.traverse((o) => {
+        if (o.isMesh && o.material) {
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          mats.forEach((m) => { m.clippingPlanes = [plane]; m.clipShadows = true; });
+        }
+      });
+      ez.obj = obj; ez.clip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
+    } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
+  }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ezTreeObj, EZ_SCALE, ezClip, orbits };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -708,7 +708,7 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ezTreeObj, EZ_SCALE, ezClip, orbits } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits } = initScene(canvas);
   geolocateTree(setEarthLocation);
   let orbitT = 0;   // avancement de la révélation des tracés d'orbites (0..1)
   const controls = initControls(canvas, camera);
@@ -870,9 +870,9 @@ function initTree3D(canvas) {
     }
     updateUrgence();   // pointillés bouton -> satellite SYL
     // Croissance animée de l'ez-tree : on remonte le plan de coupe (bas -> haut).
-    if (ezClip) {
+    if (ez.clip) {
       const e = easeOut(Math.min(1, Math.max(0, age)));
-      ezClip.plane.constant = ezClip.baseY + e * (ezClip.topY - ezClip.baseY + 6);
+      ez.clip.plane.constant = ez.clip.baseY + e * (ez.clip.topY - ez.clip.baseY + 6);
     }
 
     if (phase === 'live') {
