@@ -133,7 +133,7 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   Gamification / profil public. À préparer dès maintenant.
 - [ ] **ORGANIZER façon canvas IA** : refondre `/organizer/` en canvas type workflow
   (réf. v0 `ai-workflow-canvas`) — nœuds reliés, vue carte.
-- [ ] **Changement d'UNIVERS / thème en 1 clic** (owner y tient) : au lieu de l'arbre,
+- [~] **Changement d'UNIVERS / thème en 1 clic** (EN COURS : 2e univers Architecture 3D fait sur l'accueil, selecteur dans /profile ; reste login/app + d'autres mondes + adapter les textes) (owner y tient) : au lieu de l'arbre,
   d'autres mondes — ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
