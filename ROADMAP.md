@@ -137,6 +137,12 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [ ] **Boutons magnifiques** : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
+- [ ] **Mesures d'urgence (bouton SOS)** : le bouton rouge en bas à gauche (déjà
+  présent, relié par pointillés au satellite SYL) doit ouvrir un échange avec SYL
+  même SANS compte. Si SYL détecte une détresse, déclencher des mesures d'aide
+  (à définir : ressources, lignes d'écoute, redirection, alerte douce...). UX façon
+  workflow (réf. v0 `flowf` - connecteurs en pointillés). *(Démarré : bouton + lien
+  visuel ; le protocole d'aide reste à définir.)*
 
 ## 🌳 Arbre vivant — raffinements restants
 

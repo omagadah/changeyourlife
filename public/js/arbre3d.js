@@ -744,6 +744,33 @@ function initTree3D(canvas) {
   const growTarget = new THREE.Vector3();
   let hovered = null;
   let pointerDown = false;
+
+  // ── Bouton URGENCE -> pointillés animés jusqu'au satellite SYL ──────────────
+  const urgBtn = document.getElementById('urgence-btn');
+  const urgSvg = document.getElementById('urgence-link');
+  const urgPath = urgSvg && urgSvg.querySelector('path');
+  const sylSat = (infoSats || []).find((s) => s.userData && s.userData.info === 'syl');
+  const _projU = new THREE.Vector3();
+  let urgenceOn = false;
+  if (urgBtn) urgBtn.addEventListener('click', () => {
+    urgenceOn = !urgenceOn;
+    urgBtn.classList.toggle('active', urgenceOn);
+    if (urgSvg) urgSvg.classList.toggle('on', urgenceOn);
+    // ouvre aussi la fiche de SYL pour amorcer le contact
+    if (urgenceOn && sylSat && SAT_INFO.syl) {
+      branchPanel.openInfo({ title: SAT_INFO.syl.title, body: SAT_INFO.syl.body, color: '#7fd1ff', link: SAT_INFO.syl.link });
+    }
+  });
+  function updateUrgence() {
+    if (!urgenceOn || !urgPath || !sylSat || !urgBtn) return;
+    const r = urgBtn.getBoundingClientRect();
+    const bx = r.left + r.width / 2, by = r.top + r.height / 2;
+    sylSat.getWorldPosition(_projU).project(camera);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const sx = (_projU.x * 0.5 + 0.5) * w, sy = (-_projU.y * 0.5 + 0.5) * h;
+    const mx = (bx + sx) / 2, my = Math.min(by, sy) - 70;   // courbe douce
+    urgPath.setAttribute('d', `M ${bx.toFixed(1)} ${by.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${sx.toFixed(1)} ${sy.toFixed(1)}`);
+  }
   function nearestNode(clientX, clientY) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     let best = null, bestD = 9999;
@@ -841,6 +868,7 @@ function initTree3D(canvas) {
       orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet
       orbits.setProgress(orbitT);
     }
+    updateUrgence();   // pointillés bouton -> satellite SYL
     // Croissance animée de l'ez-tree : on remonte le plan de coupe (bas -> haut).
     if (ezClip) {
       const e = easeOut(Math.min(1, Math.max(0, age)));

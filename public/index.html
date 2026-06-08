@@ -378,6 +378,28 @@
       animation: rise 1.2s ease 0.6s both;
     }
     @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    /* Bouton URGENCE (bas gauche) + pointillés animés vers le satellite SYL */
+    #urgence-btn {
+      position: fixed; left: 18px; bottom: 104px; z-index: 8;
+      width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+      border: 1px solid rgba(255,120,120,0.65); color: #fff;
+      background: radial-gradient(circle at 40% 34%, #ff8a8a 0%, #e23b3b 55%, #a51d1d 100%);
+      font: 800 0.62rem Segoe UI, sans-serif; letter-spacing: .5px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 18px rgba(180,20,20,0.45); animation: urgPulse 2.4s ease-out infinite;
+    }
+    @keyframes urgPulse { 0% { box-shadow: 0 6px 18px rgba(180,20,20,0.45), 0 0 0 0 rgba(226,59,59,0.5); }
+      70% { box-shadow: 0 6px 18px rgba(180,20,20,0.45), 0 0 0 14px rgba(226,59,59,0); }
+      100% { box-shadow: 0 6px 18px rgba(180,20,20,0.45), 0 0 0 0 rgba(226,59,59,0); } }
+    #urgence-btn:hover { filter: brightness(1.12); transform: scale(1.06); }
+    #urgence-btn.active { background: radial-gradient(circle at 40% 34%, #ffd2d2, #e23b3b 60%, #7a1414 100%); }
+    #urgence-link { position: fixed; inset: 0; z-index: 7; pointer-events: none; width: 100%; height: 100%; opacity: 0; transition: opacity .35s; }
+    #urgence-link.on { opacity: 1; }
+    #urgence-link path { fill: none; stroke: #ff6b6b; stroke-width: 2.4; stroke-linecap: round;
+      stroke-dasharray: 1 9; filter: drop-shadow(0 0 5px rgba(255,90,90,0.75)); animation: urgFlow .6s linear infinite; }
+    @keyframes urgFlow { to { stroke-dashoffset: -20; } }
+    @media (prefers-reduced-motion: reduce) { #urgence-btn, #urgence-link path { animation: none; } }
+
     .lya-orb {
       width: 60px; height: 60px; flex-shrink: 0; border-radius: 50%;
       background: radial-gradient(circle at 36% 32%, #fbe6b0 0%, var(--gold) 38%, var(--leaf-deep) 100%);
@@ -655,6 +677,10 @@
         <a class="btn-enter" href="/login/" data-auth-open="register" data-i18n="cta.start">Commencer l'aventure</a>
       </div>
     </section>
+
+    <!-- Bouton URGENCE : relie l'utilisateur à SYL (pointillés animés vers le satellite SYL) -->
+    <button id="urgence-btn" type="button" title="Besoin d'aide, maintenant ? Parle à SYL." aria-label="Urgence - parler à SYL">SOS</button>
+    <svg id="urgence-link" aria-hidden="true"><path></path></svg>
   </main>
 
   <!-- MODAL DE CONNEXION / INSCRIPTION -->
