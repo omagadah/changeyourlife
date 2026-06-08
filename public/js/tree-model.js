@@ -698,22 +698,43 @@ export function buildTree(THREE, model, opts) {
     satellites.push(s);
   }
 
-  // Trajectoire VISIBLE du satellite « 100% transparent » (le 1er) : on trace son
-  // orbite elliptique en pointillé lumineux, pour qu'on suive bien son chemin.
-  {
-    const o = satellites[0];
-    const pts = [];
-    for (let i = 0; i <= 160; i++) {
-      const t = (i / 160) * Math.PI * 2;
+  // Tracés des orbites = la FORME de l'atome. Une orbite (ellipse) par satellite,
+  // dessinée progressivement (drawRange). Révélation/disparition pilotées par
+  // arbre3d.js via `orbits` (apparition 1 par 1, reset au toucher).
+  const orbitLines = [];
+  for (const s of satellites) {
+    const N = 168, pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * Math.PI * 2;
       pts.push(SAT_CENTER.clone()
-        .addScaledVector(o.userData.ax, Math.cos(t) * o.userData.A)
-        .addScaledVector(o.userData.ay, Math.sin(t) * o.userData.B));
+        .addScaledVector(s.userData.ax, Math.cos(t) * s.userData.A)
+        .addScaledVector(s.userData.ay, Math.sin(t) * s.userData.B));
     }
-    const orbitLine = new THREE.LineLoop(
-      new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }));
-    root.add(orbitLine);
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    geo.setDrawRange(0, 0);
+    const line = new THREE.Line(geo, new THREE.LineBasicMaterial({
+      color: 0x9fd0ff, transparent: true, opacity: 0.30,
+      blending: THREE.AdditiveBlending, depthWrite: false }));
+    line.userData.total = N + 1;
+    line.visible = false;
+    root.add(line);
+    orbitLines.push(line);
   }
+  const orbits = {
+    // p (0..1) : avancement global ; les orbites se révèlent l'une après l'autre.
+    setProgress(p) {
+      const n = orbitLines.length, seg = 1 / n;
+      for (let i = 0; i < n; i++) {
+        const ln = orbitLines[i];
+        const local = Math.max(0, Math.min(1, (p - i * seg) / seg));
+        if (local <= 0) { ln.visible = false; ln.geometry.setDrawRange(0, 0); continue; }
+        ln.visible = true;
+        const e = 1 - Math.pow(1 - local, 2);   // easeOut
+        ln.geometry.setDrawRange(0, Math.max(2, Math.ceil(e * ln.userData.total)));
+      }
+    },
+    hide() { for (const ln of orbitLines) { ln.visible = false; ln.geometry.setDrawRange(0, 0); } },
+  };
 
   // Pool d'étoiles filantes réutilisées (≈ une visible à la fois).
   const streakTex = makeStreakTexture();
@@ -1011,5 +1032,5 @@ export function buildTree(THREE, model, opts) {
   }
   grow(0);
 
-  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation, infoSat: satellites[0] || null };
+  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation, infoSat: satellites[0] || null, orbits };
 }

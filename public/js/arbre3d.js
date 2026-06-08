@@ -146,7 +146,7 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat } = buildTree(THREE, createDemoModel(), { floating: true, ezTree: true });
+  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, orbits } = buildTree(THREE, createDemoModel(), { floating: true, ezTree: true });
 
   // Bel arbre ez-tree (le visuel) posé sur la plateforme. Les 8 nœuds Maslow
   // restent cliquables (fournis par buildTree en mode ezTree). On le fait grandir
@@ -176,7 +176,7 @@ function initScene(canvas) {
     ezClip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
   } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip, orbits };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -283,6 +283,7 @@ function initControls(canvas, camera) {
       if (autoRotate) s.tAz += dt * 0.11;
     },
     setAutoRotate(v) { autoRotate = v; if (v) idle = 0; },
+    isAutoRotate: () => autoRotate,
     wasDrag: () => moved,
   };
 }
@@ -654,8 +655,9 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip, orbits } = initScene(canvas);
   geolocateTree(setEarthLocation);
+  let orbitT = 0;   // avancement de la révélation des tracés d'orbites (0..1)
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
   const satInfo = initSatInfo(infoSat);
@@ -758,6 +760,16 @@ function initTree3D(canvas) {
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
     satInfo.update(camera, canvas);   // l'étiquette suit le satellite
+    // Tracés d'orbites (atome) : se révèlent 1 par 1 quand ça tourne tout seul ;
+    // disparaissent dès qu'on touche ; repartent de 0 quand l'auto-rotation reprend.
+    if (orbits) {
+      if (controls.isAutoRotate()) {
+        orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet
+        orbits.setProgress(orbitT);
+      } else if (orbitT !== 0) {
+        orbits.hide(); orbitT = 0;
+      }
+    }
     // Croissance animée de l'ez-tree : on remonte le plan de coupe (bas -> haut).
     if (ezClip) {
       const e = easeOut(Math.min(1, Math.max(0, age)));
