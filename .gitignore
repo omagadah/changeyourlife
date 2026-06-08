@@ -1,9 +1,14 @@
 .vercel
 .firebase
 node_modules
-.env.local
-.env.*.local
+# Secrets : ignore tous les .env SAUF le modele .env.example
+.env
+.env.*
+!.env.example
 *.pem
+*.key
+*.p12
+serviceAccount*.json
 .DS_Store
 
 # Audit exports (binaires Word)
@@ -16,3 +21,8 @@ ui-debug.log
 
 # Permissions locales Claude Code (per-machine, pas partagé)
 .claude/settings.local.json
+
+# Exports de diff locaux (non versionnes)
+*_diff*.txt
+.latest_commit_diff*.txt
+.inscription_diff*.txt
