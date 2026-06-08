@@ -919,10 +919,8 @@ export function buildTree(THREE, model, opts) {
   trunkGroup.scale.setScalar(0.0001);
   root.add(trunkGroup);
   const trunkCurve = localCurve(THREE, new THREE.Vector3(0.05, 1, 0.03), trunkH, rnd);
-  if (!ezTree) {
-    trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
-    trunkGroup.add(espLine(trunkCurve, 9));
-  }
+  if (!ezTree) trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
+  trunkGroup.add(espLine(trunkCurve, 9));   // BASE en squelette ESP (tronc) - aussi en ezTree
   growables.push({ obj: trunkGroup, birth: 0, dur: 0.16, target: 1 });
   // nœud-racine
   const baseNode = espNode(trunkGroup, new THREE.Vector3(0, 0.4, 0), 0x9ecaff, 1, 1, 12);
@@ -950,10 +948,8 @@ export function buildTree(THREE, model, opts) {
     const r1 = r0 * 0.32;
 
     const curve = localCurve(THREE, dir, len, rnd);
-    if (!ezTree) {
-      bGroup.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 16, 8), barkOf(b.state)));
-      bGroup.add(espLine(curve, 6));
-    }
+    if (!ezTree) bGroup.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 16, 8), barkOf(b.state)));
+    bGroup.add(espLine(curve, 6));   // squelette ESP UNIQUEMENT sur les 8 branches-catégories (Maslow)
     const tipLocal = curve.getPoint(1);
     const tipWorld = attachLocal.clone().add(tipLocal);
 

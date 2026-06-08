@@ -107,6 +107,20 @@ export function initLivingTree(userData) {
 
   // ── 8 nœuds Maslow (croissance PAR BRANCHE) ──────────────────────────────
   const nodesGroup = new THREE.Group(); scene.add(nodesGroup);
+  // Squelette ESP : tronc (base) + 8 lignes vers les nœuds-catégories uniquement.
+  const espMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.38, depthTest: false });
+  const skeletonGroup = new THREE.Group(); skeletonGroup.renderOrder = 9; scene.add(skeletonGroup);
+  function drawSkeleton() {
+    while (skeletonGroup.children.length) { const c = skeletonGroup.children.pop(); if (c.geometry) c.geometry.dispose(); }
+    const pts = [0, 0, 0, 0, treeH * 0.82, 0];   // tronc (base)
+    nodeMap.forEach((n) => {
+      const p = n.core.position;
+      const hubY = Math.min(treeH * 0.5, Math.max(treeH * 0.15, p.y * 0.45));
+      pts.push(0, hubY, 0, p.x, p.y, p.z);        // branche-catégorie : tronc -> nœud
+    });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    skeletonGroup.add(new THREE.LineSegments(g, espMat));
+  }
   const ballGeo = new THREE.SphereGeometry(1, 18, 14);
   const nodeMap = new Map();   // key → { core, halo, def, xp }
   const nodeMeshes = [];       // pour le raycaster
@@ -142,6 +156,7 @@ export function initLivingTree(userData) {
       core.position.set(Math.cos(ang) * ringR, y, Math.sin(ang) * ringR);
       core.scale.setScalar(nodeRadius(xp));
     });
+    drawSkeleton();   // squelette tronc + 8 branches-catégories épouse la taille courante
   }
 
   // Animation d'apparition / de croissance d'un nœud (scale élastique).
@@ -170,8 +185,6 @@ export function initLivingTree(userData) {
       tree.position.z -= (b.min.z + b.max.z) / 2;
       tree.position.y -= b.min.y;
       scene.add(tree);
-      // squelette ESP (exosquelette rayon-X) qui épouse l'arbre
-      try { if (universe === 'arbre' && _ezMod && _ezMod.addEspSkeleton) _ezMod.addEspSkeleton(THREE, tree, { opacity: 0.24 }); } catch (_) {}
       const b2 = new THREE.Box3().setFromObject(tree);
       treeH = b2.max.y - b2.min.y;
       treeR = Math.max(b2.max.x - b2.min.x, b2.max.z - b2.min.z) / 2;

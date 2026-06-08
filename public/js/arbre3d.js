@@ -197,12 +197,9 @@ function initScene(canvas) {
   if (universe === 'archi') {
     import('/js/archi-build.js').then((m) => setupCentral(m.buildArchi(THREE))).catch((e) => console.error('[arbre3d] archi import failed', e));
   } else {
-    import('/js/ez-tree-build.js').then((m) => {
-      const obj = m.buildEzTree(m.getTreeType(), { growth: 1 });
-      setupCentral(obj);
-      // squelette ESP qui épouse l'arbre (wireframe du tronc/branches), clippé comme l'arbre
-      try { m.addEspSkeleton(THREE, obj, { clippingPlanes: ez.clip ? [ez.clip.plane] : null, opacity: 0.26 }); } catch (_) {}
-    }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
+    // Le squelette ESP (tronc + 8 branches-catégories) vient des espLines de
+    // buildTree (mode ezTree). Pas de wireframe dense sur l'ez-tree.
+    import('/js/ez-tree-build.js').then((m) => setupCentral(m.buildEzTree(m.getTreeType(), { growth: 1 }))).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
   }
   scene.add(group);
 

@@ -1,5 +1,5 @@
-// service-worker.js - v140 (squelette ESP epouse l'ez-tree partout + bouton Urgence sobre dans l'angle + barre SYL a droite + fix tremblement accueil)
-const CACHE_NAME = 'changeyourlife-v140';
+// service-worker.js - v141 (squelette ESP limite au tronc + 8 branches-categories Maslow)
+const CACHE_NAME = 'changeyourlife-v141';
 const urlsToCache = [
   '/',
   '/app/',
