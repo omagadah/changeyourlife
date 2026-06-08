@@ -51,6 +51,37 @@ export function setupThemeToggle() {
 // Jolis emojis (Twemoji) sur toutes les pages qui chargent common.js.
 try { if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); } } catch (_) {}
 
+// ── Couche de POLISH visuel globale (toutes les pages) ──────────────────────
+// Additive et douce : transitions, survols, focus accessible, halo de champs,
+// léger relief des cartes, et scrollbars « premium » sombres. Aucun changement
+// de mise en page -> sans risque.
+try {
+  if (!document.getElementById('cyl-polish-css')) {
+    const s = document.createElement('style'); s.id = 'cyl-polish-css';
+    s.textContent = `
+      a, button, .stat-chip, .ring-card, .qa-item, .skill-card, .org-card, .ag-ev,
+      input, textarea, select {
+        transition: transform .18s ease, filter .18s ease, box-shadow .2s ease,
+          border-color .2s ease, background-color .2s ease, color .2s ease;
+      }
+      button:hover { filter: brightness(1.07); }
+      button:active { transform: translateY(1px); }
+      :focus-visible { outline: 2px solid rgba(132,194,94,0.75); outline-offset: 2px; border-radius: 6px; }
+      input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(132,194,94,0.18); }
+      .ring-card:hover, .skill-card:hover, .qa-item:hover { transform: translateY(-2px); }
+      /* scrollbars premium (sombres) */
+      * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
+      *::-webkit-scrollbar { width: 10px; height: 10px; }
+      *::-webkit-scrollbar-track { background: transparent; }
+      *::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 8px;
+        border: 2px solid transparent; background-clip: padding-box; }
+      *::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.32); background-clip: padding-box; }
+      @media (prefers-reduced-motion: reduce) { a, button, .ring-card, .skill-card, .qa-item { transition: none !important; } }
+    `;
+    document.head.appendChild(s);
+  }
+} catch (_) {}
+
 export function updateGlobalAvatar(initial) {
     const userPanelTrigger = document.querySelector('.user-panel-trigger');
     if (!userPanelTrigger) return;
