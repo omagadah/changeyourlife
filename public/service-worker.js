@@ -1,5 +1,5 @@
-// service-worker.js - v143 (SYL sur un rayon mi-hauteur ; squelette ESP par corridors : tronc + 8 branches-categories seulement)
-const CACHE_NAME = 'changeyourlife-v143';
+// service-worker.js - v144 (squelette ESP : tronc bas + halo local autour des 8 noeuds-categories seulement, plus de sapin de noel)
+const CACHE_NAME = 'changeyourlife-v144';
 const urlsToCache = [
   '/',
   '/app/',

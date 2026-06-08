@@ -136,23 +136,16 @@ export function addEspSkeletonCorridors(THREE, treeObj, tipsWorld, opts = {}) {
   const box = new THREE.Box3().setFromObject(treeObj);
   const H = (box.max.y - box.min.y) || 1, baseY = box.min.y;
   const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
-  const rTrunk = (opts.trunkRadius != null) ? opts.trunkRadius : H * 0.04;
-  const D = (opts.corridor != null) ? opts.corridor : H * 0.06;
+  const rTrunk = (opts.trunkRadius != null) ? opts.trunkRadius : H * 0.05;     // colonne du tronc
+  const trunkTopY = baseY + H * ((opts.trunkFrac != null) ? opts.trunkFrac : 0.32);   // tronc BAS seulement
+  const Rnode = (opts.nodeRadius != null) ? opts.nodeRadius : H * 0.13;        // halo local autour d'un nœud
+  const Rnode2 = Rnode * Rnode;
   const mat = new THREE.LineBasicMaterial({ color: opts.color != null ? opts.color : 0xffffff, transparent: true, opacity, depthTest: false });
   if (opts.clippingPlanes) { mat.clippingPlanes = opts.clippingPlanes; mat.clipShadows = true; }
 
-  // segments tronc->nœud (corridors)
-  const segs = (tipsWorld || []).map((t) => {
-    const b = (t.isVector3) ? t : new THREE.Vector3(t.x, t.y, t.z);
-    return { a: new THREE.Vector3(cx, baseY + (b.y - baseY) * 0.30, cz), b };
-  });
+  // cibles = positions MONDE des 8 nœuds-catégories
+  const tips = (tipsWorld || []).map((t) => (t.isVector3 ? t : new THREE.Vector3(t.x, t.y, t.z)));
   const A = new THREE.Vector3(), B = new THREE.Vector3(), M = new THREE.Vector3();
-  const AB = new THREE.Vector3(), AP = new THREE.Vector3(), CP = new THREE.Vector3();
-  function d2seg(p, a, b) {
-    AB.subVectors(b, a); const denom = AB.lengthSq() || 1;
-    const t = Math.max(0, Math.min(1, AP.subVectors(p, a).dot(AB) / denom));
-    CP.copy(a).addScaledVector(AB, t); return p.distanceTo(CP);
-  }
   const meshes = [];
   treeObj.traverse((n) => {
     if (!n.isMesh || !n.geometry || n.name === 'esp-skeleton') return;
@@ -168,8 +161,10 @@ export function addEspSkeletonCorridors(THREE, treeObj, tipsWorld, opts = {}) {
       A.set(pos.getX(e), pos.getY(e), pos.getZ(e)).applyMatrix4(n.matrixWorld);
       B.set(pos.getX(e + 1), pos.getY(e + 1), pos.getZ(e + 1)).applyMatrix4(n.matrixWorld);
       M.addVectors(A, B).multiplyScalar(0.5);
-      let keep = Math.hypot(M.x - cx, M.z - cz) < rTrunk;   // tronc (axe vertical)
-      if (!keep) { for (let s = 0; s < segs.length; s++) { if (d2seg(M, segs[s].a, segs[s].b) < D) { keep = true; break; } } }
+      // tronc BAS (colonne près de l'axe, sous la 1re branche) ...
+      let keep = (M.y < trunkTopY) && (Math.hypot(M.x - cx, M.z - cz) < rTrunk);
+      // ... OU halo local autour d'un nœud-catégorie (pas tout le trajet -> reste sombre ailleurs)
+      if (!keep) { for (let s = 0; s < tips.length; s++) { const dx = M.x - tips[s].x, dy = M.y - tips[s].y, dz = M.z - tips[s].z; if (dx * dx + dy * dy + dz * dz < Rnode2) { keep = true; break; } } }
       if (keep) arr.push(pos.getX(e), pos.getY(e), pos.getZ(e), pos.getX(e + 1), pos.getY(e + 1), pos.getZ(e + 1));
     }
     wf.dispose();
