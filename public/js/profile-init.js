@@ -44,6 +44,23 @@ if (bio && bioCounter) {
   updateCounter();
 }
 
+// ── Choix d'univers (arbre Chêne / Frêne), persisté en local (clé cyl_treeType,
+//    lue par ez-tree-build sur accueil/login/app). Pas d'import de la lib 4 Mo ici.
+(function treeChoice() {
+  const KEY = 'cyl_treeType';
+  const opts = document.querySelectorAll('.univers-opt');
+  if (!opts.length) return;
+  const cur = (localStorage.getItem(KEY) === 'frene') ? 'frene' : 'chene';
+  const paint = (v) => opts.forEach((b) => b.classList.toggle('active', b.dataset.tree === v));
+  paint(cur);
+  opts.forEach((b) => b.addEventListener('click', () => {
+    try { localStorage.setItem(KEY, b.dataset.tree); } catch (_) {}
+    paint(b.dataset.tree);
+    const t = document.getElementById('toast');
+    if (t) { t.textContent = 'Univers mis à jour - recharge l\'accueil pour le voir'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); }
+  }));
+})();
+
 // ── Global avatar + user menu ──
 try { updateGlobalAvatar(); } catch (e) { /* ignore */ }
 try { initUserMenu(); } catch (e) { /* ignore */ }
