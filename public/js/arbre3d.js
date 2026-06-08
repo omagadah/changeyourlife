@@ -146,7 +146,7 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, orbits } = buildTree(THREE, createDemoModel(), { floating: true, ezTree: true });
+  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, orbits } = buildTree(THREE, createDemoModel(), { floating: true, ezTree: true });
 
   // Bel arbre ez-tree (le visuel) posé sur la plateforme. Les 8 nœuds Maslow
   // restent cliquables (fournis par buildTree en mode ezTree). On le fait grandir
@@ -176,7 +176,7 @@ function initScene(canvas) {
     ezClip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
   } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip, orbits };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ezTreeObj, EZ_SCALE, ezClip, orbits };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -509,62 +509,94 @@ function initLabels(nodes, subNodes) {
 // course. But : prévenir l'utilisateur que ses données restent locales et que
 // le code est ouvert/vérifiable (preuves : dépôt GitHub public). Style « légende
 // de schéma » pour ne pas surcharger la scène.
-function initSatInfo(infoSat) {
-  if (!infoSat) return { update() {} };
-  const css = document.createElement('style');
-  css.textContent = `
-    .sat-info{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .8s;}
-    .sat-info.on{opacity:1;}
-    .sat-info svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
-    .sat-info-line{stroke:rgba(255,255,255,0.6);stroke-width:1;stroke-dasharray:3 3;}
-    .sat-info-dot{fill:#fff;}
-    .sat-info-card{position:absolute;width:210px;transform:translateY(-50%);
-      background:rgba(6,14,26,0.84);border:1px solid rgba(255,255,255,0.16);
-      border-radius:10px;padding:9px 11px;backdrop-filter:blur(6px);pointer-events:auto;}
-    .sat-info-title{font:800 11px Segoe UI,Roboto,sans-serif;letter-spacing:.4px;color:#cfe0ff;
-      display:flex;align-items:center;gap:6px;margin-bottom:4px;}
-    .sat-info-card p{font:500 10.5px Segoe UI,Roboto,sans-serif;line-height:1.45;color:#b9c7dc;margin:0 0 6px;}
-    .sat-info-card a{font:700 10.5px Segoe UI,Roboto,sans-serif;color:#7fd1ff;text-decoration:none;}
-    .sat-info-card a:hover{text-decoration:underline;}
-    @media (max-width:880px){ .sat-info{display:none;} }
-  `;
-  document.head.appendChild(css);
+const SAT_INFO = {
+  transp: {
+    title: '🛰 100% transparent',
+    body: "Tes données restent sur ton appareil. Rien n'est revendu. Le code est ouvert et vérifiable.",
+    link: { label: 'Voir le code (GitHub) ↗', href: 'https://github.com/omagadah/changeyourlife' },
+  },
+  connect: {
+    title: '🔗 Connecté à ta vraie vie',
+    body: 'Relie tes outils (Google Agenda, tâches...) : tes actions réelles nourrissent ton arbre.',
+  },
+  open: {
+    title: '🌍 Gratuit & open source',
+    body: "Le cœur de l'app est gratuit et ouvert. Tu construis ta vie, pas un abonnement.",
+    link: { label: 'Le code (GitHub) ↗', href: 'https://github.com/omagadah/changeyourlife' },
+  },
+  syl: {
+    title: '✨ SYL, ton assistant',
+    body: "Une IA bienveillante qui t'écoute et t'oriente vers la bonne action, au bon moment.",
+  },
+};
+function initSatInfo(infoSats) {
+  if (!infoSats || !infoSats.length) return { update() {} };
+  if (!document.getElementById('sat-info-css')) {
+    const css = document.createElement('style'); css.id = 'sat-info-css';
+    css.textContent = `
+      .sat-info{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .8s;}
+      .sat-info.on{opacity:1;}
+      .sat-info svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+      .sat-info-line{stroke:rgba(255,255,255,0.55);stroke-width:1;stroke-dasharray:3 3;}
+      .sat-info-dot{fill:#fff;}
+      .sat-info-card{position:absolute;width:208px;transform:translateY(-50%);
+        background:rgba(6,14,26,0.84);border:1px solid rgba(255,255,255,0.16);
+        border-radius:10px;padding:9px 11px;backdrop-filter:blur(6px);pointer-events:auto;}
+      .sat-info-card.primordial{width:250px;padding:12px 14px;border-color:rgba(127,209,255,0.55);
+        box-shadow:0 0 26px rgba(127,209,255,0.28);background:rgba(6,16,30,0.9);}
+      .sat-info-title{font:800 11px Segoe UI,Roboto,sans-serif;letter-spacing:.4px;color:#cfe0ff;
+        display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+      .sat-info-card.primordial .sat-info-title{font-size:13px;color:#bfe6ff;}
+      .sat-info-card p{font:500 10.5px Segoe UI,Roboto,sans-serif;line-height:1.45;color:#b9c7dc;margin:0 0 6px;}
+      .sat-info-card.primordial p{font-size:11.5px;}
+      .sat-info-card a{font:700 10.5px Segoe UI,Roboto,sans-serif;color:#7fd1ff;text-decoration:none;}
+      .sat-info-card a:hover{text-decoration:underline;}
+      @media (max-width:880px){ .sat-info{display:none;} }
+    `;
+    document.head.appendChild(css);
+  }
   const wrap = document.createElement('div');
   wrap.className = 'sat-info';
-  wrap.innerHTML =
-    `<svg><line class="sat-info-line" x1="0" y1="0" x2="0" y2="0"></line>` +
-    `<circle class="sat-info-dot" cx="0" cy="0" r="2.5"></circle></svg>` +
-    `<div class="sat-info-card">` +
-      `<div class="sat-info-title">🛰 100% transparent</div>` +
-      `<p>Tes données restent sur ton appareil. Rien n'est revendu. Le code est ouvert et vérifiable.</p>` +
-      `<a href="https://github.com/omagadah/changeyourlife" target="_blank" rel="noopener">Voir le code (GitHub) ↗</a>` +
-    `</div>`;
   document.querySelector('.scene')?.appendChild(wrap);
-  const line = wrap.querySelector('.sat-info-line');
-  const dot = wrap.querySelector('.sat-info-dot');
-  const card = wrap.querySelector('.sat-info-card');
-  const CW = 210;
+
+  const items = infoSats.map((sat) => {
+    const info = SAT_INFO[sat.userData.info] || { title: 'Info', body: '' };
+    const prim = !!sat.userData.primordial;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.innerHTML = `<line class="sat-info-line" x1="0" y1="0" x2="0" y2="0"></line><circle class="sat-info-dot" cx="0" cy="0" r="${prim ? 3 : 2.3}"></circle>`;
+    const card = document.createElement('div');
+    card.className = 'sat-info-card' + (prim ? ' primordial' : '');
+    card.innerHTML =
+      `<div class="sat-info-title">${info.title}</div><p>${info.body}</p>` +
+      (info.link ? `<a href="${info.link.href}" target="_blank" rel="noopener">${info.link.label}</a>` : '');
+    wrap.appendChild(svg); wrap.appendChild(card);
+    return { sat, card, line: svg.querySelector('line'), dot: svg.querySelector('circle'), cw: prim ? 250 : 208 };
+  });
+
   const v = new THREE.Vector3();
   let shown = false;
   return {
     update(camera, canvas) {
-      infoSat.getWorldPosition(v).project(camera);
       const w = canvas.clientWidth, h = canvas.clientHeight;
-      const sx = (v.x * 0.5 + 0.5) * w;
-      const sy = (-v.y * 0.5 + 0.5) * h;
-      const onScreen = v.z <= 1 && sx > -40 && sx < w + 40 && sy > -40 && sy < h + 40;
-      if (!onScreen) { if (shown) { wrap.classList.remove('on'); shown = false; } return; }
-      // carte décalée du satellite ; bascule à gauche si elle déborderait à droite
-      let cx = sx + 28, anchorRight = false;
-      if (cx + CW > w - 12) { cx = sx - 28 - CW; anchorRight = true; }
-      const cy = Math.max(10, Math.min(h - 84, sy - 34));
-      card.style.left = cx + 'px';
-      card.style.top = cy + 'px';
-      const lx = anchorRight ? cx + CW : cx;
-      line.setAttribute('x1', sx); line.setAttribute('y1', sy);
-      line.setAttribute('x2', lx); line.setAttribute('y2', cy);
-      dot.setAttribute('cx', sx); dot.setAttribute('cy', sy);
-      if (!shown) { wrap.classList.add('on'); shown = true; }
+      let anyVisible = false;
+      for (const it of items) {
+        it.sat.getWorldPosition(v).project(camera);
+        const sx = (v.x * 0.5 + 0.5) * w, sy = (-v.y * 0.5 + 0.5) * h;
+        const onScreen = v.z <= 1 && sx > -40 && sx < w + 40 && sy > -40 && sy < h + 40;
+        if (!onScreen) { it.card.style.display = 'none'; it.line.style.display = 'none'; it.dot.style.display = 'none'; continue; }
+        anyVisible = true;
+        it.card.style.display = ''; it.line.style.display = ''; it.dot.style.display = '';
+        let cx = sx + 28, anchorRight = false;
+        if (cx + it.cw > w - 12) { cx = sx - 28 - it.cw; anchorRight = true; }
+        const cy = Math.max(10, Math.min(h - 92, sy - 34));
+        it.card.style.left = cx + 'px'; it.card.style.top = cy + 'px';
+        const lx = anchorRight ? cx + it.cw : cx;
+        it.line.setAttribute('x1', sx); it.line.setAttribute('y1', sy);
+        it.line.setAttribute('x2', lx); it.line.setAttribute('y2', cy);
+        it.dot.setAttribute('cx', sx); it.dot.setAttribute('cy', sy);
+      }
+      if (anyVisible && !shown) { wrap.classList.add('on'); shown = true; }
+      else if (!anyVisible && shown) { wrap.classList.remove('on'); shown = false; }
     },
   };
 }
@@ -655,12 +687,12 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip, orbits } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ezTreeObj, EZ_SCALE, ezClip, orbits } = initScene(canvas);
   geolocateTree(setEarthLocation);
   let orbitT = 0;   // avancement de la révélation des tracés d'orbites (0..1)
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
-  const satInfo = initSatInfo(infoSat);
+  const satInfo = initSatInfo(infoSats);
   const hud = initHud();
   const branchPanel = initBranchPanel(() => { labels.hideSubs(); controls.setAutoRotate(true); });
 

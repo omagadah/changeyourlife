@@ -669,51 +669,65 @@ export function buildTree(THREE, model, opts) {
   // au niveau de l'arbre (le « noyau »), 2 « électrons » par plan (phases
   // opposées), orbites ELLIPTIQUES, sens de rotation différents d'un plan à
   // l'autre. Restent dans le périmètre de l'arbre -> visibles une fois dézoomé.
+  // Atome PROPRE et symétrique : 6 ellipses identiques régulièrement tournées
+  // autour de l'axe vertical (rosette, comme un schéma d'atome). Des satellites
+  // (électrons) circulent dessus ; certains portent une « étiquette » explicative.
   const PI = Math.PI;
   const SAT_CENTER = new THREE.Vector3(0, 40, 0);
-  const satellites = [];
-  const satCfg = [
-    // plan 1 (sens +)
-    { A: 150, B: 96,  speed:  0.16, incl: 1.25, node: 0.0,        phase: 0.0,        scale: 1.0 },
-    { A: 150, B: 96,  speed:  0.16, incl: 1.25, node: 0.0,        phase: PI,         scale: 0.55 },
-    // plan 2 (sens -)
-    { A: 162, B: 90,  speed: -0.13, incl: 1.30, node: 1.05,       phase: 1.0,        scale: 0.62 },
-    { A: 162, B: 90,  speed: -0.13, incl: 1.30, node: 1.05,       phase: 1.0 + PI,   scale: 0.5 },
-    // plan 3 (sens +)
-    { A: 144, B: 102, speed:  0.12, incl: 1.18, node: 2.10,       phase: 2.0,        scale: 0.62 },
-    { A: 144, B: 102, speed:  0.12, incl: 1.18, node: 2.10,       phase: 2.0 + PI,   scale: 0.5 },
+  const PLANES = 6, ORB_A = 168, ORB_B = 104, ORB_INCL = 1.30;
+  const planes = [];
+  for (let i = 0; i < PLANES; i++) {
+    const node = (i * PI) / PLANES;     // réparties sur [0, PI) -> rosette régulière
+    const cosN = Math.cos(node), sinN = Math.sin(node);
+    const cosI = Math.cos(ORB_INCL), sinI = Math.sin(ORB_INCL);
+    planes.push({
+      ax: new THREE.Vector3(cosN, 0, sinN),
+      ay: new THREE.Vector3(-sinN * cosI, sinI, cosN * cosI),
+      speed: (i % 2 ? -0.115 : 0.115),  // sens alterné d'un plan à l'autre
+    });
+  }
+
+  // Satellites : 4 explicatifs (dont le PRIMORDIAL « 100% transparent », le + gros)
+  // + 4 électrons simples. On pourra ajuster/ajouter les étiquettes au fil du temps.
+  const satDefs = [
+    { plane: 0, phase: 0.0,      scale: 1.7, info: 'transp' },   // PRIMORDIAL (le plus gros)
+    { plane: 0, phase: PI,       scale: 0.5 },
+    { plane: 1, phase: 1.1,      scale: 0.55 },
+    { plane: 2, phase: 2.0,      scale: 0.9,  info: 'connect' },
+    { plane: 3, phase: 0.6,      scale: 0.9,  info: 'open' },
+    { plane: 3, phase: 0.6 + PI, scale: 0.5 },
+    { plane: 4, phase: 3.3,      scale: 0.55 },
+    { plane: 5, phase: 1.7,      scale: 0.9,  info: 'syl' },
   ];
-  for (const c of satCfg) {
+  const satellites = [];
+  const infoSats = [];
+  for (const d of satDefs) {
+    const p = planes[d.plane];
     const s = makeSatellite();
-    // base orthonormée (ax, ay) du plan orbital incliné (ay très incliné -> ellipse
-    // qui « se dresse » comme une orbite d'électron)
-    const cosN = Math.cos(c.node), sinN = Math.sin(c.node);
-    const cosI = Math.cos(c.incl), sinI = Math.sin(c.incl);
-    s.userData.ax = new THREE.Vector3(cosN, 0, sinN);
-    s.userData.ay = new THREE.Vector3(-sinN * cosI, sinI, cosN * cosI);
-    s.userData.A = c.A; s.userData.B = c.B; s.userData.speed = c.speed;
-    s.userData.angle = c.phase;
-    s.scale.setScalar(c.scale || 1);
+    s.userData.ax = p.ax; s.userData.ay = p.ay;
+    s.userData.A = ORB_A; s.userData.B = ORB_B; s.userData.speed = p.speed;
+    s.userData.angle = d.phase;
+    s.scale.setScalar(d.scale || 1);
+    if (d.info) { s.userData.info = d.info; s.userData.primordial = d.info === 'transp'; infoSats.push(s); }
     root.add(s);
     satellites.push(s);
   }
 
-  // Tracés des orbites = la FORME de l'atome. Une orbite (ellipse) par satellite,
-  // dessinée progressivement (drawRange). Révélation/disparition pilotées par
-  // arbre3d.js via `orbits` (apparition 1 par 1, reset au toucher).
+  // Tracés des orbites = la FORME de l'atome (1 ellipse par PLAN, donc rosette
+  // nette). Dessinées progressivement (drawRange), pilotées par arbre3d via `orbits`.
   const orbitLines = [];
-  for (const s of satellites) {
-    const N = 168, pts = [];
+  for (const p of planes) {
+    const N = 176, pts = [];
     for (let i = 0; i <= N; i++) {
-      const t = (i / N) * Math.PI * 2;
+      const t = (i / N) * PI * 2;
       pts.push(SAT_CENTER.clone()
-        .addScaledVector(s.userData.ax, Math.cos(t) * s.userData.A)
-        .addScaledVector(s.userData.ay, Math.sin(t) * s.userData.B));
+        .addScaledVector(p.ax, Math.cos(t) * ORB_A)
+        .addScaledVector(p.ay, Math.sin(t) * ORB_B));
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
     geo.setDrawRange(0, 0);
     const line = new THREE.Line(geo, new THREE.LineBasicMaterial({
-      color: 0x9fd0ff, transparent: true, opacity: 0.30,
+      color: 0x9fd0ff, transparent: true, opacity: 0.32,
       blending: THREE.AdditiveBlending, depthWrite: false }));
     line.userData.total = N + 1;
     line.visible = false;
@@ -1032,5 +1046,5 @@ export function buildTree(THREE, model, opts) {
   }
   grow(0);
 
-  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation, infoSat: satellites[0] || null, orbits };
+  return { group: root, nodes, subNodes, grow, branchGroups, addGrassBlades, animateCosmos, setEarthLocation, infoSats, orbits };
 }
