@@ -206,7 +206,8 @@ function initScene(canvas) {
       ez.buildSkeleton = () => {
         try {
           const tips = nodes.map((n) => n.getWorldPosition(new THREE.Vector3()));
-          m.addEspSkeletonCorridors(THREE, obj, tips, { opacity: 0.34 });
+          const subTips = (subNodes || []).map((n) => n.getWorldPosition(new THREE.Vector3()));
+          m.addEspSkeletonCorridors(THREE, obj, tips, { opacity: 0.34, subTips });
         } catch (_) {}
       };
     }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));

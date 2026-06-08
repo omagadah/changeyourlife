@@ -1,5 +1,5 @@
-// service-worker.js - v146 (squelette : troncon de branche depuis chaque noeud-categorie vers le tronc, + petit halo)
-const CACHE_NAME = 'changeyourlife-v146';
+// service-worker.js - v147 (squelette : corridor complet tronc->point thematique + halos sous-familles)
+const CACHE_NAME = 'changeyourlife-v147';
 const urlsToCache = [
   '/',
   '/app/',
