@@ -12,6 +12,7 @@ import { updateGlobalAvatar } from '/js/common.js';
 let auth, db, uid;
 let board = null;
 let sortables = [];
+let cv = { x: 20, y: 20, z: 1 };   // état de la vue Canvas (pan x/y, zoom z)
 
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
@@ -58,6 +59,9 @@ async function load() {
   board.columns.forEach((c) => { if (!Array.isArray(c.cards)) c.cards = []; });
   board.lockCols = !!board.lockCols;   // verrou colonnes (déplacement/édition/suppression)
   board.lockCards = !!board.lockCards; // verrou fiches (déplacement/ajout)
+  board.view = board.view === 'canvas' ? 'canvas' : 'board';
+  if (!board.canvas || typeof board.canvas.z !== 'number') board.canvas = { x: 20, y: 20, z: 1 };
+  cv = board.canvas;                   // même référence -> save() persiste pan/zoom
   // garantit que 'tri' existe et passe en tête
   if (!col(TRI_ID)) board.columns.unshift({ ...DEFAULT_COLUMNS[0], cards: [] });
   board.columns.sort((a, b) => (a.id === TRI_ID ? -1 : b.id === TRI_ID ? 1 : 0));
@@ -67,6 +71,7 @@ function save() { clearTimeout(saveT); saveT = setTimeout(() => { setDoc(doc(db,
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
 function render() {
+  if (board.view === 'canvas') { renderCanvas(); updateLockUI(); return; }
   const triHost = document.getElementById('org-tri');
   const boardEl = document.getElementById('org-board');
   if (!boardEl) return;
@@ -122,24 +127,149 @@ function renderColumn(c, into) {
   return el;
 }
 
+function badgesHtml(card) {
+  const checked = (card.checklist || []).filter((s) => s.done).length;
+  const total = (card.checklist || []).length;
+  const out = [];
+  if (card.due) {
+    const days = Math.ceil((card.due - now()) / 86400000);
+    const cls = days < 0 ? 'due-late' : days <= 2 ? 'due-soon' : '';
+    out.push(`<span class="org-badge ${cls}">🗓 ${escapeHtml(fmtDate(card.due))}</span>`);
+  }
+  if (total) out.push(`<span class="org-badge">☑ ${checked}/${total}</span>`);
+  return out;
+}
+
 function renderCard(card) {
   const el = document.createElement('div');
   el.className = 'org-card' + (card.done ? ' done' : '');
   el.dataset.id = card.id;
   const title = document.createElement('div'); title.className = 'org-card-title'; title.textContent = card.title;
   el.appendChild(title);
-  const checked = (card.checklist || []).filter((s) => s.done).length;
-  const total = (card.checklist || []).length;
-  const badges = [];
-  if (card.due) {
-    const days = Math.ceil((card.due - now()) / 86400000);
-    const cls = days < 0 ? 'due-late' : days <= 2 ? 'due-soon' : '';
-    badges.push(`<span class="org-badge ${cls}">🗓 ${escapeHtml(fmtDate(card.due))}</span>`);
-  }
-  if (total) badges.push(`<span class="org-badge">☑ ${checked}/${total}</span>`);
+  const badges = badgesHtml(card);
   if (badges.length) { const b = document.createElement('div'); b.className = 'org-card-badges'; b.innerHTML = badges.join(''); el.appendChild(b); }
   el.addEventListener('click', () => openCard(card.id));
   return el;
+}
+
+// ── Vue Canvas (toile infinie, mêmes données que le board) ───────────────────
+const NODE_W = 230, NODE_H = 116, GAP_X = 60, GAP_Y = 22, ORIG_X = 40, ORIG_Y = 40;
+
+function ensurePositions() {
+  board.columns.forEach((c, ci) => {
+    c.cards.forEach((card, ki) => {
+      if (typeof card.cx !== 'number') card.cx = ORIG_X + ci * (NODE_W + GAP_X);
+      if (typeof card.cy !== 'number') card.cy = ORIG_Y + ki * (NODE_H + GAP_Y);
+    });
+  });
+}
+
+function buildNode(card, c) {
+  const el = document.createElement('div');
+  el.className = 'org-node' + (card.done ? ' done' : '');
+  el.dataset.id = card.id;
+  el.style.setProperty('--nc', c.color || '#8aa0bf');
+  el.style.left = card.cx + 'px'; el.style.top = card.cy + 'px';
+  const badges = badgesHtml(card);
+  el.innerHTML =
+    `<div class="org-node-col"><i></i>${escapeHtml(stripEmoji(c.title))}</div>` +
+    `<div class="org-node-title">${escapeHtml(card.title)}</div>` +
+    (badges.length ? `<div class="org-node-badges">${badges.join('')}</div>` : '');
+  attachNodeDrag(el, card);
+  return el;
+}
+
+// Drag d'un nœud (met à jour cx/cy). Distingue clic (ouvre la fiche) et déplacement.
+function attachNodeDrag(el, card) {
+  el.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();   // n'entraîne pas le pan du fond
+    const sx = e.clientX, sy = e.clientY, ox = card.cx, oy = card.cy;
+    let moved = false;
+    el.setPointerCapture(e.pointerId);
+    el.style.cursor = 'grabbing'; el.style.zIndex = '20';
+    const mv = (ev) => {
+      if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 4) moved = true;
+      card.cx = ox + (ev.clientX - sx) / cv.z;
+      card.cy = oy + (ev.clientY - sy) / cv.z;
+      el.style.left = card.cx + 'px'; el.style.top = card.cy + 'px';
+    };
+    const up = () => {
+      el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up);
+      el.style.cursor = 'grab'; el.style.zIndex = '';
+      if (moved) save(); else openCard(card.id);
+    };
+    el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+  });
+}
+
+function renderCanvas() {
+  const world = document.getElementById('org-canvas-world'); if (!world) return;
+  ensurePositions();
+  world.innerHTML = '';
+  board.columns.forEach((c) => c.cards.forEach((card) => world.appendChild(buildNode(card, c))));
+  applyTransform();
+}
+
+function applyTransform() {
+  const world = document.getElementById('org-canvas-world');
+  const wrap = document.getElementById('org-canvas-wrap');
+  if (world) world.style.transform = `translate(${cv.x}px,${cv.y}px) scale(${cv.z})`;
+  if (wrap) { wrap.style.backgroundSize = (24 * cv.z) + 'px ' + (24 * cv.z) + 'px'; wrap.style.backgroundPosition = cv.x + 'px ' + cv.y + 'px'; }
+}
+
+function initCanvasInteractions() {
+  const wrap = document.getElementById('org-canvas-wrap'); if (!wrap || wrap._init) return; wrap._init = true;
+  // Pan (glisser le fond)
+  wrap.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.org-node') || e.target.closest('.org-canvas-toolbar')) return;
+    wrap.classList.add('panning');
+    const sx = e.clientX, sy = e.clientY, ox = cv.x, oy = cv.y;
+    wrap.setPointerCapture(e.pointerId);
+    const mv = (ev) => { cv.x = ox + (ev.clientX - sx); cv.y = oy + (ev.clientY - sy); applyTransform(); };
+    const up = () => { wrap.removeEventListener('pointermove', mv); wrap.removeEventListener('pointerup', up); wrap.classList.remove('panning'); save(); };
+    wrap.addEventListener('pointermove', mv); wrap.addEventListener('pointerup', up);
+  });
+  // Zoom (molette, vers le curseur)
+  wrap.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const r = wrap.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const old = cv.z;
+    cv.z = Math.min(2.2, Math.max(0.3, old * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+    cv.x = mx - (mx - cv.x) * (cv.z / old);
+    cv.y = my - (my - cv.y) * (cv.z / old);
+    applyTransform(); save();
+  }, { passive: false });
+}
+
+function reorganizeCanvas() {
+  board.columns.forEach((c, ci) => c.cards.forEach((card, ki) => {
+    card.cx = ORIG_X + ci * (NODE_W + GAP_X); card.cy = ORIG_Y + ki * (NODE_H + GAP_Y);
+  }));
+  fitCanvas(); renderCanvas(); save();
+}
+function fitCanvas() { cv.x = 20; cv.y = 20; cv.z = 1; applyTransform(); save(); }
+
+function setView(v) {
+  board.view = v === 'canvas' ? 'canvas' : 'board';
+  const wrap = document.getElementById('org-wrap');
+  const cwrap = document.getElementById('org-canvas-wrap');
+  document.querySelectorAll('#org-viewtoggle button').forEach((b) => {
+    const on = b.dataset.view === board.view;
+    b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  ['org-lock-cols', 'org-lock-cards', 'org-add-col'].forEach((id) => {
+    const el = document.getElementById(id); if (el) el.style.display = board.view === 'canvas' ? 'none' : '';
+  });
+  if (board.view === 'canvas') {
+    if (wrap) wrap.hidden = true; if (cwrap) cwrap.hidden = false;
+    renderCanvas(); initCanvasInteractions();
+  } else {
+    if (cwrap) cwrap.hidden = true; if (wrap) wrap.hidden = false;
+    render();
+  }
+  save();
 }
 
 // ── Drag & drop (SortableJS) ─────────────────────────────────────────────────
@@ -355,6 +485,9 @@ if (_lockCards) _lockCards.onclick = () => {
   board.lockCards = !board.lockCards; save(); render();
   toast(board.lockCards ? 'Fiches verrouillées 🔒' : 'Fiches déverrouillées 🔓');
 };
+document.querySelectorAll('#org-viewtoggle button').forEach((b) => { b.onclick = () => setView(b.dataset.view); });
+const _reorg = document.getElementById('org-canvas-reorg'); if (_reorg) _reorg.onclick = reorganizeCanvas;
+const _fit = document.getElementById('org-canvas-fit'); if (_fit) _fit.onclick = fitCanvas;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login/'; return; }
@@ -362,5 +495,5 @@ onAuthStateChanged(auth, async (user) => {
   try { updateGlobalAvatar((user.email || 'U').charAt(0).toUpperCase()); } catch (e) {}
   try { initUserMenu(); } catch (e) {}
   await load();
-  render();
+  setView(board.view);
 });

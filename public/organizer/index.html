@@ -106,6 +106,42 @@
     .org-d-move option { background:#0c1628; }
 
     @media (max-width:600px){ .page-shell{ inset:8px; padding:12px 10px 6px; border-radius:16px; } .org-col{ flex-basis:80vw; } }
+
+    /* ── Bascule de vue Board / Canvas ── */
+    .org-viewtoggle { display:inline-flex; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:99px; padding:3px; }
+    .org-viewtoggle button { border:none; background:none; color:var(--text-2,#aab7cf); font-weight:700; font-size:0.82rem; padding:6px 14px; border-radius:99px; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }
+    .org-viewtoggle button.active { background:#3b82f6; color:#fff; box-shadow:0 4px 12px rgba(59,130,246,0.4); }
+
+    /* ── Scène (contient les 2 vues) ── */
+    .org-stage { position:relative; height:100%; min-height:0; overflow:hidden; }
+    .org-wrap.full { height:100%; }
+    .org-wrap[hidden], .org-canvas-wrap[hidden] { display:none; }   /* display:flex écrase [hidden] sinon */
+
+    /* ── Vue Canvas (toile infinie, workflow IA) ── */
+    .org-canvas-wrap { position:absolute; inset:0; overflow:hidden; border-radius:14px; cursor:grab; touch-action:none;
+      background-color:rgba(255,255,255,0.012);
+      background-image:radial-gradient(circle, rgba(255,255,255,0.11) 1.3px, transparent 1.3px);
+      background-size:24px 24px; }
+    .org-canvas-wrap.panning { cursor:grabbing; }
+    .org-canvas-world { position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
+    .org-node { position:absolute; width:210px; box-sizing:border-box; background:rgba(16,26,46,0.92);
+      border:1px solid rgba(255,255,255,0.10); border-left:3px solid var(--nc,#8aa0bf); border-radius:13px;
+      padding:11px 13px; cursor:grab; box-shadow:0 8px 24px rgba(0,0,0,0.34); backdrop-filter:blur(4px);
+      transition:box-shadow .15s, border-color .15s; user-select:none; }
+    .org-node:hover { box-shadow:0 12px 30px rgba(0,0,0,0.5), 0 0 0 1px var(--nc,#8aa0bf); }
+    .org-node.done { opacity:0.68; }
+    .org-node.done .org-node-title { text-decoration:line-through; }
+    .org-node-col { display:inline-flex; align-items:center; gap:5px; font-size:0.63rem; font-weight:800;
+      text-transform:uppercase; letter-spacing:.4px; color:var(--nc,#8aa0bf); margin-bottom:5px; }
+    .org-node-col i { width:7px; height:7px; border-radius:50%; background:var(--nc,#8aa0bf); box-shadow:0 0 7px var(--nc,#8aa0bf); }
+    .org-node-title { font-size:0.86rem; color:#e9f0fa; line-height:1.38; word-break:break-word; }
+    .org-node-badges { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
+    .org-canvas-toolbar { position:absolute; top:12px; right:12px; z-index:5; display:flex; gap:8px; }
+    .org-canvas-toolbar button { display:inline-flex; align-items:center; gap:6px; padding:8px 13px; border-radius:99px;
+      border:1px solid rgba(255,255,255,0.16); background:rgba(12,22,40,0.85); color:var(--text-2,#aab7cf);
+      font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .15s; backdrop-filter:blur(6px); }
+    .org-canvas-toolbar button:hover { background:rgba(255,255,255,0.1); color:#fff; }
+    .org-canvas-hint { position:absolute; bottom:10px; left:14px; font-size:0.72rem; color:var(--text-3,#7e9ab5); pointer-events:none; user-select:none; }
   </style>
 </head>
 <body>
@@ -122,6 +158,10 @@
         <div class="org-sub">Déverse toutes tes idées, trie-les par priorité, planifie - chaque fiche terminée fait grandir ton arbre.</div>
       </div>
       <div class="org-actions">
+        <div class="org-viewtoggle" id="org-viewtoggle" role="tablist" aria-label="Vue">
+          <button data-view="board" class="active" role="tab" aria-selected="true">▦ Board</button>
+          <button data-view="canvas" role="tab" aria-selected="false">⬚ Canvas</button>
+        </div>
         <button class="org-lock" id="org-lock-cols" title="Verrouiller les colonnes" aria-pressed="false">
           <span class="org-lock-ic">🔓</span> Colonnes
         </button>
@@ -131,10 +171,20 @@
         <button class="org-addcol" id="org-add-col">+ Colonne</button>
       </div>
     </div>
-    <div class="org-wrap">
-      <div class="org-tri" id="org-tri"></div>
-      <div class="org-sep" aria-hidden="true"></div>
-      <div class="org-board" id="org-board"></div>
+    <div class="org-stage" id="org-stage">
+      <div class="org-wrap full" id="org-wrap">
+        <div class="org-tri" id="org-tri"></div>
+        <div class="org-sep" aria-hidden="true"></div>
+        <div class="org-board" id="org-board"></div>
+      </div>
+      <div class="org-canvas-wrap" id="org-canvas-wrap" hidden>
+        <div class="org-canvas-toolbar">
+          <button id="org-canvas-reorg" title="Aligner les fiches par colonne">⊹ Réorganiser</button>
+          <button id="org-canvas-fit" title="Recentrer la vue">⤢ Recentrer</button>
+        </div>
+        <div class="org-canvas-world" id="org-canvas-world"></div>
+        <div class="org-canvas-hint">Glisse le fond pour te déplacer · molette pour zoomer · glisse une fiche pour la ranger</div>
+      </div>
     </div>
   </main>
 
