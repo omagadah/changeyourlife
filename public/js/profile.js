@@ -5,6 +5,7 @@ import { doc, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/fir
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { setupThemeToggle, updateGlobalAvatar } from './common.js';
 import { initUserMenu } from './userMenu.js';
+import { mountParticleAvatar } from './particle-avatar.js';
 import './firebase.js';
 
 const { app, auth, db } = window._cyfFirebase;
@@ -60,17 +61,18 @@ function generateInitialAvatar(initial = 'U', size = 256, bg = null, fg = '#ffff
     return canvas.toDataURL('image/png');
 }
 
+let _pCompact = null, _pBig = null;
 function showAvatar(dataUrl) {
     if (!avatarPreviewContainer) return;
-    avatarPreviewContainer.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = dataUrl;
-    img.alt = 'Avatar';
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '50%';
-    avatarPreviewContainer.appendChild(img);
+    // Avatar compact en NUAGE DE PARTICULES (se disperse au survol souris).
+    try { _pCompact && _pCompact.destroy(); } catch (_) {}
+    _pCompact = mountParticleAvatar(avatarPreviewContainer, { imageUrl: dataUrl, w: 112, h: 112, round: true, fit: 'cover', step: 2, dot: 1.7 });
+    // Grand rendu particules dans le banner du hero.
+    const banner = document.getElementById('hero-banner');
+    if (banner) {
+        try { _pBig && _pBig.destroy(); } catch (_) {}
+        _pBig = mountParticleAvatar(banner, { imageUrl: dataUrl, w: banner.clientWidth || 760, h: 120, round: false, fit: 'height', step: 3, dot: 1.6, repel: 34 });
+    }
 }
 
 function wireAvatarInputs() {
