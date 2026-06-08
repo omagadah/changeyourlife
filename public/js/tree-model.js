@@ -675,18 +675,14 @@ export function buildTree(THREE, model, opts) {
   const SAT_CENTER = new THREE.Vector3(0, 40, 0);
   // EXACTEMENT 3 ellipses allongées, tournées de 120° autour de l'axe vertical et
   // inclinées : c'est LE symbole de l'atome. Pas plus (sinon ça fait un ballon).
-  const ORB_A = 78, ORB_B = 190;   // A = petit axe (ax) · B = grand axe (ay) -> ellipse allongée
-  const TILT = 1.15;               // inclinaison des plans (~66°)
-  const UP = new THREE.Vector3(0, 1, 0);
-  const planes = [0, 1, 2].map((k) => {
-    const az = (k * 2 * PI) / 3;
-    const n = new THREE.Vector3(Math.sin(TILT) * Math.cos(az), Math.cos(TILT), Math.sin(TILT) * Math.sin(az));
-    const ax = new THREE.Vector3().crossVectors(n, UP).normalize();
-    const ay = new THREE.Vector3().crossVectors(n, ax).normalize();
-    return { ax, ay, speed: (k % 2 ? -0.11 : 0.11) };
-  });
-  // + 1 orbite HORIZONTALE (équateur), même taille que les autres.
-  planes.push({ ax: new THREE.Vector3(1, 0, 0), ay: new THREE.Vector3(0, 0, 1), speed: 0.10 });
+  const ORB_A = 78, ORB_B = 190;   // A = petit axe (ax, horizontal) · B = grand axe (ay) -> ellipse allongée
+  const a45 = PI / 4;
+  // 3 orbites : 2 diagonales verticales croisées (X) + 1 horizontale (équateur).
+  const planes = [
+    { ax: new THREE.Vector3(Math.cos(a45), 0, Math.sin(a45)),  ay: new THREE.Vector3(0, 1, 0), speed:  0.11 },  // diagonale /
+    { ax: new THREE.Vector3(Math.cos(-a45), 0, Math.sin(-a45)), ay: new THREE.Vector3(0, 1, 0), speed: -0.105 }, // diagonale \
+    { ax: new THREE.Vector3(1, 0, 0), ay: new THREE.Vector3(0, 0, 1), speed: 0.10 },                              // horizontale
+  ];
 
   const satellites = [];
   const infoSats = [];
@@ -699,8 +695,6 @@ export function buildTree(THREE, model, opts) {
     { plane: 0, phase: PI,       scale: 0.55 },
     { plane: 1, phase: 2.1 + PI, scale: 0.5 },
     { plane: 2, phase: 4.0 + PI, scale: 0.5 },
-    { plane: 3, phase: 0.0,      scale: 0.7 },   // satellite sur l'orbite horizontale
-    { plane: 3, phase: PI,       scale: 0.5 },
   ];
   for (const d of satDefs) {
     const p = planes[d.plane];

@@ -416,6 +416,27 @@ function initBranchPanel(onClose) {
     panel.classList.add('open');
   }
 
+  // Ouvre le MÊME panneau avec un contenu libre (utilisé pour les satellites).
+  function openInfo(opt) {
+    if (!panel) return;
+    lastOpen = null;
+    const col = opt.color || '#7fd1ff';
+    if (dot) dot.style.background = col;
+    if (title) { title.textContent = opt.title || ''; title.style.color = col; }
+    if (desc) desc.textContent = opt.body || '';
+    if (subsEl) subsEl.innerHTML = '';
+    if (modsEl) {
+      modsEl.innerHTML = '';
+      if (opt.link) {
+        const a = document.createElement('a');
+        a.href = opt.link.href; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = opt.link.label; a.style.color = col; a.style.fontWeight = '700';
+        modsEl.appendChild(a);
+      }
+    }
+    panel.classList.add('open');
+  }
+
   // Changement de langue : si le panneau est ouvert, on le re-remplit.
   window.addEventListener('cyl:langchange', () => {
     if (panel && panel.classList.contains('open') && lastOpen) {
@@ -423,7 +444,7 @@ function initBranchPanel(onClose) {
     }
   });
 
-  return { open, close };
+  return { open, openInfo, close };
 }
 
 // ── Labels HTML projetés (style ESP) ────────────────────────────────────────
@@ -736,15 +757,38 @@ function initTree3D(canvas) {
     }
     return bestD < 66 ? best : null;   // seuil ~66 px = clic facile
   }
+  // Satellite explicatif le plus proche du curseur (cliquable -> panneau).
+  function nearestSat(clientX, clientY) {
+    if (!infoSats || !infoSats.length) return null;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    let best = null, bestD = 9999;
+    for (const s of infoSats) {
+      s.getWorldPosition(_proj).project(camera);
+      if (_proj.z > 1) continue;
+      const sx = (_proj.x * 0.5 + 0.5) * w;
+      const sy = (-_proj.y * 0.5 + 0.5) * h;
+      const d = Math.hypot(sx - clientX, sy - clientY);
+      if (d < bestD) { bestD = d; best = s; }
+    }
+    return bestD < 48 ? best : null;
+  }
   canvas.addEventListener('pointerdown', () => { pointerDown = true; });
   canvas.addEventListener('pointermove', (e) => {
     if (pointerDown || phase !== 'live') return;
     hovered = nearestNode(e.clientX, e.clientY);
-    canvas.style.cursor = hovered ? 'pointer' : '';
+    const overSat = !hovered && nearestSat(e.clientX, e.clientY);
+    canvas.style.cursor = (hovered || overSat) ? 'pointer' : '';
   });
   canvas.addEventListener('pointerup', (e) => {
     pointerDown = false;
     if (phase !== 'live' || controls.wasDrag()) return;
+    // 1) clic sur un satellite explicatif -> panneau (comme une branche)
+    const sat = nearestSat(e.clientX, e.clientY);
+    if (sat) {
+      const info = SAT_INFO[sat.userData.info];
+      if (info) { branchPanel.openInfo({ title: info.title, body: info.body, color: '#7fd1ff', link: info.link }); return; }
+    }
+    // 2) sinon, clic sur une branche
     const hit = nearestNode(e.clientX, e.clientY);
     if (hit) {
       const u = hit.userData;
@@ -792,15 +836,10 @@ function initTree3D(canvas) {
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
     satInfo.update(camera, canvas);   // l'étiquette suit le satellite
-    // Tracés d'orbites (atome) : se révèlent 1 par 1 quand ça tourne tout seul ;
-    // disparaissent dès qu'on touche ; repartent de 0 quand l'auto-rotation reprend.
+    // Tracés d'orbites (atome) : se révèlent 1 par 1 au début, puis RESTENT.
     if (orbits) {
-      if (controls.isAutoRotate()) {
-        orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet
-        orbits.setProgress(orbitT);
-      } else if (orbitT !== 0) {
-        orbits.hide(); orbitT = 0;
-      }
+      orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet
+      orbits.setProgress(orbitT);
     }
     // Croissance animée de l'ez-tree : on remonte le plan de coupe (bas -> haut).
     if (ezClip) {
