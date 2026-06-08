@@ -7,7 +7,25 @@ import * as THREE from '/vendor/three/three.module.min.js';
 // différé selon l'univers choisi (cyl_universe).
 
 const TARGET_XP = 6000;   // XP pour atteindre l'arbre pleinement majestueux
+const BRANCH_TARGET = 800; // XP pour qu'une branche Maslow soit pleinement épanouie
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+// Les 8 branches de Maslow (mêmes clés/couleurs/tiers que tree-model.js).
+// azimuth = position angulaire autour de l'arbre · tier = étage (1 bas → 4 cime).
+const BRANCHES = [
+  { key: 'physio',          label: 'Physiologique',  color: 0x2dd4bf, tier: 1, azimuth: 205 },
+  { key: 'securite',        label: 'Sécurité',       color: 0xfbbf24, tier: 1, azimuth:  35 },
+  { key: 'appartenance',    label: 'Appartenance',   color: 0xf87171, tier: 2, azimuth: 300 },
+  { key: 'estime',          label: 'Estime',         color: 0xfb923c, tier: 2, azimuth: 110 },
+  { key: 'cognitif',        label: 'Cognitif',       color: 0xa78bfa, tier: 3, azimuth: 250 },
+  { key: 'esthetique',      label: 'Esthétique',     color: 0xe879c7, tier: 3, azimuth: 140 },
+  { key: 'accomplissement', label: 'Accomplissement',color: 0x38bdf8, tier: 4, azimuth:  20 },
+  { key: 'transcendance',   label: 'Transcendance',  color: 0xc4b5fd, tier: 4, azimuth:   0 },
+];
+function branchXpOf(userData, key) {
+  const b = userData && userData.tree && userData.tree.branches && userData.tree.branches[key];
+  return (b && Number(b.xp)) || 0;
+}
 
 function totalXpFrom(userData) {
   let xp = 0;
@@ -87,6 +105,58 @@ export function initLivingTree(userData) {
     new THREE.MeshBasicMaterial({ color: 0x8fd0ff, transparent: true, opacity: 0.6 }));
   ring.rotation.x = Math.PI / 2; ring.position.y = 0.2; scene.add(ring);
 
+  // ── 8 nœuds Maslow (croissance PAR BRANCHE) ──────────────────────────────
+  const nodesGroup = new THREE.Group(); scene.add(nodesGroup);
+  const ballGeo = new THREE.SphereGeometry(1, 18, 14);
+  const nodeMap = new Map();   // key → { core, halo, def, xp }
+  const nodeMeshes = [];       // pour le raycaster
+  let treeH = 60, treeR = 30;  // dimensions courantes de l'objet central
+
+  function nodeGrowth(xp) { return clamp01(xp / BRANCH_TARGET); }
+  // rayon visible du cœur d'un nœud selon l'XP de sa branche (dormant → épanoui)
+  function nodeRadius(xp) { return 1.5 + nodeGrowth(xp) * 4.2; }
+
+  function buildNodes() {
+    BRANCHES.forEach((def, i) => {
+      const xp = branchXpOf(userData, def.key);
+      const dormant = xp <= 0;
+      const col = dormant ? 0x5d6677 : def.color;
+      const core = new THREE.Mesh(ballGeo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: dormant ? 0.5 : 0.95 }));
+      const halo = new THREE.Mesh(ballGeo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: dormant ? 0.12 : 0.3, blending: THREE.AdditiveBlending, depthWrite: false }));
+      halo.scale.setScalar(2.3); core.add(halo);
+      core.userData = { key: def.key, label: def.label };
+      nodesGroup.add(core);
+      nodeMap.set(def.key, { core, halo, def, xp, phase: i * 0.7 });
+      nodeMeshes.push(core);
+    });
+    layoutNodes();
+  }
+
+  // Positionne et dimensionne les nœuds autour de l'objet central courant.
+  function layoutNodes() {
+    const ringR = Math.max(treeR * 0.92, 20) + 6;
+    nodeMap.forEach(({ core, def, xp }) => {
+      const ang = (def.azimuth * Math.PI) / 180;
+      const tierFrac = (def.tier - 1) / 3;                 // 0 (base) → 1 (cime)
+      const y = treeH * (0.18 + tierFrac * 0.74);
+      core.position.set(Math.cos(ang) * ringR, y, Math.sin(ang) * ringR);
+      core.scale.setScalar(nodeRadius(xp));
+    });
+  }
+
+  // Animation d'apparition / de croissance d'un nœud (scale élastique).
+  function animateNode(key, fromR, toR) {
+    const n = nodeMap.get(key); if (!n) return;
+    const t0 = performance.now ? performance.now() : 0, D = 650;
+    const tick = () => {
+      const e = Math.min(1, ((performance.now ? performance.now() : D) - t0) / D);
+      const k = 1 - Math.pow(1 - e, 3);
+      n.core.scale.setScalar(fromR + (toR - fromR) * k);
+      if (e < 1) requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
   let tree = null;
   const target = new THREE.Vector3(0, 40, 0);
   function rebuild() {
@@ -101,9 +171,12 @@ export function initLivingTree(userData) {
       tree.position.y -= b.min.y;
       scene.add(tree);
       const b2 = new THREE.Box3().setFromObject(tree);
-      target.y = (b2.max.y - b2.min.y) * 0.5;
-      st.r = (b2.max.y - b2.min.y) * 1.5 + 30; st.tr = st.r;
+      treeH = b2.max.y - b2.min.y;
+      treeR = Math.max(b2.max.x - b2.min.x, b2.max.z - b2.min.z) / 2;
+      target.y = treeH * 0.5;
+      st.r = treeH * 1.5 + 30; st.tr = st.r;
       tag.textContent = `${stageName(growth)} · ${totalXp.toLocaleString('fr-FR')} XP`;
+      layoutNodes();   // les nœuds Maslow épousent la taille courante de l'arbre
     } catch (e) { console.error('[living-tree] build failed', e); }
   }
 
@@ -121,6 +194,44 @@ export function initLivingTree(userData) {
   addEventListener('pointerup', () => { drag = false; });
   canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.tr = Math.min(MAX_R, Math.max(MIN_R, st.tr + e.deltaY * 0.0009 * st.tr)); }, { passive: false });
 
+  // ── Interaction nœuds Maslow : survol (tooltip) + clic (page de branche) ──
+  const raycaster = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let hovered = null;
+  const tip = document.createElement('div');
+  tip.style.cssText = 'position:absolute;pointer-events:none;z-index:5;display:none;padding:6px 11px;border-radius:10px;' +
+    'background:rgba(8,16,28,0.92);border:1px solid rgba(255,255,255,0.16);color:#e5eef8;font:600 0.76rem Segoe UI,sans-serif;' +
+    'backdrop-filter:blur(6px);white-space:nowrap;transform:translate(-50%,-130%);box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+  stage.appendChild(tip);
+  function pickNode(e) {
+    const r = canvas.getBoundingClientRect();
+    ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    const hit = raycaster.intersectObjects(nodeMeshes, false)[0];
+    return hit ? hit.object : null;
+  }
+  canvas.addEventListener('pointermove', (e) => {
+    if (drag) return;
+    const obj = pickNode(e);
+    canvas.style.cursor = obj ? 'pointer' : '';
+    hovered = obj ? obj.userData.key : null;
+    if (obj) {
+      const n = nodeMap.get(obj.userData.key);
+      const lvl = Math.round(nodeGrowth(n.xp) * 100);
+      tip.textContent = `${obj.userData.label} · ${n.xp.toLocaleString('fr-FR')} XP · ${lvl}%`;
+      tip.style.left = (e.clientX - canvas.getBoundingClientRect().left) + 'px';
+      tip.style.top = (e.clientY - canvas.getBoundingClientRect().top) + 'px';
+      tip.style.display = 'block';
+    } else { tip.style.display = 'none'; }
+  });
+  canvas.addEventListener('pointerleave', () => { tip.style.display = 'none'; canvas.style.cursor = ''; });
+  canvas.addEventListener('pointerup', (e) => {
+    if (moved) return;
+    const obj = pickNode(e);
+    if (obj) { try { window.location.href = '/' + obj.userData.key + '/'; } catch (_) {} }
+  });
+
   let lastW = 0, lastH = 0;
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
@@ -137,6 +248,13 @@ export function initLivingTree(userData) {
     const sp = Math.sin(st.po), cp = Math.cos(st.po);
     camera.position.set(target.x + st.r * sp * Math.sin(st.az), target.y + st.r * cp, target.z + st.r * sp * Math.cos(st.az));
     camera.lookAt(target);
+    // pulse doux des nœuds actifs (halo qui respire ; plus fort au survol)
+    const tEl = clock.elapsedTime;
+    nodeMap.forEach((n, key) => {
+      if (n.xp <= 0) return;
+      const base = 2.3 + Math.sin(tEl * 2 + n.phase) * 0.16;
+      n.halo.scale.setScalar(key === hovered ? base + 0.6 : base);
+    });
     resize();
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
@@ -155,12 +273,27 @@ export function initLivingTree(userData) {
       rebuild();
     } catch (e) { console.error('[living-tree] load failed', e); }
   })();
+  buildNodes();   // les 8 nœuds Maslow apparaissent immédiatement (indépendants du chargement de l'arbre)
   resize();
   frame();
 
   const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
   ro?.observe(stage);
   window.addEventListener('resize', resize);
+
+  // Croissance PAR BRANCHE en temps réel : awardXp() émet cyl:xp-gained -> le nœud
+  // concerné grossit (et s'allume s'il était dormant), sans recharger la page.
+  function onXpGained(ev) {
+    const d = ev.detail || {}; const n = nodeMap.get(d.branch); if (!n) return;
+    const fromR = nodeRadius(n.xp);
+    n.xp += Number(d.amount) || 0;
+    if (n.xp > 0) {
+      n.core.material.color.setHex(n.def.color); n.core.material.opacity = 0.95;
+      n.halo.material.color.setHex(n.def.color); n.halo.material.opacity = 0.3;
+    }
+    animateNode(d.branch, fromR, nodeRadius(n.xp));
+  }
+  document.addEventListener('cyl:xp-gained', onXpGained);
 
   // permet de mettre à jour la croissance quand l'XP change (sans recharger)
   return {
