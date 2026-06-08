@@ -334,6 +334,7 @@ function initControls(canvas, camera) {
     setAutoRotate(v) { autoRotate = v; if (v) idle = 0; },
     isAutoRotate: () => autoRotate,
     wasDrag: () => moved,
+    getRadius: () => s.radius,   // distance caméra courante (pour masquer les infos au dézoom)
   };
 }
 
@@ -604,8 +605,9 @@ function initSatInfo(infoSats) {
   if (!document.getElementById('sat-info-css')) {
     const css = document.createElement('style'); css.id = 'sat-info-css';
     css.textContent = `
-      .sat-info{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .8s;}
+      .sat-info{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .55s;}
       .sat-info.on{opacity:1;}
+      .sat-info:not(.on) .sat-info-card{pointer-events:none;}
       .sat-info svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
       .sat-info-line{stroke:rgba(255,255,255,0.55);stroke-width:1;stroke-dasharray:3 3;}
       .sat-info-dot{fill:#fff;}
@@ -646,7 +648,11 @@ function initSatInfo(infoSats) {
   const v = new THREE.Vector3();
   let shown = false;
   return {
-    update(camera, canvas) {
+    update(camera, canvas, farHidden) {
+      // Au-delà d'une certaine distance (on a depasse la plaque de Pioneer en
+      // dezoomant), on masque les panneaux explicatifs ; ils reapparaissent en
+      // rezoomant a l'interieur de la limite.
+      if (farHidden) { if (shown) { wrap.classList.remove('on'); shown = false; } return; }
       const w = canvas.clientWidth, h = canvas.clientHeight;
       let anyVisible = false;
       for (const it of items) {
@@ -951,7 +957,8 @@ function initTree3D(canvas) {
 
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
-    satInfo.update(camera, canvas);   // l'étiquette suit le satellite
+    // l'étiquette suit le satellite ; masquée passé la plaque de Pioneer (dézoom)
+    satInfo.update(camera, canvas, controls.getRadius() > 360);
     // Tracés d'orbites (atome) : se révèlent 1 par 1 au début, puis RESTENT.
     if (orbits) {
       orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet

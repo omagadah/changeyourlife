@@ -489,29 +489,34 @@ export function buildTree(THREE, model, opts) {
   const sunGroup = new THREE.Group();
   sunGroup.position.set(-2400, 1500, -2800);
   root.add(sunGroup);
+  // Soleil ENORME, vraiment dominant (les planetes sont proportionnelles entre
+  // elles ci-dessous). Echelle compressee : a la vraie echelle le Soleil ferait
+  // ~109x la Terre et les planetes seraient des points invisibles ; on garde
+  // les BONNES proportions entre planetes et un Soleil clairement geant.
   const sunMat = new THREE.MeshBasicMaterial({ color: 0xffd86a });
   applyTexture(sunMat, '/textures/sun.jpg');
-  sunGroup.add(new THREE.Mesh(new THREE.SphereGeometry(45, 48, 32), sunMat));
+  sunGroup.add(new THREE.Mesh(new THREE.SphereGeometry(340, 64, 48), sunMat));
   sunGroup.add(new THREE.Mesh(
-    new THREE.SphereGeometry(85, 32, 20),
+    new THREE.SphereGeometry(430, 40, 28),
     new THREE.MeshBasicMaterial({ color: 0xffb84a, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false })
   ));
   sunGroup.add(new THREE.Mesh(
-    new THREE.SphereGeometry(150, 32, 20),
-    new THREE.MeshBasicMaterial({ color: 0xff9a3a, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false })
+    new THREE.SphereGeometry(620, 40, 28),
+    new THREE.MeshBasicMaterial({ color: 0xff9a3a, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false })
   ));
   // une lumière point qui pose un poil de chaleur du côté soleil
-  sunGroup.add(new THREE.PointLight(0xffd6a0, 1.4, 4000, 0.6));
+  sunGroup.add(new THREE.PointLight(0xffd6a0, 1.5, 9000, 0.55));
 
-  // Planètes en orbite (parentées au soleil pour orbite naturelle)
+  // Planètes en orbite (parentées au soleil). radius = proportions reelles entre
+  // planetes (Terre ~ 7) ; dist = espacement croissant degage du Soleil (R 340).
   const planetsData = [
-    { tex: 'mercury', color: 0x9a8a7a, radius:  4, dist: 180, speed: 0.18,  tilt:  0.04 },
-    { tex: 'venus',   color: 0xddc06a, radius:  6, dist: 280, speed: 0.10,  tilt: -0.03 },
-    { tex: 'mars',    color: 0xd17a48, radius:  5, dist: 380, speed: 0.07,  tilt:  0.04 },
-    { tex: 'jupiter', color: 0xd4a574, radius: 16, dist: 540, speed: 0.04,  tilt:  0.02 },
-    { tex: 'saturn',  color: 0xc9b078, radius: 13, dist: 720, speed: 0.025, tilt:  0.05, ring: true },
-    { tex: 'uranus',  color: 0x8fc6d4, radius:  8, dist: 920, speed: 0.018, tilt: -0.04 },
-    { tex: 'neptune', color: 0x4a78d4, radius:  8, dist:1120, speed: 0.014, tilt:  0.02 },
+    { tex: 'mercury', color: 0x9a8a7a, radius:  2.7, dist:  460, speed: 0.18,  tilt:  0.04 },
+    { tex: 'venus',   color: 0xddc06a, radius:  6.6, dist:  580, speed: 0.10,  tilt: -0.03 },
+    { tex: 'mars',    color: 0xd17a48, radius:  3.7, dist:  880, speed: 0.07,  tilt:  0.04 },
+    { tex: 'jupiter', color: 0xd4a574, radius: 77,   dist: 1120, speed: 0.04,  tilt:  0.02 },
+    { tex: 'saturn',  color: 0xc9b078, radius: 64,   dist: 1470, speed: 0.025, tilt:  0.05, ring: true },
+    { tex: 'uranus',  color: 0x8fc6d4, radius: 28,   dist: 1820, speed: 0.018, tilt: -0.04 },
+    { tex: 'neptune', color: 0x4a78d4, radius: 27,   dist: 2180, speed: 0.014, tilt:  0.02 },
   ];
   const planets = [];
   for (const p of planetsData) {
@@ -520,15 +525,15 @@ export function buildTree(THREE, model, opts) {
       new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.9, metalness: 0.0 })
     );
     if (p.tex) applyTexture(mesh.material, '/textures/' + p.tex + '.jpg');
-    mesh.scale.setScalar(1.8);             // plus grosses → visibles au dézoom
     const ang = rnd() * Math.PI * 2;
     mesh.userData = { dist: p.dist, speed: p.speed, tilt: p.tilt, angle: ang };
     mesh.position.set(Math.cos(ang) * p.dist, p.tilt * p.dist, Math.sin(ang) * p.dist);
     sunGroup.add(mesh);
     // ESP : anneau d'orbite - relie visuellement la planète au soleil
-    // (lit comme un schéma de système solaire).
+    // (lit comme un schéma de système solaire). Epaisseur ∝ distance (visible loin).
+    const ow = Math.max(1.6, p.dist * 0.004);
     const orbit = new THREE.Mesh(
-      new THREE.RingGeometry(p.dist - 1.6, p.dist + 1.6, 128),
+      new THREE.RingGeometry(p.dist - ow, p.dist + ow, 160),
       new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
     );
     orbit.rotation.x = Math.PI / 2;
@@ -593,7 +598,7 @@ export function buildTree(THREE, model, opts) {
   } else {
     // Mode flottant : la Terre est une planète à part entière qui orbite le
     // Soleil, parmi les autres - l'arbre flotte ailleurs, dans l'espace.
-    const ER = 17;
+    const ER = 7;   // proportionnelle aux autres planètes (Terre ~ 7)
     const eMat = new THREE.MeshStandardMaterial({ color: 0x24405e, roughness: 1, metalness: 0 });
     new THREE.TextureLoader().load(
       '/textures/earth-day.jpg',
@@ -609,13 +614,13 @@ export function buildTree(THREE, model, opts) {
       new THREE.SphereGeometry(ER * 1.06, 32, 24),
       new THREE.MeshBasicMaterial({ color: 0x6db3ff, transparent: true, opacity: 0.18, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
     ));
-    eMesh.scale.setScalar(1.8);
-    const dist = 470, speed = 0.05, tilt = 0.03, ang = rnd() * Math.PI * 2;
+    const dist = 720, speed = 0.05, tilt = 0.03, ang = rnd() * Math.PI * 2;   // entre Vénus et Mars
     eMesh.userData = { dist, speed, tilt, angle: ang };
     eMesh.position.set(Math.cos(ang) * dist, tilt * dist, Math.sin(ang) * dist);
     sunGroup.add(eMesh);
+    const ow = Math.max(1.6, dist * 0.004);
     const orbit = new THREE.Mesh(
-      new THREE.RingGeometry(dist - 1.6, dist + 1.6, 128),
+      new THREE.RingGeometry(dist - ow, dist + ow, 160),
       new THREE.MeshBasicMaterial({ color: 0x9ec5ff, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
     );
     orbit.rotation.x = Math.PI / 2; orbit.position.y = tilt * dist;
