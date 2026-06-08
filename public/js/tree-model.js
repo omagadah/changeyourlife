@@ -669,52 +669,72 @@ export function buildTree(THREE, model, opts) {
   // au niveau de l'arbre (le « noyau »), 2 « électrons » par plan (phases
   // opposées), orbites ELLIPTIQUES, sens de rotation différents d'un plan à
   // l'autre. Restent dans le périmètre de l'arbre -> visibles une fois dézoomé.
-  // Atome PROPRE et symétrique : 6 ellipses identiques régulièrement tournées
-  // autour de l'axe vertical (rosette, comme un schéma d'atome). Des satellites
-  // (électrons) circulent dessus ; certains portent une « étiquette » explicative.
+  // Vrai ATOME : un tracé HORIZONTAL, un VERTICAL, et des DIAGONALES (pas une
+  // sphère/ballon de basket). Des satellites (électrons) circulent dessus.
   const PI = Math.PI;
   const SAT_CENTER = new THREE.Vector3(0, 40, 0);
-  const PLANES = 6, ORB_A = 168, ORB_B = 104, ORB_INCL = 1.30;
-  const planes = [];
-  for (let i = 0; i < PLANES; i++) {
-    const node = (i * PI) / PLANES;     // réparties sur [0, PI) -> rosette régulière
-    const cosN = Math.cos(node), sinN = Math.sin(node);
-    const cosI = Math.cos(ORB_INCL), sinI = Math.sin(ORB_INCL);
-    planes.push({
+  const ORB_A = 170, ORB_B = 108;
+  // (node, incl) : incl 0 = horizontal, ~PI/2 = vertical, entre les deux = diagonale
+  const planeCfg = [
+    { node: 0.0,  incl: 0.0,  speed:  0.10 },   // HORIZONTAL (équateur)
+    { node: 0.0,  incl: 1.57, speed: -0.12 },   // VERTICAL (face avant)
+    { node: 1.05, incl: 0.72, speed:  0.115 },  // diagonale 1
+    { node: 2.10, incl: 0.72, speed: -0.105 },  // diagonale 2
+    { node: 0.52, incl: 1.05, speed:  0.095 },  // diagonale 3
+  ];
+  const planes = planeCfg.map((c) => {
+    const cosN = Math.cos(c.node), sinN = Math.sin(c.node);
+    const cosI = Math.cos(c.incl), sinI = Math.sin(c.incl);
+    return {
       ax: new THREE.Vector3(cosN, 0, sinN),
       ay: new THREE.Vector3(-sinN * cosI, sinI, cosN * cosI),
-      speed: (i % 2 ? -0.115 : 0.115),  // sens alterné d'un plan à l'autre
-    });
-  }
+      speed: c.speed,
+    };
+  });
 
-  // Satellites : 4 explicatifs (dont le PRIMORDIAL « 100% transparent », le + gros)
-  // + 4 électrons simples. On pourra ajuster/ajouter les étiquettes au fil du temps.
-  const satDefs = [
-    { plane: 0, phase: 0.0,      scale: 1.7, info: 'transp' },   // PRIMORDIAL (le plus gros)
-    { plane: 0, phase: PI,       scale: 0.5 },
-    { plane: 1, phase: 1.1,      scale: 0.55 },
-    { plane: 2, phase: 2.0,      scale: 0.9,  info: 'connect' },
-    { plane: 3, phase: 0.6,      scale: 0.9,  info: 'open' },
-    { plane: 3, phase: 0.6 + PI, scale: 0.5 },
-    { plane: 4, phase: 3.3,      scale: 0.55 },
-    { plane: 5, phase: 1.7,      scale: 0.9,  info: 'syl' },
-  ];
   const satellites = [];
   const infoSats = [];
+  // Électrons sur l'atome (le PRIMORDIAL « 100% transparent » sur la verticale
+  // avant = bien visible et le plus gros).
+  const satDefs = [
+    { plane: 1, phase: 0.4,      scale: 1.7, info: 'transp' },   // PRIMORDIAL
+    { plane: 2, phase: 1.5,      scale: 0.9, info: 'connect' },
+    { plane: 3, phase: 2.4,      scale: 0.9, info: 'open' },
+    { plane: 0, phase: 0.0,      scale: 0.6 },
+    { plane: 4, phase: 1.0,      scale: 0.6 },
+    { plane: 2, phase: 1.5 + PI, scale: 0.5 },
+    { plane: 3, phase: 2.4 + PI, scale: 0.5 },
+  ];
   for (const d of satDefs) {
     const p = planes[d.plane];
     const s = makeSatellite();
     s.userData.ax = p.ax; s.userData.ay = p.ay;
     s.userData.A = ORB_A; s.userData.B = ORB_B; s.userData.speed = p.speed;
+    s.userData.center = SAT_CENTER;
     s.userData.angle = d.phase;
     s.scale.setScalar(d.scale || 1);
     if (d.info) { s.userData.info = d.info; s.userData.primordial = d.info === 'transp'; infoSats.push(s); }
     root.add(s);
     satellites.push(s);
   }
+  // SYL : quasi-immobile, EN BAS (tout repose sur lui). Petite orbite lente, démarre
+  // au point le plus bas.
+  {
+    const s = makeSatellite();
+    s.userData.ax = new THREE.Vector3(1, 0, 0);
+    s.userData.ay = new THREE.Vector3(0, 1, 0);
+    s.userData.A = 44; s.userData.B = 30;
+    s.userData.center = new THREE.Vector3(0, 8, 0);
+    s.userData.angle = -PI / 2;     // commence en bas
+    s.userData.speed = 0.012;       // vitesse minimale (quasi géostationnaire)
+    s.userData.info = 'syl';
+    s.scale.setScalar(1.0);
+    root.add(s);
+    satellites.push(s); infoSats.push(s);
+  }
 
-  // Tracés des orbites = la FORME de l'atome (1 ellipse par PLAN, donc rosette
-  // nette). Dessinées progressivement (drawRange), pilotées par arbre3d via `orbits`.
+  // Tracés des orbites = la forme de l'atome (1 ellipse par PLAN). Dessinées
+  // progressivement (drawRange), pilotées par arbre3d via `orbits`.
   const orbitLines = [];
   for (const p of planes) {
     const N = 176, pts = [];
@@ -794,7 +814,7 @@ export function buildTree(THREE, model, opts) {
     for (const s of satellites) {
       s.userData.angle += s.userData.speed * dt;
       const a = s.userData.angle;
-      s.position.copy(SAT_CENTER)
+      s.position.copy(s.userData.center || SAT_CENTER)
         .addScaledVector(s.userData.ax, Math.cos(a) * s.userData.A)
         .addScaledVector(s.userData.ay, Math.sin(a) * s.userData.B);
       s.rotation.y += dt * 0.25;
