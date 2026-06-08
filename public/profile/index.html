@@ -68,6 +68,20 @@
         width: 100%; height: 100%;
         display: block; object-fit: cover;
       }
+      /* Badge pixel-art (sceau) - haut droite du hero */
+      .pixel-badge {
+        position: absolute; top: 14px; right: 14px; z-index: 3;
+        width: 84px; height: 84px; border-radius: 50%; padding: 4px;
+        background: conic-gradient(from 210deg, #e7b15c, #84c25e, #7fd1ff, #e7b15c);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+        animation: badgeGlow 3.4s ease-in-out infinite;
+      }
+      @keyframes badgeGlow {
+        0%,100% { box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 16px rgba(231,177,92,0.3); }
+        50% { box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 26px rgba(127,209,255,0.45); }
+      }
+      @media (prefers-reduced-motion: reduce) { .pixel-badge { animation: none; } }
+      @media (max-width: 600px) { .pixel-badge { width: 64px; height: 64px; top: 10px; right: 10px; } }
       .hero-info {
         display: flex; flex-direction: column; gap: 6px;
       }
@@ -438,6 +452,7 @@
       <!-- HERO -->
       <section class="hero-card">
         <div class="hero-banner" id="hero-banner"></div>
+        <div class="pixel-badge" id="pixel-badge" title="Ton sceau pixel-art"></div>
         <div class="hero-body">
           <div class="hero-avatar" id="avatar-preview-container">A</div>
           <div class="hero-info">

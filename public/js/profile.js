@@ -6,6 +6,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
 import { setupThemeToggle, updateGlobalAvatar } from './common.js';
 import { initUserMenu } from './userMenu.js';
 import { mountParticleAvatar } from './particle-avatar.js';
+import { mountPixelBadge } from './pixel-badge.js';
 import './firebase.js';
 
 const { app, auth, db } = window._cyfFirebase;
@@ -73,7 +74,11 @@ function showAvatar(dataUrl) {
         try { _pBig && _pBig.destroy(); } catch (_) {}
         _pBig = mountParticleAvatar(banner, { imageUrl: dataUrl, w: banner.clientWidth || 760, h: 120, round: false, fit: 'height', step: 3, dot: 1.6, repel: 34 });
     }
+    // Badge pixel-art (sceau) en haut à droite du hero.
+    const badge = document.getElementById('pixel-badge');
+    if (badge) { try { _pBadge && _pBadge.destroy(); } catch (_) {} _pBadge = mountPixelBadge(badge, { imageUrl: dataUrl, size: 76, px: 20 }); }
 }
+let _pBadge = null;
 
 function wireAvatarInputs() {
     if (fileInputEl) {
