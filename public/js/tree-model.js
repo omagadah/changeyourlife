@@ -697,24 +697,22 @@ export function buildTree(THREE, model, opts) {
   const SAT_CENTER = new THREE.Vector3(0, 40, 0);
   // EXACTEMENT 3 ellipses allongées, tournées de 120° autour de l'axe vertical et
   // inclinées : c'est LE symbole de l'atome. Pas plus (sinon ça fait un ballon).
-  const ORB_A = 78, ORB_B = 190;   // A = petit axe (ax) · B = grand axe (ay) -> ellipse allongée
-  // 3 ellipses dont les NORMALES sont réparties sur un cône autour de l'axe
-  // vertical (120° d'écart). Leurs plans sont tous différents -> elles se croisent
-  // au CENTRE sans se rejoindre aux pôles : c'est le vrai symbole de l'atome.
+  // A = petit axe (ax) · B = grand axe (ay) -> ellipse allongée. Réglables par plan.
+  const ORB_A = 78, ORB_B = 190;
   const UP = new THREE.Vector3(0, 1, 0);
   // Azimuts / inclinaisons LÉGÈREMENT irréguliers (la nature est imparfaite). Le
-  // 3e plan (satellite 'open' = Gratuit & open source) est davantage décalé pour
-  // qu'un cercle paraisse ~centré sans être pile symétrique avec les deux autres.
+  // 3e plan (satellite 'open' = Gratuit & open source) est davantage décalé ET un
+  // peu plus large (petit axe agrandi) pour qu'il soit moins « ballon de rugby ».
   const planeCfg = [
-    { az: 0.00, tilt: 1.16, speed:  0.110 },
-    { az: 2.02, tilt: 1.20, speed: -0.105 },
-    { az: 4.34, tilt: 1.06, speed:  0.115 },   // 'open' : décalé + un poil moins incliné
+    { az: 0.00, tilt: 1.16, speed:  0.110, A: ORB_A, B: ORB_B },
+    { az: 2.02, tilt: 1.20, speed: -0.105, A: ORB_A, B: ORB_B },
+    { az: 4.34, tilt: 1.06, speed:  0.115, A: 116,   B: ORB_B },   // 'open' : décalé + plus large
   ];
   const planes = planeCfg.map((c) => {
     const n = new THREE.Vector3(Math.sin(c.tilt) * Math.cos(c.az), Math.cos(c.tilt), Math.sin(c.tilt) * Math.sin(c.az));
     const ax = new THREE.Vector3().crossVectors(n, UP).normalize();
     const ay = new THREE.Vector3().crossVectors(n, ax).normalize();
-    return { ax, ay, speed: c.speed };
+    return { ax, ay, speed: c.speed, A: c.A, B: c.B };
   });
 
   const satellites = [];
@@ -733,7 +731,7 @@ export function buildTree(THREE, model, opts) {
     const p = planes[d.plane];
     const s = makeSatellite();
     s.userData.ax = p.ax; s.userData.ay = p.ay;
-    s.userData.A = ORB_A; s.userData.B = ORB_B; s.userData.speed = p.speed;
+    s.userData.A = p.A; s.userData.B = p.B; s.userData.speed = p.speed;
     s.userData.center = SAT_CENTER;
     s.userData.angle = d.phase;
     s.scale.setScalar(d.scale || 1);
@@ -765,8 +763,8 @@ export function buildTree(THREE, model, opts) {
     for (let i = 0; i <= N; i++) {
       const t = (i / N) * PI * 2;
       pts.push(SAT_CENTER.clone()
-        .addScaledVector(p.ax, Math.cos(t) * ORB_A)
-        .addScaledVector(p.ay, Math.sin(t) * ORB_B));
+        .addScaledVector(p.ax, Math.cos(t) * p.A)
+        .addScaledVector(p.ay, Math.sin(t) * p.B));
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
     geo.setDrawRange(0, 0);
