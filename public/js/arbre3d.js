@@ -197,13 +197,18 @@ function initScene(canvas) {
   if (universe === 'archi') {
     import('/js/archi-build.js').then((m) => setupCentral(m.buildArchi(THREE))).catch((e) => console.error('[arbre3d] archi import failed', e));
   } else {
-    // Squelette ESP : wireframe RÉEL de l'ez-tree (parfaitement aligné), filtré
-    // pour ne garder que le tronc + les 8 secteurs des catégories Maslow.
-    const CAT_AZ = [205, 35, 300, 110, 250, 140, 20, 0];   // azimuts des 8 branches Maslow
+    // Squelette ESP : wireframe RÉEL de l'ez-tree (parfaitement aligné), gardé
+    // UNIQUEMENT le long du tronc + des corridors vers les 8 nœuds-catégories.
+    // Construit après la pousse (positions des nœuds finales) -> voir animate().
     import('/js/ez-tree-build.js').then((m) => {
       const obj = m.buildEzTree(m.getTreeType(), { growth: 1 });
       setupCentral(obj);
-      try { m.addEspSkeleton(THREE, obj, { azimuths: CAT_AZ, sector: 17, opacity: 0.32, clippingPlanes: ez.clip ? [ez.clip.plane] : null }); } catch (_) {}
+      ez.buildSkeleton = () => {
+        try {
+          const tips = nodes.map((n) => n.getWorldPosition(new THREE.Vector3()));
+          m.addEspSkeletonCorridors(THREE, obj, tips, { opacity: 0.34 });
+        } catch (_) {}
+      };
     }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
   }
   scene.add(group);
@@ -975,6 +980,8 @@ function initTree3D(canvas) {
     }
 
     if (phase === 'live') {
+      // squelette ESP (tronc + corridors catégories) construit une fois l'arbre poussé
+      if (ez.buildSkeleton && !ez.skelDone) { ez.skelDone = true; ez.buildSkeleton(); }
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;
       for (const m of nodes) {
         let mult = 1 + Math.sin(t * 2 + m.position.y) * 0.09;

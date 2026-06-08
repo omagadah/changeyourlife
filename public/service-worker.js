@@ -1,5 +1,5 @@
-// service-worker.js - v142 (emojis Twemoji-garanti + upgrade Fluent 3D, observer non-bloquant ; squelette wireframe aligne filtre par categories ; bouton Urgence plus petit)
-const CACHE_NAME = 'changeyourlife-v142';
+// service-worker.js - v143 (SYL sur un rayon mi-hauteur ; squelette ESP par corridors : tronc + 8 branches-categories seulement)
+const CACHE_NAME = 'changeyourlife-v143';
 const urlsToCache = [
   '/',
   '/app/',

@@ -744,16 +744,16 @@ export function buildTree(THREE, model, opts) {
     root.add(s);
     satellites.push(s);
   }
-  // SYL : quasi-immobile, EN BAS (tout repose sur lui). Petite orbite lente, démarre
-  // au point le plus bas.
+  // SYL : posé sur l'un des RAYONS (le plan 2 = 'open'), à un créneau LIBRE, à
+  // l'extrémité horizontale de l'ellipse -> mi-hauteur de l'arbre. Quasi-géostationnaire.
   {
+    const p = planes[2];
     const s = makeSatellite();
-    s.userData.ax = new THREE.Vector3(1, 0, 0);
-    s.userData.ay = new THREE.Vector3(0, 1, 0);
-    s.userData.A = 44; s.userData.B = 30;
-    s.userData.center = new THREE.Vector3(0, 8, 0);
-    s.userData.angle = -PI / 2;     // commence en bas
-    s.userData.speed = 0.012;       // vitesse minimale (quasi géostationnaire)
+    s.userData.ax = p.ax; s.userData.ay = p.ay;
+    s.userData.A = p.A; s.userData.B = p.B;
+    s.userData.center = SAT_CENTER;   // (0,40,0) = milieu de l'arbre
+    s.userData.angle = PI;            // extrémité horizontale opposée à 'open' (créneau libre)
+    s.userData.speed = 0.005;         // quasi géostationnaire
     s.userData.info = 'syl';
     s.scale.setScalar(1.0);
     root.add(s);

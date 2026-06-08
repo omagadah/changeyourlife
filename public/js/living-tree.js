@@ -171,8 +171,6 @@ export function initLivingTree(userData) {
       tree.position.z -= (b.min.z + b.max.z) / 2;
       tree.position.y -= b.min.y;
       scene.add(tree);
-      // squelette ESP : wireframe réel filtré (tronc + 8 secteurs catégories)
-      try { if (universe === 'arbre' && _ezMod && _ezMod.addEspSkeleton) _ezMod.addEspSkeleton(THREE, tree, { azimuths: CAT_AZ, sector: 17, opacity: 0.26 }); } catch (_) {}
       const b2 = new THREE.Box3().setFromObject(tree);
       treeH = b2.max.y - b2.min.y;
       treeR = Math.max(b2.max.x - b2.min.x, b2.max.z - b2.min.z) / 2;
@@ -180,6 +178,13 @@ export function initLivingTree(userData) {
       st.r = treeH * 1.5 + 30; st.tr = st.r;
       tag.textContent = `${stageName(growth)} · ${totalXp.toLocaleString('fr-FR')} XP`;
       layoutNodes();   // les nœuds Maslow épousent la taille courante de l'arbre
+      // squelette ESP : tronc + corridors vers les nœuds-catégories (aligné sur l'arbre)
+      try {
+        if (universe === 'arbre' && _ezMod && _ezMod.addEspSkeletonCorridors) {
+          const tips = []; nodeMap.forEach((n) => tips.push(n.core.getWorldPosition(new THREE.Vector3())));
+          _ezMod.addEspSkeletonCorridors(THREE, tree, tips, { opacity: 0.28 });
+        }
+      } catch (_) {}
     } catch (e) { console.error('[living-tree] build failed', e); }
   }
 
