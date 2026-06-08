@@ -1,5 +1,5 @@
-// service-worker.js - v137 (badge dans le logo global + squelette ESP + plaque Pioneer loin + bouton Urgence/flux de crise + cle Anthropic)
-const CACHE_NAME = 'changeyourlife-v137';
+// service-worker.js - v138 (SYL non-directif : prompt + wording + disclaimer ; cadre ethique roadmap)
+const CACHE_NAME = 'changeyourlife-v138';
 const urlsToCache = [
   '/',
   '/app/',

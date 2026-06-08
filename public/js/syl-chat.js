@@ -63,6 +63,9 @@ if (window.__sylChat) { /* déjà chargé */ } else {
         background:linear-gradient(135deg,#f1cd92,#e7b15c);transition:filter .2s;}
       .syl-send:hover{filter:brightness(1.08);}
       .syl-send:disabled{opacity:.5;cursor:default;}
+      .syl-disc{padding:7px 12px 9px;font:500 10px Segoe UI,Roboto,sans-serif;color:#7e9ab5;text-align:center;
+        border-top:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.18);line-height:1.4;}
+      .syl-disc b{color:#9fb2cb;}
       @media (max-width:600px){ .syl-panel{right:8px;bottom:8px;height:min(72vh,560px);} .syl-fab{right:14px;bottom:14px;} }
     `;
     document.head.appendChild(s);
@@ -135,7 +138,8 @@ if (window.__sylChat) { /* déjà chargé */ } else {
         `<button class="syl-x" aria-label="Fermer">✕</button></div>` +
       `<div class="syl-msgs"></div>` +
       `<div class="syl-form"><textarea class="syl-input" rows="1" placeholder="Ecris à SYL..."></textarea>` +
-        `<button class="syl-send" aria-label="Envoyer">↑</button></div>`;
+        `<button class="syl-send" aria-label="Envoyer">↑</button></div>` +
+      `<div class="syl-disc">SYL t'écoute et t'aide à clarifier TES choix - il ne décide pas à ta place et ne remplace pas un professionnel. Urgence : <b>3114</b> · <b>15</b></div>`;
 
     document.body.appendChild(fab);
     document.body.appendChild(panel);
@@ -153,6 +157,8 @@ if (window.__sylChat) { /* déjà chargé */ } else {
     panel.querySelector('.syl-x').onclick = close;
     sendBtn.onclick = send;
     inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+    // Permet au module Urgence (urgence.js) d'ouvrir SYL directement.
+    window.cylSylChat = { open, close };
   }
 
   onAuthStateChanged(auth, (user) => {

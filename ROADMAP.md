@@ -100,6 +100,25 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   - Tool-use : Lya peut directement ouvrir un module, créer un objectif, planifier dans le calendrier
   - Streaming des réponses (effet « elle écrit en direct »)
 
+## ⚖️ Cadre éthique & conformité (SYL) — NON NÉGOCIABLE
+
+Principe : SYL **assiste** sans jamais **diriger**. La frontière (assister vs manipuler)
+est tenue par une posture **non-directive** (approche centrée sur la personne / entretien
+motivationnel) : refléter, questionner, clarifier — l'utilisateur décide seul. Objectif :
+protéger l'utilisateur (autonomie, pas de dérive sectaire/idéologique) ET dédouaner le site
+de toute responsabilité sur les décisions des utilisateurs.
+
+- [x] **System prompt non-directif** ✅ (`api/chat.js`) : interdit de prescrire / décider /
+  pousser une idéologie ; pas de conseil médical-juridique-financier prescriptif ; sécurité
+  détresse (3114/15/112) ; rappel « pas un professionnel de santé ».
+- [x] **Wording produit corrigé** ✅ (satellite SYL, widget) : plus de « t'oriente vers la
+  bonne action » ; disclaimer visible dans le chat (« ne décide pas à ta place / pas un pro »).
+- [ ] **CGU + mentions légales + politique de confidentialité** (pages dédiées, lien footer).
+- [ ] **Consentement explicite** à la 1re ouverture de SYL (case « j'ai compris que SYL ne
+  remplace pas un professionnel »).
+- [ ] **Modération / garde-fou serveur** : filtre de sécurité sur les réponses (anti-conseil
+  dangereux), journalisation minimale anonymisée des cas de détresse signalés.
+
 ## 📝 Idées validées (à planifier)
 
 - [ ] **Racines / frise chronologique** — le passé de la personne sous l'arbre (mémoire longue, depuis la naissance)

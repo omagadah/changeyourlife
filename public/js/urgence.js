@@ -107,7 +107,7 @@
       '<p class="urg-p">Suis la bulle : elle gonfle quand tu inspires, se dégonfle quand tu expires. 4 secondes chacun.</p>' +
       '<div class="urg-breath"><div class="ball"></div><div class="lab">Inspire…</div></div>' +
       '<div class="urg-opt" style="margin-top:18px">' +
-        '<button class="urg-b calm" data-syl><span class="ic">✨</span><span>Parler à SYL<small>Une IA bienveillante qui t\'écoute et t\'oriente</small></span></button>' +
+        '<button class="urg-b calm" data-syl><span class="ic">✨</span><span>Parler à SYL<small>Une IA bienveillante qui t\'écoute, sans jamais décider à ta place</small></span></button>' +
       '</div>' +
       '<button class="urg-ghost" data-crisis>Voir les numéros d\'aide d\'urgence</button>';
     var lab = card.querySelector('.lab');

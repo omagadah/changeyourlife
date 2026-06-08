@@ -599,7 +599,7 @@ const SAT_INFO = {
   },
   syl: {
     title: '✨ SYL, ton assistant',
-    body: "Une IA bienveillante qui t'écoute et t'oriente vers la bonne action, au bon moment.",
+    body: "Une IA bienveillante qui t'écoute et t'aide à y voir clair dans TES propres choix. Elle ne décide jamais à ta place.",
   },
 };
 function initSatInfo(infoSats) {
