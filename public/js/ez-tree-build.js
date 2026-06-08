@@ -138,14 +138,30 @@ export function addEspSkeletonCorridors(THREE, treeObj, tipsWorld, opts = {}) {
   const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
   const rTrunk = (opts.trunkRadius != null) ? opts.trunkRadius : H * 0.045;    // colonne du tronc
   const trunkTopY = baseY + H * ((opts.trunkFrac != null) ? opts.trunkFrac : 0.30);   // tronc BAS seulement
-  const Rnode = (opts.nodeRadius != null) ? opts.nodeRadius : H * 0.07;        // halo local serré autour d'un nœud
+  const Rnode = (opts.nodeRadius != null) ? opts.nodeRadius : H * 0.06;        // petit halo au nœud
   const Rnode2 = Rnode * Rnode;
+  const D = (opts.corridor != null) ? opts.corridor : H * 0.075;               // rayon du tronçon de branche
+  const D2 = D * D;
+  const Lseg = (opts.stub != null) ? opts.stub : H * 0.26;                     // longueur du tronçon (nœud -> vers le tronc)
   const mat = new THREE.LineBasicMaterial({ color: opts.color != null ? opts.color : 0xffffff, transparent: true, opacity, depthTest: false });
   if (opts.clippingPlanes) { mat.clippingPlanes = opts.clippingPlanes; mat.clipShadows = true; }
 
-  // cibles = positions MONDE des 8 nœuds-catégories
+  // Pour chaque nœud-catégorie : un TRONÇON court partant du nœud VERS le tronc
+  // (longueur bornée) -> allume la vraie branche en bois qui porte la catégorie,
+  // sans traverser tout l'intérieur de l'arbre.
   const tips = (tipsWorld || []).map((t) => (t.isVector3 ? t : new THREE.Vector3(t.x, t.y, t.z)));
+  const segs = tips.map((tip) => {
+    const hub = new THREE.Vector3(cx, baseY + (tip.y - baseY) * 0.25, cz);
+    const d = hub.clone().sub(tip); const len = d.length() || 1;
+    return { a: tip, b: tip.clone().addScaledVector(d, Math.min(len, Lseg) / len) };
+  });
   const A = new THREE.Vector3(), B = new THREE.Vector3(), M = new THREE.Vector3();
+  const AB = new THREE.Vector3(), AP = new THREE.Vector3(), CP = new THREE.Vector3();
+  function d2seg2(p, a, b) {
+    AB.subVectors(b, a); const denom = AB.lengthSq() || 1;
+    const t = Math.max(0, Math.min(1, AP.subVectors(p, a).dot(AB) / denom));
+    CP.copy(a).addScaledVector(AB, t); return p.distanceToSquared(CP);
+  }
   const meshes = [];
   treeObj.traverse((n) => {
     if (!n.isMesh || !n.geometry || n.name === 'esp-skeleton') return;
@@ -163,8 +179,14 @@ export function addEspSkeletonCorridors(THREE, treeObj, tipsWorld, opts = {}) {
       M.addVectors(A, B).multiplyScalar(0.5);
       // tronc BAS (colonne près de l'axe, sous la 1re branche) ...
       let keep = (M.y < trunkTopY) && (Math.hypot(M.x - cx, M.z - cz) < rTrunk);
-      // ... OU halo local autour d'un nœud-catégorie (pas tout le trajet -> reste sombre ailleurs)
-      if (!keep) { for (let s = 0; s < tips.length; s++) { const dx = M.x - tips[s].x, dy = M.y - tips[s].y, dz = M.z - tips[s].z; if (dx * dx + dy * dy + dz * dz < Rnode2) { keep = true; break; } } }
+      // ... OU le long du tronçon de branche d'une catégorie (nœud -> vers le tronc),
+      // OU dans le petit halo au nœud lui-même.
+      if (!keep) {
+        for (let s = 0; s < segs.length; s++) {
+          const dx = M.x - tips[s].x, dy = M.y - tips[s].y, dz = M.z - tips[s].z;
+          if (dx * dx + dy * dy + dz * dz < Rnode2 || d2seg2(M, segs[s].a, segs[s].b) < D2) { keep = true; break; }
+        }
+      }
       if (keep) arr.push(pos.getX(e), pos.getY(e), pos.getZ(e), pos.getX(e + 1), pos.getY(e + 1), pos.getZ(e + 1));
     }
     wf.dispose();

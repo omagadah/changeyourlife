@@ -1,5 +1,5 @@
-// service-worker.js - v145 (panneaux satellites : seuil 3000 tunable nomme ; squelette halos reduits 13%->7%)
-const CACHE_NAME = 'changeyourlife-v145';
+// service-worker.js - v146 (squelette : troncon de branche depuis chaque noeud-categorie vers le tronc, + petit halo)
+const CACHE_NAME = 'changeyourlife-v146';
 const urlsToCache = [
   '/',
   '/app/',
