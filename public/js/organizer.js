@@ -13,6 +13,9 @@ let auth, db, uid;
 let board = null;
 let sortables = [];
 let cv = { x: 20, y: 20, z: 1 };   // état de la vue Canvas (pan x/y, zoom z)
+const SVGNS = 'http://www.w3.org/2000/svg';
+const nodeEls = new Map();         // id fiche → élément .org-node (pour tracer les liens)
+let linking = null;                // liaison en cours { from } pendant un drag de port
 
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
@@ -62,6 +65,7 @@ async function load() {
   board.view = board.view === 'canvas' ? 'canvas' : 'board';
   if (!board.canvas || typeof board.canvas.z !== 'number') board.canvas = { x: 20, y: 20, z: 1 };
   cv = board.canvas;                   // même référence -> save() persiste pan/zoom
+  if (!Array.isArray(board.links)) board.links = [];   // connecteurs entre fiches (canvas)
   // garantit que 'tri' existe et passe en tête
   if (!col(TRI_ID)) board.columns.unshift({ ...DEFAULT_COLUMNS[0], cards: [] });
   board.columns.sort((a, b) => (a.id === TRI_ID ? -1 : b.id === TRI_ID ? 1 : 0));
@@ -175,7 +179,12 @@ function buildNode(card, c) {
     `<div class="org-node-col"><i></i>${escapeHtml(stripEmoji(c.title))}</div>` +
     `<div class="org-node-title">${escapeHtml(card.title)}</div>` +
     (badges.length ? `<div class="org-node-badges">${badges.join('')}</div>` : '');
+  // port de liaison (tirer une flèche vers une autre fiche)
+  const port = document.createElement('span'); port.className = 'org-node-port'; port.title = 'Relier à une autre fiche';
+  port.addEventListener('pointerdown', (ev) => startLink(card.id, ev));
+  el.appendChild(port);
   attachNodeDrag(el, card);
+  nodeEls.set(card.id, el);
   return el;
 }
 
@@ -193,6 +202,7 @@ function attachNodeDrag(el, card) {
       card.cx = ox + (ev.clientX - sx) / cv.z;
       card.cy = oy + (ev.clientY - sy) / cv.z;
       el.style.left = card.cx + 'px'; el.style.top = card.cy + 'px';
+      drawLinks();   // les flèches suivent la fiche déplacée
     };
     const up = () => {
       el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up);
@@ -207,8 +217,67 @@ function renderCanvas() {
   const world = document.getElementById('org-canvas-world'); if (!world) return;
   ensurePositions();
   world.innerHTML = '';
+  nodeEls.clear();
+  // couche SVG des connecteurs, SOUS les fiches (insérée en premier)
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('class', 'org-links'); svg.setAttribute('width', '1'); svg.setAttribute('height', '1');
+  svg.innerHTML = `<defs><marker id="org-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="rgba(159,197,255,0.75)"/></marker></defs>`;
+  world.appendChild(svg);
   board.columns.forEach((c) => c.cards.forEach((card) => world.appendChild(buildNode(card, c))));
   applyTransform();
+  drawLinks();
+}
+
+// ── Connecteurs entre fiches (flèches, façon workflow IA) ────────────────────
+function nodeCenter(id) {
+  const el = nodeEls.get(id); if (!el) return null;
+  return { x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 };
+}
+function linkPath(a, b) {
+  const dx = Math.max(40, Math.abs(b.x - a.x) * 0.5);
+  return `M ${a.x} ${a.y} C ${a.x + dx} ${a.y}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
+}
+function drawLinks() {
+  const world = document.getElementById('org-canvas-world'); if (!world) return;
+  const svg = world.querySelector('.org-links'); if (!svg) return;
+  // purge les liens dont une extrémité n'existe plus
+  board.links = (board.links || []).filter((l) => nodeEls.has(l.from) && nodeEls.has(l.to));
+  svg.querySelectorAll('.org-link-g').forEach((n) => n.remove());
+  board.links.forEach((l) => {
+    const a = nodeCenter(l.from), b = nodeCenter(l.to); if (!a || !b) return;
+    const d = linkPath(a, b);
+    const g = document.createElementNS(SVGNS, 'g'); g.setAttribute('class', 'org-link-g');
+    const hit = document.createElementNS(SVGNS, 'path'); hit.setAttribute('class', 'org-link-hit'); hit.setAttribute('d', d);
+    const p = document.createElementNS(SVGNS, 'path'); p.setAttribute('class', 'org-link'); p.setAttribute('d', d); p.setAttribute('marker-end', 'url(#org-arrow)');
+    hit.addEventListener('click', (e) => { e.stopPropagation(); board.links = board.links.filter((x) => x.id !== l.id); save(); drawLinks(); toast('Lien supprimé'); });
+    hit.setAttribute('title', 'Cliquer pour supprimer le lien');
+    g.appendChild(hit); g.appendChild(p); svg.appendChild(g);
+  });
+}
+function screenToWorld(e) {
+  const wrap = document.getElementById('org-canvas-wrap'); const r = wrap.getBoundingClientRect();
+  return { x: (e.clientX - r.left - cv.x) / cv.z, y: (e.clientY - r.top - cv.y) / cv.z };
+}
+function startLink(fromId, ev) {
+  ev.stopPropagation();   // n'entraîne ni le drag de la fiche ni le pan
+  const wrap = document.getElementById('org-canvas-wrap');
+  const svg = document.querySelector('#org-canvas-world .org-links'); if (!svg) return;
+  linking = { from: fromId };
+  wrap.classList.add('linking');
+  const temp = document.createElementNS(SVGNS, 'path'); temp.setAttribute('class', 'org-link temp'); svg.appendChild(temp);
+  const move = (e) => { const a = nodeCenter(fromId), w = screenToWorld(e); if (a) temp.setAttribute('d', linkPath(a, w)); };
+  const up = (e) => {
+    document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up);
+    wrap.classList.remove('linking'); temp.remove(); linking = null;
+    const tgtEl = document.elementFromPoint(e.clientX, e.clientY);
+    const node = tgtEl && tgtEl.closest && tgtEl.closest('.org-node');
+    const toId = node && node.dataset.id;
+    if (toId && toId !== fromId && !board.links.some((l) => l.from === fromId && l.to === toId)) {
+      board.links.push({ id: uid6('lnk'), from: fromId, to: toId });
+      save(); drawLinks();
+    }
+  };
+  document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
 }
 
 function applyTransform() {

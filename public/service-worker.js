@@ -1,5 +1,5 @@
-// service-worker.js - v138 (SYL non-directif : prompt + wording + disclaimer ; cadre ethique roadmap)
-const CACHE_NAME = 'changeyourlife-v138';
+// service-worker.js - v139 (ORGANIZER canvas : connecteurs/fleches entre fiches, workflow IA)
+const CACHE_NAME = 'changeyourlife-v139';
 const urlsToCache = [
   '/',
   '/app/',

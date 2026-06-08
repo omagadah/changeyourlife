@@ -152,7 +152,8 @@ de toute responsabilité sur les décisions des utilisateurs.
   Gamification / profil public. À préparer dès maintenant.
 - [x] **ORGANIZER façon canvas IA** ✅ (bascule Board/Canvas sur `/organizer/` : toile
   infinie pan/zoom, fiches positionnables/persistées, nœuds colorés par colonne, grille
-  pointée). Reste possible : connecteurs/flèches entre fiches (réf. v0 `ai-workflow-canvas`).
+  pointée, **connecteurs/flèches entre fiches** — tirer le point d'une fiche, clic sur un
+  lien pour l'effacer). Vision workflow IA atteinte (réf. v0 `ai-workflow-canvas`).
 - [~] **Changement d’UNIVERS / thème en 1 clic** (Arbre↔Architecture FAIT sur accueil+login+/app via selecteur /profile ; reste : adapter les TEXTES en mode archi, d’autres mondes, plus de details).
   d'autres mondes — ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.

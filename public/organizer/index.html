@@ -142,6 +142,18 @@
       font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .15s; backdrop-filter:blur(6px); }
     .org-canvas-toolbar button:hover { background:rgba(255,255,255,0.1); color:#fff; }
     .org-canvas-hint { position:absolute; bottom:10px; left:14px; font-size:0.72rem; color:var(--text-3,#7e9ab5); pointer-events:none; user-select:none; }
+
+    /* ── Connecteurs (flèches entre fiches, façon workflow IA) ── */
+    .org-links { position:absolute; left:0; top:0; overflow:visible; pointer-events:none; }
+    .org-link { fill:none; stroke:rgba(159,197,255,0.5); stroke-width:2.4; }
+    .org-link-hit { fill:none; stroke:transparent; stroke-width:16; pointer-events:stroke; cursor:pointer; }
+    .org-link-g:hover .org-link { stroke:#7fd1ff; }
+    .org-link.temp { stroke:rgba(127,209,255,0.85); stroke-dasharray:6 6; }
+    .org-node-port { position:absolute; right:-7px; top:50%; transform:translateY(-50%); width:15px; height:15px;
+      border-radius:50%; background:var(--nc,#8aa0bf); border:2px solid rgba(16,26,46,0.95); cursor:crosshair;
+      opacity:0; transition:opacity .15s; box-shadow:0 0 9px var(--nc,#8aa0bf); z-index:2; }
+    .org-node:hover .org-node-port, .org-canvas-wrap.linking .org-node-port { opacity:1; }
+    .org-canvas-wrap.linking .org-node { cursor:crosshair; }
   </style>
 </head>
 <body>
@@ -183,7 +195,7 @@
           <button id="org-canvas-fit" title="Recentrer la vue">⤢ Recentrer</button>
         </div>
         <div class="org-canvas-world" id="org-canvas-world"></div>
-        <div class="org-canvas-hint">Glisse le fond pour te déplacer · molette pour zoomer · glisse une fiche pour la ranger</div>
+        <div class="org-canvas-hint">Glisse le fond pour te déplacer · molette pour zoomer · glisse une fiche pour la ranger · tire le point d'une fiche pour la relier · clic sur un lien pour l'effacer</div>
       </div>
     </div>
   </main>
