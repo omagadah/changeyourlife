@@ -40,7 +40,8 @@ import * as THREE from '/vendor/three/three.module.min.js';
         tree.position.y -= b2.min.y;
         scene.add(tree);
         let v = 0; tree.traverse(o => { if (o.geometry) v += (o.geometry.attributes.position?.count || 0); });
-        statEl.textContent = `${which} - ${Math.round(v/1000)}k sommets`;
+        const usedSeed = (tree.options && tree.options.seed) ?? seed ?? '?';
+        statEl.textContent = `${which} - graine ${usedSeed} - ${Math.round(v/1000)}k sommets`;
       } catch (e) { errEl.textContent = 'Erreur: ' + (e?.message || e); console.error(e); }
     }
 
