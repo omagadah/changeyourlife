@@ -116,17 +116,35 @@ const BRANCHES_INFO = {
   },
 };
 
+// Détecte un palier de qualité d'après la machine (CPU/RAM/mobile). On part de là,
+// puis la résolution s'ajuste dynamiquement selon le FPS réel (cf. animate).
+function detectGfxTier() {
+  try {
+    const n = navigator;
+    const cores = n.hardwareConcurrency || 4;
+    const mem = n.deviceMemory || 4;
+    const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(n.userAgent || '');
+    if (mobile || cores <= 4 || mem <= 3) return 'low';
+    if (cores >= 8 && mem >= 8) return 'high';
+    return 'med';
+  } catch (_) { return 'med'; }
+}
+
 // ── Scène ───────────────────────────────────────────────────────────────────
 function initScene(canvas) {
+  const gfxTier = detectGfxTier();
+  const dpr = window.devicePixelRatio || 1;
+  // Plafond de résolution selon le palier (la résolution dynamique fera le reste).
+  const basePR = gfxTier === 'low' ? 1 : gfxTier === 'med' ? Math.min(dpr, 1.5) : Math.min(dpr, 2);
   const renderer = new THREE.WebGLRenderer({
-    canvas, antialias: true, alpha: true, powerPreference: 'high-performance',
+    canvas, antialias: gfxTier !== 'low', alpha: true, powerPreference: 'high-performance',
     // Profondeur logarithmique : indispensable avec un far plane énorme (24000)
     // et un near de 0.1 - sinon z-fighting (clignotement / taches) sur la Terre
     // et l'herbe au dézoom. Précision répartie sur toute la plage au lieu d'être
     // écrasée près du near.
     logarithmicDepthBuffer: true,
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(basePR);
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.7;
@@ -176,7 +194,7 @@ function initScene(canvas) {
     } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
   }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, gfx: { tier: gfxTier, basePR } };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -708,9 +726,30 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, gfx } = initScene(canvas);
   geolocateTree(setEarthLocation);
   let orbitT = 0;   // avancement de la révélation des tracés d'orbites (0..1)
+
+  // ── Résolution dynamique : on mesure le FPS et on ajuste la finesse de rendu
+  // pour rester fluide (= profite du Hz max de l'écran) sans jamais ramer.
+  let renderScale = 1, fpsFrames = 0, fpsWinStart = 0;
+  function adaptResolution(t) {
+    fpsFrames++;
+    if (!fpsWinStart) fpsWinStart = t;
+    const span = t - fpsWinStart;
+    if (span < 1) return;
+    const fps = fpsFrames / span;
+    fpsFrames = 0; fpsWinStart = t;
+    let ns = renderScale;
+    if (fps < 50) ns = Math.max(0.6, renderScale - 0.12);        // ça rame -> on allège
+    else if (fps > 58 && renderScale < 1) ns = Math.min(1, renderScale + 0.08); // marge -> on raffine
+    if (ns !== renderScale) {
+      renderScale = ns;
+      renderer.setPixelRatio(gfx.basePR * renderScale);
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+      camera.aspect = canvas.clientWidth / canvas.clientHeight; camera.updateProjectionMatrix();
+    }
+  }
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
   const satInfo = initSatInfo(infoSats);
@@ -847,6 +886,7 @@ function initTree3D(canvas) {
   function animate() {
     const t = clock.getElapsedTime();
     const dt = Math.min(0.1, t - lastT); lastT = t;
+    adaptResolution(t);   // ajuste la résolution selon le FPS (fluide partout)
 
     if (phase === 'auto') {
       age = Math.min(1, t / GROWTH_SECONDS);
