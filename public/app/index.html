@@ -34,6 +34,12 @@
         #today-progress-card { order:-3; }
         #agenda-card    { order:-2; }
         #tree-stage     { order:-1; }
+        .tree-stage {
+          position:relative; width:100%; height:380px; border-radius:20px; overflow:hidden;
+          background:radial-gradient(circle at 50% 28%, rgba(20,40,70,0.45), rgba(6,12,22,0.65));
+          border:1px solid rgba(255,255,255,0.06); cursor:grab; touch-action:none;
+        }
+        .tree-stage:active { cursor:grabbing; }
         /* Badge XP du coin masqué (redondant avec le récap) -> coin propre. */
         .welcome-right  { display:none; }
         /* En colonne flex, les enfants ne doivent PAS se compresser (sinon texte
@@ -47,6 +53,14 @@
         .welcome-date { font-size:0.78rem; color:#4a6a8a; }
         .welcome-sub-text { font-size:0.82rem; color:#4a6a8a; margin-top:2px; }
         .welcome-right { flex-shrink:0; }
+        .xp-corner {
+          position:fixed; top:56px; right:20px; z-index:8000;
+          display:inline-flex; align-items:center; gap:6px;
+          padding:6px 13px; border-radius:999px;
+          background:rgba(8,16,28,0.72); border:1px solid rgba(96,165,250,0.38);
+          backdrop-filter:blur(8px); font-size:0.8rem; font-weight:800; color:#8ab4f8;
+        }
+        @media (max-width:600px){ .xp-corner{ top:48px; right:14px; font-size:0.74rem; padding:5px 10px; } }
         .total-xp-badge {
           display:inline-flex; align-items:center; gap:5px;
           padding:6px 14px; border-radius:999px;
@@ -277,6 +291,7 @@
     </style>
 </head>
 <body>
+    <div class="xp-corner" title="Ton XP total - il fait grandir ton arbre">⚡ <span id="xp-corner-val">0 XP</span></div>
     <div id="login-toast" class="toast-notification">
         <div class="toast-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -5,7 +5,7 @@
         import { doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { updateGlobalAvatar } from '/js/common.js?v=16';
         import { initUserMenu } from '/js/userMenu.js';
-        import { initTreeWidget } from '/js/tree-widget.js';
+        import { initLivingTree } from '/js/living-tree.js';
 
         // Early initialization of the user menu so the button responds immediately even before auth state fires.
         try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }
@@ -71,15 +71,10 @@
                   const now = new Date();
                   wd.textContent = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
                 }
-                // ── Arbre de vie : le hub central + onboarding conversationnel ──
+                // ── Arbre de vie : bel arbre ez-tree qui grandit avec l'XP ──
                 try {
-                  initTreeWidget(userData, {
-                    needsOnboarding,
-                    onOnboardingComplete: () => {
-                      setDoc(userDocRef, { hasSeenTutorial: true, onboardedAt: Date.now() }, { merge: true }).catch(()=>{});
-                    },
-                  });
-                } catch(e) { console.warn('tree widget failed', e); }
+                  window._cyfLivingTree = initLivingTree(userData);
+                } catch(e) { console.warn('living tree failed', e); }
 
                 // ── Load dashboard stats (async, non-blocking) ──
                 loadDashboardStats(db, user.uid, userData);
@@ -268,6 +263,10 @@
           const totalXP = DOMAINS.reduce((s,d) => s + (getInfo(levels[d.key]).xp), 0);
           const badge = document.getElementById('total-xp-badge');
           if (badge) badge.textContent = totalXP.toLocaleString('fr-FR') + ' XP';
+          const corner = document.getElementById('xp-corner-val');
+          if (corner) corner.textContent = totalXP.toLocaleString('fr-FR') + ' XP';
+          // synchronise la croissance de l'arbre vivant avec l'XP réel
+          try { window._cyfLivingTree && window._cyfLivingTree.setXp(totalXP); } catch (_) {}
           const statXp = document.getElementById('stat-xp');
           if (statXp) statXp.textContent = totalXP.toLocaleString('fr-FR');
           const xpBar = document.getElementById('stat-xp-bar');
