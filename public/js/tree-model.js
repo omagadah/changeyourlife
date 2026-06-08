@@ -673,23 +673,17 @@ export function buildTree(THREE, model, opts) {
   // sphère/ballon de basket). Des satellites (électrons) circulent dessus.
   const PI = Math.PI;
   const SAT_CENTER = new THREE.Vector3(0, 40, 0);
-  const ORB_A = 170, ORB_B = 108;
-  // (node, incl) : incl 0 = horizontal, ~PI/2 = vertical, entre les deux = diagonale
-  const planeCfg = [
-    { node: 0.0,  incl: 0.0,  speed:  0.10 },   // HORIZONTAL (équateur)
-    { node: 0.0,  incl: 1.57, speed: -0.12 },   // VERTICAL (face avant)
-    { node: 1.05, incl: 0.72, speed:  0.115 },  // diagonale 1
-    { node: 2.10, incl: 0.72, speed: -0.105 },  // diagonale 2
-    { node: 0.52, incl: 1.05, speed:  0.095 },  // diagonale 3
-  ];
-  const planes = planeCfg.map((c) => {
-    const cosN = Math.cos(c.node), sinN = Math.sin(c.node);
-    const cosI = Math.cos(c.incl), sinI = Math.sin(c.incl);
-    return {
-      ax: new THREE.Vector3(cosN, 0, sinN),
-      ay: new THREE.Vector3(-sinN * cosI, sinI, cosN * cosI),
-      speed: c.speed,
-    };
+  // EXACTEMENT 3 ellipses allongées, tournées de 120° autour de l'axe vertical et
+  // inclinées : c'est LE symbole de l'atome. Pas plus (sinon ça fait un ballon).
+  const ORB_A = 72, ORB_B = 184;   // A = petit axe (ax) · B = grand axe (ay) -> ellipse allongée
+  const TILT = 1.15;               // inclinaison des plans (~66°)
+  const UP = new THREE.Vector3(0, 1, 0);
+  const planes = [0, 1, 2].map((k) => {
+    const az = (k * 2 * PI) / 3;
+    const n = new THREE.Vector3(Math.sin(TILT) * Math.cos(az), Math.cos(TILT), Math.sin(TILT) * Math.sin(az));
+    const ax = new THREE.Vector3().crossVectors(n, UP).normalize();
+    const ay = new THREE.Vector3().crossVectors(n, ax).normalize();
+    return { ax, ay, speed: (k % 2 ? -0.11 : 0.11) };
   });
 
   const satellites = [];
@@ -697,13 +691,12 @@ export function buildTree(THREE, model, opts) {
   // Électrons sur l'atome (le PRIMORDIAL « 100% transparent » sur la verticale
   // avant = bien visible et le plus gros).
   const satDefs = [
-    { plane: 1, phase: 0.4,      scale: 1.7, info: 'transp' },   // PRIMORDIAL
-    { plane: 2, phase: 1.5,      scale: 0.9, info: 'connect' },
-    { plane: 3, phase: 2.4,      scale: 0.9, info: 'open' },
-    { plane: 0, phase: 0.0,      scale: 0.6 },
-    { plane: 4, phase: 1.0,      scale: 0.6 },
-    { plane: 2, phase: 1.5 + PI, scale: 0.5 },
-    { plane: 3, phase: 2.4 + PI, scale: 0.5 },
+    { plane: 0, phase: 0.0,      scale: 1.7, info: 'transp' },   // PRIMORDIAL (le + gros)
+    { plane: 1, phase: 2.1,      scale: 0.9, info: 'connect' },
+    { plane: 2, phase: 4.0,      scale: 0.9, info: 'open' },
+    { plane: 0, phase: PI,       scale: 0.55 },
+    { plane: 1, phase: 2.1 + PI, scale: 0.5 },
+    { plane: 2, phase: 4.0 + PI, scale: 0.5 },
   ];
   for (const d of satDefs) {
     const p = planes[d.plane];
