@@ -701,14 +701,20 @@ export function buildTree(THREE, model, opts) {
   // 3 ellipses dont les NORMALES sont réparties sur un cône autour de l'axe
   // vertical (120° d'écart). Leurs plans sont tous différents -> elles se croisent
   // au CENTRE sans se rejoindre aux pôles : c'est le vrai symbole de l'atome.
-  const TILT = 1.15;               // inclinaison des plans (~66°)
   const UP = new THREE.Vector3(0, 1, 0);
-  const planes = [0, 1, 2].map((k) => {
-    const az = (k * 2 * PI) / 3;
-    const n = new THREE.Vector3(Math.sin(TILT) * Math.cos(az), Math.cos(TILT), Math.sin(TILT) * Math.sin(az));
+  // Azimuts / inclinaisons LÉGÈREMENT irréguliers (la nature est imparfaite). Le
+  // 3e plan (satellite 'open' = Gratuit & open source) est davantage décalé pour
+  // qu'un cercle paraisse ~centré sans être pile symétrique avec les deux autres.
+  const planeCfg = [
+    { az: 0.00, tilt: 1.16, speed:  0.110 },
+    { az: 2.02, tilt: 1.20, speed: -0.105 },
+    { az: 4.34, tilt: 1.06, speed:  0.115 },   // 'open' : décalé + un poil moins incliné
+  ];
+  const planes = planeCfg.map((c) => {
+    const n = new THREE.Vector3(Math.sin(c.tilt) * Math.cos(c.az), Math.cos(c.tilt), Math.sin(c.tilt) * Math.sin(c.az));
     const ax = new THREE.Vector3().crossVectors(n, UP).normalize();
     const ay = new THREE.Vector3().crossVectors(n, ax).normalize();
-    return { ax, ay, speed: (k % 2 ? -0.11 : 0.11) };
+    return { ax, ay, speed: c.speed };
   });
 
   const satellites = [];
