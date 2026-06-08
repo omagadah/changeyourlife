@@ -382,14 +382,14 @@
     /* Bouton URGENCE - dans l'angle bas-gauche, sobre et élégant (pas "camion de pompier") */
     #urgence-btn {
       position: fixed; left: 16px; bottom: 16px; z-index: 9;
-      width: 36px; height: 104px; border-radius: 13px; cursor: pointer;
+      width: 26px; height: 80px; border-radius: 9px; cursor: pointer; overflow: hidden;
       border: 1px solid rgba(255,150,150,0.4); color: #ffe9e9;
       background: linear-gradient(160deg, rgba(238,108,108,0.92), rgba(150,34,34,0.94));
       -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
       writing-mode: vertical-rl; text-orientation: upright;
-      font: 700 0.58rem "Segoe UI", sans-serif; letter-spacing: 1px; text-transform: uppercase;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 22px rgba(150,20,20,0.38), inset 0 1px 0 rgba(255,255,255,0.18);
+      font: 700 0.46rem "Segoe UI", sans-serif; letter-spacing: 0.5px; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center; padding: 0;
+      box-shadow: 0 6px 16px rgba(150,20,20,0.36), inset 0 1px 0 rgba(255,255,255,0.18);
       transition: transform .15s, box-shadow .2s, filter .2s;
     }
     #urgence-btn:hover { transform: translateY(-2px); filter: brightness(1.07);

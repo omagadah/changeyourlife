@@ -74,23 +74,53 @@ export function buildEzTree(type = 'chene', opts = {}) {
 export function addEspSkeleton(THREE, root, opts = {}) {
   if (!root) return root;
   const color = (opts.color != null) ? opts.color : 0xffffff;
-  const opacity = (opts.opacity != null) ? opts.opacity : 0.28;
+  const opacity = (opts.opacity != null) ? opts.opacity : 0.3;
   const clippingPlanes = opts.clippingPlanes || null;
+  // azimuths (degrés) : si fourni, on NE GARDE le wireframe que sur le tronc + les
+  // secteurs angulaires des catégories. [] = tronc seul. null = arbre entier.
+  const azimuths = opts.azimuths || null;
+  const sector = (opts.sector != null) ? opts.sector : 18;   // demi-largeur d'un secteur (deg)
+
   const targets = [];
   root.traverse((n) => {
     if (!n.isMesh || !n.geometry || n.name === 'esp-skeleton') return;
     const m = Array.isArray(n.material) ? n.material[0] : n.material;
-    // feuilles = matériau transparent / alphaTest -> on ne garde que tronc + branches
     const isLeaf = m && (m.transparent === true || (m.alphaTest && m.alphaTest > 0) || /leaf|leaves|feuille/i.test(n.name || ''));
-    if (isLeaf) return;
+    if (isLeaf) return;   // on ne garde que tronc + branches (pas les feuilles)
     targets.push(n);
   });
+
+  const angDist = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+
   targets.forEach((n) => {
     const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthTest: false });
     if (clippingPlanes) { mat.clippingPlanes = clippingPlanes; mat.clipShadows = true; }
-    const wf = new THREE.LineSegments(new THREE.WireframeGeometry(n.geometry), mat);
+    const full = new THREE.WireframeGeometry(n.geometry);   // arêtes dédupliquées
+    let geo = full;
+    if (azimuths) {
+      n.geometry.computeBoundingBox();
+      const bb = n.geometry.boundingBox;
+      const cx = (bb.min.x + bb.max.x) / 2, cz = (bb.min.z + bb.max.z) / 2;
+      const rTrunk = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) * 0.07;   // colonne du tronc
+      const pos = full.attributes.position;
+      const arr = [];
+      for (let e = 0; e + 1 < pos.count; e += 2) {
+        const mx = (pos.getX(e) + pos.getX(e + 1)) / 2 - cx;
+        const mz = (pos.getZ(e) + pos.getZ(e + 1)) / 2 - cz;
+        let keep = Math.hypot(mx, mz) < rTrunk;   // tronc
+        if (!keep) {
+          const az = Math.atan2(mz, mx) * 180 / Math.PI;
+          for (let k = 0; k < azimuths.length; k++) { if (angDist(az, azimuths[k]) < sector) { keep = true; break; } }
+        }
+        if (keep) arr.push(pos.getX(e), pos.getY(e), pos.getZ(e), pos.getX(e + 1), pos.getY(e + 1), pos.getZ(e + 1));
+      }
+      geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+      full.dispose();
+    }
+    const wf = new THREE.LineSegments(geo, mat);
     wf.name = 'esp-skeleton'; wf.renderOrder = 9; wf.frustumCulled = false;
-    n.add(wf);   // enfant du mesh -> hérite du transform exact de la branche
+    n.add(wf);   // enfant du mesh -> transform exact (parfaitement aligné sur l'arbre)
   });
   return root;
 }

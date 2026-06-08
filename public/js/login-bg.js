@@ -78,12 +78,8 @@ if (canvas) {
     import('/js/ez-tree-build.js').then((mod) => {
       const obj = mod.buildEzTree(mod.getTreeType(), { growth: 1 });
       placeCentral(obj);
-      // squelette ESP : base/tronc uniquement (pas de catégories sur l'écran de connexion)
-      try {
-        const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, TREE_H * 0.82, 0], 3));
-        const line = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, depthTest: false }));
-        line.renderOrder = 9; root.add(line);
-      } catch (_) {}
+      // squelette ESP aligné : tronc seul (pas de catégories sur l'écran de connexion)
+      try { mod.addEspSkeleton(THREE, obj, { azimuths: [], opacity: 0.26 }); } catch (_) {}
     }).catch((e) => console.error('[login-bg] ez-tree', e));
   }
 

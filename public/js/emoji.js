@@ -1,66 +1,76 @@
-// /js/emoji.js - Remplace les emojis système (« cheap », surtout sous Windows)
-// par MICROSOFT FLUENT EMOJI 3D : des emojis volumineux et brillants, cohérents
-// et identiques partout (style Teams / Windows 11). On réutilise le moteur de
-// détection Twemoji (repère les emojis dans le DOM) mais on pointe les images
-// vers le pack Fluent 3D (webp, via @lobehub/fluent-emoji-3d sur jsDelivr).
+// /js/emoji.js - Remplace TOUS les emojis système (« cheap », surtout Windows)
+// par de jolis emojis, partout, SANS jamais laisser passer un emoji système.
 //
-// Repli en cascade -> jamais d'image cassée :
-//   Fluent 3D  ->  variante Fluent "-fe0f"  ->  Twemoji SVG  ->  emoji système.
+// Stratégie robuste (2 temps) :
+//   1. On rend d'abord TWEMOJI (SVG) -> couverture 100 % garantie, jamais d'emoji
+//      système moche.
+//   2. On AMÉLIORE en Microsoft Fluent 3D (webp) quand il existe : on teste l'URL
+//      en arrière-plan (probe) et on ne remplace la source QUE si elle charge ->
+//      donc jamais d'image cassée.
+//
+// L'observateur ne re-parse QUE les nœuds ajoutés (pas tout le <body>) -> pas de
+// reflow en boucle sur les pages très dynamiques (accueil 3D).
 (function () {
   if (window.__cylEmoji) return; window.__cylEmoji = true;
 
+  var TW_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/';     // <base>svg/<code>.svg
   var FLUENT  = 'https://cdn.jsdelivr.net/npm/@lobehub/fluent-emoji-3d@1.1.0/assets/'; // <code>.webp
-  var TWEMOJI = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/';      // <code>.svg (repli)
   var LIB     = 'https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js';
-  var OPT = {
-    className: 'cyl-emoji',
-    callback: function (icon) { return FLUENT + icon + '.webp'; },
-  };
+  var OPT = { folder: 'svg', ext: '.svg', base: TW_BASE, className: 'cyl-emoji' };
 
-  // Style : emoji 3D légèrement plus grand que le texte, aligné sur la ligne.
+  // Style : emoji 3D légèrement plus grand que le texte, taille FIXE (layout stable).
   var st = document.createElement('style');
   st.textContent = 'img.cyl-emoji,img.emoji{height:1.15em;width:1.15em;margin:0 .06em 0 .08em;' +
     'vertical-align:-0.22em;display:inline-block;object-fit:contain;}';
   document.head.appendChild(st);
 
-  // Repli en cascade attaché à chaque <img> généré.
-  function attachFallback(img) {
-    if (img.getAttribute('data-fb')) return;
-    img.setAttribute('data-fb', '1');
-    // code = point(s) de code, dérivé de l'URL Fluent générée (fiable quelle que
-    // soit la version de Twemoji).
-    var m = (img.getAttribute('src') || '').match(/\/assets\/([0-9a-f-]+)\.webp$/i);
-    var code = m ? m[1] : '';
-    img.setAttribute('data-code', code);
-    img.addEventListener('error', function () {
-      var step = +(img.getAttribute('data-step') || 0);
-      if (!code) { img.style.display = 'none'; return; }
-      if (step === 0) { img.setAttribute('data-step', '1'); img.src = FLUENT + code + '-fe0f.webp'; return; }
-      if (step === 1) { img.setAttribute('data-step', '2'); img.src = TWEMOJI + code + '.svg'; return; }
-      // Twemoji a aussi échoué (très rare) : on cesse, l'emoji système reste.
-      img.style.display = 'none';
-    });
+  // Améliore un emoji Twemoji déjà rendu en Fluent 3D si disponible (probe -> swap).
+  function upgrade(img) {
+    var m = (img.getAttribute('src') || '').match(/\/([0-9a-f-]+)\.svg$/i);
+    if (!m) return;
+    var code = m[1];
+    var urls = [FLUENT + code + '.webp', FLUENT + code + '-fe0f.webp']; // fe0f gardé par Fluent dans certains cas
+    var i = 0;
+    (function next() {
+      if (i >= urls.length) return;
+      var u = urls[i++];
+      var probe = new Image();
+      probe.onload = function () { img.src = u; };  // swap seulement si Fluent charge
+      probe.onerror = next;                         // sinon on garde Twemoji
+      probe.src = u;
+    })();
   }
 
-  var obs = null;
-  function parseAll() {
-    if (!window.twemoji) return;
-    if (obs) obs.disconnect();              // évite que nos propres <img> relancent le parse
-    try { window.twemoji.parse(document.body, OPT); } catch (e) {}
+  function parseEl(el) {
+    if (!window.twemoji || !el || el.nodeType !== 1) return;
+    if (el.classList && el.classList.contains('cyl-emoji')) return;   // déjà un emoji
+    try { window.twemoji.parse(el, OPT); } catch (e) {}
     try {
-      var imgs = document.querySelectorAll('img.cyl-emoji:not([data-fb])');
-      for (var i = 0; i < imgs.length; i++) attachFallback(imgs[i]);
+      var imgs = el.querySelectorAll('img.cyl-emoji:not([data-up])');
+      for (var i = 0; i < imgs.length; i++) { imgs[i].setAttribute('data-up', '1'); upgrade(imgs[i]); }
     } catch (e) {}
-    if (obs) obs.observe(document.body, { childList: true, subtree: true });
   }
 
   function start() {
-    parseAll();
-    // Le contenu est très dynamique (rendus JS) → on re-parse les ajouts (débounce rAF).
-    var pending = false;
-    obs = new MutationObserver(function () {
-      if (pending) return; pending = true;
-      requestAnimationFrame(function () { pending = false; parseAll(); });
+    parseEl(document.body);
+    // On ne traite QUE les nœuds ajoutés (pas tout le body) -> zéro reflow en boucle.
+    var queue = [];
+    var flushing = false;
+    function flush() {
+      flushing = false;
+      var batch = queue; queue = [];
+      for (var i = 0; i < batch.length; i++) parseEl(batch[i]);
+    }
+    var obs = new MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var added = muts[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var n = added[j];
+          if (n.nodeType === 1) queue.push(n);
+          else if (n.nodeType === 3 && n.parentNode && n.parentNode.nodeType === 1) queue.push(n.parentNode);
+        }
+      }
+      if (queue.length && !flushing) { flushing = true; requestAnimationFrame(flush); }
     });
     obs.observe(document.body, { childList: true, subtree: true });
   }

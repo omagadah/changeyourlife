@@ -1,5 +1,5 @@
-// service-worker.js - v141 (squelette ESP limite au tronc + 8 branches-categories Maslow)
-const CACHE_NAME = 'changeyourlife-v141';
+// service-worker.js - v142 (emojis Twemoji-garanti + upgrade Fluent 3D, observer non-bloquant ; squelette wireframe aligne filtre par categories ; bouton Urgence plus petit)
+const CACHE_NAME = 'changeyourlife-v142';
 const urlsToCache = [
   '/',
   '/app/',
