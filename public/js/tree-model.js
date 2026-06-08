@@ -167,6 +167,10 @@ export function buildTree(THREE, model, opts) {
   // dans l'espace sur une plateforme cylindrique translucide ; la Terre devient
   // une planète du système solaire. (Page d'accueil.)
   const floating = !!opts.floating;
+  // Mode ez-tree : on ne dessine PAS l'arbre procédural (tronc/branches/feuillage)
+  // mais on garde les groupes + les 8 nœuds cliquables + plateforme + cosmos.
+  // Le bel arbre ez-tree est ajouté par-dessus côté arbre3d.js.
+  const ezTree = !!opts.ezTree;
 
   // Tronc en chêne clair plutôt qu'en chocolat sombre : se voit nettement sur
   // fond marine #060e1a, et la grille ESP blanche par-dessus ne « grille » plus
@@ -220,6 +224,7 @@ export function buildTree(THREE, model, opts) {
   const _e = new THREE.Euler();
   const _foliageGreen = new THREE.Color(0x4a7a3a);
   function scatterLeaves(worldPos, count, color, spread, birth) {
+    if (ezTree) return;   // feuillage fourni par l'ez-tree
     for (let i = 0; i < count; i++) {
       lp.push(new THREE.Vector3(
         worldPos.x + (rnd() - 0.5) * spread,
@@ -809,8 +814,10 @@ export function buildTree(THREE, model, opts) {
   trunkGroup.scale.setScalar(0.0001);
   root.add(trunkGroup);
   const trunkCurve = localCurve(THREE, new THREE.Vector3(0.05, 1, 0.03), trunkH, rnd);
-  trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
-  trunkGroup.add(espLine(trunkCurve, 9));
+  if (!ezTree) {
+    trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
+    trunkGroup.add(espLine(trunkCurve, 9));
+  }
   growables.push({ obj: trunkGroup, birth: 0, dur: 0.16, target: 1 });
   // nœud-racine
   const baseNode = espNode(trunkGroup, new THREE.Vector3(0, 0.4, 0), 0x9ecaff, 1, 1, 12);
@@ -838,8 +845,10 @@ export function buildTree(THREE, model, opts) {
     const r1 = r0 * 0.32;
 
     const curve = localCurve(THREE, dir, len, rnd);
-    bGroup.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 16, 8), barkOf(b.state)));
-    bGroup.add(espLine(curve, 6));
+    if (!ezTree) {
+      bGroup.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 16, 8), barkOf(b.state)));
+      bGroup.add(espLine(curve, 6));
+    }
     const tipLocal = curve.getPoint(1);
     const tipWorld = attachLocal.clone().add(tipLocal);
 
@@ -853,7 +862,7 @@ export function buildTree(THREE, model, opts) {
 
     // Canopée : feuillage vert épais autour de l'extrémité de chaque branche
     // active - c'est ce qui fait qu'on lit un arbre et non un schéma.
-    if (b.state === 'active') {
+    if (b.state === 'active' && !ezTree) {
       const folGroup = new THREE.Group();
       folGroup.position.copy(tipLocal);
       folGroup.scale.setScalar(0.0001);
@@ -896,8 +905,10 @@ export function buildTree(THREE, model, opts) {
       sTangent.lerp(side, 0.45).add(new THREE.Vector3(0, 0.45, 0)).normalize();
       const sLen = len * (0.4 + rnd() * 0.22);
       const sCurve = localCurve(THREE, sTangent, sLen, rnd);
-      sGroup.add(new THREE.Mesh(taperedTube(THREE, sCurve, r1 * 1.1, r1 * 0.4, 10, 6), barkOf(b.state)));
-      sGroup.add(espLine(sCurve, 4));
+      if (!ezTree) {
+        sGroup.add(new THREE.Mesh(taperedTube(THREE, sCurve, r1 * 1.1, r1 * 0.4, 10, 6), barkOf(b.state)));
+        sGroup.add(espLine(sCurve, 4));
+      }
       const sTipLocal = sCurve.getPoint(1);
       const sNode = espNode(sGroup, sTipLocal, b.color, 0.42, 0.85, 11);
       sNode.userData = { label: b.sub[k] || '', color: b.color, key: b.key };
@@ -920,9 +931,11 @@ export function buildTree(THREE, model, opts) {
         twTan.lerp(twSide, 0.5).add(new THREE.Vector3(0, 0.5, 0)).normalize();
         const twLen = sLen * (0.42 + rnd() * 0.2);
         const twCurve = localCurve(THREE, twTan, twLen, rnd);
-        twGroup.add(new THREE.Mesh(
-          taperedTube(THREE, twCurve, r1 * 0.45, r1 * 0.16, 8, 5), barkOf(b.state)));
-        twGroup.add(espLine(twCurve, 3));
+        if (!ezTree) {
+          twGroup.add(new THREE.Mesh(
+            taperedTube(THREE, twCurve, r1 * 0.45, r1 * 0.16, 8, 5), barkOf(b.state)));
+          twGroup.add(espLine(twCurve, 3));
+        }
         const twTipLocal = twCurve.getPoint(1);
         const twNode = espNode(twGroup, twTipLocal, b.color, 0.26, 0.8, 11);
         growables.push({ obj: twNode, birth: twBirth + 0.08, dur: 0.07, target: 0.26 });

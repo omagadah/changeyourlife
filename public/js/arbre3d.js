@@ -7,6 +7,7 @@
 
 import * as THREE from '/vendor/three/three.module.min.js';
 import { createDemoModel, buildTree } from '/js/tree-model.js';
+import { buildEzTree, getTreeType } from '/js/ez-tree-build.js';
 
 // Chaîne traduite via le moteur i18n (window.CYL), avec repli si i18n absent.
 function T(key, fallback) {
@@ -145,9 +146,24 @@ function initScene(canvas) {
   fill.position.set(-36, 30, -20);
   scene.add(fill);
 
-  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat } = buildTree(THREE, createDemoModel(), { floating: true });
+  const { group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat } = buildTree(THREE, createDemoModel(), { floating: true, ezTree: true });
+
+  // Bel arbre ez-tree (le visuel) posé sur la plateforme. Les 8 nœuds Maslow
+  // restent cliquables (fournis par buildTree en mode ezTree). On le fait grandir
+  // avec `age` dans la boucle d'animation (ezTreeObj.scale).
+  let ezTreeObj = null;
+  const EZ_SCALE = 0.95;
+  try {
+    ezTreeObj = buildEzTree(getTreeType(), { growth: 1 });
+    const box = new THREE.Box3().setFromObject(ezTreeObj);
+    ezTreeObj.position.x -= (box.min.x + box.max.x) / 2;
+    ezTreeObj.position.z -= (box.min.z + box.max.z) / 2;
+    ezTreeObj.position.y -= box.min.y;            // base sur la plateforme (y=0)
+    ezTreeObj.scale.setScalar(EZ_SCALE);
+    group.add(ezTreeObj);
+  } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -615,7 +631,7 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE } = initScene(canvas);
   geolocateTree(setEarthLocation);
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
@@ -719,6 +735,7 @@ function initTree3D(canvas) {
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
     satInfo.update(camera, canvas);   // l'étiquette suit le satellite
+    if (ezTreeObj) ezTreeObj.scale.setScalar(Math.max(0.0001, age) * EZ_SCALE);  // l'ez-tree pousse avec age
 
     if (phase === 'live') {
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;
