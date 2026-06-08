@@ -3,9 +3,12 @@
 // module du site. Sécurisé : exige un ID token Firebase valide + rate-limit.
 //
 // Variables d'environnement Vercel requises :
-//   ANTHROPIC_API_KEY        (clé Anthropic, https://console.anthropic.com/)
+//   ANTHROPIC_API_KEY ou API_ANTHROPIC_CHATBOT  (clé Anthropic, https://console.anthropic.com/)
 //   FIREBASE_SERVICE_ACCOUNT (déjà configurée pour le coach)
 // Optionnel : ANTHROPIC_MODEL (défaut : claude-haiku-4-5-20251001)
+//
+// La clé est lue sous l'un OU l'autre nom (compat avec la variable nommée
+// "API_ANTHROPIC_CHATBOT" côté Vercel).
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
@@ -75,8 +78,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY non configurée', setup: 'https://console.anthropic.com/' });
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || process.env.API_ANTHROPIC_CHATBOT;
+  if (!ANTHROPIC_KEY) {
+    return res.status(500).json({ error: 'Clé Anthropic non configurée (ANTHROPIC_API_KEY ou API_ANTHROPIC_CHATBOT)', setup: 'https://console.anthropic.com/' });
   }
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     return res.status(500).json({ error: 'Configuration serveur manquante', code: 'MISSING_SA' });
@@ -129,7 +133,7 @@ module.exports = async function handler(req, res) {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'x-api-key': ANTHROPIC_KEY,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
