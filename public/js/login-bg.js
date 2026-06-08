@@ -25,7 +25,7 @@ if (canvas) {
   const fill = new THREE.DirectionalLight(0x5aa0ff, 0.8); fill.position.set(-46, 40, -30); scene.add(fill);
   const rim = new THREE.DirectionalLight(0xffd9a0, 0.6); rim.position.set(0, 30, -60); scene.add(rim);
 
-  const TREE_H = 92;            // hauteur cible de l'arbre (unités scène)
+  const TREE_H = 150;           // hauteur cible de l'arbre (grand : on se connecte dedans)
   const root = new THREE.Group(); scene.add(root);
 
   // ── Socle translucide (le "pilier"/repère, sous l'arbre) ───────────────────
@@ -78,9 +78,9 @@ if (canvas) {
   document.body.classList.add('tree-ready');
 
   // ── Caméra orbitale : tour complet + par-dessus, jamais sous le socle ───────
-  const target = new THREE.Vector3(0, TREE_H * 0.52, 0);
-  const st = { az: 0.5, po: 1.04, r: 150, taz: 0.5, tpo: 1.04, tr: 150 };
-  const MIN_PO = 0.06, MAX_PO = 1.46, MIN_R = 70, MAX_R = 420;
+  const target = new THREE.Vector3(0, TREE_H * 0.58, 0);
+  const st = { az: 0.5, po: 1.06, r: 180, taz: 0.5, tpo: 1.06, tr: 180 };
+  const MIN_PO = 0.06, MAX_PO = 1.46, MIN_R = 80, MAX_R = 520;
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let dragging = false, moved = false, px = 0, py = 0;

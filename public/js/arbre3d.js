@@ -152,6 +152,7 @@ function initScene(canvas) {
   // restent cliquables (fournis par buildTree en mode ezTree). On le fait grandir
   // avec `age` dans la boucle d'animation (ezTreeObj.scale).
   let ezTreeObj = null;
+  let ezClip = null;
   const EZ_SCALE = 0.95;
   try {
     ezTreeObj = buildEzTree(getTreeType(), { growth: 1 });
@@ -161,9 +162,21 @@ function initScene(canvas) {
     ezTreeObj.position.y -= box.min.y;            // base sur la plateforme (y=0)
     ezTreeObj.scale.setScalar(EZ_SCALE);
     group.add(ezTreeObj);
+    // Croissance ANIMÉE par plan de coupe : on révèle l'arbre du bas vers le haut
+    // (tronc -> branches -> cime), au lieu d'un scale uniforme qui « étire ».
+    renderer.localClippingEnabled = true;
+    const wbox = new THREE.Box3().setFromObject(ezTreeObj);
+    const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), wbox.min.y); // garde y <= constant
+    ezTreeObj.traverse((o) => {
+      if (o.isMesh && o.material) {
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach((m) => { m.clippingPlanes = [plane]; m.clipShadows = true; });
+      }
+    });
+    ezClip = { plane, baseY: wbox.min.y, topY: wbox.max.y };
   } catch (e) { console.error('[arbre3d] ez-tree build failed', e); }
   scene.add(group);
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE };
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de
@@ -631,7 +644,7 @@ function initSYL() {
 
 // ── Init 3D ─────────────────────────────────────────────────────────────────
 function initTree3D(canvas) {
-  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE } = initScene(canvas);
+  const { renderer, scene, camera, treeGroup, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSat, ezTreeObj, EZ_SCALE, ezClip } = initScene(canvas);
   geolocateTree(setEarthLocation);
   const controls = initControls(canvas, camera);
   const labels = initLabels(nodes, subNodes);
@@ -735,7 +748,11 @@ function initTree3D(canvas) {
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
     satInfo.update(camera, canvas);   // l'étiquette suit le satellite
-    if (ezTreeObj) ezTreeObj.scale.setScalar(Math.max(0.0001, age) * EZ_SCALE);  // l'ez-tree pousse avec age
+    // Croissance animée de l'ez-tree : on remonte le plan de coupe (bas -> haut).
+    if (ezClip) {
+      const e = easeOut(Math.min(1, Math.max(0, age)));
+      ezClip.plane.constant = ezClip.baseY + e * (ezClip.topY - ezClip.baseY + 6);
+    }
 
     if (phase === 'live') {
       treeGroup.rotation.z = Math.sin(t * 0.32) * 0.016;
