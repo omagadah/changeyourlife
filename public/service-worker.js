@@ -1,5 +1,5 @@
-// service-worker.js - v136 (emojis Fluent 3D + systeme solaire a l'echelle + panneaux satellites masques au dezoom)
-const CACHE_NAME = 'changeyourlife-v136';
+// service-worker.js - v137 (badge dans le logo global + squelette ESP + plaque Pioneer loin + bouton Urgence/flux de crise + cle Anthropic)
+const CACHE_NAME = 'changeyourlife-v137';
 const urlsToCache = [
   '/',
   '/app/',

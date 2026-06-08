@@ -131,19 +131,19 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   Google/HD, et réutiliser la version compacte comme avatar global si voulu.)*
 - [x] **Badge pixel-art** ✅ FAIT (/js/pixel-badge.js, sceau dans le hero /profile) généré depuis la photo de profil (réf. v0 `clerk-pixel-art-badge`).
   Gamification / profil public. À préparer dès maintenant.
-- [ ] **ORGANIZER façon canvas IA** : refondre `/organizer/` en canvas type workflow
-  (réf. v0 `ai-workflow-canvas`) — nœuds reliés, vue carte.
+- [x] **ORGANIZER façon canvas IA** ✅ (bascule Board/Canvas sur `/organizer/` : toile
+  infinie pan/zoom, fiches positionnables/persistées, nœuds colorés par colonne, grille
+  pointée). Reste possible : connecteurs/flèches entre fiches (réf. v0 `ai-workflow-canvas`).
 - [~] **Changement d’UNIVERS / thème en 1 clic** (Arbre↔Architecture FAIT sur accueil+login+/app via selecteur /profile ; reste : adapter les TEXTES en mode archi, d’autres mondes, plus de details).
   d'autres mondes — ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
-- [ ] **Mesures d'urgence (bouton SOS)** : le bouton rouge en bas à gauche (déjà
-  présent, relié par pointillés au satellite SYL) doit ouvrir un échange avec SYL
-  même SANS compte. Si SYL détecte une détresse, déclencher des mesures d'aide
-  (à définir : ressources, lignes d'écoute, redirection, alerte douce...). UX façon
-  workflow (réf. v0 `flowf` - connecteurs en pointillés). *(Démarré : bouton + lien
-  visuel ; le protocole d'aide reste à définir.)*
+- [x] **Mesures d'urgence (bouton « Urgence »)** ✅ (`urgence.js`) : bouton rectangulaire
+  bas-gauche, texte vertical « URGENCE ». Au clic, triage bienveillant (danger / détresse /
+  besoin de souffler). Détresse grave → ressources d'urgence immédiates (3114, 15, 112,
+  SMS 114). Sinon → respiration guidée + « Parler à SYL ». Anonyme, sans compte.
+  Reste possible : détection auto de détresse par SYL pendant la conversation.
 
 ## 🌳 Arbre vivant — raffinements restants
 
