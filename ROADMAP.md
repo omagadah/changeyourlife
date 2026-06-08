@@ -129,14 +129,14 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   compact rond + grand rendu dans le banner du hero `/profile`, dispersion au survol
   souris. Source = avatar généré / photo uploadée (data URL). *(À étendre : photo
   Google/HD, et réutiliser la version compacte comme avatar global si voulu.)*
-- [ ] **Badge pixel-art** généré depuis la photo de profil (réf. v0 `clerk-pixel-art-badge`).
+- [x] **Badge pixel-art** ✅ FAIT (/js/pixel-badge.js, sceau dans le hero /profile) généré depuis la photo de profil (réf. v0 `clerk-pixel-art-badge`).
   Gamification / profil public. À préparer dès maintenant.
 - [ ] **ORGANIZER façon canvas IA** : refondre `/organizer/` en canvas type workflow
   (réf. v0 `ai-workflow-canvas`) — nœuds reliés, vue carte.
 - [ ] **Changement d'UNIVERS / thème en 1 clic** (owner y tient) : au lieu de l'arbre,
   d'autres mondes — ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
-- [ ] **Boutons magnifiques** : animations premium sur les CTA (réf. v0 `button`).
+- [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
 - [ ] **Mesures d'urgence (bouton SOS)** : le bouton rouge en bas à gauche (déjà
   présent, relié par pointillés au satellite SYL) doit ouvrir un échange avec SYL

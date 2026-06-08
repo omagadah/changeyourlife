@@ -69,6 +69,24 @@ try {
       :focus-visible { outline: 2px solid rgba(132,194,94,0.75); outline-offset: 2px; border-radius: 6px; }
       input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(132,194,94,0.18); }
       .ring-card:hover, .skill-card:hover, .qa-item:hover { transform: translateY(-2px); }
+      /* Boutons PREMIUM : relief + halo vert de marque + press, sur tout le site */
+      .btn-primary, .btn-enter, .ag-btn, .ap-primary, .org-addcol, .org-lock,
+      .btn-practice, .header-login, .lya-voice, .sug-chip, button[type="submit"],
+      .auth-submit, .cta, .btn-cta {
+        position: relative; will-change: transform;
+      }
+      .btn-primary:hover, .btn-enter:hover, .ag-btn:hover, .ap-primary:hover,
+      .org-addcol:hover, .btn-practice:hover, .header-login:hover, .sug-chip:hover,
+      button[type="submit"]:hover, .auth-submit:hover, .cta:hover, .btn-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(0,0,0,0.40), 0 0 18px rgba(132,194,94,0.28);
+        filter: brightness(1.08);
+      }
+      .btn-primary:active, .btn-enter:active, .ag-btn:active, .ap-primary:active,
+      .org-addcol:active, .btn-practice:active, .header-login:active,
+      button[type="submit"]:active, .auth-submit:active, .cta:active, .btn-cta:active {
+        transform: translateY(0) scale(0.975);
+      }
       /* scrollbars premium (sombres) */
       * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
       *::-webkit-scrollbar { width: 10px; height: 10px; }
