@@ -1,5 +1,5 @@
 // service-worker.js - v93 (accueil: satellites en orbite + etoiles filantes)
-const CACHE_NAME = 'changeyourlife-v102';
+const CACHE_NAME = 'changeyourlife-v103';
 const urlsToCache = [
   '/',
   '/app/',
@@ -56,7 +56,8 @@ const urlsToCache = [
   '/js/lya-overlay.js',
   '/js/login-bg.js',
   '/js/login-init.js',
-  '/js/syl-chat.js'
+  '/js/syl-chat.js',
+  '/js/ez-tree-build.js'
   // Bundle vendor three (~733 KB) volontairement omis ici :
   // - addAll() est atomique, un échec ferait planter tout l'install
   // - mis en cache automatiquement par la stratégie "cache first" du

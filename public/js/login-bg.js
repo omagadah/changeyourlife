@@ -4,6 +4,7 @@
 // en dessous (le socle reste le repère/pilier). On se connecte "dans l'arbre".
 
 import * as THREE from '/vendor/three/three.module.min.js';
+import { buildEzTree } from '/js/ez-tree-build.js';
 
 const canvas = document.getElementById('arbre-canvas');
 if (canvas) {
@@ -57,31 +58,22 @@ if (canvas) {
     scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xcfe0ff, size: 2, sizeAttenuation: false, transparent: true, opacity: 0.75 })));
   })();
 
-  // ── Arbre ez-tree (GLB) - import dynamique tolérant aux pannes ──────────────
-  // GLTFLoader vendored localement (patché vers notre three) : pas de CDN, pas
-  // d'import map. Si quoi que ce soit échoue, le socle + les étoiles restent
-  // affichés (la scène n'est jamais vide).
+  // ── Arbre ez-tree généré DANS le navigateur (vraies textures feuilles/écorce) ──
+  // Si la génération échoue, le socle + les étoiles restent affichés.
   let treeObj = null;
-  (async () => {
-    try {
-      const { GLTFLoader } = await import('/vendor/three/jsm/loaders/GLTFLoader.js');
-      new GLTFLoader().load('/models/tree-hd.glb', (gltf) => {
-        const m = gltf.scene;
-        const box = new THREE.Box3().setFromObject(m);
-        const size = new THREE.Vector3(); box.getSize(size);
-        const s = TREE_H / (size.y || 1);
-        m.scale.setScalar(s);
-        const box2 = new THREE.Box3().setFromObject(m);
-        m.position.x -= (box2.min.x + box2.max.x) / 2;
-        m.position.z -= (box2.min.z + box2.max.z) / 2;
-        m.position.y -= box2.min.y;             // base posée sur le socle (y=0)
-        m.traverse((o) => { if (o.isMesh && o.material) { o.material.side = THREE.DoubleSide; } });
-        treeObj = m; root.add(m);
-      }, undefined, (err) => console.error('[login-bg] GLB load error', err));
-    } catch (e) {
-      console.error('[login-bg] GLTFLoader import failed', e);
-    }
-  })();
+  try {
+    const m = buildEzTree('majestic');
+    const box = new THREE.Box3().setFromObject(m);
+    const size = new THREE.Vector3(); box.getSize(size);
+    m.scale.setScalar(TREE_H / (size.y || 1));
+    const box2 = new THREE.Box3().setFromObject(m);
+    m.position.x -= (box2.min.x + box2.max.x) / 2;
+    m.position.z -= (box2.min.z + box2.max.z) / 2;
+    m.position.y -= box2.min.y;                 // base posée sur le socle (y=0)
+    treeObj = m; root.add(m);
+  } catch (e) {
+    console.error('[login-bg] ez-tree build failed', e);
+  }
 
   document.body.classList.add('tree-ready');
 

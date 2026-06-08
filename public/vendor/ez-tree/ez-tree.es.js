@@ -1,7 +1,7 @@
 var F = Object.defineProperty;
 var n = (D, C, A) => C in D ? F(D, C, { enumerable: !0, configurable: !0, writable: !0, value: A }) : D[C] = A;
 var N = (D, C, A) => n(D, typeof C != "symbol" ? C + "" : C, A);
-import * as B from "three";
+import * as B from "/vendor/three/three.module.min.js";
 class a {
   constructor(C) {
     N(this, "m_w", 123456789);
