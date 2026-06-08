@@ -698,6 +698,23 @@ export function buildTree(THREE, model, opts) {
     satellites.push(s);
   }
 
+  // Trajectoire VISIBLE du satellite « 100% transparent » (le 1er) : on trace son
+  // orbite elliptique en pointillé lumineux, pour qu'on suive bien son chemin.
+  {
+    const o = satellites[0];
+    const pts = [];
+    for (let i = 0; i <= 160; i++) {
+      const t = (i / 160) * Math.PI * 2;
+      pts.push(SAT_CENTER.clone()
+        .addScaledVector(o.userData.ax, Math.cos(t) * o.userData.A)
+        .addScaledVector(o.userData.ay, Math.sin(t) * o.userData.B));
+    }
+    const orbitLine = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color: 0x9fd0ff, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }));
+    root.add(orbitLine);
+  }
+
   // Pool d'étoiles filantes réutilisées (≈ une visible à la fois).
   const streakTex = makeStreakTexture();
   const shooters = [];

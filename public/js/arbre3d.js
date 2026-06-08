@@ -217,8 +217,11 @@ function initControls(canvas, camera) {
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
+  let autoRotate = true;    // tourne tout seul tant qu'on ne touche pas
+  let idle = 0;             // temps depuis la dernière interaction
   canvas.addEventListener('pointerdown', (e) => {
     dragging = true; moved = false; px = e.clientX; py = e.clientY;
+    autoRotate = false; idle = 0;   // on touche -> stop la rotation auto
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
@@ -244,7 +247,7 @@ function initControls(canvas, camera) {
   canvas.addEventListener('pointercancel', end);
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    userZoomed = true;
+    userZoomed = true; autoRotate = false; idle = 0;
     // Zoom logarithmique, plus DOUX : il faut longtemps pour quitter la Terre,
     // puis on atteint l'espace. Step réduit → plus de molette pour tout traverser.
     s.tR = Math.min(s.maxR, Math.max(s.minR, s.tR + e.deltaY * 0.00065 * s.tR));
@@ -273,6 +276,13 @@ function initControls(canvas, camera) {
       if (userZoomed) return;
       s.tR = r; s.radius = r;
     },
+    // Rotation auto (vue 360) tant qu'on ne touche pas. Reprise après inactivité.
+    autoSpin(dt) {
+      if (dragging) { idle = 0; return; }
+      if (!autoRotate) { idle += dt; if (idle > 6) autoRotate = true; }   // reprise après 6 s
+      if (autoRotate) s.tAz += dt * 0.11;
+    },
+    setAutoRotate(v) { autoRotate = v; if (v) idle = 0; },
     wasDrag: () => moved,
   };
 }
@@ -650,7 +660,7 @@ function initTree3D(canvas) {
   const labels = initLabels(nodes, subNodes);
   const satInfo = initSatInfo(infoSat);
   const hud = initHud();
-  const branchPanel = initBranchPanel(() => labels.hideSubs());
+  const branchPanel = initBranchPanel(() => { labels.hideSubs(); controls.setAutoRotate(true); });
 
   const scrub = document.getElementById('scrub');
   const playBtn = document.getElementById('scrub-play');
@@ -761,6 +771,7 @@ function initTree3D(canvas) {
         if (m === hovered) mult *= 1.4;          // facilitateur : survol → grossit
         m.scale.setScalar(m.userData.baseR * mult);
       }
+      controls.autoSpin(dt);
       controls.apply();
       labels.update(camera, canvas);
       if (!labelsOn) { labels.reveal(); labelsOn = true; }
@@ -773,7 +784,7 @@ function initTree3D(canvas) {
       // (rotation, zoom) pendant toute la croissance.
       const e = easeOut(age);
       growTarget.set(0, 12 + e * 28, 0);
-      controls.setRadius(70 + e * 68);   // un poil plus loin (dézoom léger demandé)
+      controls.setRadius(70 + e * 85);   // dézoom (repos ~155, moins collé)
       controls.apply(growTarget);
       hud.updateXp(age);
       if (labelsOn) { labels.hide(); labelsOn = false; }

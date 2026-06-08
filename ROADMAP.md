@@ -119,6 +119,33 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
 
 ---
 
+## 🎨 Univers & expériences premium (idées owner — juin 2026)
+
+> Templates repérés sur **v0.app** : ce sont des composants **React / Next.js**. Notre
+> site est **vanilla JS sans build** → chaque template doit être **adapté** en vanilla
+> (réécriture du rendu) OU on monte un mini-sous-app. À cadrer feature par feature.
+
+- [ ] **Avatar « image → particules »** : à partir de la photo de profil, générer un
+  modèle de particules animé (réf. v0 `image-to-particles`). Affichage en haut en
+  fondu, effet au survol souris. Côté `/profile/`.
+- [ ] **Badge pixel-art** généré depuis la photo de profil (réf. v0 `clerk-pixel-art-badge`).
+  Gamification / profil public. À préparer dès maintenant.
+- [ ] **ORGANIZER façon canvas IA** : refondre `/organizer/` en canvas type workflow
+  (réf. v0 `ai-workflow-canvas`) — nœuds reliés, vue carte.
+- [ ] **Changement d'UNIVERS / thème en 1 clic** (owner y tient) : au lieu de l'arbre,
+  d'autres mondes — ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
+  Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
+- [ ] **Boutons magnifiques** : animations premium sur les CTA (réf. v0 `button`).
+  *(Démarré : effet « shine » sur le CTA d'accueil.)*
+
+## 🌳 Arbre vivant — raffinements restants
+
+- [ ] **Croissance PAR BRANCHE Maslow** : chaque dimension fait pousser SA branche
+  (aujourd'hui : croissance globale par XP total).
+- [ ] **Croissance animée (plan de coupe)** aussi sur `/app` quand l'XP monte.
+- [ ] **Optimisation** : lazy-load ez-tree (4 Mo) après 1er paint ; arbre allégé sur
+  l'accueil ; dispose des géométries au changement.
+
 ## Principes de priorisation
 
 1. **Cohérence narrative d'abord.** Chaque ajout doit s'expliquer comme une partie de l'arbre, sinon il n'a pas sa place.
