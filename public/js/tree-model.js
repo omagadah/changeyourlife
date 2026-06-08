@@ -665,26 +665,33 @@ export function buildTree(THREE, model, opts) {
     return sat;
   }
 
-  // 3 satellites en orbite autour du centre de la scène (≈ l'arbre), chacun sur
-  // un plan incliné différent, vitesses lentes → ils « traversent » le ciel.
-  const SAT_CENTER = new THREE.Vector3(0, 38, 0);
+  // Satellites en mouvement d'ATOME : 3 plans orbitaux inclinés qui se croisent
+  // au niveau de l'arbre (le « noyau »), 2 « électrons » par plan (phases
+  // opposées), orbites ELLIPTIQUES, sens de rotation différents d'un plan à
+  // l'autre. Restent dans le périmètre de l'arbre -> visibles une fois dézoomé.
+  const PI = Math.PI;
+  const SAT_CENTER = new THREE.Vector3(0, 40, 0);
   const satellites = [];
   const satCfg = [
-    { dist: 150, speed: 0.085, incl:  0.50, phase: 0.0, node: 0.6, scale: 1.0 },
-    { dist: 190, speed: 0.068, incl: -0.85, phase: 2.1, node: 2.4, scale: 0.7 },
-    { dist: 235, speed: 0.052, incl:  1.15, phase: 4.0, node: 5.0, scale: 0.65 },
-    { dist: 300, speed: 0.040, incl: -0.35, phase: 1.2, node: 3.3, scale: 0.6 },
-    { dist: 360, speed: 0.032, incl:  0.80, phase: 5.2, node: 1.1, scale: 0.55 },
-    { dist: 430, speed: 0.026, incl: -1.05, phase: 3.0, node: 4.2, scale: 0.5 },
+    // plan 1 (sens +)
+    { A: 150, B: 96,  speed:  0.16, incl: 1.25, node: 0.0,        phase: 0.0,        scale: 1.0 },
+    { A: 150, B: 96,  speed:  0.16, incl: 1.25, node: 0.0,        phase: PI,         scale: 0.55 },
+    // plan 2 (sens -)
+    { A: 162, B: 90,  speed: -0.13, incl: 1.30, node: 1.05,       phase: 1.0,        scale: 0.62 },
+    { A: 162, B: 90,  speed: -0.13, incl: 1.30, node: 1.05,       phase: 1.0 + PI,   scale: 0.5 },
+    // plan 3 (sens +)
+    { A: 144, B: 102, speed:  0.12, incl: 1.18, node: 2.10,       phase: 2.0,        scale: 0.62 },
+    { A: 144, B: 102, speed:  0.12, incl: 1.18, node: 2.10,       phase: 2.0 + PI,   scale: 0.5 },
   ];
   for (const c of satCfg) {
     const s = makeSatellite();
-    // base orthonormée (ax, ay) du plan orbital incliné
+    // base orthonormée (ax, ay) du plan orbital incliné (ay très incliné -> ellipse
+    // qui « se dresse » comme une orbite d'électron)
     const cosN = Math.cos(c.node), sinN = Math.sin(c.node);
     const cosI = Math.cos(c.incl), sinI = Math.sin(c.incl);
-    s.userData.cfg = c;
     s.userData.ax = new THREE.Vector3(cosN, 0, sinN);
     s.userData.ay = new THREE.Vector3(-sinN * cosI, sinI, cosN * cosI);
+    s.userData.A = c.A; s.userData.B = c.B; s.userData.speed = c.speed;
     s.userData.angle = c.phase;
     s.scale.setScalar(c.scale || 1);
     root.add(s);
@@ -733,12 +740,11 @@ export function buildTree(THREE, model, opts) {
   function updateSkyTraffic(dt) {
     // satellites : avancent sur leur orbite inclinée + léger spin + glint pulsé
     for (const s of satellites) {
-      const c = s.userData.cfg;
-      s.userData.angle += c.speed * dt;
+      s.userData.angle += s.userData.speed * dt;
       const a = s.userData.angle;
       s.position.copy(SAT_CENTER)
-        .addScaledVector(s.userData.ax, Math.cos(a) * c.dist)
-        .addScaledVector(s.userData.ay, Math.sin(a) * c.dist);
+        .addScaledVector(s.userData.ax, Math.cos(a) * s.userData.A)
+        .addScaledVector(s.userData.ay, Math.sin(a) * s.userData.B);
       s.rotation.y += dt * 0.25;
       const gl = s.userData.glint;
       if (gl) gl.material.opacity = 0.55 + 0.35 * (0.5 + 0.5 * Math.sin(a * 3.0));
