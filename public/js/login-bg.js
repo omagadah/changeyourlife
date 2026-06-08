@@ -4,7 +4,7 @@
 // en dessous (le socle reste le repère/pilier). On se connecte "dans l'arbre".
 
 import * as THREE from '/vendor/three/three.module.min.js';
-import { buildEzTree, getTreeType } from '/js/ez-tree-build.js';
+// Objet central (arbre OU architecture) chargé en différé selon cyl_universe.
 
 const canvas = document.getElementById('arbre-canvas');
 if (canvas) {
@@ -61,8 +61,7 @@ if (canvas) {
   // ── Arbre ez-tree généré DANS le navigateur (vraies textures feuilles/écorce) ──
   // Si la génération échoue, le socle + les étoiles restent affichés.
   let treeObj = null;
-  try {
-    const m = buildEzTree(getTreeType(), { growth: 1 });
+  const placeCentral = (m) => {
     const box = new THREE.Box3().setFromObject(m);
     const size = new THREE.Vector3(); box.getSize(size);
     m.scale.setScalar(TREE_H / (size.y || 1));
@@ -71,8 +70,12 @@ if (canvas) {
     m.position.z -= (box2.min.z + box2.max.z) / 2;
     m.position.y -= box2.min.y;                 // base posée sur le socle (y=0)
     treeObj = m; root.add(m);
-  } catch (e) {
-    console.error('[login-bg] ez-tree build failed', e);
+  };
+  const archiUniverse = (function () { try { return localStorage.getItem('cyl_universe') === 'archi'; } catch (_) { return false; } })();
+  if (archiUniverse) {
+    import('/js/archi-build.js').then((mod) => placeCentral(mod.buildArchi(THREE, { growth: 1 }))).catch((e) => console.error('[login-bg] archi', e));
+  } else {
+    import('/js/ez-tree-build.js').then((mod) => placeCentral(mod.buildEzTree(mod.getTreeType(), { growth: 1 }))).catch((e) => console.error('[login-bg] ez-tree', e));
   }
 
   document.body.classList.add('tree-ready');

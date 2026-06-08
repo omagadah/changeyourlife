@@ -3,7 +3,8 @@
 // l'XP de l'utilisateur : jeune pousse à 0 XP -> arbre majestueux quand l'XP monte.
 
 import * as THREE from '/vendor/three/three.module.min.js';
-import { buildEzTree, getTreeType, setTreeType } from '/js/ez-tree-build.js';
+// Le constructeur de l'objet central (arbre OU architecture) est chargé en
+// différé selon l'univers choisi (cyl_universe).
 
 const TARGET_XP = 6000;   // XP pour atteindre l'arbre pleinement majestueux
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -28,7 +29,9 @@ export function initLivingTree(userData) {
 
   const totalXp = totalXpFrom(userData);
   let growth = clamp01(totalXp / TARGET_XP);
-  let type = getTreeType();
+  let type = (localStorage.getItem('cyl_treeType') === 'frene') ? 'frene' : 'chene';
+  const universe = (localStorage.getItem('cyl_universe') === 'archi') ? 'archi' : 'arbre';
+  let buildFn = null;   // (growth) => THREE.Group, défini après chargement du module
 
   const canvas = document.createElement('canvas');
   canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;';
@@ -43,7 +46,7 @@ export function initLivingTree(userData) {
     b.style.cssText = 'font:700 0.72rem Segoe UI,sans-serif;cursor:pointer;border-radius:99px;padding:5px 11px;' +
       'border:1px solid rgba(255,255,255,0.16);background:rgba(8,16,28,0.7);color:#cdd9ec;backdrop-filter:blur(6px);';
     if (b.dataset.t === type) { b.style.background = 'linear-gradient(135deg,#84c25e,#4a7a3a)'; b.style.color = '#06140a'; }
-    b.onclick = () => { type = b.dataset.t; setTreeType(type); rebuild(); paintToggle(); };
+    b.onclick = () => { type = b.dataset.t; try { localStorage.setItem('cyl_treeType', type); } catch (_) {} buildFn = (g) => _ezMod && _ezMod.buildEzTree(type, { growth: g }); rebuild(); paintToggle(); };
   });
   function paintToggle() {
     toggle.querySelectorAll('button').forEach((b) => {
@@ -52,13 +55,16 @@ export function initLivingTree(userData) {
       b.style.color = on ? '#06140a' : '#cdd9ec';
     });
   }
-  stage.appendChild(toggle);
+  if (universe === 'arbre') stage.appendChild(toggle);   // l'essence ne concerne que l'arbre
 
   // petite légende d'XP / stade
   const tag = document.createElement('div');
   tag.style.cssText = 'position:absolute;bottom:10px;left:12px;font:600 0.72rem Segoe UI,sans-serif;color:#8fb3a0;z-index:3;';
   stage.appendChild(tag);
-  function stageName(g) { return g < 0.18 ? 'Jeune pousse' : g < 0.55 ? 'Jeune arbre' : g < 0.85 ? 'Arbre mature' : 'Arbre majestueux'; }
+  function stageName(g) {
+    if (universe === 'archi') return g < 0.18 ? 'Fondations' : g < 0.55 ? 'Tour naissante' : g < 0.85 ? 'Gratte-ciel' : 'Tour majestueuse';
+    return g < 0.18 ? 'Jeune pousse' : g < 0.55 ? 'Jeune arbre' : g < 0.85 ? 'Arbre mature' : 'Arbre majestueux';
+  }
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -84,9 +90,10 @@ export function initLivingTree(userData) {
   let tree = null;
   const target = new THREE.Vector3(0, 40, 0);
   function rebuild() {
+    if (!buildFn) return;
     if (tree) { scene.remove(tree); tree.traverse((o) => o.geometry?.dispose?.()); tree = null; }
     try {
-      tree = buildEzTree(type, { growth });
+      tree = buildFn(growth);
       tree.scale.setScalar(1.0);
       const b = new THREE.Box3().setFromObject(tree);
       tree.position.x -= (b.min.x + b.max.x) / 2;
@@ -134,7 +141,20 @@ export function initLivingTree(userData) {
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
-  rebuild();
+  // Chargement différé du bon univers, puis première construction.
+  let _ezMod = null;
+  (async () => {
+    try {
+      if (universe === 'archi') {
+        const m = await import('/js/archi-build.js');
+        buildFn = (g) => m.buildArchi(THREE, { growth: g });
+      } else {
+        _ezMod = await import('/js/ez-tree-build.js');
+        buildFn = (g) => _ezMod.buildEzTree(type, { growth: g });
+      }
+      rebuild();
+    } catch (e) { console.error('[living-tree] load failed', e); }
+  })();
   resize();
   frame();
 

@@ -2,13 +2,14 @@
 // (verre sombre + néons), alternative à l'arbre. Même métaphore : elle s'élève au
 // fil de la progression. Construite avec des primitives Three (léger, no asset).
 
-export function buildArchi(THREE) {
+export function buildArchi(THREE, opts = {}) {
+  const growth = Math.max(0, Math.min(1, (typeof opts.growth === 'number') ? opts.growth : 1));
   const g = new THREE.Group();
   const glass = new THREE.MeshStandardMaterial({ color: 0x10233b, metalness: 0.65, roughness: 0.22, emissive: 0x0a1830, emissiveIntensity: 0.45 });
   const neon = new THREE.MeshStandardMaterial({ color: 0x7fd1ff, emissive: 0x3fa9ff, emissiveIntensity: 1.4, roughness: 0.4, metalness: 0.2 });
   const warm = new THREE.MeshStandardMaterial({ color: 0xffd9a0, emissive: 0xffb968, emissiveIntensity: 1.1, roughness: 0.5 });
 
-  const FLOORS = 14, FH = 5.6;
+  const FLOORS = Math.max(2, Math.round(2 + growth * 12)), FH = 5.6;   // s'élève avec l'XP (2 -> 14 étages)
   let y = 0;
   for (let i = 0; i < FLOORS; i++) {
     const t = i / FLOORS;
