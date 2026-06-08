@@ -828,7 +828,7 @@ function initTree3D(canvas) {
       // (rotation, zoom) pendant toute la croissance.
       const e = easeOut(age);
       growTarget.set(0, 12 + e * 28, 0);
-      controls.setRadius(70 + e * 85);   // dézoom (repos ~155, moins collé)
+      controls.setRadius(70 + e * 130);  // dézoom +30% (repos ~200)
       controls.apply(growTarget);
       hud.updateXp(age);
       if (labelsOn) { labels.hide(); labelsOn = false; }
