@@ -675,14 +675,19 @@ export function buildTree(THREE, model, opts) {
   const SAT_CENTER = new THREE.Vector3(0, 40, 0);
   // EXACTEMENT 3 ellipses allongées, tournées de 120° autour de l'axe vertical et
   // inclinées : c'est LE symbole de l'atome. Pas plus (sinon ça fait un ballon).
-  const ORB_A = 78, ORB_B = 190;   // A = petit axe (ax, horizontal) · B = grand axe (ay) -> ellipse allongée
-  const a45 = PI / 4;
-  // 3 orbites : 2 diagonales verticales croisées (X) + 1 horizontale (équateur).
-  const planes = [
-    { ax: new THREE.Vector3(Math.cos(a45), 0, Math.sin(a45)),  ay: new THREE.Vector3(0, 1, 0), speed:  0.11 },  // diagonale /
-    { ax: new THREE.Vector3(Math.cos(-a45), 0, Math.sin(-a45)), ay: new THREE.Vector3(0, 1, 0), speed: -0.105 }, // diagonale \
-    { ax: new THREE.Vector3(1, 0, 0), ay: new THREE.Vector3(0, 0, 1), speed: 0.10 },                              // horizontale
-  ];
+  const ORB_A = 78, ORB_B = 190;   // A = petit axe (ax) · B = grand axe (ay) -> ellipse allongée
+  // 3 ellipses dont les NORMALES sont réparties sur un cône autour de l'axe
+  // vertical (120° d'écart). Leurs plans sont tous différents -> elles se croisent
+  // au CENTRE sans se rejoindre aux pôles : c'est le vrai symbole de l'atome.
+  const TILT = 1.15;               // inclinaison des plans (~66°)
+  const UP = new THREE.Vector3(0, 1, 0);
+  const planes = [0, 1, 2].map((k) => {
+    const az = (k * 2 * PI) / 3;
+    const n = new THREE.Vector3(Math.sin(TILT) * Math.cos(az), Math.cos(TILT), Math.sin(TILT) * Math.sin(az));
+    const ax = new THREE.Vector3().crossVectors(n, UP).normalize();
+    const ay = new THREE.Vector3().crossVectors(n, ax).normalize();
+    return { ax, ay, speed: (k % 2 ? -0.11 : 0.11) };
+  });
 
   const satellites = [];
   const infoSats = [];
