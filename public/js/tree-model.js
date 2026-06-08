@@ -419,7 +419,7 @@ export function buildTree(THREE, model, opts) {
   // remets-toi en perspective ». Coût quasi nul (Points + sphères basiques).
 
   // Champ d'étoiles - 2200 points sur une coquille lointaine
-  const STAR_COUNT = 2200;
+  const STAR_COUNT = 3000;
   const starPos = new Float32Array(STAR_COUNT * 3);
   const starCol = new Float32Array(STAR_COUNT * 3);
   for (let i = 0; i < STAR_COUNT; i++) {
@@ -457,11 +457,33 @@ export function buildTree(THREE, model, opts) {
     });
   }
 
-  // Ciel - vraie Voie lactée en fond (sphère inversée géante). Invisible tant
-  // que la texture n'est pas chargée → on garde les points d'étoiles sinon.
-  const skyMat = new THREE.MeshBasicMaterial({ side: THREE.BackSide, depthWrite: false, transparent: true, opacity: 0 });
-  applyTexture(skyMat, '/textures/stars-milky-way.jpg', 'sky');
-  root.add(new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 32), skyMat));
+  // Ciel : nébuleuse PROCÉDURALE (canvas lisse) au lieu d'une photo JPEG dont les
+  // blocs de compression devenaient visibles (« Minecraft ») une fois amplifiés
+  // par le tone mapping. Dégradés doux + fine poussière d'étoiles -> crisp.
+  function makeNebulaTexture() {
+    const c = document.createElement('canvas'); c.width = 2048; c.height = 1024;
+    const g = c.getContext('2d');
+    g.fillStyle = '#04060c'; g.fillRect(0, 0, 2048, 1024);
+    const blobs = [
+      [430, 360, 380, 'rgba(70,46,130,0.22)'], [1320, 300, 430, 'rgba(28,64,128,0.18)'],
+      [950, 720, 410, 'rgba(96,34,104,0.16)'], [1700, 780, 350, 'rgba(40,78,120,0.16)'],
+      [220, 820, 330, 'rgba(54,44,112,0.15)'], [1500, 540, 300, 'rgba(36,60,118,0.14)'],
+    ];
+    for (const b of blobs) {
+      const grad = g.createRadialGradient(b[0], b[1], 0, b[0], b[1], b[2]);
+      grad.addColorStop(0, b[3]); grad.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grad; g.fillRect(0, 0, 2048, 1024);
+    }
+    for (let i = 0; i < 1600; i++) {
+      const x = rnd() * 2048, y = rnd() * 1024, a = 0.25 + rnd() * 0.6, s = rnd() < 0.08 ? 2 : 1;
+      g.fillStyle = `rgba(255,255,255,${a})`; g.fillRect(x, y, s, s);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    return tex;
+  }
+  const skyMat = new THREE.MeshBasicMaterial({ side: THREE.BackSide, depthWrite: false, map: makeNebulaTexture() });
+  root.add(new THREE.Mesh(new THREE.SphereGeometry(9000, 64, 40), skyMat));
 
   // Soleil - loin et haut dans l'espace (hors de la Terre), halos + lumière warm
   const sunGroup = new THREE.Group();
