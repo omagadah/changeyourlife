@@ -15,11 +15,13 @@ function majestic(base) {
   const o = clone(base);
   o.seed = 28207;
   o.branch.levels = 3;
-  o.branch.children = { 0: 14, 1: 7, 2: 4 };
-  o.branch.length = { 0: 54, 1: 33, 2: 19, 3: 9 };
-  o.branch.radius = { 0: 3.7, 1: 0.78, 2: 0.66, 3: 0.9 };
-  o.branch.angle = { 1: 50, 2: 46, 3: 38 };
-  o.branch.gnarliness = { 0: 0.02, 1: 0.16, 2: 0.12, 3: 0.06 };
+  o.branch.children = { 0: 13, 1: 6, 2: 4 };
+  o.branch.length = { 0: 56, 1: 34, 2: 19, 3: 9 };
+  o.branch.radius = { 0: 4.1, 1: 0.8, 2: 0.66, 3: 0.9 };   // tronc un peu plus épais
+  o.branch.angle = { 1: 34, 2: 44, 3: 38 };                 // branches + verticales -> co-leaders (apex qui fourche)
+  o.branch.start = { 1: 0.30, 2: 0.32, 3: 0 };
+  o.branch.gnarliness = { 0: 0.03, 1: 0.16, 2: 0.12, 3: 0.06 };
+  o.branch.force = { direction: { x: 0, y: 1, z: 0 }, strength: 0.035 };
   o.branch.sections = { 0: 16, 1: 10, 2: 8, 3: 5 };
   o.branch.segments = { 0: 12, 1: 8, 2: 6, 3: 4 };
   if (o.leaves) {
@@ -44,8 +46,7 @@ export function buildEzTree(which = 'majestic', seed) {
   const opts = typeof which === 'string' ? (PRESETS[which] || PRESETS.majestic)() : which;
   if (typeof seed === 'number') opts.seed = seed;
   const tree = new Tree();
-  tree.loadPreset(opts);
-  tree.generate();
+  tree.loadFromJson(opts);   // applique les options (loadPreset attend un NOM, pas un objet) + génère
   tree.traverse((o) => {
     if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material) o.material.side = 2; }
   });
