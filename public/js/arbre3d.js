@@ -206,7 +206,9 @@ function initScene(canvas) {
   // halo de portail, cliquable -> explication.
   const plaque = (function () {
     const grp = new THREE.Group();
-    grp.position.set(-250, 165, -90);
+    // Loin dans l'espace (côté opposé au Soleil) : on ne la croise qu'en dézoomant
+    // à fond, au bord du système solaire. Plus grande pour rester visible de loin.
+    grp.position.set(2100, 720, -1900);
     // halo "faille"
     const gc = document.createElement('canvas'); gc.width = gc.height = 128;
     const gg = gc.getContext('2d');
@@ -214,9 +216,9 @@ function initScene(canvas) {
     rad.addColorStop(0, 'rgba(160,195,255,0.5)'); rad.addColorStop(0.5, 'rgba(120,90,220,0.22)'); rad.addColorStop(1, 'rgba(0,0,0,0)');
     gg.fillStyle = rad; gg.fillRect(0, 0, 128, 128);
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gc), transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
-    glow.scale.set(165, 165, 1); grp.add(glow);
+    glow.scale.set(1050, 1050, 1); grp.add(glow);
     // la plaque elle-même
-    const W = 100, H = W / 1.262;
+    const W = 720, H = W / 1.262;
     const tex = new THREE.TextureLoader().load('/textures/pioneer-plaque.png');
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xc2cad6, transparent: true, depthWrite: false }));
@@ -828,15 +830,8 @@ function initTree3D(canvas) {
   const sylSat = (infoSats || []).find((s) => s.userData && s.userData.info === 'syl');
   const _projU = new THREE.Vector3();
   let urgenceOn = false;
-  if (urgBtn) urgBtn.addEventListener('click', () => {
-    urgenceOn = !urgenceOn;
-    urgBtn.classList.toggle('active', urgenceOn);
-    if (urgSvg) urgSvg.classList.toggle('on', urgenceOn);
-    // ouvre aussi la fiche de SYL pour amorcer le contact
-    if (urgenceOn && sylSat && SAT_INFO.syl) {
-      branchPanel.openInfo({ title: SAT_INFO.syl.title, body: SAT_INFO.syl.body, color: '#7fd1ff', link: SAT_INFO.syl.link });
-    }
-  });
+  // Le clic sur le bouton Urgence est géré par /js/urgence.js (flux d'aide / crise).
+  // On ne fait plus de toggle « pointillés vers SYL » ici (évite le double-comportement).
   function updateUrgence() {
     if (!urgenceOn || !urgPath || !sylSat || !urgBtn) return;
     const r = urgBtn.getBoundingClientRect();
@@ -957,8 +952,9 @@ function initTree3D(canvas) {
 
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
-    // l'étiquette suit le satellite ; masquée passé la plaque de Pioneer (dézoom)
-    satInfo.update(camera, canvas, controls.getRadius() > 360);
+    // l'étiquette suit le satellite ; reste visible plus longtemps au dézoom,
+    // ne disparaît qu'après un dézoom franc (~30 % de plus qu'avant).
+    satInfo.update(camera, canvas, controls.getRadius() > 520);
     // Tracés d'orbites (atome) : se révèlent 1 par 1 au début, puis RESTENT.
     if (orbits) {
       orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet
