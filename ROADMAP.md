@@ -125,9 +125,10 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
 > site est **vanilla JS sans build** → chaque template doit être **adapté** en vanilla
 > (réécriture du rendu) OU on monte un mini-sous-app. À cadrer feature par feature.
 
-- [ ] **Avatar « image → particules »** : à partir de la photo de profil, générer un
-  modèle de particules animé (réf. v0 `image-to-particles`). Affichage en haut en
-  fondu, effet au survol souris. Côté `/profile/`.
+- [x] **Avatar « image → particules »** ✅ FAIT (`/js/particle-avatar.js`) : avatar
+  compact rond + grand rendu dans le banner du hero `/profile`, dispersion au survol
+  souris. Source = avatar généré / photo uploadée (data URL). *(À étendre : photo
+  Google/HD, et réutiliser la version compacte comme avatar global si voulu.)*
 - [ ] **Badge pixel-art** généré depuis la photo de profil (réf. v0 `clerk-pixel-art-badge`).
   Gamification / profil public. À préparer dès maintenant.
 - [ ] **ORGANIZER façon canvas IA** : refondre `/organizer/` en canvas type workflow
