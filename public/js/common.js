@@ -147,18 +147,37 @@ export function updateGlobalAvatar(initial) {
     // SVG 200×120 qui s'écrasait dans le carré 40×40 (aspect « détraqué »).
     const CYF_LOGO_IMG = `<img data-cyf-logo="1" src="/favicon.svg" alt="ChangeYourLife.ai" style="width:100%;height:100%;object-fit:contain;display:block;" />`;
 
-    // If we've already set up the logo once, avoid re-rendering to prevent flicker
+    // Badge personnel : si l'utilisateur a défini une photo de profil, son badge
+    // pixel-art (généré et stocké par /profile) REMPLACE le logo en haut à droite,
+    // sur tout le site -> l'espace devient le sien. Sinon, logo CYL par défaut.
+    const badgeUrl = localStorage.getItem('userBadgeUrl');
+    const BADGE_IMG = badgeUrl ? `<span data-cyf-logo="1" style="display:block;width:100%;height:100%;border-radius:50%;padding:2px;box-sizing:border-box;background:conic-gradient(from 210deg,#e7b15c,#84c25e,#7fd1ff,#e7b15c);">`
+        + `<img src="${badgeUrl}" alt="Mon badge" style="width:100%;height:100%;border-radius:50%;display:block;object-fit:cover;image-rendering:pixelated;" /></span>` : null;
+    const desired = BADGE_IMG || CYF_LOGO_IMG;
+    const mode = badgeUrl ? 'badge' : 'logo';
+
+    // Favicon dynamique (onglet du navigateur) = le badge perso aussi.
+    if (badgeUrl) {
+        try {
+            let lk = document.getElementById('cyl-dyn-favicon');
+            if (!lk) { lk = document.createElement('link'); lk.id = 'cyl-dyn-favicon'; lk.rel = 'icon'; lk.type = 'image/png'; document.head.appendChild(lk); }
+            if (lk.href !== badgeUrl) lk.href = badgeUrl;
+        } catch (_) {}
+    }
+
+    // Évite un re-render inutile (flicker) si déjà dans le bon mode.
     const alreadyReady = userPanelTrigger.getAttribute('data-cyf-ready') === '1';
     const existingInline = userPanelTrigger.querySelector('[data-cyf-logo]');
-    if (alreadyReady && existingInline) {
+    if (alreadyReady && existingInline && userPanelTrigger.getAttribute('data-cyf-mode') === mode) {
         Array.from(userPanelTrigger.children).forEach(ch => { if (!ch.querySelector?.('[data-cyf-logo]') && !ch.matches?.('[data-cyf-logo]')) ch.remove?.(); });
         normalizeVantaAndHeader();
         return;
     }
 
-    // Replace the trigger contents with our unified logo (idempotent)
-    userPanelTrigger.innerHTML = `<span class="cyf-logo-wrapper" style="display:inline-block;width:100%;height:100%;">${CYF_LOGO_IMG}</span>`;
+    // Replace the trigger contents with the badge (or unified logo).
+    userPanelTrigger.innerHTML = `<span class="cyf-logo-wrapper" style="display:inline-block;width:100%;height:100%;">${desired}</span>`;
     userPanelTrigger.setAttribute('data-cyf-ready', '1');
+    userPanelTrigger.setAttribute('data-cyf-mode', mode);
 
     // After injecting the logo, ensure Vanta and header stacking/context are normalized
     normalizeVantaAndHeader();

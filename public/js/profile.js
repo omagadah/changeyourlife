@@ -6,7 +6,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
 import { setupThemeToggle, updateGlobalAvatar } from './common.js';
 import { initUserMenu } from './userMenu.js';
 import { mountParticleAvatar } from './particle-avatar.js';
-import { mountPixelBadge } from './pixel-badge.js';
+import { mountPixelBadge, renderPixelBadgeDataURL } from './pixel-badge.js';
 import './firebase.js';
 
 const { app, auth, db } = window._cyfFirebase;
@@ -77,6 +77,11 @@ function showAvatar(dataUrl) {
     // Badge pixel-art (sceau) en haut à droite du hero.
     const badge = document.getElementById('pixel-badge');
     if (badge) { try { _pBadge && _pBadge.destroy(); } catch (_) {} _pBadge = mountPixelBadge(badge, { imageUrl: dataUrl, size: 76, px: 20 }); }
+    // Génère le badge en data URL et le stocke -> le logo en haut à droite (sur
+    // TOUT le site) + le favicon deviennent le badge perso de l'utilisateur.
+    renderPixelBadgeDataURL(dataUrl, { px: 22, out: 128 })
+        .then((url) => { try { localStorage.setItem('userBadgeUrl', url); } catch (_) {} try { updateGlobalAvatar(); } catch (_) {} })
+        .catch(() => {});
 }
 let _pBadge = null;
 
