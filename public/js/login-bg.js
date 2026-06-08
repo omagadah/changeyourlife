@@ -75,7 +75,11 @@ if (canvas) {
   if (archiUniverse) {
     import('/js/archi-build.js').then((mod) => placeCentral(mod.buildArchi(THREE, { growth: 1 }))).catch((e) => console.error('[login-bg] archi', e));
   } else {
-    import('/js/ez-tree-build.js').then((mod) => placeCentral(mod.buildEzTree(mod.getTreeType(), { growth: 1 }))).catch((e) => console.error('[login-bg] ez-tree', e));
+    import('/js/ez-tree-build.js').then((mod) => {
+      const obj = mod.buildEzTree(mod.getTreeType(), { growth: 1 });
+      placeCentral(obj);
+      try { mod.addEspSkeleton(THREE, obj, { opacity: 0.24 }); } catch (_) {}
+    }).catch((e) => console.error('[login-bg] ez-tree', e));
   }
 
   document.body.classList.add('tree-ready');

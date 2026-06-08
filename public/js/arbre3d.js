@@ -197,7 +197,12 @@ function initScene(canvas) {
   if (universe === 'archi') {
     import('/js/archi-build.js').then((m) => setupCentral(m.buildArchi(THREE))).catch((e) => console.error('[arbre3d] archi import failed', e));
   } else {
-    import('/js/ez-tree-build.js').then((m) => setupCentral(m.buildEzTree(m.getTreeType(), { growth: 1 }))).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
+    import('/js/ez-tree-build.js').then((m) => {
+      const obj = m.buildEzTree(m.getTreeType(), { growth: 1 });
+      setupCentral(obj);
+      // squelette ESP qui épouse l'arbre (wireframe du tronc/branches), clippé comme l'arbre
+      try { m.addEspSkeleton(THREE, obj, { clippingPlanes: ez.clip ? [ez.clip.plane] : null, opacity: 0.26 }); } catch (_) {}
+    }).catch((e) => console.error('[arbre3d] ez-tree import failed', e));
   }
   scene.add(group);
 
@@ -952,9 +957,9 @@ function initTree3D(canvas) {
 
     // Orbite lente des planètes (visible quand on dézoome)
     if (typeof animateCosmos === 'function') animateCosmos(dt);
-    // l'étiquette suit le satellite ; reste visible plus longtemps au dézoom,
-    // ne disparaît qu'après un dézoom franc (~30 % de plus qu'avant).
-    satInfo.update(camera, canvas, controls.getRadius() > 520);
+    // l'étiquette suit le satellite ; reste visible TRÈS longtemps au dézoom
+    // (c'est le seul repère explicatif quand on s'éloigne).
+    satInfo.update(camera, canvas, controls.getRadius() > 1200);
     // Tracés d'orbites (atome) : se révèlent 1 par 1 au début, puis RESTENT.
     if (orbits) {
       orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet

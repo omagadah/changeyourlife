@@ -919,8 +919,10 @@ export function buildTree(THREE, model, opts) {
   trunkGroup.scale.setScalar(0.0001);
   root.add(trunkGroup);
   const trunkCurve = localCurve(THREE, new THREE.Vector3(0.05, 1, 0.03), trunkH, rnd);
-  if (!ezTree) trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
-  trunkGroup.add(espLine(trunkCurve, 9));   // squelette ESP visible aussi en mode ezTree
+  if (!ezTree) {
+    trunkGroup.add(new THREE.Mesh(taperedTube(THREE, trunkCurve, 3.4, 1.0, 30, 12), barkActive));
+    trunkGroup.add(espLine(trunkCurve, 9));
+  }
   growables.push({ obj: trunkGroup, birth: 0, dur: 0.16, target: 1 });
   // nœud-racine
   const baseNode = espNode(trunkGroup, new THREE.Vector3(0, 0.4, 0), 0x9ecaff, 1, 1, 12);
@@ -948,8 +950,10 @@ export function buildTree(THREE, model, opts) {
     const r1 = r0 * 0.32;
 
     const curve = localCurve(THREE, dir, len, rnd);
-    if (!ezTree) bGroup.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 16, 8), barkOf(b.state)));
-    bGroup.add(espLine(curve, 6));   // squelette ESP des branches maîtresses (aussi en ezTree)
+    if (!ezTree) {
+      bGroup.add(new THREE.Mesh(taperedTube(THREE, curve, r0, r1, 16, 8), barkOf(b.state)));
+      bGroup.add(espLine(curve, 6));
+    }
     const tipLocal = curve.getPoint(1);
     const tipWorld = attachLocal.clone().add(tipLocal);
 
@@ -1006,8 +1010,10 @@ export function buildTree(THREE, model, opts) {
       sTangent.lerp(side, 0.45).add(new THREE.Vector3(0, 0.45, 0)).normalize();
       const sLen = len * (0.4 + rnd() * 0.22);
       const sCurve = localCurve(THREE, sTangent, sLen, rnd);
-      if (!ezTree) sGroup.add(new THREE.Mesh(taperedTube(THREE, sCurve, r1 * 1.1, r1 * 0.4, 10, 6), barkOf(b.state)));
-      sGroup.add(espLine(sCurve, 4));   // squelette ESP des sous-branches (aussi en ezTree)
+      if (!ezTree) {
+        sGroup.add(new THREE.Mesh(taperedTube(THREE, sCurve, r1 * 1.1, r1 * 0.4, 10, 6), barkOf(b.state)));
+        sGroup.add(espLine(sCurve, 4));
+      }
       const sTipLocal = sCurve.getPoint(1);
       const sNode = espNode(sGroup, sTipLocal, b.color, 0.42, 0.85, 11);
       sNode.userData = { label: b.sub[k] || '', color: b.color, key: b.key };
@@ -1030,9 +1036,11 @@ export function buildTree(THREE, model, opts) {
         twTan.lerp(twSide, 0.5).add(new THREE.Vector3(0, 0.5, 0)).normalize();
         const twLen = sLen * (0.42 + rnd() * 0.2);
         const twCurve = localCurve(THREE, twTan, twLen, rnd);
-        if (!ezTree) twGroup.add(new THREE.Mesh(
-          taperedTube(THREE, twCurve, r1 * 0.45, r1 * 0.16, 8, 5), barkOf(b.state)));
-        twGroup.add(espLine(twCurve, 3));   // squelette ESP des rejets (aussi en ezTree)
+        if (!ezTree) {
+          twGroup.add(new THREE.Mesh(
+            taperedTube(THREE, twCurve, r1 * 0.45, r1 * 0.16, 8, 5), barkOf(b.state)));
+          twGroup.add(espLine(twCurve, 3));
+        }
         const twTipLocal = twCurve.getPoint(1);
         const twNode = espNode(twGroup, twTipLocal, b.color, 0.26, 0.8, 11);
         growables.push({ obj: twNode, birth: twBirth + 0.08, dur: 0.07, target: 0.26 });

@@ -170,6 +170,8 @@ export function initLivingTree(userData) {
       tree.position.z -= (b.min.z + b.max.z) / 2;
       tree.position.y -= b.min.y;
       scene.add(tree);
+      // squelette ESP (exosquelette rayon-X) qui épouse l'arbre
+      try { if (universe === 'arbre' && _ezMod && _ezMod.addEspSkeleton) _ezMod.addEspSkeleton(THREE, tree, { opacity: 0.24 }); } catch (_) {}
       const b2 = new THREE.Box3().setFromObject(tree);
       treeH = b2.max.y - b2.min.y;
       treeR = Math.max(b2.max.x - b2.min.x, b2.max.z - b2.min.z) / 2;

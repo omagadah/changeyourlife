@@ -66,3 +66,31 @@ export function buildEzTree(type = 'chene', opts = {}) {
   tree.traverse((n) => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; if (n.material) n.material.side = 2; } });
   return tree;
 }
+
+// Ajoute un SQUELETTE ESP (effet rayon-X / exosquelette) qui ÉPOUSE exactement
+// l'arbre : on superpose un wireframe blanc sur la géométrie réelle du tronc et
+// des branches (on saute les feuilles). depthTest:false -> visible à travers le
+// feuillage. À appeler sur n'importe quel arbre ez-tree (accueil, /app, login).
+export function addEspSkeleton(THREE, root, opts = {}) {
+  if (!root) return root;
+  const color = (opts.color != null) ? opts.color : 0xffffff;
+  const opacity = (opts.opacity != null) ? opts.opacity : 0.28;
+  const clippingPlanes = opts.clippingPlanes || null;
+  const targets = [];
+  root.traverse((n) => {
+    if (!n.isMesh || !n.geometry || n.name === 'esp-skeleton') return;
+    const m = Array.isArray(n.material) ? n.material[0] : n.material;
+    // feuilles = matériau transparent / alphaTest -> on ne garde que tronc + branches
+    const isLeaf = m && (m.transparent === true || (m.alphaTest && m.alphaTest > 0) || /leaf|leaves|feuille/i.test(n.name || ''));
+    if (isLeaf) return;
+    targets.push(n);
+  });
+  targets.forEach((n) => {
+    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthTest: false });
+    if (clippingPlanes) { mat.clippingPlanes = clippingPlanes; mat.clipShadows = true; }
+    const wf = new THREE.LineSegments(new THREE.WireframeGeometry(n.geometry), mat);
+    wf.name = 'esp-skeleton'; wf.renderOrder = 9; wf.frustumCulled = false;
+    n.add(wf);   // enfant du mesh -> hérite du transform exact de la branche
+  });
+  return root;
+}
