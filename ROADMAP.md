@@ -179,10 +179,21 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **Système solaire à l'échelle** ✅ (Soleil ENORME + 7 planètes proportionnelles
   entre elles, distances croissantes, anneaux d'orbite visibles). Échelle compressée
   (à la vraie échelle le Soleil ferait 109× la Terre) → réglable dans `tree-model.js`.
-- [x] **Panneaux satellites masqués au dézoom** ✅ (disparaissent passé la plaque de
-  Pioneer, réapparaissent en rezoomant ; seuil = rayon caméra 360 dans `arbre3d.js`).
-- [x] **Emojis premium Fluent 3D (Microsoft)** ✅ (`emoji.js` : moteur Twemoji + assets
-  Fluent 3D webp via @lobehub/fluent-emoji-3d, repli en cascade → jamais de 404).
+- [x] **Plaque de Pioneer** ✅ déplacée loin dans l'espace + agrandie (visible au dézoom max).
+- [x] **Panneaux satellites masqués au dézoom** ✅ (réglable : constante `SAT_PANEL_HIDE_RADIUS`
+  dans `arbre3d.js`, défaut 3000 ; zoom min 95, repos ~200, max 7000).
+- [x] **SYL posé sur un rayon** ✅ (mi-hauteur de l'arbre, quasi-géostationnaire ; n'est plus en bas).
+- [x] **Squelette ESP (exosquelette rayon-X)** ✅ BASE FAITE : wireframe réel de l'ez-tree
+  (parfaitement aligné), limité au **tronc bas + corridors tronc→8 points-catégories + halos
+  sous-familles** (`addEspSkeletonCorridors` dans `ez-tree-build.js`, sur accueil + /app ;
+  login = tronc seul). Curseurs : `D` (épaisseur), `hubFrac`, `Rnode`, `Rsub`.
+- [ ] **Squelette PRÉCIS par branche (à co-construire)** : numéroter schématiquement les
+  branches de l'ez-tree (vue de face annotée) avec l'owner, puis mapper EXACTEMENT quelle
+  branche = quelle catégorie/sous-famille, pour n'allumer que celles-là (au lieu de
+  l'approximation par corridors). → session dédiée plus tard.
+- [x] **Emojis premium** ✅ (`emoji.js`) : Twemoji rendu d'abord (couverture 100 %, jamais
+  d'emoji système), puis **upgrade Fluent 3D** par probe (swap si l'image charge → 0 cassée).
+  Observer = parse des nœuds AJOUTÉS seulement (fix « site qui saute » sur l'accueil 3D).
 - [ ] **Références visuelles owner** (sites/templates donnés en session) — à ré-appliquer
   une par une (l'owner doit re-partager les liens ; non conservés entre sessions).
 
