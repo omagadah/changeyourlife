@@ -4,7 +4,7 @@
 // en dessous (le socle reste le repère/pilier). On se connecte "dans l'arbre".
 
 import * as THREE from '/vendor/three/three.module.min.js';
-import { buildEzTree } from '/js/ez-tree-build.js';
+import { buildEzTree, getTreeType } from '/js/ez-tree-build.js';
 
 const canvas = document.getElementById('arbre-canvas');
 if (canvas) {
@@ -62,7 +62,7 @@ if (canvas) {
   // Si la génération échoue, le socle + les étoiles restent affichés.
   let treeObj = null;
   try {
-    const m = buildEzTree('majestic');
+    const m = buildEzTree(getTreeType(), { growth: 1 });
     const box = new THREE.Box3().setFromObject(m);
     const size = new THREE.Vector3(); box.getSize(size);
     m.scale.setScalar(TREE_H / (size.y || 1));

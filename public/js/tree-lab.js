@@ -28,20 +28,20 @@ import * as THREE from '/vendor/three/three.module.min.js';
     ring.rotation.x = Math.PI/2; ring.position.y = 0.2; scene.add(ring);
 
     let tree = null;
-    function load(which, seed) {
+    function load(which, growth, seed) {
       try {
         errEl.textContent = '';
         if (tree) { scene.remove(tree); tree.traverse(o => { o.geometry?.dispose?.(); }); }
-        tree = buildEzTree(which, seed);
-        const box = new THREE.Box3().setFromObject(tree);
-        const h = box.max.y - box.min.y || 1;
-        const s = 92 / h; tree.scale.setScalar(s);
+        tree = buildEzTree(which, { growth, seed });
+        // échelle constante (on ne force PAS une hauteur fixe) -> l'arbre grandit
+        // physiquement quand la croissance augmente.
+        tree.scale.setScalar(1.15);
         const b2 = new THREE.Box3().setFromObject(tree);
         tree.position.y -= b2.min.y;
         scene.add(tree);
         let v = 0; tree.traverse(o => { if (o.geometry) v += (o.geometry.attributes.position?.count || 0); });
         const usedSeed = (tree.options && tree.options.seed) ?? seed ?? '?';
-        statEl.textContent = `${which} - graine ${usedSeed} - ${Math.round(v/1000)}k sommets`;
+        statEl.textContent = `${which} - croissance ${Math.round(growth*100)}% - graine ${usedSeed} - ${Math.round(v/1000)}k sommets`;
       } catch (e) { errEl.textContent = 'Erreur: ' + (e?.message || e); console.error(e); }
     }
 
@@ -75,10 +75,12 @@ import * as THREE from '/vendor/three/three.module.min.js';
     }
     frame();
 
-    let current = 'majestic', seed;
+    let current = 'chene', seed, growth = 1;
     document.querySelectorAll('button[data-p]').forEach(b => b.onclick = () => {
       document.querySelectorAll('button[data-p]').forEach(x => x.classList.remove('on'));
-      b.classList.add('on'); current = b.dataset.p; seed = undefined; load(current);
+      b.classList.add('on'); current = b.dataset.p; seed = undefined; load(current, growth, seed);
     });
-    document.getElementById('seed').onclick = () => { seed = Math.floor(Math.random()*99999); load(current, seed); };
-    load('majestic');
+    document.getElementById('seed').onclick = () => { seed = Math.floor(Math.random()*99999); load(current, growth, seed); };
+    const gr = document.getElementById('growth');
+    if (gr) gr.oninput = () => { growth = gr.value / 100; load(current, growth, seed); };
+    load('chene', 1);

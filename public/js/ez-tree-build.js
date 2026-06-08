@@ -1,54 +1,68 @@
-// /js/ez-tree-build.js - Génère un bel arbre ez-tree DANS le navigateur.
-// Avantage vs GLB pré-généré : les textures (écorce + feuilles) sont décodées
-// nativement par le navigateur -> vraies feuilles, vrai bois (pas de blocs gris).
-// Paramètres maximisés pour un arbre centenaire : grand, tronc épais, beaucoup
-// de branches et de sous-branches.
+// /js/ez-tree-build.js - Génère l'arbre ez-tree DANS le navigateur (vraies
+// textures écorce/feuilles) et le fait GRANDIR avec l'XP de l'utilisateur.
+// 2 catégories au choix : Chêne (chene) et Frêne (frene).
 
 import { Tree, TreePreset } from '/vendor/ez-tree/ez-tree.es.js';
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
-// Surcharge "majestueux" appliquée par-dessus un preset de base (Chêne).
-// On pousse : niveaux de branches au max (3 + sous-branches), plus d'enfants,
-// tronc plus épais, arbre plus haut. Feuillage dense mais pas excessif.
+// Surcharge "majestueux" (arbre centenaire) appliquée à un preset de base.
 function majestic(base) {
   const o = clone(base);
   o.seed = 28207;
   o.branch.levels = 3;
   o.branch.children = { 0: 13, 1: 6, 2: 4 };
   o.branch.length = { 0: 56, 1: 34, 2: 19, 3: 9 };
-  o.branch.radius = { 0: 4.1, 1: 0.8, 2: 0.66, 3: 0.9 };   // tronc un peu plus épais
-  o.branch.angle = { 1: 34, 2: 44, 3: 38 };                 // branches + verticales -> co-leaders (apex qui fourche)
+  o.branch.radius = { 0: 4.1, 1: 0.8, 2: 0.66, 3: 0.9 };   // tronc épais
+  o.branch.angle = { 1: 34, 2: 44, 3: 38 };                 // branches verticales -> apex qui fourche
   o.branch.start = { 1: 0.30, 2: 0.32, 3: 0 };
   o.branch.gnarliness = { 0: 0.03, 1: 0.16, 2: 0.12, 3: 0.06 };
   o.branch.force = { direction: { x: 0, y: 1, z: 0 }, strength: 0.035 };
   o.branch.sections = { 0: 16, 1: 10, 2: 8, 3: 5 };
   o.branch.segments = { 0: 12, 1: 8, 2: 6, 3: 4 };
-  if (o.leaves) {
-    o.leaves.count = 16;     // feuilles par rameau (dense mais lisible)
-    o.leaves.size = 3.4;
-    o.leaves.alphaTest = 0.5;
-  }
+  if (o.leaves) { o.leaves.count = 16; o.leaves.size = 3.4; o.leaves.alphaTest = 0.5; }
   return o;
 }
 
-export const PRESETS = {
-  majestic: () => majestic(TreePreset['Oak Large']),
-  oak: () => clone(TreePreset['Oak Large']),
-  ash: () => clone(TreePreset['Ash Large']),
-  aspen: () => clone(TreePreset['Aspen Large']),
-  pine: () => clone(TreePreset['Pine Large']),
+// Les 2 catégories proposées à l'utilisateur.
+export const TREE_TYPES = {
+  chene: () => majestic(TreePreset['Oak Large']),
+  frene: () => majestic(TreePreset['Ash Large']),
 };
 
-// Construit l'arbre et renvoie le THREE.Group (Tree etend THREE.Group).
-// `which` : clé de PRESETS ou objet d'options complet. `seed` : graine optionnelle.
-export function buildEzTree(which = 'majestic', seed) {
-  const opts = typeof which === 'string' ? (PRESETS[which] || PRESETS.majestic)() : which;
-  if (typeof seed === 'number') opts.seed = seed;
+// Préférence utilisateur (Chêne par défaut).
+export function getTreeType() {
+  try { const t = localStorage.getItem('cyl_treeType'); if (t === 'chene' || t === 'frene') return t; } catch (_) {}
+  return 'chene';
+}
+export function setTreeType(t) { try { localStorage.setItem('cyl_treeType', t); } catch (_) {} }
+
+// Applique un niveau de CROISSANCE g (0 = jeune pousse, 1 = arbre majestueux)
+// aux options : moins de niveaux de branches, branches plus courtes/fines et
+// moins de feuilles quand l'arbre est jeune. La taille absolue diminue aussi.
+export function applyGrowth(base, g) {
+  g = clamp01(g);
+  const o = clone(base);
+  const lerp = (a, b) => a + (b - a) * g;
+  o.branch.levels = g < 0.18 ? 1 : g < 0.55 ? 2 : 3;     // étapes : pousse -> jeune -> mature
+  for (const k in o.branch.length) o.branch.length[k] *= lerp(0.40, 1);
+  for (const k in o.branch.radius) o.branch.radius[k] *= lerp(0.55, 1);
+  o.branch.children = { ...o.branch.children };
+  o.branch.children[0] = Math.max(2, Math.round((o.branch.children[0] || 8) * lerp(0.45, 1)));
+  if (o.leaves) o.leaves.count = Math.max(2, Math.round(o.leaves.count * lerp(0.2, 1)));
+  return o;
+}
+
+// Construit l'arbre (THREE.Group). type: 'chene'|'frene' (ou objet d'options).
+// opts: { growth (0..1, defaut 1), seed }.
+export function buildEzTree(type = 'chene', opts = {}) {
+  const growth = (typeof opts.growth === 'number') ? opts.growth : 1;
+  let o = typeof type === 'string' ? (TREE_TYPES[type] || TREE_TYPES.chene)() : type;
+  if (growth < 0.999) o = applyGrowth(o, growth);
+  if (typeof opts.seed === 'number') o.seed = opts.seed;
   const tree = new Tree();
-  tree.loadFromJson(opts);   // applique les options (loadPreset attend un NOM, pas un objet) + génère
-  tree.traverse((o) => {
-    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material) o.material.side = 2; }
-  });
+  tree.loadFromJson(o);   // applique les options + génère (loadPreset attend un NOM, pas un objet)
+  tree.traverse((n) => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; if (n.material) n.material.side = 2; } });
   return tree;
 }
