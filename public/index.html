@@ -372,28 +372,29 @@
     /* ── SYL (bas) ── */
     .lya {
       position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
-      display: flex; align-items: flex-end; gap: 18px;
+      display: flex; align-items: flex-end; justify-content: flex-end; gap: 18px;
       padding: 24px clamp(20px, 5vw, 64px) 30px;
+      padding-left: 96px;   /* laisse l'angle bas-gauche libre pour le bouton Urgence */
       background: linear-gradient(0deg, rgba(7,11,6,0.95) 30%, transparent);
       animation: rise 1.2s ease 0.6s both;
     }
     @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-    /* Bouton URGENCE (bas gauche) + pointillés animés vers le satellite SYL */
+    /* Bouton URGENCE - dans l'angle bas-gauche, sobre et élégant (pas "camion de pompier") */
     #urgence-btn {
-      position: fixed; left: 18px; bottom: 96px; z-index: 8;
-      width: 34px; height: 122px; border-radius: 11px; cursor: pointer;
-      border: 1px solid rgba(255,120,120,0.65); color: #fff;
-      background: linear-gradient(180deg, #ff8a8a 0%, #e23b3b 55%, #a51d1d 100%);
+      position: fixed; left: 16px; bottom: 16px; z-index: 9;
+      width: 36px; height: 104px; border-radius: 13px; cursor: pointer;
+      border: 1px solid rgba(255,150,150,0.4); color: #ffe9e9;
+      background: linear-gradient(160deg, rgba(238,108,108,0.92), rgba(150,34,34,0.94));
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
       writing-mode: vertical-rl; text-orientation: upright;
-      font: 800 0.74rem Segoe UI, sans-serif; letter-spacing: 2px; text-transform: uppercase;
+      font: 700 0.58rem "Segoe UI", sans-serif; letter-spacing: 1px; text-transform: uppercase;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 18px rgba(180,20,20,0.45); animation: urgPulse 2.4s ease-out infinite;
+      box-shadow: 0 8px 22px rgba(150,20,20,0.38), inset 0 1px 0 rgba(255,255,255,0.18);
+      transition: transform .15s, box-shadow .2s, filter .2s;
     }
-    @keyframes urgPulse { 0% { box-shadow: 0 6px 18px rgba(180,20,20,0.45), 0 0 0 0 rgba(226,59,59,0.5); }
-      70% { box-shadow: 0 6px 18px rgba(180,20,20,0.45), 0 0 0 12px rgba(226,59,59,0); }
-      100% { box-shadow: 0 6px 18px rgba(180,20,20,0.45), 0 0 0 0 rgba(226,59,59,0); } }
-    #urgence-btn:hover { filter: brightness(1.12); transform: scale(1.04); }
-    #urgence-btn.active { background: radial-gradient(circle at 40% 34%, #ffd2d2, #e23b3b 60%, #7a1414 100%); }
+    #urgence-btn:hover { transform: translateY(-2px); filter: brightness(1.07);
+      box-shadow: 0 12px 28px rgba(180,30,30,0.5), inset 0 1px 0 rgba(255,255,255,0.22); }
+    #urgence-btn.active { filter: brightness(1.1); }
     #urgence-link { position: fixed; inset: 0; z-index: 7; pointer-events: none; width: 100%; height: 100%; opacity: 0; transition: opacity .35s; }
     #urgence-link.on { opacity: 1; }
     #urgence-link path { fill: none; stroke: #ff6b6b; stroke-width: 2.4; stroke-linecap: round;
@@ -415,7 +416,7 @@
       0%,100% { transform: scale(1);    box-shadow: 0 0 28px rgba(231,177,92,0.45), inset 0 0 18px rgba(255,255,255,0.24); }
       50%     { transform: scale(1.06); box-shadow: 0 0 48px rgba(231,177,92,0.78), inset 0 0 22px rgba(255,255,255,0.34); }
     }
-    .lya-body { flex: 1; min-width: 0; max-width: 600px; }
+    .lya-body { flex: 0 1 auto; min-width: 0; max-width: 600px; }
     .lya-name {
       font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px;
       text-transform: uppercase; color: var(--leaf); margin-bottom: 4px;
@@ -575,7 +576,7 @@
       .headline { max-width: 80vw; top: clamp(82px, 12vh, 116px); }
     }
     @media (max-width: 720px) {
-      .lya { flex-direction: column; align-items: stretch; gap: 14px; }
+      .lya { flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 14px; padding-left: clamp(20px, 5vw, 64px); padding-bottom: 84px; }
       .lya-top { display: flex; align-items: center; gap: 14px; }
       .actions { justify-content: space-between; }
       .btn-enter { flex: 1; text-align: center; }
@@ -828,7 +829,6 @@
   <script type="module" src="/js/arbre3d.js"></script>
   <script type="module" src="/js/inscription.js?v=18"></script>
   <script src="/js/urgence.js" defer></script>
-  <script src="/js/emoji.js" defer></script>
   <!-- CYL accueil organique v3 -->
 </body>
 </html>
