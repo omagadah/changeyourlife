@@ -61,7 +61,7 @@ const DICT = {
     'hero.eyebrow': 'Font de toi qui tu es et font grandir ton arbre',
     'hero.title': 'Deviens qui tu rêves d\'être.<br>Un geste après l\'autre.',
     'hero.desc': 'Ici, ta vie prend la forme d\'un arbre numérique.<br>Chaque geste de ta vie réelle s\'y inscrit et le fait grandir, et toi avec lui. <strong>SYL, ton assistant personnel, t\'aide à mener tes projets à bien</strong> et à t\'épanouir dans le style de vie qui est le tien.',
-    'stream.caption': 'Tes actions, dans la vraie vie',
+    'stream.caption': 'Tes actions dans la vraie vie',
     'cta.start': 'Commencer l\'aventure',
     'lya.voice': 'Voix de SYL',
     'lya.intro1': 'Bonjour, je suis SYL. Ravie de te rencontrer.',
