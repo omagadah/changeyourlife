@@ -130,6 +130,14 @@ service cloud.firestore {
     match /coachRate/{uid} {
       allow read, write: if false;
     }
+    // Rate-limit SYL chat (api/chat.js)
+    match /chatRate/{uid} {
+      allow read, write: if false;
+    }
+    // Rate-limit traduction publique (api/translate.js)
+    match /translateRate/{docId} {
+      allow read, write: if false;
+    }
     // Rôles (modérateur, admin) — réservé Custom Claims serveur
     match /roles/{uid} {
       allow read:  if isSignedIn() && isOwner(uid);

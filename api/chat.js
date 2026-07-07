@@ -158,7 +158,7 @@ module.exports = async function handler(req, res) {
     if (!r.ok) {
       const errText = await r.text();
       console.error('[chat] Anthropic error:', r.status, errText.slice(0, 240));
-      return res.status(502).json({ error: 'SYL est momentanément indisponible', status: r.status, details: errText.slice(0, 240) });
+      return res.status(502).json({ error: 'SYL est momentanément indisponible' });
     }
     const data = await r.json();
     const text = data.content?.map((b) => (b.type === 'text' ? b.text : '')).join('') || '';

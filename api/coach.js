@@ -156,13 +156,8 @@ module.exports = async function handler(req, res) {
       });
       if (!groqRes.ok) {
         const errText = await groqRes.text();
-        console.error('[coach] Groq error:', groqRes.status, errText);
-        return res.status(502).json({
-          error: 'Service IA temporairement indisponible',
-          provider: 'groq',
-          groqStatus: groqRes.status,
-          details: (errText || '').slice(0, 240),
-        });
+        console.error('[coach] Groq error:', groqRes.status, (errText || '').slice(0, 240));
+        return res.status(502).json({ error: 'Service IA temporairement indisponible' });
       }
       const data = await groqRes.json();
       const text = data.choices?.[0]?.message?.content;
@@ -206,14 +201,9 @@ module.exports = async function handler(req, res) {
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
-      console.error('[coach] Gemini error:', geminiRes.status, errText);
-      // On remonte assez d'info pour qu'on puisse diagnostiquer côté client
-      // (model deprecated, quota, key invalide…). Tronqué pour ne pas fuiter.
-      return res.status(502).json({
-        error: 'Service IA temporairement indisponible',
-        geminiStatus: geminiRes.status,
-        details: (errText || '').slice(0, 240),
-      });
+      console.error('[coach] Gemini error:', geminiRes.status, (errText || '').slice(0, 240));
+      // Détail loggé serveur uniquement (jamais renvoyé au client).
+      return res.status(502).json({ error: 'Service IA temporairement indisponible' });
     }
 
     const data = await geminiRes.json();
