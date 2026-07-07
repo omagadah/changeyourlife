@@ -538,7 +538,7 @@ async function addToAgenda(card) {
       body: JSON.stringify({ summary: '🗂 ' + card.title, start: { date: d }, end: { date: dn }, description: 'ORGANIZER - ChangeYourLife.ai' }),
     });
     if (!r.ok) throw new Error('http');
-    log(card, 'Ajoutée à Google Agenda'); save(); toast('Ajoutée à ton Agenda ✓');
+    log(card, 'Ajoutée à Google Agenda'); save(); toast('Ajoutée à ton Agenda');
   } catch (e) { toast("Échec de l'ajout à l'Agenda"); }
 }
 
@@ -547,12 +547,12 @@ document.getElementById('org-add-col').onclick = addColumn;
 const _lockCols = document.getElementById('org-lock-cols');
 if (_lockCols) _lockCols.onclick = () => {
   board.lockCols = !board.lockCols; save(); render();
-  toast(board.lockCols ? 'Colonnes verrouillées 🔒' : 'Colonnes déverrouillées 🔓');
+  toast(board.lockCols ? 'Colonnes verrouillées' : 'Colonnes déverrouillées');
 };
 const _lockCards = document.getElementById('org-lock-cards');
 if (_lockCards) _lockCards.onclick = () => {
   board.lockCards = !board.lockCards; save(); render();
-  toast(board.lockCards ? 'Fiches verrouillées 🔒' : 'Fiches déverrouillées 🔓');
+  toast(board.lockCards ? 'Fiches verrouillées' : 'Fiches déverrouillées');
 };
 document.querySelectorAll('#org-viewtoggle button').forEach((b) => { b.onclick = () => setView(b.dataset.view); });
 const _reorg = document.getElementById('org-canvas-reorg'); if (_reorg) _reorg.onclick = reorganizeCanvas;

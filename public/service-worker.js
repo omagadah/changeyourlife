@@ -1,5 +1,5 @@
-// service-worker.js - v148 (P0 prod : scripts accueil externalises CSP + helpers common.js + pages legales)
-const CACHE_NAME = 'changeyourlife-v148';
+// service-worker.js - v149 (P2 : purge emojis decoratifs UI + copy/tutoiement)
+const CACHE_NAME = 'changeyourlife-v149';
 const urlsToCache = [
   '/',
   '/app/',

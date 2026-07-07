@@ -236,7 +236,7 @@
       }
       await saveHabits();
       closeModal();
-      showToast(editingIdx !== null ? 'Habitude modifiée ✓' : 'Habitude créée ! Commence dès aujourd\'hui 🌱');
+      showToast(editingIdx !== null ? 'Habitude modifiée ✓' : 'Habitude créée ! Commence dès aujourd\'hui');
       render();
     }
 

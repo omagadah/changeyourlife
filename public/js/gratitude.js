@@ -47,7 +47,7 @@
     // ── Date badge ──
     const today = todayStr();
     document.getElementById('date-badge').textContent =
-      '📅 ' + formatDate(today).replace(/^\w/, c => c.toUpperCase());
+      '' + formatDate(today).replace(/^\w/, c => c.toUpperCase());
 
     // ── Mood selection ──
     document.querySelectorAll('.mood-btn').forEach(btn => {
@@ -104,7 +104,7 @@
             b.classList.toggle('active', +b.dataset.mood === e.mood);
           });
         }
-        document.getElementById('btn-save').textContent = '✏️ Modifier ma gratitude';
+        document.getElementById('btn-save').textContent = 'Modifier ma gratitude';
         document.getElementById('btn-save').style.background = 'linear-gradient(135deg,rgba(251,191,36,.4),rgba(245,158,11,.5))';
         document.getElementById('btn-save').style.color = '#fde68a';
       }
@@ -131,7 +131,7 @@
       document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-total').textContent = totalDays;
       document.getElementById('stat-month').textContent = thisMonth;
-      document.getElementById('streak-badge').textContent = `🔥 ${streak} jour${streak !== 1 ? 's' : ''} de suite`;
+      document.getElementById('streak-badge').textContent = `${streak} jour${streak !== 1 ? 's' : ''} de suite`;
     }
 
     function renderHeatmap() {
@@ -192,7 +192,7 @@
       const g1 = document.getElementById('g1').value.trim();
       const g2 = document.getElementById('g2').value.trim();
       const g3 = document.getElementById('g3').value.trim();
-      if (!g1 && !g2 && !g3) { showToast('Écris au moins une gratitude 🌟'); return; }
+      if (!g1 && !g2 && !g3) { showToast('Écris au moins une gratitude'); return; }
 
       const data = {
         g1, g2, g3,
@@ -215,5 +215,5 @@
       }
 
       renderAll();
-      showToast('Gratitude enregistrée 🌟');
+      showToast('Gratitude enregistrée');
     });

@@ -304,7 +304,7 @@ function buildGoalCard(g, idx) {
     const wasCompleted = g.completed;
     g.progress = v;
     if (v >= 100 && !wasCompleted) {
-      g.completed = true; showToast('🏆 Objectif complété ! +25 XP');
+      g.completed = true; showToast('Objectif complété ! +25 XP');
       try { await window._cyfFirebase.awardXp(g.domain || 'accomplissement', 25); showXpFloat(25); } catch(_){}
     }
     await persistGoals(); renderAll();
@@ -370,7 +370,7 @@ function buildGoalCard(g, idx) {
   const actions = document.createElement('div'); actions.className = 'goal-actions';
 
   // Slider toggle
-  const btnSlider = document.createElement('button'); btnSlider.className = 'btn-icon'; btnSlider.textContent = '📊 Progression';
+  const btnSlider = document.createElement('button'); btnSlider.className = 'btn-icon'; btnSlider.textContent = 'Progression';
   btnSlider.addEventListener('click', () => {
     const open = sliderWrap.classList.toggle('open');
     btnSlider.classList.toggle('active-slider', open);
@@ -382,7 +382,7 @@ function buildGoalCard(g, idx) {
   btnT.addEventListener('click', async () => {
     const was = g.completed;
     g.completed = !was;
-    if (g.completed) { g.progress = 100; showToast('✅ Objectif complété ! +25 XP'); }
+    if (g.completed) { g.progress = 100; showToast('Objectif complété ! +25 XP'); }
     else { showToast('↻ Objectif réactivé'); }
     await persistGoals();
     if (!was) {
@@ -392,7 +392,7 @@ function buildGoalCard(g, idx) {
   });
 
   // Edit
-  const btnE = document.createElement('button'); btnE.className = 'btn-icon'; btnE.textContent = '✏️ Modifier';
+  const btnE = document.createElement('button'); btnE.className = 'btn-icon'; btnE.textContent = 'Modifier';
   btnE.addEventListener('click', () => openModal(idx));
 
   // Delete (2-step)
@@ -518,7 +518,7 @@ async function saveGoal() {
   else goals.push(goal);
   await persistGoals();
   renderAll();
-  showToast(editingId !== null ? '✏️ Objectif modifié' : '✅ Objectif ajouté');
+  showToast(editingId !== null ? 'Objectif modifié' : 'Objectif ajouté');
   closeModal();
 }
 

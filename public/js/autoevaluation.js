@@ -182,7 +182,7 @@ function showResults(){
   if(allVeryHigh){
     insightsHtml=`
       <div class="insight" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);">
-        <h4><span style="color:#fbbf24">🪞 Un moment d'honnêteté</span></h4>
+        <h4><span style="color:#fbbf24">Un moment d'honnêteté</span></h4>
         <p>Tu as obtenu un score très élevé partout. Si c'est sincère, c'est remarquable ! Mais souviens-toi : <strong>tricher ici, c'est te tromper toi-même</strong>. Cette évaluation n'est vue que par toi. Plus tes réponses sont honnêtes, plus les insights t'aident vraiment. Tu peux refaire le questionnaire en prenant le temps de réfléchir à chaque réponse.</p>
       </div>
       <div style="margin-top:10px;">
@@ -191,7 +191,7 @@ function showResults(){
   } else if(allSame){
     insightsHtml=`
       <div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);">
-        <h4><span style="color:#60aeff">⚖️ Équilibre parfait</span></h4>
+        <h4><span style="color:#60aeff">Équilibre parfait</span></h4>
         <p>Tous tes domaines sont au même niveau (${scores[low.key]}/10). C'est rare - choisis le domaine qui te tient le plus à cœur pour commencer à progresser.</p>
       </div>`;
   } else {
@@ -215,10 +215,10 @@ function showResults(){
       const domainLabels = {corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
       actionEl.innerHTML=`
         <div style="margin-top:16px;padding:16px 18px;background:rgba(0,112,243,0.06);border:1px solid rgba(0,112,243,0.2);border-radius:12px">
-          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:8px">💡 Passe à l'action maintenant</div>
+          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:8px">Passe à l'action maintenant</div>
           <p style="font-size:0.85rem;color:#9bb3d0;margin-bottom:12px">Ton domaine <strong style="color:${target.color}">${target.emoji} ${target.label}</strong> a le plus besoin d'attention. Crée un objectif concret cette semaine.</p>
           <a href="/objectifs/?domain=${target.key}" data-action="hover-shadow" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0070f3,#0056cc);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s">
-            🎯 Créer un objectif ${target.label} →
+            Créer un objectif ${target.label} →
           </a>
         </div>`;
     } else {
@@ -251,12 +251,12 @@ window.showHistDetail=(i)=>{
   const grid=document.getElementById('detail-grid');
   grid.innerHTML=`
     <div class="rcard wide">
-      <h3>🕸 Roue de Vie - ${date}</h3>
+      <h3>Roue de Vie - ${date}</h3>
       <div class="chart-box"><canvas id="radar-chart-detail"></canvas></div>
       <div class="global-score"><div class="global-num">${global}</div><div class="global-label">Score global / 10</div></div>
     </div>
-    <div class="rcard"><h3>📊 Scores par domaine</h3><div id="detail-dom-scores"></div></div>
-    <div class="rcard"><h3>💡 Insights</h3><div id="detail-insights"></div></div>`;
+    <div class="rcard"><h3>Scores par domaine</h3><div id="detail-dom-scores"></div></div>
+    <div class="rcard"><h3>Insights</h3><div id="detail-insights"></div></div>`;
 
   radarChart=new Chart(document.getElementById('radar-chart-detail').getContext('2d'),{
     type:'radar',
@@ -285,9 +285,9 @@ window.showHistDetail=(i)=>{
   const allSame=sorted.every(dm=>(scores[dm.key]??0)===(scores[sorted[0].key]??0));
   const numericGlobal=typeof global==='number'?global:parseFloat(global);
   document.getElementById('detail-insights').innerHTML= numericGlobal>=9
-    ?`<div class="insight" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);"><h4><span style="color:#fbbf24">🪞 Score très élevé</span></h4><p>Score global de ${global}/10. Si ces réponses reflètent ta réalité, c'est excellent !</p></div>`
+    ?`<div class="insight" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);"><h4><span style="color:#fbbf24">Score très élevé</span></h4><p>Score global de ${global}/10. Si ces réponses reflètent ta réalité, c'est excellent !</p></div>`
     : allSame
-    ?`<div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);"><h4><span style="color:#60aeff">⚖️ Équilibre parfait</span></h4><p>Tous les domaines à ${scores[low.key]}/10.</p></div>`
+    ?`<div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);"><h4><span style="color:#60aeff">Équilibre parfait</span></h4><p>Tous les domaines à ${scores[low.key]}/10.</p></div>`
     :`<div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
         <h4><span style="color:${low.color}">${low.emoji} Priorité - ${low.label}</span></h4>
         <p>Score <strong>${scores[low.key]}/10</strong> - domaine le plus à travailler.</p>

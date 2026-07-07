@@ -104,7 +104,7 @@ async function practice(id) {
   render();
   const res = await awardSkillXp(db, uid, id, PRACTICE_SKILL_XP);
   try { const fn = window._cyfFirebase && window._cyfFirebase.awardXp; if (fn) await fn(s.branch || 'accomplissement', PRACTICE_BRANCH_XP); } catch (e) {}
-  if (res && res.leveledUp) toast(`🎉 ${s.name} - niveau ${res.level} !`, 'up');
+  if (res && res.leveledUp) toast(`${s.name} - niveau ${res.level} !`, 'up');
   else toast(`+${PRACTICE_SKILL_XP} ${s.name}`, 'xp');
 }
 

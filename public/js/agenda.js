@@ -131,7 +131,7 @@ async function refreshEvents() {
   const box = document.getElementById('ag-events'); if (!box) return;
   try {
     const items = await listToday();
-    if (!items.length) { box.innerHTML = `<div class="ag-empty">Aucun événement aujourd'hui - belle page blanche ✨</div>`; return; }
+    if (!items.length) { box.innerHTML = `<div class="ag-empty">Aucun événement aujourd'hui - belle page blanche</div>`; return; }
     box.innerHTML = items.map((ev) =>
       `<div class="ag-ev"><span class="ag-ev-t">${escapeHtml(fmtTime(ev))}</span>` +
       `<span class="ag-ev-n">${escapeHtml(ev.summary || '(sans titre)')}</span></div>`).join('');

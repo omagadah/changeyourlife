@@ -68,7 +68,7 @@ if (bio && bioCounter) {
   worldOpts.forEach((b) => b.addEventListener('click', () => {
     try { localStorage.setItem(WKEY, b.dataset.world); } catch (_) {}
     paintW(b.dataset.world);
-    toast(b.dataset.world === 'archi' ? '🏙️ Univers Architecture - recharge l\'accueil' : '🌳 Univers Arbre - recharge l\'accueil');
+    toast(b.dataset.world === 'archi' ? 'Univers Architecture - recharge l\'accueil' : 'Univers Arbre - recharge l\'accueil');
   }));
 })();
 

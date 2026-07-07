@@ -130,7 +130,7 @@ function renderGlobalScore() {
   document.getElementById('gsb-ring-fill').style.stroke = color;
 
   // Title
-  const titles = ['Début du voyage 🌱', 'En progression 🚀', 'Belle avancée ⭐', 'Presque au sommet 🏆', 'Maître de ta vie ✨'];
+  const titles = ['Début du voyage', 'En progression', 'Belle avancée', 'Presque au sommet', 'Maître de ta vie'];
   const ti = Math.min(4, Math.floor(pct / 20));
   document.getElementById('gsb-title').textContent = titles[ti];
   document.getElementById('gsb-sub').textContent = `${done}/${total} compétences · ${complete}/${LEVELS.length} niveaux complets`;
@@ -154,7 +154,7 @@ document.getElementById('btn-export-life').addEventListener('click', () => {
   const a = document.createElement('a');
   a.href = url; a.download = `ma-vie-cyf-${new Date().toISOString().slice(0,10)}.md`;
   a.click(); URL.revokeObjectURL(url);
-  showToast('✅ Progression exportée !');
+  showToast('Progression exportée !');
 });
 
 // ════════════════════════════════════════════════════════════════════════
@@ -230,7 +230,7 @@ function makeSkillPill(lvl, skill) {
   del.addEventListener('click', e => {
     e.stopPropagation();
     skillData[lvl.id] = skillData[lvl.id].filter(s => s.id !== skill.id);
-    scheduleSave(); render(); showToast('🗑️ Compétence supprimée');
+    scheduleSave(); render(); showToast('Compétence supprimée');
   });
 
   pill.append(check, lbl, editBtn, del);
@@ -382,7 +382,7 @@ function renderTimeline() {
   });
 
   if (doneSkills.length === 0) {
-    container.innerHTML = `<div class="timeline-empty">🌱 Coche tes premières compétences pour les voir apparaître ici !</div>`;
+    container.innerHTML = `<div class="timeline-empty">Coche tes premières compétences pour les voir apparaître ici !</div>`;
     return;
   }
 

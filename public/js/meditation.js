@@ -341,7 +341,7 @@ async function completeSession() {
   document.getElementById('breathing-guide').classList.remove('active');
   document.getElementById('breathing-rings')?.classList.remove('inhale','hold','exhale');
   document.querySelectorAll('.session-card').forEach(c => c.classList.remove('playing'));
-  showToast(`🧘 Session terminée - ${currentSession.duration} min ✓`);
+  showToast(`Session terminée - ${currentSession.duration} min ✓`);
   const _la = document.getElementById('la-line');
   if (_la) _la.textContent = 'Belle séance 🌿 Prends un instant - comment te sens-tu maintenant ?';
   try { showXpFloat(15, document.getElementById('timer')); } catch(e) {}

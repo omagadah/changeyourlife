@@ -53,7 +53,7 @@
                 try { await setDoc(userDocRef, { lastActive: new Date() }, { merge: true }); } catch(e) {}
                 try {
                     const displayName = userData.displayName || userData.username || '';
-                    if (greetEl) greetEl.textContent = displayName ? `${greetWord}, ${displayName} 👋` : `${greetWord} 👋`;
+                    if (greetEl) greetEl.textContent = displayName ? `${greetWord}, ${displayName}` : `${greetWord}`;
                     if (greetSub) greetSub.textContent = '';
                     const subEl = document.getElementById('welcome-sub');
                     const tEl = document.getElementById('user-title');

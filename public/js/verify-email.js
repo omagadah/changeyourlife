@@ -118,7 +118,7 @@ async function sendOtp(user) {
     } catch (jsonErr) {
       const statusText = `HTTP ${res.status}`;
       console.error('sendOtp: API returned non-JSON', statusText);
-      otpHint.innerHTML = `⚠️ Erreur serveur (${statusText}) - contactez le support`;
+      otpHint.innerHTML = `Erreur serveur (${statusText}) - contacte le support`;
       otpHint.style.color = '#ef4444';
       showNotif(`Erreur serveur ${statusText}`, 'error');
       return;
@@ -131,22 +131,22 @@ async function sendOtp(user) {
         otpBoxes[0].focus();
       } else {
         console.error('sendOtp API error:', data);
-        otpHint.innerHTML = `⚠️ ${data.error || 'Impossible d\'envoyer le code'}`;
+        otpHint.innerHTML = `${data.error || 'Impossible d\'envoyer le code'}`;
         otpHint.style.color = '#ef4444';
         showNotif(data.error || 'Impossible d\'envoyer le code', 'error');
       }
       return;
     }
-    showNotif('Code envoyé ! Vérifiez votre boîte mail 📧', 'info');
+    showNotif('Code envoyé ! Regarde ta boîte mail', 'info');
     startResendCooldown(60);
     otpHint.style.color = '';
-    otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé - vérifiez vos spams si besoin';
+    otpHint.innerHTML = '<span class="status-dot"></span> Code envoyé - regarde tes spams si besoin';
     otpBoxes[0].focus();
   } catch (err) {
     console.error('sendOtp fetch error', err);
-    otpHint.innerHTML = '⚠️ Erreur réseau - vérifiez votre connexion internet';
+    otpHint.innerHTML = 'Erreur réseau - vérifie ta connexion internet';
     otpHint.style.color = '#ef4444';
-    showNotif('Erreur réseau. Réessayez.', 'error');
+    showNotif('Erreur réseau. Réessaie.', 'error');
   }
 }
 
@@ -182,11 +182,11 @@ async function verifyCode() {
       return;
     }
 
-    // ✅ Success
+    // Success
     setOtpState('success');
-    showNotif('Email vérifié ! Bienvenue 🎉', 'success');
-    verifyBtn.textContent = 'Vérifié ✓ Redirection…';
-    otpHint.textContent = '✅ Email confirmé';
+    showNotif('Email vérifié ! Bienvenue', 'success');
+    verifyBtn.textContent = 'Vérifié - Redirection…';
+    otpHint.textContent = 'Email confirmé';
 
     // Force Firebase client to reload the user token so emailVerified = true
     await reload(currentUser);
@@ -195,7 +195,7 @@ async function verifyCode() {
   } catch (err) {
     console.error('verifyCode error', err);
     setOtpState('error');
-    errorMsg.textContent = 'Erreur réseau. Réessayez.';
+    errorMsg.textContent = 'Erreur réseau. Réessaie.';
     verifyBtn.textContent = 'Vérifier mon email';
     verifyBtn.disabled = false;
   }

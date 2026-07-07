@@ -208,7 +208,7 @@ async function toggleTask(id) {
     await award(t.branch, TASK_XP, BRANCH_BY_KEY[t.branch] ? BRANCH_BY_KEY[t.branch].label : 'Tâche');
     if (t.skillId && userSkills[t.skillId]) {
       const res = await awardSkillXp(db, uid, t.skillId, 25);
-      if (res && res.leveledUp) toast(`🎉 ${userSkills[t.skillId].name} - niveau ${res.level} !`, true);
+      if (res && res.leveledUp) toast(`${userSkills[t.skillId].name} - niveau ${res.level} !`, true);
     }
   }
 }

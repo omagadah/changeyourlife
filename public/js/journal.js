@@ -150,7 +150,7 @@ function renderList() {
     const domEmo = Object.entries(emotionCount).sort((a,b)=>b[1]-a[1])[0];
     const domEmoData = domEmo ? EMOTION_MAP[domEmo[0]] : null;
     statsEl.innerHTML = `
-      ${streak > 0 ? `<span class="sidebar-stat-pill streak">🔥 ${streak} jour${streak>1?'s':''} d'affilée</span>` : ''}
+      ${streak > 0 ? `<span class="sidebar-stat-pill streak">${streak} jour${streak>1?'s':''} d'affilée</span>` : ''}
       ${domEmoData ? `<span class="sidebar-stat-pill mood">${domEmoData.emoji} ${domEmoData.label} cette semaine</span>` : ''}
     `;
   } else if (statsEl) { statsEl.innerHTML = ''; }
@@ -548,7 +548,7 @@ btnSave.addEventListener('click', async () => {
     localStorage.removeItem(DRAFT_KEY);
     editingId = null; readId = id;
     renderList(); renderMoodChart();
-    showToast('Entrée sauvegardée ✓');
+    showToast('Entrée sauvegardée');
     openReadView(id);
   } catch(e) { console.error(e); showToast('Erreur lors de la sauvegarde', true); }
   finally { btnSave.disabled = false; btnSave.textContent = 'Sauvegarder'; }

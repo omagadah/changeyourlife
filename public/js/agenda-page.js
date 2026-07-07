@@ -139,7 +139,7 @@ async function renderWeek() {
       </div>
       <div class="ap-range" id="ap-range">${escapeHtml(label)}</div>
       <div class="ap-tools">
-        <button class="ap-btn ap-ghost" id="ap-push">↗ Envoyer mes tâches du jour</button>
+        <button class="ap-btn ap-ghost" id="ap-push">Envoyer mes tâches du jour</button>
         <button class="ap-btn ap-x" id="ap-disc" title="Déconnecter">Déconnecter</button>
       </div>
     </div>
@@ -166,7 +166,7 @@ async function renderWeek() {
     const b = ev.currentTarget; b.disabled = true; b.textContent = 'Envoi…';
     try { const n = await pushTasks(); toast(n ? `${n} tâche(s) ajoutée(s)` : 'Aucune tâche à envoyer'); renderWeek(); }
     catch (err) { if (err.message === 'expired') { renderConnect(); toast('Reconnecte ton agenda'); return; } toast("Erreur lors de l'envoi"); }
-    finally { b.disabled = false; b.textContent = '↗ Envoyer mes tâches du jour'; }
+    finally { b.disabled = false; b.textContent = 'Envoyer mes tâches du jour'; }
   };
 
   // remplit les événements
