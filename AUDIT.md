@@ -1,124 +1,89 @@
 # Audit changeyourlife.ai
 
-> **Dernière MAJ :** 2026-05-17 (session reprise — bornes `bilans`/`codexNotes` + theme-color)
-> **Branche :** `main` (1 commit en cours à pousser)
-> **Type :** profond — sécurité, code mort, anomalies, cohérence, deps
+> **Dernière MAJ :** 2026-07-07 (audit total — sécurité + architecture + UX, session Cowork)
+> **Branche :** `main` (synchro origin + prod Vercel au moment de l'audit, dernier commit 2026-06-08)
+> **Type :** complet — 3 audits parallèles (sécurité / code-architecture / UX anti-IA)
+> **Plan d'action détaillé :** [PLAN-PRODUCTION.md](PLAN-PRODUCTION.md)
 
 ---
 
 ## 1 · Verdict global
 
-Repo en **bon état**. L'audit du 2026-05-16 a révélé une régression XSS et une vuln npm critique — **toutes deux corrigées dans cette session**, avec le nettoyage du code mort et les mineurs de sécurité.
+Le socle sécurité API est sérieux, mais un mois de dev intensif (juin) a ouvert des trous
+jamais audités. **1 faille critique trouvée et corrigée ce jour.** Les vrais bloquants
+production ne sont pas la sécurité : fiabilité des écritures, modèle de données, CSP
+accueil, légal.
 
 | Axe | Note | Évolution |
 |---|:---:|---|
-| Architecture | **A−** | = |
-| Sécurité | **A** | ↗ — XSS corrigés, vuln critique résolue, CDN pinné |
-| Qualité code | **A** | ↗ — imports morts, deps inutiles, code mort purgés |
-| PWA / SEO | **A** | = |
-| Maintenabilité | **A−** | = |
+| Architecture | **B** | ↘ — mono-document users/{uid} plafonnera à 1 Mo ; 3,5 Mo de fichiers morts ; web/ fantôme |
+| Sécurité | **B+ → A−** | ↘ puis fix — /api/translate était ouvert (corrigé 07/07) ; token GCal en localStorage ; App Check absent |
+| Qualité code | **B** | ↘ — 17 toasts locaux, 10 escapeHtml, 1128 hex hardcodés, Lya/SYL en double |
+| Fiabilité | **C** | nouveau — écritures Firestore perdues en silence (gratitude, organizer, plan, skills) |
+| UX « humain »  | **C+** | nouveau — ~700 emojis décoratifs + palette Tailwind = signature IA ; landing organique excellente |
+| Légal | **F** | nouveau — aucune CGU / mentions / confidentialité / consentement SYL |
 
----
+## 2 · Corrigé ce jour (2026-07-07)
 
-## 2 · Findings & corrections (session 2026-05-16)
+- **CRITIQUE** `api/translate.js` : public, sans auth ni rate-limit → quota Groq/Gemini
+  vidable par n'importe qui. → rate-limit 4/min/IP + plafond global 400/j (Firestore
+  `translateRate`, fail-closed) + contrôle d'origine.
+- `api/chat.js` / `api/coach.js` / `api/translate.js` : fuites `details`/`status` provider
+  supprimées des réponses d'erreur.
+- `vercel.json` : `X-XSS-Protection: 1; mode=block` (obsolète, contre-indiqué) → `0`.
+- `firestore.rules` : deny explicite `chatRate` + `translateRate`.
+- `LICENSE` : source visible, tous droits réservés (transparence sans droit de copie).
 
-### ✅ Critique — corrigé
+## 3 · Findings ouverts — voir PLAN-PRODUCTION.md pour le détail
 
-- ~~`protobufjs` vuln critique (code execution)~~ → `npm audit fix`. Restent 8 vulns *low* transitives (`firebase-admin`), non cassables sans `--force` — laissées.
+### P0 (bloquant prod)
+1. CSP casse 3 scripts inline accueil → failsafe `tree-ready` mort (accueil noir si module KO).
+2. Écritures Firestore silencieusement perdues (gratitude:203, organizer:74, plan, skills) + zéro gestion offline.
+3. Modèle mono-document `users/{uid}` (goals, habits, organizer, meditation.history non borné, avatar data-URL) → plafond 1 Mo.
+4. Légal absent (CGU, mentions, confidentialité, consentement SYL) — produit bien-être mental + IA + tiers US.
+5. Deploy Firebase en retard depuis mai : les rules du repo ≠ rules en prod. **À faire en premier.**
 
-### ✅ Important — corrigés
+### P1
+Token GCal en localStorage (scopes écriture) · CSP à durcir (CDN, SRI) · App Check absent ·
+ROOT_ADMIN_UID à retirer · XP client-side (dette documentée, OK sans leaderboard) ·
+ipwho.is sans consentement · unifier Lya/SYL (3 stacks IA concurrentes) · purger ~3,5 Mo
+de fichiers morts (⚠ retirer du précache SW AVANT suppression, `addAll` atomique) ·
+trancher `web/` (2,7 Mo Next.js non documenté) · factoriser toast/escapeHtml · minifier
+ez-tree (3,9 Mo) · MAJ CLAUDE.md/ROADMAP (16→32 pages, 3→5 API).
 
-- ~~XSS stocké 4 trackers~~ → `escapeHtml()` ajouté dans gratitude/humeur/sommeil/habitudes, tout le contenu utilisateur échappé avant `innerHTML`.
-- ~~7+ fichiers JS avec imports Firebase morts~~ → imports nettoyés sur 8 fichiers (`getAuth`, `signOut`, `initializeApp`, `getFirestore`, + `updateDoc`/`increment` non utilisés).
-- ~~`functions/package.json` deps mortes~~ → `express`, `genkit`, `tsx` retirés + script `genkit:start` cassé supprimé. Lockfile régénéré.
-- ~~`docs/INDEX.md` obsolète~~ → supprimé (désinformation).
+### P2 (chantier « ne pas sentir l'IA »)
+Généraliser la palette organique de la landing (forêt/or) via main.min.css · purger 769 hex
+inline (Tailwind défaut) · zéro emoji décoratif (~700, tous les h1/CTA/toasts) → SVG trait
+fin · typo distinctive auto-hébergée (aucune fonte chargée aujourd'hui) · ton : tutoiement
+partout, une langue par écran, réécrire titres clichés (« meilleure version de toi-même ») ·
+migration /yourlife/ → arbre.
 
-### ✅ Mineurs — corrigés
+## 4 · Points forts confirmés
 
-- ~~`showToast` (coach.js) / `showLevelUp` (xp.js) morts~~ → supprimés + CSS associés (`.toast`, `.levelup-*`).
-- ~~Bloc CSS legacy `.user-panel*`~~ → supprimé (`setupUserPanel` retiré depuis longtemps).
-- ~~`api/send-verification.js` fuite `err.message`~~ → message générique côté client, détail loggé serveur.
-- ~~`vanta@latest` non pinné~~ → pinné `vanta@0.5.24` sur 17 pages + service-worker.
-- ~~dep `firebase` racine inutilisée~~ → retirée (48 packages élagués).
-- ~~Service Worker commentaire désynchro~~ → `CACHE_NAME` bumpé v22 → v23.
-- `firestore.rules` : borne 2000 car. ajoutée sur `gratitude` (g1/g2/g3).
+- Aucun secret dans le code NI dans l'historique git (scan complet patterns clés : 0 résultat).
+- `chat.js`/`coach.js` : verifyIdToken + email_verified, rate-limit fail-closed, CORS strict,
+  troncature input, prompt SYL non-directif avec cadre éthique.
+- `verify-code.js`/`send-verification.js` : OTP `crypto.randomInt`, 5 essais, expiration 15 min.
+- `firestore.rules` : deny-all par défaut, ownership strict, bornes journal/codex/bilan/gratitude.
+- SW network-first sain (cache same-origin 200 uniquement), `CACHE_NAME` v147 à jour.
+- Aucun eval/new Function ; Math.random cosmétique uniquement.
+- Identité landing (arbre 3D, plaque Pioneer, satellite vie privée, hero copy) : différenciante, à préserver.
 
-### ⏸ Mineurs — non traités (volontaire)
-
-- ~~`firestore.rules` : pas de borne sur `bilans` / `codexNotes`~~ → ✅ ajouté 2026-05-17 (helpers `isValidBilan()` et `isValidCodexNote()`). Q1–Q4 ≤ 5000 car. ; codex `title` ≤ 200, `summary` ≤ 1000, `body` ≤ 20000, `cat` enum, `tags` ≤ 20.
-- `vercel.json` : `style-src 'unsafe-inline'` (accepté, non exécutable) + `img-src https:` (large mais bénin).
-- `functions/src/index.ts` : callables en `cors: true` (pas une faille — auth via idToken).
-- `docs/` : ~14 fichiers historiques jamais référencés (`AUDIT_FINAL.md`, `COMPLETION_REPORT.md`, `VANTA_IMPLEMENTATION.md`…) — à trier par l'owner.
-- `public/logo.svg`, `og-image.svg` — possiblement orphelins.
-
-### ✅ Sections clean (inchangé)
-
-- Aucun `eval` / `new Function` / `document.write`. Aucun secret en clair.
-- `script-src` sans `unsafe-inline`/`unsafe-eval`. CDN allowlistés cohérents.
-- `api/coach.js`, `verify-code.js` — auth, rate-limit, validation OK.
-- `functions` — `addXp`/`setUserRole`/`getMyRole` correctement protégées.
-- `firestore.rules` — deny-all, owner-only, `noXpTampering()`, collections backend verrouillées.
-
----
-
-## 3 · État du toolchain (2026-05-16)
-
-| Outil | État |
-|---|---|
-| Git | ✅ Réparé — remote `origin` = `omagadah/changeyourlife`, branche `main` |
-| Git Credential Manager | ✅ Présent — auth GitHub au 1er push |
-| Node.js / npm | ✅ v24.15.0 / npm 11.12.1 |
-| Vercel CLI | ✅ v54.1.0 — non connecté (`vercel login`) |
-| Firebase CLI | ✅ v15.18.0 — non connecté (`firebase login`) |
-| Deploy Vercel | ✅ Auto via intégration GitHub (push `main` → build) |
-
----
-
-## 4 · Actions manuelles en attente (owner)
-
-1. ~~Pousser les commits~~ → ✅ fait (7 commits poussés sur `main`).
-2. `firebase login` puis `firebase deploy --only firestore` — active `noXpTampering()`, locks `coachRate`/`roles`, et la nouvelle borne `gratitude`.
-3. `firebase deploy --only functions` — `addXp` + `setUserRole` + `getMyRole`.
-4. ~~Token v0~~ → ✅ purgé de l'historique git (`filter-branch` + force-push). NB : GitHub peut garder des commits orphelins en cache un temps.
-5. Smoke-test post-deploy des pages trackers (gratitude/humeur/sommeil/habitudes).
-
----
-
-## 5 · Stats du repo
+## 5 · Stats du repo (réel au 2026-07-07)
 
 | Métrique | Valeur |
 |---|---|
-| Pages HTML | 20 |
-| Fichiers JS `public/js/` | 26 |
+| Pages HTML | 32 (doc en disait 16-20) |
+| Fichiers JS `public/js/` | 52 (doc en disait 26) |
+| API serverless | 5 (`coach`, `chat`, `translate`, `send-verification`, `verify-code`) |
 | Cloud Functions | 3 (`addXp`, `setUserRole`, `getMyRole`) |
-| API serverless | 3 (`coach`, `send-verification`, `verify-code`) |
-| Vuln npm critiques | 0 (résolu) |
-| Vuln npm restantes | 8 *low* transitives (`firebase-admin`) |
-
----
-
-## 6 · Travail UI (session 2026-05-16)
-
-- ✅ Bug : `codex` / `autoevaluation` utilisaient des variables CSS non définies → corrigé.
-- ✅ `404.html` repassée aux couleurs de la marque.
-- ✅ `login` / `verify-email` rendus responsive (media queries `≤480px`).
-- ✅ Libellé du bouton retour unifié (« ← Mon espace ») sur 11 pages.
-- ⏸ Toasts : 10 pages redéfinissent leur toast local — unification reportée
-  (refactor invisible + risque de régression).
-
-## 7 · Chantiers restants (prochaines sessions)
-
-1. Connexion + deploy Firebase (cf. §4) — seul bloquant pour activer 100 % des fixes (y compris les nouvelles bornes `bilans`/`codexNotes`).
-2. ~~Bornes `firestore.rules` sur `bilans`/`codexNotes`~~ ✅ fait 2026-05-17 — à activer via deploy.
-3. Tri du dossier `docs/` (historique vs bruit).
-4. UI :
-   - ~~`theme-color` `#00aaff` → `#0070f3`~~ ✅ fait 2026-05-17 (19 pages).
-   - Unifier les toasts sur `.toast-notification` — reporté.
-   - Remplacer les ~300 couleurs hardcodées par les variables du design system — reporté.
-5. Décisions business : Tidio chat, compteurs landing.
-
----
+| Poids `public/` | 12 Mo (dont ~3,5 Mo morts, ez-tree 3,9 Mo non minifié) |
+| Emojis frontend | ~700 |
+| Couleurs hex hardcodées hors CSS | 1 128 (769 dans les `<style>` des HTML) |
+| Implémentations locales de toast | 17 · copies d'`escapeHtml` : 10 |
 
 ## Méthode
 
-Audit via `/audit` — 2 agents read-only en parallèle (sécurité / qualité-cohérence) + `npm audit`. Corrections appliquées en 3 blocs (A sécurité, B nettoyage, D mineurs) + un lot UI, sur 7 commits. Historique git réécrit pour purger un token v0.
+Audit du 2026-07-07 : 3 agents parallèles (sécurité — 34 lectures/greps dont historique git
+complet ; code-architecture — inventaire exhaustif + graphe d'imports ; UX anti-IA — 32 pages
+lues). Correctifs sécurité appliqués en session. Plan d'action → PLAN-PRODUCTION.md.
