@@ -718,6 +718,13 @@
           <input type="password" id="password-confirm" name="password-confirm" autocomplete="new-password" aria-label="Confirmer le mot de passe">
           <small id="password-confirm-hint" style="color:var(--text-2);font-size:0.8rem;margin-top:4px;display:block;"></small>
         </div>
+        <div class="input-group" id="consent-group" style="display:none;">
+          <label for="consent-check" style="display:flex;align-items:flex-start;gap:8px;font-size:0.85rem;line-height:1.45;cursor:pointer;font-weight:normal;">
+            <input type="checkbox" id="consent-check" style="margin-top:3px;flex:none;width:auto;">
+            <span>J'ai lu et j'accepte les <a href="/cgu/" target="_blank" rel="noopener" class="highlight-link">CGU</a> et la <a href="/confidentialite/" target="_blank" rel="noopener" class="highlight-link">politique de confidentialité</a>. Je comprends que SYL n'est pas un professionnel de santé.</span>
+          </label>
+          <small id="consent-hint" style="color:var(--text-2);font-size:0.8rem;margin-top:4px;display:block;"></small>
+        </div>
         <button id="submit-button" type="submit" class="submit-button" data-i18n="auth.submit">Se connecter</button>
       </form>
       <div class="extra-links"><a href="#" id="forgot-password-link" data-i18n="auth.forgot">Mot de passe oublié ?</a></div>
@@ -732,99 +739,26 @@
     </div>
   </div>
 
-  <!-- Fond shader vegetal anime (dappled light) -->
-  <script>
-    (function () {
-      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduce) return;
-      var cv = document.getElementById('aura-canvas');
-      if (!cv) return;
-      var ctx = cv.getContext('2d'), w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-      function resize() {
-        w = cv.clientWidth; h = cv.clientHeight;
-        cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
-      window.addEventListener('resize', resize); resize();
-      var blobs = [
-        { x: .22, y: .30, r: .42, c: [132,194,94], s: 0.55, a: 0.10, px: 0.013, py: 0.009 },
-        { x: .74, y: .22, r: .36, c: [231,177,92], s: 0.40, a: 0.11, px: 0.010, py: 0.012 },
-        { x: .55, y: .68, r: .50, c: [110,154,82], s: 0.30, a: 0.08, px: 0.008, py: 0.010 },
-        { x: .85, y: .60, r: .30, c: [241,205,146], s: 0.62, a: 0.07, px: 0.014, py: 0.007 }
-      ];
-      var t = 0;
-      function frame() {
-        t += 0.005;
-        ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < blobs.length; i++) {
-          var b = blobs[i];
-          var cx = (b.x + Math.sin(t * b.s + i) * b.px) * w;
-          var cy = (b.y + Math.cos(t * b.s * 0.8 + i * 1.7) * b.py) * h;
-          var rad = b.r * Math.max(w, h) * (0.92 + 0.08 * Math.sin(t * b.s + i));
-          var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-          var col = b.c.join(',');
-          g.addColorStop(0, 'rgba(' + col + ',' + b.a + ')');
-          g.addColorStop(1, 'rgba(' + col + ',0)');
-          ctx.fillStyle = g;
-          ctx.fillRect(0, 0, w, h);
-        }
-        requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(frame);
-    })();
-  </script>
+  <!-- Liens légaux, accessibles depuis l'accueil public (aucun footer avant). -->
+  <style>
+    .home-legal { position: fixed; left: 0; right: 0; bottom: 10px; z-index: 40;
+      display: flex; gap: 8px; justify-content: center; align-items: center;
+      font-size: .72rem; letter-spacing: .02em; pointer-events: none; }
+    .home-legal a { color: rgba(244,239,225,.5); text-decoration: none; pointer-events: auto;
+      transition: color .2s ease; }
+    .home-legal a:hover { color: rgba(244,239,225,.92); }
+    .home-legal span { color: rgba(244,239,225,.28); }
+    @media (max-height: 560px) { .home-legal { display: none; } }
+  </style>
+  <footer class="home-legal" aria-label="Informations légales">
+    <a href="/confidentialite/">Confidentialité</a><span aria-hidden="true">·</span><a href="/cgu/">CGU</a><span aria-hidden="true">·</span><a href="/legal/">Mentions légales</a>
+  </footer>
 
-  <!-- Controleur du modal de connexion -->
-  <script>
-    (function () {
-      var modal = document.getElementById('auth-modal');
-      var closeBtn = document.getElementById('auth-close');
-      var toggleLink = document.getElementById('auth-toggle-link');
-      var emailInput = document.getElementById('email');
-      if (!modal) return;
-
-      function isRegisterMode() {
-        var g = document.getElementById('password-confirm-group');
-        return g && g.style.display !== 'none';
-      }
-      function setMode(mode) {
-        var wantRegister = (mode === 'register');
-        if (toggleLink && isRegisterMode() !== wantRegister) toggleLink.click();
-      }
-      function openModal(mode) {
-        setMode(mode || 'login');
-        modal.classList.add('open');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-        setTimeout(function () { if (emailInput) emailInput.focus(); }, 360);
-      }
-      function closeModal() {
-        modal.classList.remove('open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-      document.querySelectorAll('[data-auth-open]').forEach(function (el) {
-        el.addEventListener('click', function (e) {
-          e.preventDefault();
-          openModal(el.getAttribute('data-auth-open'));
-        });
-      });
-      if (closeBtn) closeBtn.addEventListener('click', closeModal);
-      modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-      });
-      window.openAuthModal = openModal;
-    })();
-  </script>
-
-  <!-- Garde-fou : si le module 3D échoue (WebGL absent, import KO), on lève
-       quand même le voile pour ne jamais bloquer l'accueil sur "l'arbre s'éveille". -->
-  <script>
-    setTimeout(function () {
-      if (!document.body.classList.contains('tree-ready')) {
-        document.body.classList.add('tree-ready');
-      }
-    }, 5000);
-  </script>
+  <!-- Scripts d'accueil extraits en fichiers externes (CSP script-src 'self' :
+       les blocs inline étaient bloqués → le failsafe "tree-ready" ne se levait plus). -->
+  <script src="/js/home-aura.js" defer></script>
+  <script src="/js/home-auth-modal.js" defer></script>
+  <script src="/js/home-failsafe.js" defer></script>
   <script type="module" src="/js/i18n.js"></script>
   <script type="module" src="/js/arbre3d.js"></script>
   <script type="module" src="/js/inscription.js?v=18"></script>

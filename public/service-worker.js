@@ -1,5 +1,5 @@
-// service-worker.js - v147 (squelette : corridor complet tronc->point thematique + halos sous-familles)
-const CACHE_NAME = 'changeyourlife-v147';
+// service-worker.js - v148 (P0 prod : scripts accueil externalises CSP + helpers common.js + pages legales)
+const CACHE_NAME = 'changeyourlife-v148';
 const urlsToCache = [
   '/',
   '/app/',
@@ -18,6 +18,9 @@ const urlsToCache = [
   '/login/',
   '/signup/',
   '/verify-email/',
+  '/legal/',
+  '/cgu/',
+  '/confidentialite/',
   '/journal/',
   '/settings/',
   '/profile/',
@@ -35,6 +38,9 @@ const urlsToCache = [
   '/manifest.json',
   '/css/main.min.css',
   '/js/common.js',
+  '/js/home-aura.js',
+  '/js/home-auth-modal.js',
+  '/js/home-failsafe.js',
   '/js/userMenu.js',
   '/js/inscription.js',
   '/js/firebase.js',

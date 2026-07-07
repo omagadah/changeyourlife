@@ -5,7 +5,7 @@
     import {
       doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, getCountFromServer
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { updateGlobalAvatar } from '/js/common.js';
+    import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
     try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 
@@ -199,7 +199,10 @@
         mood: selectedMood,
         savedAt: new Date().toISOString(),
       };
-      await setDoc(doc(db, 'users', uid, 'gratitude', today), data);
+      const _res = await saveWithFeedback(
+        () => setDoc(doc(db, 'users', uid, 'gratitude', today), data)
+      );
+      if (!_res.ok) return;   // échec déjà signalé (toast + Réessayer) → pas de faux succès
       entries[today] = data;
 
       if (!todayAlreadySaved) {

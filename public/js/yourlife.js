@@ -1,6 +1,6 @@
 // /yourlife/ - Pyramide de Maslow interactive (skills par niveau, mindmap, timeline).
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -84,7 +84,7 @@ async function loadData() {
 function scheduleSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
-    try { await setDoc(doc(db, 'users', uid), { maVieSkills: skillData }, { merge: true }); } catch(e) {}
+    await saveWithFeedback(() => setDoc(doc(db, 'users', uid), { maVieSkills: skillData }, { merge: true }));
   }, 600);
 }
 

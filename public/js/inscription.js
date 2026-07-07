@@ -191,6 +191,13 @@ if (form) {
 
       const confirm = passwordConfirmInput ? passwordConfirmInput.value : '';
       if (password !== confirm) { setHint(passwordConfirmHint, 'Les mots de passe ne correspondent pas'); return; }
+
+      // Consentement obligatoire (CGU + confidentialité + SYL non-médical).
+      const consentCheck = document.getElementById('consent-check');
+      if (consentCheck && !consentCheck.checked) {
+        setHint(document.getElementById('consent-hint'), 'Merci d’accepter les CGU et la politique de confidentialité pour créer ton compte.');
+        return;
+      }
     } else {
       // ── Light validation on login (basic format only) ──
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { setHint(emailHint, 'Format email invalide'); return; }
@@ -327,6 +334,7 @@ if (authToggleLink) {
     const submitEl = document.getElementById('submit-button');
     const passwordReqEl = document.getElementById('password-requirements');
     const passwordConfirmEl = document.getElementById('password-confirm-group');
+    const consentEl = document.getElementById('consent-group');
 
     if (isRegister) {
       if (authToggleText) authToggleText.textContent = 'Vous avez déjà un compte ?';
@@ -336,6 +344,7 @@ if (authToggleLink) {
       if (submitEl) submitEl.textContent = 'Créer un compte';
       if (passwordReqEl) passwordReqEl.style.display = 'block';
       if (passwordConfirmEl) passwordConfirmEl.style.display = 'block';
+      if (consentEl) consentEl.style.display = 'block';
       if (emailInput) emailInput.placeholder = 'votre@email.com';
       if (passwordInput) { passwordInput.placeholder = 'Mot de passe sécurisé'; refreshPasswordRequirements(''); }
     } else {
@@ -346,6 +355,7 @@ if (authToggleLink) {
       if (submitEl) submitEl.textContent = 'Se connecter';
       if (passwordReqEl) passwordReqEl.style.display = 'none';
       if (passwordConfirmEl) passwordConfirmEl.style.display = 'none';
+      if (consentEl) { consentEl.style.display = 'none'; const cc = document.getElementById('consent-check'); if (cc) cc.checked = false; }
       if (emailInput) emailInput.placeholder = 'Adresse e-mail';
       if (passwordInput) passwordInput.placeholder = 'Mot de passe';
     }

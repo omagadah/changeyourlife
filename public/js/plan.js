@@ -5,7 +5,7 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
 import { loadSkills, awardSkillXp } from '/js/skills.js';
 
 let auth, db, uid;
@@ -98,7 +98,7 @@ async function loadPlan() {
   if (plan.vitals.date !== today) plan.vitals = { date: today };
 }
 async function savePlan() {
-  try { await setDoc(doc(db, 'users', uid), { plan }, { merge: true }); } catch (e) {}
+  await saveWithFeedback(() => setDoc(doc(db, 'users', uid), { plan }, { merge: true }));
 }
 
 // ── Rythme ───────────────────────────────────────────────────────────────────

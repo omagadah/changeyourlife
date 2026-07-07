@@ -286,12 +286,153 @@ if (typeof window !== 'undefined') {
     } catch (e) { /* ignore in non-browser contexts */ }
 }
 
+// ── Helpers partagés : escapeHtml · toast · saveWithFeedback · offline ───────
+// Source unique de vérité (avant : ~17 toasts + ~10 escapeHtml recopiés dans
+// chaque page — surface XSS et écritures Firestore perdues en silence).
+// Import : `import { escapeHtml, toast, saveWithFeedback } from '/js/common.js';`
+// Ou via le namespace global (scripts non-module) : `window.cyl.toast(...)`.
+
+/** Échappe le HTML d'une chaîne (protège contre le XSS sur contenu utilisateur). */
+export function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+let _toastHostReady = false;
+function _ensureToastHost() {
+  if (_toastHostReady || typeof document === 'undefined') return;
+  const s = document.createElement('style');
+  s.id = 'cyl-toast-css';
+  s.textContent = `
+    #cyl-toast-host { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      z-index: 30000; display: flex; flex-direction: column; gap: 10px; align-items: center;
+      pointer-events: none; max-width: min(92vw, 460px); }
+    .cyl-toast { pointer-events: auto; display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 12px; font-size: .94rem; line-height: 1.35;
+      color: #f4efe1; background: rgba(16, 22, 16, .94); border: 1px solid rgba(132,194,94,.22);
+      box-shadow: 0 12px 40px rgba(0,0,0,.45); backdrop-filter: blur(10px);
+      opacity: 0; transform: translateY(12px); transition: opacity .25s ease, transform .25s ease; }
+    .cyl-toast.show { opacity: 1; transform: translateY(0); }
+    .cyl-toast--success { border-color: rgba(132,194,94,.55); }
+    .cyl-toast--error   { border-color: rgba(224,122,95,.6); background: rgba(30,16,14,.95); }
+    .cyl-toast__msg { flex: 1; }
+    .cyl-toast__btn { flex: none; border: 1px solid rgba(244,239,225,.28); background: transparent;
+      color: #f4efe1; border-radius: 8px; padding: 6px 12px; font: inherit; font-size: .85rem;
+      cursor: pointer; transition: background .18s ease; }
+    .cyl-toast__btn:hover { background: rgba(244,239,225,.12); }
+    @media (prefers-reduced-motion: reduce) { .cyl-toast { transition: none; } }`;
+  (document.head || document.documentElement).appendChild(s);
+  const host = document.createElement('div');
+  host.id = 'cyl-toast-host';
+  host.setAttribute('role', 'status');
+  host.setAttribute('aria-live', 'polite');
+  (document.body || document.documentElement).appendChild(host);
+  _toastHostReady = true;
+}
+
+/**
+ * Notification non-bloquante, XSS-safe (le message est posé via textContent).
+ * @param {string} message
+ * @param {{type?:'info'|'success'|'error', duration?:number, action?:{label:string,onClick:Function}}} [opts]
+ */
+export function toast(message, opts = {}) {
+  if (typeof document === 'undefined') return;
+  _ensureToastHost();
+  const host = document.getElementById('cyl-toast-host');
+  if (!host) return;
+  const { type = 'info', duration = 4000, action = null } = opts;
+  const el = document.createElement('div');
+  el.className = 'cyl-toast cyl-toast--' + type;
+  const span = document.createElement('span');
+  span.className = 'cyl-toast__msg';
+  span.textContent = message;               // XSS-safe
+  el.appendChild(span);
+  let timer = null;
+  const dismiss = () => {
+    if (timer) clearTimeout(timer);
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 300);
+  };
+  if (action && typeof action.onClick === 'function') {
+    const btn = document.createElement('button');
+    btn.className = 'cyl-toast__btn';
+    btn.type = 'button';
+    btn.textContent = action.label || 'OK';
+    btn.addEventListener('click', () => { dismiss(); try { action.onClick(); } catch (_) {} });
+    el.appendChild(btn);
+  }
+  host.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  if (duration > 0) timer = setTimeout(dismiss, duration + (action ? 3000 : 0));
+  return dismiss;
+}
+
+/**
+ * Enveloppe une écriture (Firestore ou autre promesse) avec un vrai retour visuel.
+ * Avant : des `await setDoc(...)` hors try/catch et des `.catch(()=>{})` faisaient
+ * perdre des sauvegardes en silence. Ici, l'échec est TOUJOURS signalé + réessayable.
+ * @param {() => Promise<any>} run  fonction qui lance l'écriture (rappelable pour le retry)
+ * @param {{successMsg?:string, errorMsg?:string, retry?:boolean}} [opts]
+ * @returns {Promise<{ok:boolean, result?:any, error?:any}>}
+ */
+export async function saveWithFeedback(run, opts = {}) {
+  const {
+    successMsg = null,
+    errorMsg = "Impossible d'enregistrer. Vérifie ta connexion — ton texte est conservé.",
+    retry = true,
+  } = opts;
+  try {
+    const result = await run();
+    if (successMsg) toast(successMsg, { type: 'success' });
+    return { ok: true, result };
+  } catch (e) {
+    console.warn('[saveWithFeedback] échec', (e && e.message) || e);
+    toast(errorMsg, {
+      type: 'error',
+      duration: 9000,
+      action: retry ? { label: 'Réessayer', onClick: () => saveWithFeedback(run, opts) } : null,
+    });
+    return { ok: false, error: e };
+  }
+}
+
+// ── Bannière hors-ligne globale ─────────────────────────────────────────────
+if (typeof window !== 'undefined') {
+  const initOffline = () => {
+    let banner = null;
+    const show = () => {
+      if (banner) return;
+      banner = document.createElement('div');
+      banner.id = 'cyl-offline-banner';
+      banner.textContent = 'Tu es hors ligne — tes changements ne seront enregistrés qu’au retour de la connexion.';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:29000;padding:9px 16px;'
+        + 'text-align:center;font-size:.88rem;color:#1a1206;background:#e7b15c;'
+        + 'box-shadow:0 2px 12px rgba(0,0,0,.25);';
+      (document.body || document.documentElement).appendChild(banner);
+    };
+    const hide = () => { if (banner) { banner.remove(); banner = null; } };
+    window.addEventListener('offline', show);
+    window.addEventListener('online', () => { hide(); toast('De retour en ligne', { type: 'success', duration: 2500 }); });
+    if (navigator && navigator.onLine === false) show();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initOffline);
+  else initOffline();
+  // Namespace global pour les scripts non-module (pratique + rétro-compat).
+  window.cyl = Object.assign(window.cyl || {}, { escapeHtml, toast, saveWithFeedback });
+}
+
 // ── SYL overlay (orb + chat) - chargée sur toutes les pages auth ────────────
 // Pas sur la landing, login, signup, verify-email (pages publiques sans SYL).
 (function maybeLoadSYLOverlay() {
   try {
     var p = location.pathname;
-    if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0) return;
+    if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
+        || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0) return;
     // import dynamique : non bloquant si le module échoue
     import('/js/lya-overlay.js').catch(function (e) { try { console.warn('[lya-overlay]', e && e.message || e); } catch (_) {} });
   } catch (_) { /* ignore */ }

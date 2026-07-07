@@ -62,6 +62,34 @@ function generateInitialAvatar(initial = 'U', size = 256, bg = null, fg = '#ffff
     return canvas.toDataURL('image/png');
 }
 
+// Redimensionne l'image uploadée en un carré compact AVANT stockage.
+// Critique : une photo brute (plusieurs Mo) lue en data-URL ferait exploser la
+// limite de 1 Mo du document Firestore users/{uid} → toutes les sauvegardes de
+// l'utilisateur échoueraient d'un coup. Ici, l'avatar reste ~20-30 Ko.
+function downscaleToDataURL(file, size = 256) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('read-failed'));
+        reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error('decode-failed'));
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size; canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    const s = Math.min(img.width, img.height);      // recadrage carré centré (cover)
+                    const sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+                    ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                } catch (err) { reject(err); }
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 let _pCompact = null, _pBig = null;
 function showAvatar(dataUrl) {
     if (!avatarPreviewContainer) return;
@@ -90,14 +118,13 @@ function wireAvatarInputs() {
         fileInputEl.addEventListener('change', (e) => {
             const file = e.target.files && e.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                const dataUrl = reader.result;
+            downscaleToDataURL(file, 256).then((dataUrl) => {
                 localStorage.setItem('userAvatarUrl', dataUrl);
                 showAvatar(dataUrl);
                 updateGlobalAvatar('');
-            };
-            reader.readAsDataURL(file);
+            }).catch(() => {
+                try { window.cyl && window.cyl.toast("Cette image n'a pas pu être chargée. Essaie une autre photo.", { type: 'error' }); } catch (_) {}
+            });
         });
     }
     if (generateInitialBtn) {

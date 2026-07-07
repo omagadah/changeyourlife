@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conditions Générales d'Utilisation - ChangeYourLife.ai</title>
+  <meta name="description" content="Conditions Générales d'Utilisation de ChangeYourLife.ai : un service de bien-être gratuit, sans visée médicale." />
+  <meta name="robots" content="index, follow" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0a0f0a" />
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    /* ────────────────────────────────────────────────────────────
+       Pages légales — identité organique (forêt nocturne)
+       ──────────────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0a0f0a;
+      --bg-2:      #0d130b;
+      --leaf:      #84c25e;
+      --leaf-deep: #4a7a3a;
+      --moss:      #6f9a52;
+      --gold:      #e7b15c;
+      --gold-soft: #f1cd92;
+      --bark:      #c39a6b;
+      --text-1:    #f4efe1;
+      --text-2:    #b4ad94;
+      --text-3:    #7c7660;
+      --glass:     rgba(16,21,13,0.72);
+      --line:      rgba(221,205,160,0.13);
+      --line-hov:  rgba(132,194,94,0.42);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--text-1);
+      background:
+        radial-gradient(ellipse 64% 42% at 50% -6%, rgba(231,177,92,0.13), transparent 62%),
+        radial-gradient(ellipse 84% 56% at 50% 106%, rgba(74,122,58,0.16), transparent 66%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      line-height: 1.7;
+    }
+    .legal-topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 14px clamp(16px, 5vw, 40px);
+      background: linear-gradient(to bottom, rgba(10,15,10,0.92), rgba(10,15,10,0.62));
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .legal-logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text-1);
+      font-weight: 700; letter-spacing: -0.2px; font-size: 0.98rem;
+    }
+    .legal-logo .seed {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: radial-gradient(circle at 36% 32%, var(--gold-soft), var(--leaf-deep) 92%);
+      box-shadow: 0 0 16px rgba(231,177,92,0.4); flex-shrink: 0;
+    }
+    .legal-logo span { opacity: 0.94; }
+    .back-home {
+      display: inline-flex; align-items: center; gap: 7px;
+      text-decoration: none; color: var(--text-2);
+      font-size: 0.85rem; font-weight: 600;
+      padding: 8px 15px; border-radius: 999px;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.02);
+      transition: 0.25s ease;
+    }
+    .back-home:hover { color: var(--text-1); border-color: var(--line-hov); background: rgba(132,194,94,0.07); }
+
+    .legal-wrap {
+      max-width: 780px; margin: 0 auto;
+      padding: clamp(34px, 7vw, 72px) clamp(18px, 5vw, 28px) 96px;
+    }
+    .legal-hero { margin-bottom: 34px; }
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.72rem; letter-spacing: 2.4px; text-transform: uppercase;
+      font-weight: 700; color: var(--leaf);
+      padding: 5px 12px; border-radius: 999px;
+      border: 1px solid var(--line-hov); background: rgba(132,194,94,0.06);
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 2.7rem);
+      line-height: 1.12; letter-spacing: -0.8px; font-weight: 800; margin-bottom: 12px;
+    }
+    .legal-hero .sub { color: var(--text-2); font-size: 1.02rem; max-width: 60ch; }
+    .updated { margin-top: 16px; font-size: 0.82rem; color: var(--text-3); }
+    .updated b { color: var(--text-2); font-weight: 600; }
+
+    section { margin-top: 40px; scroll-margin-top: 84px; }
+    h2 {
+      font-size: 1.32rem; font-weight: 800; letter-spacing: -0.4px;
+      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+    }
+    h2 .n { color: var(--moss); font-weight: 700; margin-right: 10px; }
+    p { color: var(--text-2); margin-bottom: 14px; }
+    p strong, li strong { color: var(--text-1); font-weight: 650; }
+    a { color: var(--leaf); text-decoration: none; border-bottom: 1px solid rgba(132,194,94,0.35); transition: 0.2s; }
+    a:hover { color: var(--gold-soft); border-color: var(--gold-soft); }
+    ul { margin: 0 0 16px 2px; padding-left: 20px; color: var(--text-2); }
+    li { margin-bottom: 9px; }
+    li::marker { color: var(--moss); }
+
+    .callout {
+      margin: 18px 0; padding: 18px 22px; border-radius: 14px;
+      border: 1px solid var(--line-hov);
+      background: linear-gradient(180deg, rgba(132,194,94,0.07), rgba(20,28,16,0.4));
+    }
+    .callout p { color: var(--text-1); margin: 0; }
+    .callout p strong { color: var(--leaf); }
+
+    .legal-footer {
+      max-width: 780px; margin: 40px auto 0;
+      padding: 26px clamp(18px, 5vw, 28px) 60px;
+      border-top: 1px solid var(--line); text-align: center;
+    }
+    .legal-footer .foot-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .legal-footer .foot-links a { border: 0; color: var(--text-2); font-size: 0.9rem; font-weight: 600; }
+    .legal-footer .foot-links a:hover { color: var(--leaf); }
+    .legal-footer .sep { color: var(--text-3); }
+    .legal-footer .fine { font-size: 0.8rem; color: var(--text-3); }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-topbar">
+    <a class="legal-logo" href="/" aria-label="Retour à l'accueil ChangeYourLife.ai">
+      <span class="seed" aria-hidden="true"></span>
+      <span>ChangeYourLife.ai</span>
+    </a>
+    <a class="back-home" href="/">← Retour à l'accueil</a>
+  </header>
+
+  <main class="legal-wrap">
+    <div class="legal-hero">
+      <span class="eyebrow">Conditions d'utilisation</span>
+      <h1>Conditions Générales d'Utilisation</h1>
+      <p class="sub">Les quelques règles simples qui encadrent ton usage de ChangeYourLife.ai. En créant un compte, tu acceptes ce qui suit.</p>
+      <div class="updated">Dernière mise à jour&nbsp;: <b>7 juillet 2026</b></div>
+    </div>
+
+    <section>
+      <h2><span class="n">1.</span>Objet du service</h2>
+      <p>ChangeYourLife.ai est un <strong>assistant de vie et de bien-être</strong>, gratuit, pensé pour t'accompagner dans ta réflexion personnelle&nbsp;: journal, humeur, sommeil, habitudes, gratitude, objectifs, bilans, et échanges avec SYL, un compagnon animé par intelligence artificielle.</p>
+      <div class="callout">
+        <p><strong>Ce n'est pas un service médical.</strong> ChangeYourLife.ai n'est ni un dispositif de santé, ni une consultation, ni un substitut à l'avis d'un médecin, d'un psychologue ou d'un thérapeute. En cas de difficulté, consulte un professionnel de santé. Les numéros d'urgence figurent dans notre <a href="/confidentialite/#urgence">politique de confidentialité</a>.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="n">2.</span>Ton compte</h2>
+      <p>Pour utiliser le service, tu crées un compte avec une adresse email valide. Tu es responsable&nbsp;:</p>
+      <ul>
+        <li>de la <strong>confidentialité de tes identifiants</strong> et de toute activité sur ton compte&nbsp;;</li>
+        <li>de l'<strong>exactitude</strong> des informations que tu fournis&nbsp;;</li>
+        <li>d'un <strong>usage loyal</strong>&nbsp;: tu t'engages à ne pas détourner le service, ne pas tenter d'y accéder frauduleusement, ne pas nuire à son fonctionnement ni aux autres personnes.</li>
+      </ul>
+      <p>Le service est destiné à un usage personnel. Si tu es mineur·e, utilise-le avec l'accord de tes responsables légaux.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">3.</span>Tes contenus</h2>
+      <p>Tout ce que tu écris ou renseignes (journal, objectifs, trackers, etc.) <strong>t'appartient</strong>. Nous ne revendiquons aucune propriété sur tes contenus et ne les exploitons pas à des fins commerciales. Le traitement technique de ces données est décrit dans la <a href="/confidentialite/">politique de confidentialité</a>.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">4.</span>Propriété intellectuelle</h2>
+      <p>Le code, les visuels, les textes, la marque « ChangeYourLife.ai », « SYL » et la métaphore de l'arbre de vie sont protégés. Le code source est publié <strong>uniquement à des fins de transparence</strong>, sous licence <strong>« source visible, tous droits réservés »</strong>&nbsp;: tu peux le lire pour vérifier ce qu'il fait, mais aucun droit de copie, de réutilisation, de déploiement ou de création d'œuvre dérivée n'est accordé sans autorisation écrite. Les termes exacts figurent dans le fichier <strong>LICENSE</strong> du dépôt.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">5.</span>Limitation de responsabilité</h2>
+      <p>ChangeYourLife.ai est un outil d'aide à la réflexion. <strong>SYL et le service ne décident jamais à ta place&nbsp;:</strong> les suggestions, réponses ou contenus générés par l'IA sont indicatifs, peuvent être imprécis ou erronés, et restent sous ta seule appréciation. Tu demeures responsable des décisions que tu prends.</p>
+      <p>Le service est fourni « en l'état », sans garantie de disponibilité continue ni d'absence d'erreur. Dans les limites permises par la loi, l'éditeur ne saurait être tenu responsable des dommages résultant de l'utilisation ou de l'impossibilité d'utiliser le service. Aucune de ces limitations ne vise à exclure une responsabilité qui ne peut légalement l'être.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">6.</span>Disponibilité & évolution</h2>
+      <p>Le service peut évoluer, être suspendu ou interrompu, en tout ou partie, notamment pour maintenance ou amélioration. Ces conditions peuvent être mises à jour&nbsp;; la date en tête de page reflète la dernière version.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">7.</span>Résiliation</h2>
+      <p>Tu peux <strong>supprimer ton compte à tout moment</strong> depuis tes paramètres, ou en écrivant à <a href="mailto:noreply@changeyourlife.ai">noreply@changeyourlife.ai</a>. La suppression efface tes données associées, conformément à la <a href="/confidentialite/#droits">politique de confidentialité</a>. L'éditeur peut suspendre un compte en cas d'usage manifestement abusif ou contraire à ces conditions.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">8.</span>Droit applicable</h2>
+      <p>Ces conditions sont régies par le <strong>droit français</strong>. En cas de différend, une solution amiable sera recherchée en priorité&nbsp;; à défaut, les tribunaux français seront compétents. Pour toute question&nbsp;: <a href="mailto:noreply@changeyourlife.ai">noreply@changeyourlife.ai</a>.</p>
+    </section>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="foot-links">
+      <a href="/legal/">Mentions légales</a>
+      <span class="sep">·</span>
+      <a href="/cgu/">CGU</a>
+      <span class="sep">·</span>
+      <a href="/confidentialite/">Confidentialité</a>
+    </div>
+    <div class="fine">ChangeYourLife.ai — un assistant de vie qui ne vend pas ta vie.</div>
+  </footer>
+
+  <script type="module" src="/js/common.js"></script>
+</body>
+</html>

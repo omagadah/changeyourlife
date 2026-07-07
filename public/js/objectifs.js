@@ -1,6 +1,6 @@
 // /objectifs/ - gestion d'objectifs avec sous-tâches + filtres + templates.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { showXpFloat } from '/js/xp.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -125,7 +125,7 @@ async function loadGoals() {
 }
 
 async function persistGoals() {
-  try { await setDoc(doc(db, 'users', uid), { goals }, { merge: true }); } catch(e) { console.error(e); }
+  return saveWithFeedback(() => setDoc(doc(db, 'users', uid), { goals }, { merge: true }));
 }
 
 // ── Render everything ─────────────────────────────────────────────────────

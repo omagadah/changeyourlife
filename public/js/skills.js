@@ -3,6 +3,7 @@
 // Firestore : users/{uid}.skills = { <id>: { name, emoji, branch, xp, lastAt } }.
 
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { saveWithFeedback } from '/js/common.js';
 
 export const SKILL_LEVELS = ['Débutant', 'Initié', 'Confirmé', 'Avancé', 'Expert', 'Maître', 'Pro'];
 
@@ -34,7 +35,7 @@ export async function upsertSkill(db, uid, skill) {
     const skills = (data.skills && typeof data.skills === 'object') ? { ...data.skills } : {};
     const cur = skills[skill.id] || { xp: 0 };
     skills[skill.id] = { ...cur, name: skill.name, emoji: skill.emoji || '🛠️', branch: skill.branch || 'accomplissement', xp: Number(cur.xp) || 0 };
-    await setDoc(ref, { skills }, { merge: true });
+    await saveWithFeedback(() => setDoc(ref, { skills }, { merge: true }), { errorMsg: 'Sauvegarde de la compétence impossible. Vérifie ta connexion.' });
   } catch (e) {}
 }
 
@@ -45,7 +46,7 @@ export async function deleteSkill(db, uid, skillId) {
     const data = snap.exists() ? snap.data() : {};
     const skills = (data.skills && typeof data.skills === 'object') ? { ...data.skills } : {};
     delete skills[skillId];
-    await setDoc(ref, { skills }, { merge: true });
+    await saveWithFeedback(() => setDoc(ref, { skills }, { merge: true }), { errorMsg: 'Sauvegarde de la compétence impossible. Vérifie ta connexion.' });
   } catch (e) {}
 }
 
@@ -65,7 +66,7 @@ export async function awardSkillXp(db, uid, skillId, amount) {
     s.xp = (Number(s.xp) || 0) + a;
     s.lastAt = Date.now();
     skills[skillId] = s;
-    await setDoc(ref, { skills }, { merge: true });
+    await saveWithFeedback(() => setDoc(ref, { skills }, { merge: true }), { errorMsg: 'Sauvegarde de la compétence impossible. Vérifie ta connexion.' });
     const after = skillLevel(s.xp).level;
     return { leveledUp: after > before, level: after, name: s.name };
   } catch (e) { return null; }

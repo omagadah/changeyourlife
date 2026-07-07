@@ -3,7 +3,7 @@
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { initUserMenu } from '/js/userMenu.js';
-    import { updateGlobalAvatar } from '/js/common.js';
+    import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
     import { showXpFloat } from '/js/xp.js';
 
     let auth, db, uid, habits = [], editingIdx = null;
@@ -55,7 +55,9 @@
     }
 
     async function saveHabits() {
-      await setDoc(doc(db, 'users', uid), { habits }, { merge: true });
+      // Avant : setDoc nu + toasts de succès inconditionnels aux appelants →
+      // l'utilisateur croyait avoir sauvegardé même en cas d'échec (perte muette).
+      return saveWithFeedback(() => setDoc(doc(db, 'users', uid), { habits }, { merge: true }));
     }
 
     function render() {

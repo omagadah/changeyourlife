@@ -7,7 +7,7 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
 
 let auth, db, uid;
 let board = null;
@@ -71,7 +71,7 @@ async function load() {
   board.columns.sort((a, b) => (a.id === TRI_ID ? -1 : b.id === TRI_ID ? 1 : 0));
 }
 let saveT = null;
-function save() { clearTimeout(saveT); saveT = setTimeout(() => { setDoc(doc(db, 'users', uid), { organizer: board }, { merge: true }).catch(() => {}); }, 250); }
+function save() { clearTimeout(saveT); saveT = setTimeout(() => { saveWithFeedback(() => setDoc(doc(db, 'users', uid), { organizer: board }, { merge: true })); }, 250); }
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
 function render() {

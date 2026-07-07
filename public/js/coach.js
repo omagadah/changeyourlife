@@ -1,6 +1,6 @@
 // /coach/ - IA Coach Gemini 2.0 + arbre de vie + stats par axe.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -289,7 +289,7 @@ async function sendMessage(userText) {
 
     // Persist to Firebase
     if (uid) {
-      await setDoc(doc(db,'users',uid), {
+      await saveWithFeedback(() => setDoc(doc(db,'users',uid), {
         coach: {
           stats: state.stats,
           totalXP: state.totalXP,
@@ -297,7 +297,7 @@ async function sendMessage(userText) {
           profile: state.userProfile,
           lastMessageAt: Date.now()
         }
-      }, { merge:true }).catch(()=>{});
+      }, { merge:true }));
     }
 
     // Update prompt chips based on priority modules

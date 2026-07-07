@@ -213,16 +213,47 @@ async function sendMessage(text) {
 }
 
 // ── Open / close du panneau ─────────────────────────────────────────────────
+function greet() {
+  const ctx = pageContext();
+  appendMsg('lya', `Bonjour. Tu es sur la page « ${ctx.page} ». Je vois ton arbre - pose-moi une question, ou dis-moi par quoi je peux t’aider ici.`);
+}
+// Consentement à la 1re ouverture : SYL n'est pas un professionnel de santé.
+// L'input reste bloqué tant que l'utilisateur n'a pas cliqué « J'ai compris ».
+function showConsent() {
+  if (inputEl) inputEl.disabled = true;
+  if (sendBtn) sendBtn.disabled = true;
+  const el = document.createElement('div');
+  el.className = 'lyaov-msg lya';
+  const p = document.createElement('div');
+  p.textContent = "Avant qu'on discute : je suis SYL, une présence d'écoute. Je ne suis pas un professionnel de santé et je ne décide jamais à ta place. En cas de détresse : 3114 (prévention du suicide), 15 (SAMU), 112, ou SMS au 114.";
+  el.appendChild(p);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = "J'ai compris";
+  btn.style.cssText = 'margin-top:10px;padding:7px 14px;border-radius:10px;border:1px solid rgba(132,194,94,.5);background:rgba(132,194,94,.16);color:#eef4ff;cursor:pointer;font:inherit;font-size:.85rem;';
+  btn.addEventListener('click', () => {
+    try { localStorage.setItem('cyl_syl_consent', '1'); } catch (_) {}
+    el.remove();
+    if (inputEl) inputEl.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+    greet();
+    try { inputEl.focus(); } catch (_) {}
+  });
+  el.appendChild(btn);
+  msgsEl.appendChild(el);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
 function openChat() {
   if (chatOpen) return;
   chatOpen = true;
   panel.classList.add('on');
   requestAnimationFrame(() => panel.classList.add('in'));
   if (!history.length) {
-    const ctx = pageContext();
-    appendMsg('lya', `Bonjour. Tu es sur la page « ${ctx.page} ». Je vois ton arbre - pose-moi une question, ou dis-moi par quoi je peux t’aider ici.`);
+    let consented = true;
+    try { consented = localStorage.getItem('cyl_syl_consent') === '1'; } catch (_) {}
+    if (consented) greet(); else showConsent();
   }
-  setTimeout(() => { try { inputEl.focus(); } catch (_) {} }, 240);
+  setTimeout(() => { try { if (inputEl && !inputEl.disabled) inputEl.focus(); } catch (_) {} }, 240);
 }
 function closeChat() {
   if (!chatOpen) return;

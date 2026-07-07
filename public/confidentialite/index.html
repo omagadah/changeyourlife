@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Politique de confidentialité - ChangeYourLife.ai</title>
+  <meta name="description" content="Comment ChangeYourLife.ai protège tes données : ce qu'on stocke, à qui c'est transmis, et pourquoi. Tes données ne sont jamais vendues. Le code est public." />
+  <meta name="robots" content="index, follow" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0a0f0a" />
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    /* ────────────────────────────────────────────────────────────
+       Pages légales — identité organique (forêt nocturne)
+       Cohérent avec l'accueil : #0a0f0a / feuille #84c25e / or #e7b15c
+       ──────────────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0a0f0a;
+      --bg-2:      #0d130b;
+      --leaf:      #84c25e;
+      --leaf-deep: #4a7a3a;
+      --moss:      #6f9a52;
+      --gold:      #e7b15c;
+      --gold-soft: #f1cd92;
+      --bark:      #c39a6b;
+      --text-1:    #f4efe1;
+      --text-2:    #b4ad94;
+      --text-3:    #7c7660;
+      --glass:     rgba(16,21,13,0.72);
+      --line:      rgba(221,205,160,0.13);
+      --line-hov:  rgba(132,194,94,0.42);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--text-1);
+      background:
+        radial-gradient(ellipse 64% 42% at 50% -6%, rgba(231,177,92,0.13), transparent 62%),
+        radial-gradient(ellipse 84% 56% at 50% 106%, rgba(74,122,58,0.16), transparent 66%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      line-height: 1.7;
+    }
+
+    /* ── Barre haute ── */
+    .legal-topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 14px clamp(16px, 5vw, 40px);
+      background: linear-gradient(to bottom, rgba(10,15,10,0.92), rgba(10,15,10,0.62));
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .legal-logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text-1);
+      font-weight: 700; letter-spacing: -0.2px; font-size: 0.98rem;
+    }
+    .legal-logo .seed {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: radial-gradient(circle at 36% 32%, var(--gold-soft), var(--leaf-deep) 92%);
+      box-shadow: 0 0 16px rgba(231,177,92,0.4);
+      flex-shrink: 0;
+    }
+    .legal-logo span { opacity: 0.94; }
+    .back-home {
+      display: inline-flex; align-items: center; gap: 7px;
+      text-decoration: none; color: var(--text-2);
+      font-size: 0.85rem; font-weight: 600;
+      padding: 8px 15px; border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      transition: 0.25s ease;
+    }
+    .back-home:hover { color: var(--text-1); border-color: var(--line-hov); background: rgba(132,194,94,0.07); }
+
+    /* ── Conteneur ── */
+    .legal-wrap {
+      max-width: 780px; margin: 0 auto;
+      padding: clamp(34px, 7vw, 72px) clamp(18px, 5vw, 28px) 96px;
+    }
+    .legal-hero { margin-bottom: 34px; }
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.72rem; letter-spacing: 2.4px; text-transform: uppercase;
+      font-weight: 700; color: var(--leaf);
+      padding: 5px 12px; border-radius: 999px;
+      border: 1px solid var(--line-hov);
+      background: rgba(132,194,94,0.06);
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 2.7rem);
+      line-height: 1.12; letter-spacing: -0.8px; font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .legal-hero .sub { color: var(--text-2); font-size: 1.02rem; max-width: 60ch; }
+    .updated {
+      margin-top: 16px; font-size: 0.82rem; color: var(--text-3);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .updated b { color: var(--text-2); font-weight: 600; }
+
+    /* ── Promesse (mise en avant) ── */
+    .promise {
+      margin: 30px 0 8px;
+      padding: 24px 26px;
+      border-radius: 18px;
+      border: 1px solid var(--line-hov);
+      background:
+        radial-gradient(ellipse 120% 140% at 0% 0%, rgba(231,177,92,0.09), transparent 60%),
+        rgba(20,28,16,0.6);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.32);
+    }
+    .promise h2 {
+      border: 0; padding: 0; margin: 0 0 10px;
+      font-size: 1.15rem; color: var(--gold-soft);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .promise p { color: var(--text-1); margin-bottom: 10px; }
+    .promise p:last-child { margin-bottom: 0; }
+    .promise strong { color: var(--leaf); }
+
+    /* ── Sections ── */
+    section { margin-top: 44px; scroll-margin-top: 84px; }
+    h2 {
+      font-size: 1.32rem; font-weight: 800; letter-spacing: -0.4px;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    h3 { font-size: 1.02rem; font-weight: 700; margin: 22px 0 8px; color: var(--gold-soft); }
+    p { color: var(--text-2); margin-bottom: 14px; }
+    p strong, li strong { color: var(--text-1); font-weight: 650; }
+    a { color: var(--leaf); text-decoration: none; border-bottom: 1px solid rgba(132,194,94,0.35); transition: 0.2s; }
+    a:hover { color: var(--gold-soft); border-color: var(--gold-soft); }
+    ul, ol { margin: 0 0 16px 2px; padding-left: 20px; color: var(--text-2); }
+    li { margin-bottom: 9px; }
+    li::marker { color: var(--moss); }
+
+    /* ── Sommaire ── */
+    .toc {
+      margin: 8px 0 0; padding: 18px 22px;
+      border-radius: 14px; border: 1px solid var(--line);
+      background: rgba(255,255,255,0.015);
+    }
+    .toc-title { font-size: 0.74rem; letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-bottom: 12px; }
+    .toc ol { columns: 2; column-gap: 30px; margin: 0; padding-left: 18px; }
+    .toc a { border: 0; font-size: 0.9rem; }
+    @media (max-width: 560px) { .toc ol { columns: 1; } }
+
+    /* ── Tableau des tiers ── */
+    .table-scroll { overflow-x: auto; margin: 8px 0 18px; border-radius: 14px; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; min-width: 540px; font-size: 0.92rem; }
+    thead th {
+      text-align: left; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--gold-soft); font-weight: 700;
+      padding: 13px 16px; background: rgba(231,177,92,0.06);
+      border-bottom: 1px solid var(--line);
+    }
+    tbody td { padding: 13px 16px; color: var(--text-2); border-bottom: 1px solid var(--line); vertical-align: top; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody td:first-child { color: var(--text-1); font-weight: 650; white-space: nowrap; }
+
+    /* ── Encadré urgence ── */
+    .urgence {
+      margin: 20px 0;
+      padding: 20px 24px; border-radius: 16px;
+      border: 1px solid rgba(231,177,92,0.4);
+      background: linear-gradient(180deg, rgba(231,177,92,0.08), rgba(20,28,16,0.5));
+    }
+    .urgence h3 { color: var(--gold-soft); margin-top: 0; }
+    .urgence ul { list-style: none; padding-left: 0; margin-bottom: 0; }
+    .urgence li { display: flex; gap: 12px; align-items: baseline; margin-bottom: 8px; color: var(--text-1); }
+    .urgence .num {
+      font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums;
+      min-width: 62px; display: inline-block;
+    }
+
+    .note {
+      font-size: 0.86rem; color: var(--text-3);
+      border-left: 2px solid var(--line-hov); padding: 4px 0 4px 14px; margin: 12px 0;
+    }
+
+    /* ── Footer ── */
+    .legal-footer {
+      max-width: 780px; margin: 40px auto 0;
+      padding: 26px clamp(18px, 5vw, 28px) 60px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+    }
+    .legal-footer .foot-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .legal-footer .foot-links a { border: 0; color: var(--text-2); font-size: 0.9rem; font-weight: 600; }
+    .legal-footer .foot-links a:hover { color: var(--leaf); }
+    .legal-footer .sep { color: var(--text-3); }
+    .legal-footer .fine { font-size: 0.8rem; color: var(--text-3); }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-topbar">
+    <a class="legal-logo" href="/" aria-label="Retour à l'accueil ChangeYourLife.ai">
+      <span class="seed" aria-hidden="true"></span>
+      <span>ChangeYourLife.ai</span>
+    </a>
+    <a class="back-home" href="/">← Retour à l'accueil</a>
+  </header>
+
+  <main class="legal-wrap">
+    <div class="legal-hero">
+      <span class="eyebrow">Vie privée</span>
+      <h1>Politique de confidentialité</h1>
+      <p class="sub">Ici, la transparence n'est pas une case à cocher : c'est la raison d'être du projet. Voici, sans détour, ce qu'on stocke, où, et à qui c'est transmis.</p>
+      <div class="updated"><span>Dernière mise à jour&nbsp;: <b>7 juillet 2026</b></span></div>
+    </div>
+
+    <div class="promise">
+      <h2>La promesse, avant tout le reste</h2>
+      <p><strong>Tes données ne sont jamais vendues, ni louées, ni utilisées pour de la publicité.</strong> Jamais. On ne construit pas de profil publicitaire, on ne revend rien à des courtiers en données, on ne te piste pas d'un site à l'autre.</p>
+      <p>Et tu n'as pas à nous croire sur parole&nbsp;: <strong>le code de ce site est public</strong>. Tu peux le lire, vérifier toi-même comment tes données sont manipulées, et confronter cette page à la réalité du code. C'est exactement pour ça qu'il est ouvert.</p>
+    </div>
+
+    <div class="toc" aria-label="Sommaire">
+      <div class="toc-title">Sur cette page</div>
+      <ol>
+        <li><a href="#donnees">Les données qu'on stocke</a></li>
+        <li><a href="#ou">Où et comment c'est stocké</a></li>
+        <li><a href="#tiers">Les tiers et ce qu'ils reçoivent</a></li>
+        <li><a href="#ia">SYL n'est pas un soignant</a></li>
+        <li><a href="#urgence">En cas de détresse</a></li>
+        <li><a href="#droits">Tes droits (RGPD)</a></li>
+        <li><a href="#cookies">Cookies & stockage local</a></li>
+        <li><a href="#contact">Nous contacter</a></li>
+      </ol>
+    </div>
+
+    <section id="donnees">
+      <h2>1. Les données qu'on stocke</h2>
+      <p>On ne collecte que ce qui fait fonctionner ton espace. Concrètement&nbsp;:</p>
+      <h3>Ton compte</h3>
+      <ul>
+        <li><strong>Ton adresse email</strong> — pour créer ton compte, te connecter et t'envoyer l'email de vérification. C'est la seule donnée d'identité obligatoire.</li>
+      </ul>
+      <h3>Ce que tu crées dans l'application</h3>
+      <p>Tout ce qui suit t'appartient et n'existe que parce que tu l'as écrit ou renseigné&nbsp;:</p>
+      <ul>
+        <li><strong>Ton arbre & ton XP</strong> — la progression de ton arbre de vie.</li>
+        <li><strong>Ton journal</strong> — tes entrées quotidiennes.</li>
+        <li><strong>Tes trackers</strong> — humeur, sommeil, habitudes, gratitude.</li>
+        <li><strong>Tes objectifs</strong> et ton <strong>organizer</strong> — ce que tu planifies et suis.</li>
+        <li><strong>Tes bilans</strong> — tes récapitulatifs (hebdo, etc.).</li>
+        <li><strong>Ton avatar</strong> — l'initiale ou l'image qui te représente.</li>
+      </ul>
+      <p class="note">On ne te demande jamais plus que nécessaire&nbsp;: pas de numéro de téléphone, pas d'adresse postale, pas de coordonnées bancaires (le service est gratuit).</p>
+    </section>
+
+    <section id="ou">
+      <h2>2. Où et comment c'est stocké</h2>
+      <p>Tes données sont enregistrées dans <strong>Firestore</strong>, la base de données de <strong>Google Cloud</strong>. Chaque donnée est rattachée à l'identifiant unique de ton compte (ton <strong>uid</strong>).</p>
+      <p>Les <strong>règles de sécurité Firestore</strong> appliquent une <strong>« ownership » stricte</strong>&nbsp;: seul ton compte peut lire et modifier tes propres données. Personne d'autre — pas un autre utilisateur, pas un curieux — ne peut y accéder. Ces règles font partie du code public&nbsp;: elles sont <strong>vérifiables</strong> (fichier <code>firestore.rules</code> du dépôt).</p>
+    </section>
+
+    <section id="tiers">
+      <h2>3. Les tiers et ce qu'ils reçoivent</h2>
+      <p>Faire fonctionner un service en ligne suppose de s'appuyer sur quelques prestataires techniques. Voici la <strong>liste complète</strong>, et surtout <strong>ce que chacun reçoit exactement</strong>. Rien de plus n'est transmis&nbsp;:</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Prestataire</th><th>Ce qu'il reçoit</th><th>Pourquoi</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Firebase / Google Cloud</td>
+              <td>Ton email, ton uid et l'ensemble de tes contenus</td>
+              <td>Authentification, base de données Firestore et hébergement de tes données</td>
+            </tr>
+            <tr>
+              <td>Vercel</td>
+              <td>Les requêtes techniques vers le site (dont l'adresse IP, comme tout hébergeur)</td>
+              <td>Héberge le site et les fonctions serverless <code>/api/*</code></td>
+            </tr>
+            <tr>
+              <td>Anthropic (Claude)</td>
+              <td>Le <strong>contenu des messages</strong> que tu envoies au chatbot SYL</td>
+              <td>Génère les réponses de SYL (via <code>/api/chat</code>)</td>
+            </tr>
+            <tr>
+              <td>Groq &amp; Google Gemini</td>
+              <td>Les <strong>textes que tu soumets</strong> au coach et à la traduction</td>
+              <td>Réponses du coach et traduction (via <code>/api/coach</code>, <code>/api/translate</code>)</td>
+            </tr>
+            <tr>
+              <td>Resend</td>
+              <td>Ton adresse email</td>
+              <td>Envoi des emails de vérification</td>
+            </tr>
+            <tr>
+              <td>ipwho.is</td>
+              <td>Ton adresse IP</td>
+              <td>Géolocalisation approximative sur l'accueil (repli sur la France si le service est indisponible)</td>
+            </tr>
+            <tr>
+              <td>Google Calendar (OAuth)</td>
+              <td>Les événements que tu choisis de synchroniser — <strong>uniquement si tu connectes ton agenda</strong></td>
+              <td>Synchroniser tes événements avec ton organizer</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">À propos de <strong>ipwho.is</strong>&nbsp;: cette géolocalisation sert uniquement à adapter l'affichage de l'accueil. Elle nous gêne autant que toi côté vie privée&nbsp;: <strong>un remplacement par un choix manuel de ta localisation est prévu</strong>, afin de ne plus dépendre de l'adresse IP.</p>
+      <p>Ces prestataires agissent comme <strong>sous-traitants techniques</strong>&nbsp;: ils traitent la donnée pour rendre le service possible, pas pour leur propre compte publicitaire. Aucune de ces transmissions ne sert à te vendre quoi que ce soit.</p>
+    </section>
+
+    <section id="ia">
+      <h2>4. SYL n'est pas un professionnel de santé</h2>
+      <p>SYL est un compagnon de réflexion et de bien-être, animé par des modèles d'intelligence artificielle. <strong>Ce n'est ni un médecin, ni un psychologue, ni un service d'urgence.</strong> Ses réponses ne remplacent jamais l'avis d'un professionnel de santé.</p>
+      <p>Si quelque chose ne va pas vraiment, parles-en à un professionnel, à un proche, ou aux services ci-dessous.</p>
+    </section>
+
+    <section id="urgence">
+      <h2>5. En cas de détresse</h2>
+      <div class="urgence">
+        <h3>Tu n'es pas seul·e. En France, appelle&nbsp;:</h3>
+        <ul>
+          <li><span class="num">3114</span><span>Numéro national de prévention du suicide — gratuit, 24h/24, 7j/7</span></li>
+          <li><span class="num">15</span><span>SAMU — urgences médicales</span></li>
+          <li><span class="num">112</span><span>Numéro d'urgence européen</span></li>
+          <li><span class="num">114</span><span>Par SMS, pour les personnes sourdes ou malentendantes</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="droits">
+      <h2>6. Tes droits (RGPD)</h2>
+      <p>Le Règlement général sur la protection des données te garantit un contrôle réel sur tes informations&nbsp;:</p>
+      <ul>
+        <li><strong>Accès</strong> — savoir quelles données te concernant sont enregistrées.</li>
+        <li><strong>Rectification</strong> — corriger une donnée inexacte.</li>
+        <li><strong>Suppression</strong> — supprimer ton compte et l'ensemble des données associées.</li>
+        <li><strong>Portabilité & opposition</strong> — récupérer tes données ou t'opposer à un traitement.</li>
+      </ul>
+      <p>Pour exercer l'un de ces droits, écris-nous à <a href="mailto:noreply@changeyourlife.ai">noreply@changeyourlife.ai</a>. Tu peux aussi supprimer ton compte directement depuis tes paramètres.</p>
+    </section>
+
+    <section id="cookies">
+      <h2>7. Cookies & stockage local</h2>
+      <p>Pas de bannière anxiogène ici, parce qu'il n'y a rien à pister. On n'utilise <strong>aucun cookie publicitaire</strong> et <strong>aucun traceur tiers</strong>.</p>
+      <p>Le site conserve seulement, dans le <strong>stockage local de ton navigateur</strong>, quelques informations techniques indispensables&nbsp;: ton <strong>thème</strong> (clair/sombre), tes <strong>préférences</strong> d'affichage et ta <strong>session</strong> de connexion. Ces données restent sur ton appareil.</p>
+    </section>
+
+    <section id="contact">
+      <h2>8. Nous contacter</h2>
+      <p>Une question, un doute, une demande liée à tes données&nbsp;? Une seule adresse&nbsp;: <a href="mailto:noreply@changeyourlife.ai">noreply@changeyourlife.ai</a>. On lit tout.</p>
+    </section>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="foot-links">
+      <a href="/legal/">Mentions légales</a>
+      <span class="sep">·</span>
+      <a href="/cgu/">CGU</a>
+      <span class="sep">·</span>
+      <a href="/confidentialite/">Confidentialité</a>
+    </div>
+    <div class="fine">ChangeYourLife.ai — un assistant de vie qui ne vend pas ta vie.</div>
+  </footer>
+
+  <script type="module" src="/js/common.js"></script>
+</body>
+</html>

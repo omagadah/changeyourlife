@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentions légales - ChangeYourLife.ai</title>
+  <meta name="description" content="Mentions légales de ChangeYourLife.ai : éditeur, hébergeur, directeur de publication et contact." />
+  <meta name="robots" content="index, follow" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0a0f0a" />
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <style>
+    /* ────────────────────────────────────────────────────────────
+       Pages légales — identité organique (forêt nocturne)
+       ──────────────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0a0f0a;
+      --bg-2:      #0d130b;
+      --leaf:      #84c25e;
+      --leaf-deep: #4a7a3a;
+      --moss:      #6f9a52;
+      --gold:      #e7b15c;
+      --gold-soft: #f1cd92;
+      --bark:      #c39a6b;
+      --text-1:    #f4efe1;
+      --text-2:    #b4ad94;
+      --text-3:    #7c7660;
+      --glass:     rgba(16,21,13,0.72);
+      --line:      rgba(221,205,160,0.13);
+      --line-hov:  rgba(132,194,94,0.42);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      color: var(--text-1);
+      background:
+        radial-gradient(ellipse 64% 42% at 50% -6%, rgba(231,177,92,0.13), transparent 62%),
+        radial-gradient(ellipse 84% 56% at 50% 106%, rgba(74,122,58,0.16), transparent 66%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      line-height: 1.7;
+    }
+    .legal-topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 14px clamp(16px, 5vw, 40px);
+      background: linear-gradient(to bottom, rgba(10,15,10,0.92), rgba(10,15,10,0.62));
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .legal-logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text-1);
+      font-weight: 700; letter-spacing: -0.2px; font-size: 0.98rem;
+    }
+    .legal-logo .seed {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: radial-gradient(circle at 36% 32%, var(--gold-soft), var(--leaf-deep) 92%);
+      box-shadow: 0 0 16px rgba(231,177,92,0.4); flex-shrink: 0;
+    }
+    .legal-logo span { opacity: 0.94; }
+    .back-home {
+      display: inline-flex; align-items: center; gap: 7px;
+      text-decoration: none; color: var(--text-2);
+      font-size: 0.85rem; font-weight: 600;
+      padding: 8px 15px; border-radius: 999px;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.02);
+      transition: 0.25s ease;
+    }
+    .back-home:hover { color: var(--text-1); border-color: var(--line-hov); background: rgba(132,194,94,0.07); }
+
+    .legal-wrap {
+      max-width: 780px; margin: 0 auto;
+      padding: clamp(34px, 7vw, 72px) clamp(18px, 5vw, 28px) 96px;
+    }
+    .legal-hero { margin-bottom: 34px; }
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.72rem; letter-spacing: 2.4px; text-transform: uppercase;
+      font-weight: 700; color: var(--leaf);
+      padding: 5px 12px; border-radius: 999px;
+      border: 1px solid var(--line-hov); background: rgba(132,194,94,0.06);
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 2.7rem);
+      line-height: 1.12; letter-spacing: -0.8px; font-weight: 800; margin-bottom: 12px;
+    }
+    .legal-hero .sub { color: var(--text-2); font-size: 1.02rem; max-width: 60ch; }
+    .updated { margin-top: 16px; font-size: 0.82rem; color: var(--text-3); }
+    .updated b { color: var(--text-2); font-weight: 600; }
+
+    section { margin-top: 40px; scroll-margin-top: 84px; }
+    h2 {
+      font-size: 1.32rem; font-weight: 800; letter-spacing: -0.4px;
+      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+    }
+    p { color: var(--text-2); margin-bottom: 14px; }
+    p strong { color: var(--text-1); font-weight: 650; }
+    a { color: var(--leaf); text-decoration: none; border-bottom: 1px solid rgba(132,194,94,0.35); transition: 0.2s; }
+    a:hover { color: var(--gold-soft); border-color: var(--gold-soft); }
+
+    /* ── Bloc identité (dl) ── */
+    .infoblock {
+      padding: 22px 26px; border-radius: 16px;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.015);
+      margin-bottom: 4px;
+    }
+    .infoblock dl { display: grid; grid-template-columns: 210px 1fr; gap: 4px 20px; margin: 0; }
+    .infoblock dt {
+      color: var(--gold-soft); font-weight: 700; font-size: 0.8rem;
+      letter-spacing: 0.4px; text-transform: uppercase; padding: 10px 0;
+    }
+    .infoblock dd { color: var(--text-1); margin: 0; padding: 10px 0; }
+    .infoblock dd small { display: block; color: var(--text-3); font-size: 0.82rem; margin-top: 2px; }
+    @media (max-width: 560px) {
+      .infoblock dl { grid-template-columns: 1fr; gap: 0; }
+      .infoblock dt { padding-bottom: 2px; }
+      .infoblock dd { padding-top: 0; padding-bottom: 14px; }
+    }
+
+    .legal-footer {
+      max-width: 780px; margin: 40px auto 0;
+      padding: 26px clamp(18px, 5vw, 28px) 60px;
+      border-top: 1px solid var(--line); text-align: center;
+    }
+    .legal-footer .foot-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .legal-footer .foot-links a { border: 0; color: var(--text-2); font-size: 0.9rem; font-weight: 600; }
+    .legal-footer .foot-links a:hover { color: var(--leaf); }
+    .legal-footer .sep { color: var(--text-3); }
+    .legal-footer .fine { font-size: 0.8rem; color: var(--text-3); }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-topbar">
+    <a class="legal-logo" href="/" aria-label="Retour à l'accueil ChangeYourLife.ai">
+      <span class="seed" aria-hidden="true"></span>
+      <span>ChangeYourLife.ai</span>
+    </a>
+    <a class="back-home" href="/">← Retour à l'accueil</a>
+  </header>
+
+  <main class="legal-wrap">
+    <div class="legal-hero">
+      <span class="eyebrow">Informations légales</span>
+      <h1>Mentions légales</h1>
+      <p class="sub">Les informations exigées par la loi pour tout site accessible au public en France.</p>
+      <div class="updated">Dernière mise à jour&nbsp;: <b>7 juillet 2026</b></div>
+    </div>
+
+    <section>
+      <h2>Éditeur du site</h2>
+      <p>Le site <strong>ChangeYourLife.ai</strong> est édité par son propriétaire, à titre personnel et non commercial. Le service est gratuit et ne poursuit aucun but lucratif.</p>
+      <div class="infoblock">
+        <dl>
+          <dt>Éditeur</dt>
+          <dd>Le propriétaire de ChangeYourLife.ai
+            <small>L'éditeur, personne physique, a fait le choix de rester anonyme. Il reste joignable à l'adresse ci-dessous.</small>
+          </dd>
+          <dt>Contact</dt>
+          <dd><a href="mailto:noreply@changeyourlife.ai">noreply@changeyourlife.ai</a></dd>
+          <dt>Directeur de la publication</dt>
+          <dd>Le propriétaire du site, joignable à <a href="mailto:noreply@changeyourlife.ai">noreply@changeyourlife.ai</a></dd>
+        </dl>
+      </div>
+    </section>
+
+    <section>
+      <h2>Hébergement</h2>
+      <p>Le site et ses fonctions serverless sont hébergés par&nbsp;:</p>
+      <div class="infoblock">
+        <dl>
+          <dt>Hébergeur</dt>
+          <dd>Vercel Inc.
+            <small>340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis — <a href="https://vercel.com" rel="noopener noreferrer" target="_blank">vercel.com</a></small>
+          </dd>
+          <dt>Données & authentification</dt>
+          <dd>Google Cloud / Firebase (Google LLC)
+            <small>Base de données Firestore, authentification et hébergement des données utilisateurs.</small>
+          </dd>
+        </dl>
+      </div>
+    </section>
+
+    <section>
+      <h2>Propriété intellectuelle</h2>
+      <p>Le code source de ChangeYourLife.ai est rendu public <strong>uniquement à des fins de transparence</strong>, sous une licence « source visible, tous droits réservés ». La lecture du code est autorisée&nbsp;; toute reproduction, réutilisation ou exploitation reste soumise à autorisation. Les détails figurent dans le fichier <strong>LICENSE</strong> du dépôt et dans nos <a href="/cgu/">CGU</a>.</p>
+    </section>
+
+    <section>
+      <h2>Données personnelles</h2>
+      <p>Le traitement de tes données est décrit en détail dans notre <a href="/confidentialite/">politique de confidentialité</a>. En résumé&nbsp;: aucune donnée n'est vendue, louée ou utilisée à des fins publicitaires.</p>
+    </section>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="foot-links">
+      <a href="/legal/">Mentions légales</a>
+      <span class="sep">·</span>
+      <a href="/cgu/">CGU</a>
+      <span class="sep">·</span>
+      <a href="/confidentialite/">Confidentialité</a>
+    </div>
+    <div class="fine">ChangeYourLife.ai — un assistant de vie qui ne vend pas ta vie.</div>
+  </footer>
+
+  <script type="module" src="/js/common.js"></script>
+</body>
+</html>
