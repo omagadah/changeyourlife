@@ -47,7 +47,10 @@ vision. Toute proposition de feature doit s'inscrire dans la métaphore de l'arb
     └── …                    # Anciens audits / FAQ / SECURITY (historique)
 ```
 
-## Modules frontend (16 pages)
+## Modules frontend (~34 pages HTML · 5 API serverless)
+
+> API `/api/*` : `chat` (SYL/Anthropic), `coach` (Lya/Groq+Gemini),
+> `translate` (Groq+Gemini), `send-verification`, `verify-code`.
 
 | Module | Route | Notes |
 |---|---|---|
@@ -66,6 +69,12 @@ vision. Toute proposition de feature doit s'inscrire dans la métaphore de l'arb
 | Autoévaluation | `/autoevaluation/` | Roue de vie 4 axes |
 | Bilan | `/bilan/` | Récap hebdo |
 | Humeur, Sommeil, Habitudes, Gratitude | `/humeur/`, `/sommeil/`, `/habitudes/`, `/gratitude/` | Trackers |
+| Plan (Aujourd'hui) | `/plan/` | Poste de pilotage quotidien (rythme, base vitale, tâches) |
+| Organizer | `/organizer/` | Board Eisenhower + vue Canvas / connecteurs |
+| Agenda | `/agenda/` | Vue semaine + sync Google Calendar (OAuth) |
+| Compétences | `/competences/` | Compétences qui montent en niveau avec l'usage |
+| Branches Maslow | `/physio/` … `/transcendance/` | 8 pages de drill-down par branche |
+| Légal | `/legal/`, `/cgu/`, `/confidentialite/` | Mentions, CGU, confidentialité (2026-07) |
 
 ## Conventions
 
