@@ -6,6 +6,42 @@
 > Rappels projet : vanilla JS sans build · bump `CACHE_NAME` du SW à chaque modif js/css ·
 > commits signés `Omagadah <noreply@changeyourlife.ai>` + Co-Authored-By Claude.
 
+## ✅ Session Opus 4.8 (2026-07-07 soir) — réalisé
+
+Tout committé sur `main` (6 commits), **rien poussé** (à toi de valider le push → deploy Vercel).
+
+**P0 — bloquants : TOUS traités.**
+- **P0-1 CSP accueil** : 3 scripts inline → `home-aura.js` / `home-auth-modal.js` / `home-failsafe.js`. Le failsafe `tree-ready` remarche (plus de risque d'accueil noir).
+- **P0-2 Fiabilité** : socle `common.js` (`saveWithFeedback` + `toast` XSS-safe + `escapeHtml` + bannière offline). Écritures silencieuses corrigées : gratitude, organizer, plan, skills, **habitudes** (le pire : faux succès), objectifs, yourlife, coach.
+- **P0-3 Données** : avatar redimensionné 256px avant stockage (LE vrai risque 1 Mo). `meditation.history` déjà borné (20).
+- **P0-4 Légal** : `/legal/ /cgu/ /confidentialite/` (tiers listés = pilier "données non vendues") + footer accueil + consentement SYL 1re ouverture + case signup (accueil + /login/).
+- **P0-5 Deploy** : `DEPLOY.md` créé. À lancer par toi : `firebase deploy --only firestore`.
+
+**P2 — anti-IA (démarré) :** ~75 emojis décoratifs retirés (titres/toasts/boutons) sur 32 fichiers ; sélecteurs d'humeur/pickers/**maps de données** préservés. Titre/OG accueil réécrit ("pour de vrai"). Tutoiement verify-email + settings.
+
+**P1 :** token GCal → sessionStorage. Doc à jour (CLAUDE.md, DEPLOY.md).
+
+## ⏭️ Reste à faire — pour Claude dans VSCode (ordre conseillé)
+
+**1. DÉPLOYER les règles Firestore** (avant tout) : `firebase deploy --only firestore` — cf. `DEPLOY.md`. Pas faisable ici (Firebase non authentifié sur ce Mac).
+
+**2. Fiabilité — écritures encore silencieuses** (même recette `saveWithFeedback` du socle) :
+- `settings.js:498/499` : suppression compte (`users/{uid}` + `roles/{uid}`) dans catch vides → signaler l'échec (**sensible** : la promesse "données supprimées" doit être fiable).
+- `profile.js:241/248/254/282/377` (badges/titres/displayName), `journal.js:569` (delete), `autoevaluation.js:304`, `codex.js:248` : échec avalé.
+- `settings.js:460-472` (prefs), `app.js:53`, `branche.js:66` : mineurs/heartbeats.
+
+**3. Modèle de données (finir P0-3)** : migrer `organizer` (gros), `goals`, `habits` du mono-doc `users/{uid}` vers des sous-collections + bornes rules. Migration lazy au login. (avatar + meditation.history déjà OK.)
+
+**4. UX anti-IA — le gros morceau restant (P2), À FAIRE AVEC REVUE VISUELLE** :
+- **Couleurs** : 769 hex inline, dont Tailwind par défaut (#3b82f6 ×43, #a78bfa ×31, #6366f1 ×17…). Porter la palette organique de l'accueil en variables CSS puis remplacer. Page par page (risque de casser le design). Points chauds : app (123), journal (75), organizer (59), objectifs (44).
+- **Icônes** : remplacer les emojis de DONNÉES (domaines/branches/badges) et labels restants par un set SVG trait fin unique (Lucide/Phosphor) + mapping.
+- **Fontes** : aucune fonte chargée. Paire auto-hébergée dans `public/fonts/` (pas Google Fonts, RGPD). Nécessite les .woff2.
+- **9 pages** sans `main.min.css` (pas 4) : autoevaluation, codex, login, verify-email + index, signup, 404, tree-preview, tree-lab.
+
+**5. P1 restants** : App Check (reCAPTCHA v3), retirer `ROOT_ADMIN_UID`, unifier Lya/SYL (3 stacks IA), purger ~3,5 Mo morts (retirer du précache SW AVANT suppression : `tree-widget.js`/`tree-lab.js` y sont), trancher `web/` (2,7 Mo Next.js), factoriser 17 toasts/10 escapeHtml locaux → `common.js` (socle prêt), CSP à durcir (SRI), `ipwho.is` à déclarer/remplacer.
+
+---
+
 ## État des lieux (résumé)
 
 - Local = `origin/main` = prod Vercel (dernier commit 2026-06-08). GitHub OK.
