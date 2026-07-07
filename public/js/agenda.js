@@ -13,12 +13,14 @@ else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
 const TKEY = 'cyl_gcal_token';
 const CAL = 'https://www.googleapis.com/calendar/v3';
 
+// Token OAuth GCal en sessionStorage (efface a la fermeture de l'onglet) plutot
+// que localStorage (persistant) : reduit la fenetre de vol par XSS. Expire ~55 min.
 function getToken() {
-  try { const x = JSON.parse(localStorage.getItem(TKEY) || 'null'); if (x && x.t && x.exp > Date.now()) return x.t; } catch (_) {}
+  try { const x = JSON.parse(sessionStorage.getItem(TKEY) || 'null'); if (x && x.t && x.exp > Date.now()) return x.t; } catch (_) {}
   return null;
 }
-function setToken(t) { try { localStorage.setItem(TKEY, JSON.stringify({ t, exp: Date.now() + 3300 * 1000 })); } catch (_) {} }
-function clearToken() { try { localStorage.removeItem(TKEY); } catch (_) {} }
+function setToken(t) { try { sessionStorage.setItem(TKEY, JSON.stringify({ t, exp: Date.now() + 3300 * 1000 })); } catch (_) {} }
+function clearToken() { try { sessionStorage.removeItem(TKEY); } catch (_) {} }
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 async function connect() {
