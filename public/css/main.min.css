@@ -4,23 +4,31 @@
    ============================================================ */
 
 :root {
-  /* ── Background ── */
-  --bg:           #060e1a;
-  --bg-surface:   #0b1829;
-  --bg-elevated:  #0f2240;
-  --glass-bg:     rgba(11, 24, 41, 0.82);
-  --glass-border: rgba(255,255,255,0.08);
-  --glass-border-hover: rgba(255,255,255,0.15);
+  /* ── Background (palette organique : forêt nocturne) ── */
+  --bg:           #0a0f0a;
+  --bg-surface:   #0f1710;
+  --bg-elevated:  #152013;
+  --glass-bg:     rgba(16, 21, 13, 0.82);
+  --glass-border: rgba(221,205,160,0.10);
+  --glass-border-hover: rgba(132,194,94,0.40);
 
-  /* ── Text ── */
-  --text-1: #eef4ff;
-  --text-2: #8ba4c8;
-  --text-3: #4a6a8a;
+  /* ── Text (blanc chaud / sauge) ── */
+  --text-1: #f4efe1;
+  --text-2: #b4ad94;
+  --text-3: #7c7660;
 
-  /* ── Brand accent ── */
-  --blue:       #0070f3;
-  --blue-light: #60a5fa;
-  --blue-glow:  rgba(0,112,243,0.35);
+  /* ── Brand accent (vert feuille — remplace le navy) ── */
+  --blue:       #84c25e;
+  --blue-light: #a7d585;
+  --blue-glow:  rgba(132,194,94,0.35);
+
+  /* ── Palette organique complète (dispo pour toutes les pages) ── */
+  --leaf:      #84c25e;
+  --leaf-deep: #4a7a3a;
+  --moss:      #6f9a52;
+  --gold:      #e7b15c;
+  --gold-soft: #f1cd92;
+  --bark:      #c39a6b;
 
   /* ── Domain colors ── */
   --corps: #2dd4bf;
@@ -41,7 +49,7 @@
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
   --shadow:    0 8px 28px rgba(0,0,0,0.45);
   --shadow-lg: 0 20px 56px rgba(0,0,0,0.55);
-  --shadow-blue: 0 6px 24px rgba(0,112,243,0.35);
+  --shadow-blue: 0 6px 24px rgba(132,194,94,0.32);
 
   /* ── Motion ── */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -51,8 +59,8 @@
 
   /* Legacy aliases */
   --background-color: var(--bg);
-  --glass-bg: rgba(11,24,41,0.82);
-  --glass-border: rgba(255,255,255,0.08);
+  --glass-bg: rgba(16, 21, 13, 0.82);
+  --glass-border: rgba(221,205,160,0.10);
   --text-primary: var(--text-1);
   --text-secondary: var(--text-2);
   --accent-color: var(--blue);
