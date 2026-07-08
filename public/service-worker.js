@@ -1,5 +1,5 @@
-// service-worker.js - v150 (GCal lecture seule : scope readonly + export .ics)
-const CACHE_NAME = 'changeyourlife-v150';
+// service-worker.js - v151 (fiabilite ecritures : feedback settings/profile/journal/autoeval/codex)
+const CACHE_NAME = 'changeyourlife-v151';
 const urlsToCache = [
   '/',
   '/app/',

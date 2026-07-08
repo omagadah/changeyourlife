@@ -2,7 +2,7 @@
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, toast } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 
 // ── Vanta bootstrap ──────────────────────────────────────────────────────────
@@ -305,7 +305,7 @@ async function save(scores,global){
     // XP via Cloud Function addXp → branche Estime (faire le point sur soi)
     try{ await window._cyfFirebase.awardXp('estime', 30); }catch(_){}
   }
-  catch(e){console.error('save',e);}
+  catch(e){console.error('save',e); toast("Ton bilan n'a pas pu être enregistré. Vérifie ta connexion et réessaie.", { type: 'error' });}
 }
 
 async function loadHistory(){

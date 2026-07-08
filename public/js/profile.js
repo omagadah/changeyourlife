@@ -238,20 +238,20 @@ async function loadUserData(uid, userDocRef, user) {
                 const storedIds = Array.isArray(data.badges) ? data.badges : [];
                 const mergedIds = Array.from(new Set([...storedIds, ...earnedIds]));
                 if (mergedIds.length > storedIds.length) {
-                    setDoc(doc(db,'users',uid), { badges: mergedIds }, { merge: true }).catch(()=>{});
+                    setDoc(doc(db,'users',uid), { badges: mergedIds }, { merge: true }).catch((e)=>console.warn('badge sync failed', e));
                 }
                 renderBadges(mergedIds);
                 // titles
                 // Réclamation du titre Fondateur via /profile#fondateur (réservé au fondateur).
                 if (!data.founder && (location.hash || '').toLowerCase() === '#fondateur') {
                     data.founder = true;
-                    setDoc(doc(db,'users',uid), { founder: true }, { merge: true }).catch(()=>{});
+                    setDoc(doc(db,'users',uid), { founder: true }, { merge: true }).catch((e)=>console.warn('founder sync failed', e));
                 }
                 const earnedTitles = computeTitles(data);
                 const storedTitles = Array.isArray(data.titles) ? data.titles : [];
                 const mergedTitles = Array.from(new Set([...storedTitles, ...earnedTitles]));
                 if (mergedTitles.length > storedTitles.length) {
-                    setDoc(doc(db,'users',uid), { titles: mergedTitles }, { merge: true }).catch(()=>{});
+                    setDoc(doc(db,'users',uid), { titles: mergedTitles }, { merge: true }).catch((e)=>console.warn('title sync failed', e));
                 }
                 renderTitles(mergedTitles, data.selectedTitle || null, uid);
         } else {
@@ -288,6 +288,7 @@ async function saveUserData(uid) {
         showToast('Profil mis à jour');
     } catch (err) {
         console.error('saveUserData error', err);
+        showToast("Ton profil n'a pas pu être enregistré. Vérifie ta connexion et réessaie.");
     }
 }
 
@@ -378,7 +379,7 @@ function renderTitles(unlockedNames, selectedTitle, uid) {
                     if (titleDisplay) titleDisplay.textContent = def.name;
                     showToast('Titre sélectionné : ' + def.name);
                     renderTitles(Array.from(unlocked), def.name, uid);
-                } catch(e){}
+                } catch(e){ console.error('selectedTitle error', e); showToast("Le titre n'a pas pu être enregistré. Réessaie."); }
             });
         }
         titlesGrid.appendChild(pill);

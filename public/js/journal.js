@@ -570,7 +570,7 @@ btnDel.addEventListener('click', async () => {
     entries = entries.filter(e => e.id !== readId);
     readId = null; renderList(); renderMoodChart(); showView('empty');
     showToast('Entrée supprimée');
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error(e); showToast("L'entrée n'a pas pu être supprimée. Réessaie.", true); }
 });
 
 // ── Keyboard shortcut: Ctrl+S to save while editor is open ─────────────────

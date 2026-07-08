@@ -2,7 +2,7 @@
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, toast } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 
 // ── Vanta bootstrap ──────────────────────────────────────────────────────────
@@ -249,7 +249,13 @@ window.saveNote=async()=>{
       note.id=ref.id;
       // XP via Cloud Function addXp → branche Cognitif (apprendre, noter, comprendre)
       try{ await window._cyfFirebase.awardXp('cognitif', 8); }catch(_){}
-    }catch(e){console.error('saveNote',e);}
+    }catch(e){
+      // Ne PAS faire croire a un succes : sans return, la note serait ajoutee a
+      // l'UI et la modale fermee alors que rien n'est persiste (perte silencieuse).
+      console.error('saveNote',e);
+      toast("Ta note n'a pas pu être enregistrée. Vérifie ta connexion et réessaie.", { type: 'error' });
+      return;
+    }
   }
   userNotes.push(note);allItems=[...BUILT_IN,...userNotes];
   updateCounts();renderCards();

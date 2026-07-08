@@ -4,7 +4,7 @@
 import { onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
-import { updateGlobalAvatar } from "/js/common.js";
+import { updateGlobalAvatar, saveWithFeedback } from "/js/common.js";
 import { initUserMenu } from "/js/userMenu.js";
 
 let auth, db, functions;
@@ -457,19 +457,19 @@ async function initSettingsToggles(uid) {
             const newTheme = themeCk.checked ? 'dark' : 'light';
             applyTheme(newTheme);
             localStorage.setItem('theme', newTheme);
-            try { await setDoc(ref, { prefs: { theme: newTheme } }, { merge: true }); } catch(e) { console.warn('save theme failed', e); }
+            await saveWithFeedback(() => setDoc(ref, { prefs: { theme: newTheme } }, { merge: true }), { errorMsg: "Ton thème n'a pas pu être enregistré. Vérifie ta connexion." });
         });
         if (animCk) animCk.addEventListener('change', async () => {
             const val = !!animCk.checked;
-            try { await setDoc(ref, { prefs: { animEnabled: val } }, { merge: true }); } catch(e) {}
+            await saveWithFeedback(() => setDoc(ref, { prefs: { animEnabled: val } }, { merge: true }), { errorMsg: "Ta préférence d'animations n'a pas pu être enregistrée." });
         });
         if (dailyCk) dailyCk.addEventListener('change', async () => {
             const val = !!dailyCk.checked;
-            try { await setDoc(ref, { prefs: { dailyReminders: val } }, { merge: true }); } catch(e) {}
+            await saveWithFeedback(() => setDoc(ref, { prefs: { dailyReminders: val } }, { merge: true }), { errorMsg: "Ta préférence de rappels n'a pas pu être enregistrée." });
         });
         if (emailCk) emailCk.addEventListener('change', async () => {
             const val = !!emailCk.checked;
-            try { await setDoc(ref, { prefs: { weeklyEmails: val } }, { merge: true }); } catch(e) {}
+            await saveWithFeedback(() => setDoc(ref, { prefs: { weeklyEmails: val } }, { merge: true }), { errorMsg: "Ta préférence d'emails n'a pas pu être enregistrée." });
         });
     } catch (e) {
         console.warn('initSettingsToggles failed', e);
@@ -494,8 +494,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const confirm2 = window.prompt('Tapez "SUPPRIMER" pour confirmer');
         if ((confirm2 || '').toUpperCase() !== 'SUPPRIMER') return;
         delBtn.disabled = true;
+        let dataDeleted = false;
         try {
-            try { await deleteDoc(doc(db, 'users', user.uid)); } catch(_) {}
+            // Donnees perso d'abord. Si l'effacement de users/{uid} echoue, on stoppe
+            // AVANT de supprimer le compte Auth : sinon les donnees resteraient
+            // orphelines alors que l'utilisateur croit tout supprime (la promesse
+            // "donnees supprimees" doit rester fiable). Le miroir roles/{uid} est
+            // read-only cote client (nettoye serveur) -> best-effort silencieux.
+            await deleteDoc(doc(db, 'users', user.uid));
+            dataDeleted = true;
             try { await deleteDoc(doc(db, 'roles', user.uid)); } catch(_) {}
             try {
                 await deleteUser(user);
@@ -522,7 +529,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/signup';
         } catch (err) {
             console.error('delete account failed', err);
-            alert('Échec de la suppression du compte. Réessayez plus tard.');
+            alert(dataDeleted
+                ? "Tes données ont bien été effacées, mais la fermeture du compte n'a pas pu aller au bout. Reconnecte-toi et réessaie."
+                : "Échec de la suppression. Tes données n'ont pas été touchées — réessaie plus tard.");
             delBtn.disabled = false;
         }
     });
