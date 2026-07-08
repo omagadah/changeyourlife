@@ -1,5 +1,5 @@
-// service-worker.js - v149 (P2 : purge emojis decoratifs UI + copy/tutoiement)
-const CACHE_NAME = 'changeyourlife-v149';
+// service-worker.js - v150 (GCal lecture seule : scope readonly + export .ics)
+const CACHE_NAME = 'changeyourlife-v150';
 const urlsToCache = [
   '/',
   '/app/',

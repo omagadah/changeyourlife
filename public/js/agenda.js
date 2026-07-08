@@ -1,6 +1,7 @@
 // /js/agenda.js - Connecteur Google Agenda (encart central de /app/).
-// OAuth via Firebase Google provider (scopes calendar) → lit les événements du
-// jour et envoie les tâches du jour (module /plan/) vers l'agenda.
+// OAuth via Firebase Google provider (scope LECTURE SEULE calendar.events.readonly)
+// → lit les événements du jour. Les tâches du jour (module /plan/) sont exportées
+// en fichier .ics téléchargeable : aucun accès en écriture au calendrier.
 
 import { onAuthStateChanged, GoogleAuthProvider, reauthenticateWithPopup, signInWithPopup }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -25,8 +26,7 @@ function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&
 
 async function connect() {
   const provider = new GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/calendar.events');
-  provider.addScope('https://www.googleapis.com/auth/calendar.readonly');
+  provider.addScope('https://www.googleapis.com/auth/calendar.events.readonly');
   provider.setCustomParameters({ prompt: 'consent' });
   let result;
   try {
@@ -71,19 +71,36 @@ async function planTasks() {
     return (p && Array.isArray(p.tasks)) ? p.tasks.filter((t) => !t.done) : [];
   } catch (_) { return []; }
 }
-async function pushTasks() {
+// Export .ics : aucun scope d'ecriture. On genere un fichier telechargeable que
+// l'utilisateur importe dans l'agenda de son choix (Google, Apple, Outlook...).
+function icsEsc(s) { return String(s ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+function icsDay(d) { return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+function icsStamp(d) {
+  return d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0') +
+    'T' + String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0') + String(d.getUTCSeconds()).padStart(2, '0') + 'Z';
+}
+async function exportTasks() {
   const tasks = await planTasks();
-  const today = new Date().toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-  let n = 0;
+  if (!tasks.length) return 0;
+  const start = new Date(); start.setHours(0, 0, 0, 0);
+  const end = new Date(start); end.setDate(end.getDate() + 1);
+  const stamp = icsStamp(new Date());
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ChangeYourLife.ai//Taches//FR', 'CALSCALE:GREGORIAN'];
   for (const t of tasks) {
-    await api('/calendars/primary/events', {
-      method: 'POST',
-      body: JSON.stringify({ summary: '✓ ' + t.title, start: { date: today }, end: { date: tomorrow }, description: 'Tâche - ChangeYourLife.ai' }),
-    });
-    n++;
+    const id = (crypto.randomUUID ? crypto.randomUUID() : stamp + '-' + L.length) + '@changeyourlife.ai';
+    L.push('BEGIN:VEVENT', 'UID:' + id, 'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + icsDay(start), 'DTEND;VALUE=DATE:' + icsDay(end),
+      'SUMMARY:' + icsEsc('✓ ' + (t.title || 'Tâche')),
+      'DESCRIPTION:' + icsEsc('Tâche — ChangeYourLife.ai'), 'END:VEVENT');
   }
-  return n;
+  L.push('END:VCALENDAR');
+  const blob = new Blob([L.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'taches-changeyourlife.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  return tasks.length;
 }
 
 function fmtTime(ev) {
@@ -99,7 +116,7 @@ function renderConnect() {
   const el = host(); if (!el) return;
   el.innerHTML = `
     <div class="ag-head"><span class="ag-ic">📅</span><div><div class="ag-title">Google Agenda</div>
-      <div class="ag-sub">Connecte ton agenda pour voir ta journée et y envoyer tes tâches.</div></div></div>
+      <div class="ag-sub">Connecte ton agenda pour voir ta journée d'un coup d'œil.</div></div></div>
     <button class="ag-btn ag-connect" id="ag-connect">Connecter Google Agenda</button>`;
   el.querySelector('#ag-connect').onclick = async (e) => {
     const b = e.currentTarget; b.disabled = true; b.textContent = 'Connexion…';
@@ -116,15 +133,15 @@ async function renderConnected() {
       <a class="ag-open" href="/agenda/" title="Ouvrir mon agenda en grand">⤢</a>
       <button class="ag-x" id="ag-disc" title="Déconnecter">✕</button></div>
     <div id="ag-events" class="ag-events"><div class="ag-empty">Chargement…</div></div>
-    <button class="ag-btn" id="ag-push">↗ Envoyer mes tâches du jour vers l'Agenda</button>`;
+    <button class="ag-btn" id="ag-export">↓ Ajouter mes tâches du jour à mon agenda</button>`;
   const dEl = el.querySelector('#ag-date');
   if (dEl) dEl.textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   el.querySelector('#ag-disc').onclick = () => { clearToken(); renderConnect(); toast('Agenda déconnecté'); };
-  el.querySelector('#ag-push').onclick = async (e) => {
-    const b = e.currentTarget; b.disabled = true; b.textContent = 'Envoi…';
-    try { const n = await pushTasks(); toast(n ? `${n} tâche(s) ajoutée(s) à l'Agenda` : 'Aucune tâche à envoyer'); await refreshEvents(); }
-    catch (err) { if (err.message === 'expired') { renderConnect(); toast('Reconnecte ton agenda'); return; } toast('Erreur lors de l\'envoi'); }
-    finally { b.disabled = false; b.textContent = "↗ Envoyer mes tâches du jour vers l'Agenda"; }
+  el.querySelector('#ag-export').onclick = async (e) => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = 'Préparation…';
+    try { const n = await exportTasks(); toast(n ? `${n} tâche(s) exportée(s) — ouvre le fichier pour les ajouter` : 'Aucune tâche à exporter'); }
+    catch (err) { toast("Erreur lors de l'export"); }
+    finally { b.disabled = false; b.textContent = '↓ Ajouter mes tâches du jour à mon agenda'; }
   };
   await refreshEvents();
 }
