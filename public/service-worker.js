@@ -1,5 +1,5 @@
-// service-worker.js - v167 (conformite SYL : consentement 1re ouverture + moderation serveur)
-const CACHE_NAME = 'changeyourlife-v167';
+// service-worker.js - v168 (giveaway back-office + tirage serveur admin + annonce gagnant)
+const CACHE_NAME = 'changeyourlife-v168';
 const urlsToCache = [
   '/',
   '/app/',
@@ -71,6 +71,7 @@ const urlsToCache = [
   '/js/archi-build.js',
   '/js/syl-chat.js',
   '/js/giveaway.js',
+  '/js/admin-giveaway.js',
   '/js/ez-tree-build.js',
   '/js/tree-lab.js',
   '/js/living-tree.js'

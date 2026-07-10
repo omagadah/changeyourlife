@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Back-office Giveaway - Change Your Life</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <style>
+    html,body{overflow:auto;}
+    body{min-height:100vh;background:var(--bg);color:var(--text-1);}
+    .adm{max-width:640px;margin:0 auto;padding:80px 20px 60px;}
+    .adm h1{font-size:1.5rem;font-weight:800;margin-bottom:6px;}
+    .adm .sub{color:var(--text-2);font-size:.9rem;margin-bottom:24px;}
+    .adm-card{background:var(--bg-surface,rgba(255,255,255,.03));border:1px solid var(--glass-border,rgba(255,255,255,.08));
+      border-radius:16px;padding:22px;margin-bottom:18px;}
+    .adm-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+    .adm-row:last-child{border-bottom:none;}
+    .adm-k{color:var(--text-2);font-size:.85rem;}
+    .adm-v{font-weight:800;font-variant-numeric:tabular-nums;}
+    .adm-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border:none;border-radius:12px;cursor:pointer;
+      font-family:inherit;font-weight:800;font-size:.9rem;color:#fff;background:linear-gradient(135deg,#7c3aed,#a855f7);
+      box-shadow:0 6px 20px rgba(124,58,237,.4);transition:transform .18s,filter .2s;}
+    .adm-btn:hover{transform:translateY(-2px);filter:brightness(1.06);}
+    .adm-btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
+    .adm-msg{margin-top:14px;font-size:.88rem;padding:12px 14px;border-radius:10px;display:none;}
+    .adm-msg.show{display:block;}
+    .adm-msg.ok{background:rgba(34,197,94,.1);border:1px solid rgba(134,239,172,.35);color:#bbf7d0;}
+    .adm-msg.err{background:rgba(239,68,68,.1);border:1px solid rgba(252,165,165,.35);color:#fca5a5;}
+    .adm-winner{font-size:1.1rem;font-weight:800;color:#e9d5ff;}
+    .adm-mono{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;color:var(--text-2);word-break:break-all;}
+  </style>
+</head>
+<body>
+  <script src="/js/theme-init.js"></script>
+  <nav class="site-nav">
+    <a href="/app/" class="site-nav__back">← Mon espace</a>
+    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:36px;height:36px;display:block;border-radius:6px;">
+        <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+        <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+        <line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+        <circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g>
+      </svg>
+    </button>
+  </nav>
+
+  <main class="adm">
+    <h1>🎁 Back-office Giveaway</h1>
+    <div class="sub">Réservé aux administrateurs. Tirage au sort côté serveur (équitable, non truquable).</div>
+
+    <div class="adm-card" id="adm-gate" style="display:none">
+      <div class="adm-winner" style="color:#fca5a5">Accès réservé aux administrateurs.</div>
+      <p style="color:var(--text-2);font-size:.86rem;margin-top:8px">Connecte-toi avec un compte admin pour accéder à cette page.</p>
+    </div>
+
+    <div class="adm-card" id="adm-panel" style="display:none">
+      <div class="adm-row"><span class="adm-k">Cycle courant</span><span class="adm-v adm-mono" id="adm-cycle">-</span></div>
+      <div class="adm-row"><span class="adm-k">Prochain tirage</span><span class="adm-v" id="adm-nextdraw">-</span></div>
+      <div class="adm-row"><span class="adm-k">Participants</span><span class="adm-v" id="adm-count">-</span></div>
+      <div class="adm-row"><span class="adm-k">Gagnant</span><span class="adm-v adm-winner" id="adm-winner">Pas encore tiré</span></div>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="adm-btn" id="adm-refresh" style="background:rgba(255,255,255,.08);color:var(--text-1);box-shadow:none">↻ Rafraîchir</button>
+        <button class="adm-btn" id="adm-draw">🎲 Tirer au sort</button>
+      </div>
+      <div class="adm-msg" id="adm-msg"></div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/admin-giveaway.js"></script>
+</body>
+</html>

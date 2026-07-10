@@ -190,8 +190,11 @@ de toute responsabilité sur les décisions des utilisateurs.
   « L'identification de l'utilisateur » → doit être irréprochable.
 - [~] **Dark / Light mode dans le bandeau supérieur** : toggle global à côté du logo (le
   système de thème `light-mode` existe déjà via settings, on l'expose partout).
-- [~] **Module Giveaway** (réf. v0 `ios-style-timer`) : compte à rebours façon iOS + cooldown,
-  couleur **violet** (contraste), affiché en page principale `/app` après connexion.
+- [x] **Module Giveaway** ✅ (réf. v0 `ios-style-timer`) : compte à rebours iOS + cooldown,
+  violet, en page `/app`. **Backend Firestore** (participations `giveaways/{cycleId}/entries/{uid}`,
+  cross-device) + **tirage serveur admin** (`api/giveaway-draw.js`, crypto, réservé claim
+  admin) + **back-office** `/admin/giveaway/` + annonce du gagnant dans la carte. Reste
+  possible : back-office du lot (texte configurable), notification e-mail du gagnant.
 - [x] **Mesures d'urgence (bouton « Urgence »)** ✅ (`urgence.js`) : bouton rectangulaire
   bas-gauche, texte vertical « URGENCE ». Au clic, triage bienveillant (danger / détresse /
   besoin de souffler). Détresse grave → ressources d'urgence immédiates (3114, 15, 112,

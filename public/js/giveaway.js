@@ -249,13 +249,29 @@ export function initGiveaway() {
   tick();
   setInterval(tick, 1000);
 
-  // Synchro backend : si l'utilisateur a déjà participé sur un autre appareil,
-  // on reflète l'état (une fois l'auth prête).
+  // Synchro backend : participation (autre appareil) + annonce du gagnant.
   async function syncFromBackend() {
     const cid = currentCycleId(Date.now());
-    if (hasEnteredCurrentCycle(Date.now())) return; // déjà connu localement
-    const entered = await checkFirestoreEntry(cid);
-    if (entered) { markEntered(Date.now()); renderAction(); }
+    if (!hasEnteredCurrentCycle(Date.now())) {
+      const entered = await checkFirestoreEntry(cid);
+      if (entered) { markEntered(Date.now()); renderAction(); }
+    }
+    checkWinner();
+  }
+  // Vérifie si l'utilisateur a gagné le tirage du cycle PRÉCÉDENT (déjà tiré).
+  async function checkWinner() {
+    const uid = currentUid();
+    if (!_db || !uid) return;
+    const prevId = String(nextDrawDate(Date.now()).getTime() - 7 * 86400000);
+    try {
+      const s = await getDoc(doc(_db, 'giveaways', prevId));
+      if (s.exists() && s.data().winnerUid === uid) showWinnerBanner();
+    } catch (_) {}
+  }
+  function showWinnerBanner() {
+    if (el.hint) el.hint.innerHTML = `🎉 <strong>Tu as gagné le dernier tirage !</strong> On te contacte très vite pour ton lot.`;
+    card.style.borderColor = 'rgba(250,204,21,0.7)';
+    card.style.boxShadow = '0 10px 34px rgba(250,204,21,0.28)';
   }
   if (currentUid()) syncFromBackend();
   else if (_auth) {
