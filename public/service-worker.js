@@ -1,5 +1,5 @@
-// service-worker.js - v153 (dark/light toggle global dans le bandeau + roadmap MAJ)
-const CACHE_NAME = 'changeyourlife-v153';
+// service-worker.js - v154 (module giveaway violet + timer iOS sur /app)
+const CACHE_NAME = 'changeyourlife-v154';
 const urlsToCache = [
   '/',
   '/app/',
@@ -66,6 +66,7 @@ const urlsToCache = [
   '/js/pixel-badge.js',
   '/js/archi-build.js',
   '/js/syl-chat.js',
+  '/js/giveaway.js',
   '/js/ez-tree-build.js',
   '/js/tree-lab.js',
   '/js/living-tree.js'
