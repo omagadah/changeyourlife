@@ -163,6 +163,20 @@ de toute responsabilité sur les décisions des utilisateurs.
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
+- [ ] **Tags « gravité » animés** (réf. v0 `tags-gravity-animation`) : nuage de tags/mots
+  soumis à une physique de gravité (chute, rebond, drag). À poser **plus tard** — idéal
+  pour un mini-jeu ou une intégration stylée (ex. tags de compétences/valeurs/émotions qui
+  tombent et s'empilent, section ludique). Pas d'intégration immédiate.
+- [ ] **Image → ASCII** (réf. v0 `image-to-ascii`) : convertir une image en art ASCII.
+  **Même famille** que ce qu'on fait déjà sur `/profile` au choix de la photo (avatar
+  particules `particle-avatar.js` + badge pixel-art `pixel-badge.js`) → 3e style de rendu
+  d'avatar possible (ASCII), ou effet décoratif. À planifier comme variante d'avatar.
+- [x] **Menu vertical animé (top-right)** ✅ (réf. v0 `vertical-menu-component`) : le menu du
+  logo en haut à droite se déroule en menu vertical animé (stagger) avec Home /
+  Notifications / Profil / Paramètres + déconnexion. `userMenu.js`.
+- [x] **Badge ID interactif** ✅ (réf. v0 `interactive-vercel-ship-26-id-badge`) : carte
+  d'identité type badge de conf (avatar, nom, titre, Player #, XP) avec inclinaison au
+  survol / drag façon lanyard, sur `/profile`. `id-badge.js`.
 - [~] **Fiche profil premium** (réf. v0 `metallic-silver-border-card` + `profile-card` +
   `animated-file-upload`) : carte d'identité utilisateur soignée = bordure métallique
   argentée + contenu profile-card fusionné + upload d'avatar animé (drag & drop + preview).

@@ -78,24 +78,45 @@ export function initUserMenu() {
     // Format: [{ href: '/journal/', label: '📔 Journal' }, ...]
     const ctxLinks = Array.isArray(window.CYF_NAV_LINKS) ? window.CYF_NAV_LINKS : [];
 
+    // Chaque item porte un index --i (révélation en cascade à l'ouverture).
+    let _i = 0;
+    const vitem = (href, icon, label, extra = '') =>
+        `<a class="cyf-vitem${extra}" href="${href}" style="--i:${_i++}">
+            <span class="cyf-vicon">${icon}</span><span class="cyf-vlabel">${label}</span>
+            <span class="cyf-vchev">›</span></a>`;
+
     const ctxHtml = ctxLinks.length
-        ? ctxLinks.map(l => `<div class="cyf-menu-item cyf-ctx-item"><a href="${l.href}">${l.label}</a></div>`).join('')
+        ? ctxLinks.map(l => `<a class="cyf-vitem cyf-ctx" href="${l.href}" style="--i:${_i++}">
+              <span class="cyf-vlabel">${l.label}</span><span class="cyf-vchev">›</span></a>`).join('')
           + '<div class="cyf-menu-sep cyf-ctx-sep"></div>'
         : '';
 
-    // Build a minimal menu DOM (inserted once)
+    // Build the vertical menu DOM (inserted once)
     let menu = document.getElementById('cyf-user-menu');
     if (!menu) {
         menu = document.createElement('div');
         menu.id = 'cyf-user-menu';
         menu.innerHTML = `
             <div class="cyf-menu-card">
-                ${ctxHtml}
-                <div class="cyf-menu-item"><a href="/app">🏠 Mon Espace</a></div>
-                <div class="cyf-menu-item"><a href="/profile">👤 Mon Profil</a></div>
-                <div class="cyf-menu-item"><a href="/settings">⚙️ Paramètres</a></div>
-                <div class="cyf-menu-sep"></div>
-                <div class="cyf-menu-item"><a href="#" id="cyf-signout" class="cyf-signout">Se déconnecter <span class="cyf-door"> </span></a></div>
+                <div class="cyf-view cyf-view-main" data-view="main">
+                    ${ctxHtml}
+                    ${vitem('/app', '🏠', 'Mon Espace')}
+                    <button class="cyf-vitem cyf-vbtn" id="cyf-open-notifs" type="button" style="--i:${_i++}">
+                        <span class="cyf-vicon">🔔</span><span class="cyf-vlabel">Notifications</span>
+                        <span class="cyf-vbadge" id="cyf-notif-badge" hidden>0</span>
+                        <span class="cyf-vchev">›</span></button>
+                    ${vitem('/profile', '👤', 'Mon Profil')}
+                    ${vitem('/settings', '⚙️', 'Paramètres')}
+                    <div class="cyf-menu-sep"></div>
+                    <a class="cyf-vitem cyf-signout" href="#" id="cyf-signout" style="--i:${_i++}">
+                        <span class="cyf-vicon">🚪</span><span class="cyf-vlabel">Se déconnecter</span></a>
+                </div>
+                <div class="cyf-view cyf-view-notifs" data-view="notifs" hidden>
+                    <button class="cyf-back" id="cyf-notifs-back" type="button"><span class="cyf-back-arrow">‹</span> Notifications</button>
+                    <div class="cyf-notifs-list" id="cyf-notifs-list">
+                        <div class="cyf-notifs-empty"><span class="cyf-notifs-bell">🔕</span>Aucune notification pour l'instant.</div>
+                    </div>
+                </div>
             </div>
         `;
         document.body.appendChild(menu);
@@ -107,47 +128,124 @@ export function initUserMenu() {
         const s = document.createElement('style');
         s.id = styleId;
         s.textContent = `
-            /* Ensure the menu always renders above headers, canvases, toasts, etc. */
-            #cyf-user-menu { position: fixed; top: 70px; right: 30px; z-index: 20000; display: none; }
-            .cyf-menu-card { background: rgba(20,20,20,0.95); padding: 12px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); min-width: 200px; border: 1px solid rgba(255,255,255,0.04); }
-            .cyf-menu-item { padding: 8px 10px; }
-            .cyf-menu-item a { color: #e5eef8; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
-            .cyf-menu-item a:hover { text-decoration: underline; }
-            .cyf-menu-sep { height: 1px; background: rgba(255,255,255,0.03); margin: 8px 0; }
-            .cyf-signout { color: #ffdddd; }
-            .cyf-door { display:inline-block; width:20px; height:20px; vertical-align:middle; margin-left:8px; }
-            /* Contextual links styling */
-            .cyf-ctx-item a { color: #93c5fd !important; }
-            .cyf-ctx-item a:hover { color: #bfdbfe !important; }
-            .cyf-ctx-sep { background: rgba(59,130,246,0.15) !important; height: 1px; }
+            /* Menu vertical animé - toujours au-dessus des headers/canvas/toasts */
+            #cyf-user-menu { position: fixed; top: 66px; right: 24px; z-index: 20000; display: none; }
+            #cyf-user-menu.cyf-open { display: block; }
+            .cyf-menu-card {
+                position: relative; overflow: hidden;
+                width: 244px; padding: 8px;
+                background: linear-gradient(180deg, rgba(24,28,38,0.98), rgba(14,17,24,0.98));
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 16px;
+                box-shadow: 0 18px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+                transform-origin: top right;
+                transform: translateY(-8px) scale(0.96); opacity: 0;
+                transition: transform .26s cubic-bezier(.16,1,.3,1), opacity .2s ease;
+            }
+            #cyf-user-menu.cyf-open .cyf-menu-card { transform: translateY(0) scale(1); opacity: 1; }
+
+            .cyf-view { display: flex; flex-direction: column; gap: 2px; }
+            .cyf-view[hidden] { display: none; }
+
+            .cyf-vitem {
+                display: flex; align-items: center; gap: 12px;
+                width: 100%; padding: 11px 12px; border: none; background: transparent;
+                border-radius: 10px; cursor: pointer; text-decoration: none;
+                font-family: inherit; font-size: 0.9rem; font-weight: 650; text-align: left;
+                color: #e5eef8;
+                /* état de départ pour la cascade */
+                opacity: 0; transform: translateX(10px);
+            }
+            #cyf-user-menu.cyf-open .cyf-view-main .cyf-vitem {
+                opacity: 1; transform: none;
+                transition: opacity .3s ease, transform .34s cubic-bezier(.16,1,.3,1), background .16s ease;
+                transition-delay: calc(var(--i, 0) * 42ms + 60ms);
+            }
+            .cyf-vitem:hover { background: rgba(255,255,255,0.07); }
+            .cyf-vitem:active { transform: scale(0.98); }
+            .cyf-vicon { font-size: 1.15rem; width: 22px; text-align: center; flex-shrink: 0; }
+            .cyf-vlabel { flex: 1; min-width: 0; }
+            .cyf-vchev { color: rgba(255,255,255,0.28); font-size: 1.1rem; transition: transform .18s ease, color .18s ease; }
+            .cyf-vitem:hover .cyf-vchev { color: rgba(255,255,255,0.6); transform: translateX(2px); }
+            .cyf-vbadge {
+                background: #ef4444; color: #fff; font-size: 0.66rem; font-weight: 800;
+                min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+                display: inline-flex; align-items: center; justify-content: center;
+            }
+
+            .cyf-menu-sep { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 4px; }
+            .cyf-signout { color: #fca5a5; }
+            .cyf-signout:hover { background: rgba(239,68,68,0.12); }
+            .cyf-ctx .cyf-vlabel { color: #93c5fd; }
+            .cyf-ctx:hover .cyf-vlabel { color: #bfdbfe; }
+            .cyf-ctx-sep { background: rgba(59,130,246,0.18); }
+
+            /* Vue Notifications */
+            .cyf-back {
+                display: flex; align-items: center; gap: 6px;
+                width: 100%; padding: 9px 10px; margin-bottom: 4px;
+                background: transparent; border: none; cursor: pointer;
+                color: #cbd5e1; font-family: inherit; font-weight: 700; font-size: 0.86rem;
+                border-radius: 9px;
+            }
+            .cyf-back:hover { background: rgba(255,255,255,0.06); }
+            .cyf-back-arrow { font-size: 1.2rem; line-height: 1; }
+            .cyf-notifs-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+            .cyf-notifs-empty {
+                display: flex; flex-direction: column; align-items: center; gap: 8px;
+                padding: 26px 12px; text-align: center;
+                color: #8ba0b8; font-size: 0.82rem; line-height: 1.5;
+            }
+            .cyf-notifs-bell { font-size: 1.9rem; opacity: 0.7; }
+
+            /* Thème clair */
+            body.light-mode .cyf-menu-card { background: linear-gradient(180deg, #ffffff, #f2f4f7); border-color: rgba(0,0,0,0.08); box-shadow: 0 18px 50px rgba(0,0,0,0.18); }
+            body.light-mode .cyf-vitem { color: #1a2230; }
+            body.light-mode .cyf-vitem:hover { background: rgba(0,0,0,0.05); }
+            body.light-mode .cyf-menu-sep { background: rgba(0,0,0,0.08); }
+            body.light-mode .cyf-signout { color: #dc2626; }
+            @media (prefers-reduced-motion: reduce) {
+                .cyf-menu-card, #cyf-user-menu.cyf-open .cyf-view-main .cyf-vitem { transition: none !important; }
+                .cyf-view-main .cyf-vitem { opacity: 1 !important; transform: none !important; }
+            }
         `;
         document.head.appendChild(s);
     }
 
-    function showMenu() { menu.style.display = 'block'; }
-    function hideMenu() { menu.style.display = 'none'; }
+    const isOpen = () => menu.classList.contains('cyf-open');
+    // Bascule sur les vues (main / notifs) sans fermer le menu.
+    function showView(name) {
+        menu.querySelectorAll('.cyf-view').forEach(v => { v.hidden = (v.dataset.view !== name); });
+    }
+    function showMenu() { showView('main'); menu.classList.add('cyf-open'); }
+    function hideMenu() { menu.classList.remove('cyf-open'); }
+    function toggleMenu() { isOpen() ? hideMenu() : showMenu(); }
 
-    trigger.addEventListener('click', (e) => { e.stopPropagation(); menu.style.display = (menu.style.display === 'block') ? 'none' : 'block'; });
+    trigger.addEventListener('click', (e) => { e.stopPropagation(); toggleMenu(); });
     // Keyboard accessibility: toggle with Enter/Space when trigger is focused
     trigger.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-        }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMenu(); }
     });
+
+    // Vue Notifications (espace dédié)
+    const notifsBtn = document.getElementById('cyf-open-notifs');
+    const notifsBack = document.getElementById('cyf-notifs-back');
+    if (notifsBtn) notifsBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showView('notifs'); });
+    if (notifsBack) notifsBack.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showView('main'); });
+
     // Click outside to close (ignore clicks inside trigger or menu)
     window.addEventListener('click', (e) => {
         try {
             const t = e.target;
             if (!menu) return;
             if (trigger.contains(t) || menu.contains(t)) return;
-            if (menu.style.display === 'block') hideMenu();
-        } catch(_) { if (menu.style.display === 'block') hideMenu(); }
+            if (isOpen()) hideMenu();
+        } catch(_) { if (isOpen()) hideMenu(); }
     });
 
     // Close on Escape for convenience
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && menu.style.display === 'block') hideMenu();
+        if (e.key === 'Escape' && isOpen()) hideMenu();
     });
 
     // Mark as initialized
@@ -158,11 +256,6 @@ export function initUserMenu() {
     function bindSignOut() {
         const signoutEl = document.getElementById('cyf-signout');
         if (!signoutEl) return;
-        // inject a small door+arrow SVG into the .cyf-door span for clarity
-        const doorSpan = signoutEl.querySelector('.cyf-door');
-        if (doorSpan && doorSpan.innerHTML.trim() === '') {
-            doorSpan.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 12v6a2 2 0 0 0 2 2h10"></path><path d="M10 12V8a2 2 0 0 1 2-2h4"></path><path d="M16 16l4-4"></path><path d="M20 12l-4-4"></path></svg>`;
-        }
         signoutEl.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
@@ -174,20 +267,19 @@ export function initUserMenu() {
     }
     bindSignOut();
 
-    // Hide current page's menu item for clarity
+    // Hide current page's menu item for clarity (l'item lui-même, pas la vue)
     try {
         const path = (window.location.pathname || '/').replace(/\/$/, '');
-        const anchors = menu.querySelectorAll('a');
+        const anchors = menu.querySelectorAll('.cyf-view-main a.cyf-vitem');
         anchors.forEach(a => {
             try {
-                // Resolve anchor href reliably even if it's absolute or relative
-                const hrefPath = new URL(a.getAttribute('href') || a.href, window.location.origin).pathname.replace(/\/$/, '');
-                // Consider also index/home mappings
+                const raw = a.getAttribute('href') || '';
+                if (!raw || raw.startsWith('#')) return; // ne jamais masquer la déconnexion
+                const hrefPath = new URL(raw, window.location.origin).pathname.replace(/\/$/, '');
                 const normalizedHref = hrefPath === '' ? '/' : hrefPath;
                 const normalizedPath = path === '' ? '/' : path;
-                // If the anchor points to the same path (or to a deeper fragment of same page), hide it
                 if (normalizedHref === normalizedPath || normalizedPath.startsWith(normalizedHref + '/')) {
-                    a.parentElement.style.display = 'none';
+                    a.style.display = 'none';
                 }
             } catch(e){ /* ignore per-anchor errors */ }
         });

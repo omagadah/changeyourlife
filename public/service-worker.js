@@ -1,5 +1,5 @@
-// service-worker.js - v157 (reorg /app : arbre remonte, hierarchie d'arrivee)
-const CACHE_NAME = 'changeyourlife-v157';
+// service-worker.js - v158 (menu vertical anime top-right : Home/Notifs/Profil/Parametres)
+const CACHE_NAME = 'changeyourlife-v158';
 const urlsToCache = [
   '/',
   '/app/',
