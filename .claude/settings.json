@@ -87,7 +87,8 @@
       "Bash(cp public/js/agenda.js /tmp/a.mjs)",
       "Bash(rm -f /tmp/a.mjs)",
       "WebSearch",
-      "WebFetch(domain:cdn.jsdelivr.net)"
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "Bash(git -c user.name='Omagadah' -c user.email='noreply@changeyourlife.ai' commit --no-edit)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
