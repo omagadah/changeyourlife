@@ -1,5 +1,5 @@
-// service-worker.js - v151 (fiabilite ecritures : feedback settings/profile/journal/autoeval/codex)
-const CACHE_NAME = 'changeyourlife-v151';
+// service-worker.js - v152 (fix login Chrome : COOP + CSP google.com + redirection explicite)
+const CACHE_NAME = 'changeyourlife-v152';
 const urlsToCache = [
   '/',
   '/app/',

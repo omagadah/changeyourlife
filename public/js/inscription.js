@@ -1,4 +1,4 @@
-// public/js/inscription.js - v17
+// public/js/inscription.js - v19
 // Gestion de l'authentification : connexion / inscription / vérification email
 
 import {
@@ -20,15 +20,28 @@ const { app, auth } = window._cyfFirebase;
 const ON_LOGIN_PAGE = location.pathname.replace(/\/+$/, '').endsWith('/login')
   || location.pathname.replace(/\/+$/, '') === '/login';
 window._cyfInteractiveAuth = false;
-onAuthStateChanged(auth, (user) => {
-  if (!user) return;
-  if (!ON_LOGIN_PAGE && !window._cyfInteractiveAuth) return;
+
+// Redirection post-auth centralisée. Appelée à la fois par onAuthStateChanged
+// (nouvelle session) ET directement après un signInWithPopup/redirect réussi -
+// indispensable car onAuthStateChanged ne re-fire PAS si l'utilisateur était
+// déjà connecté (session persistée) : le popup réussit mais l'état ne change
+// pas, donc la redirection resterait bloquée sur la notif « redirection… ».
+let _cyfRedirecting = false;
+function redirectAfterAuth(user) {
+  if (!user || _cyfRedirecting) return;
+  _cyfRedirecting = true;
   const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
   if (isEmailProvider && !user.emailVerified) {
     window.location.replace('/verify-email');
   } else {
     window.location.replace('/app');
   }
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) return;
+  if (!ON_LOGIN_PAGE && !window._cyfInteractiveAuth) return;
+  redirectAfterAuth(user);
 });
 
 // ─── Disposable / fake email domain blocklist ─────────────────────────────────
@@ -208,9 +221,9 @@ if (form) {
 
     try {
       if (!isRegister) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const cred = await signInWithEmailAndPassword(auth, email, password);
         showNotification('Connexion réussie - redirection…');
-        // onAuthStateChanged handles redirect
+        redirectAfterAuth(cred.user);
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         // OTP sent automatically by /verify-email page on first load (via /api/send-verification)
@@ -243,8 +256,9 @@ if (googleBtn) {
     const provider = new GoogleAuthProvider();
     window._cyfInteractiveAuth = true;
     try {
-      await signInWithPopup(auth, provider);
+      const cred = await signInWithPopup(auth, provider);
       showNotification('Connexion Google réussie - redirection…');
+      redirectAfterAuth(cred.user);
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/unauthorized-domain') {
@@ -273,8 +287,9 @@ if (githubBtn) {
     const provider = new GithubAuthProvider();
     window._cyfInteractiveAuth = true;
     try {
-      await signInWithPopup(auth, provider);
+      const cred = await signInWithPopup(auth, provider);
       showNotification('Connexion GitHub réussie - redirection…');
+      redirectAfterAuth(cred.user);
     } catch (err) {
       const code = err?.code || '';
       console.error('[GitHub signin] code:', code, 'message:', err?.message, err);
@@ -368,7 +383,7 @@ if (authToggleLink) {
     const result = await getRedirectResult(auth);
     if (result && result.user) {
       showNotification('Connexion réussie - redirection…');
-      // onAuthStateChanged will handle the redirect
+      redirectAfterAuth(result.user);
     }
   } catch (err) {
     if (err?.code === 'auth/unauthorized-domain') {
