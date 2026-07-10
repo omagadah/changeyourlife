@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "Edit",
       "Write",
@@ -81,8 +80,16 @@
       "Bash(rm -f .git/HEAD.lock .git/index.lock; git push origin main 2>&1 | grep -v warning)",
       "Bash(rm -f .git/HEAD.lock .git/index.lock; git add public/js/i18n.js public/js/arbre3d.js public/service-worker.js && git commit -m \"feat\\(i18n\\): traduit les pop-ups de taches de l'accueil \\(7 langues\\) *)",
       "Bash(rm -f .git/HEAD.lock)",
-      "Bash(rm -f .git/HEAD.lock .git/index.lock; git add docs/PLAN-ECOSYSTEME.md && git commit -m \"docs: plan directeur de l'écosystème \\(action réelle -> XP -> arbre\\) *)"
+      "Bash(rm -f .git/HEAD.lock .git/index.lock; git add docs/PLAN-ECOSYSTEME.md && git commit -m \"docs: plan directeur de l'écosystème \\(action réelle -> XP -> arbre\\) *)",
+      "Bash(rm -f .git/HEAD.lock .git/index.lock *)",
+      "Bash(cp public/js/i18n.js /tmp/i.mjs)",
+      "Bash(rm -f /tmp/i.mjs)",
+      "Bash(cp public/js/agenda.js /tmp/a.mjs)",
+      "Bash(rm -f /tmp/a.mjs)",
+      "WebSearch",
+      "WebFetch(domain:cdn.jsdelivr.net)"
     ],
+    "defaultMode": "acceptEdits",
     "additionalDirectories": [
       "C:\\Users\\romai\\Desktop\\ChangeYourLife.ai\\.git",
       "c:\\Users\\romai\\Desktop\\ChangeYourLife.ai\\.git"
