@@ -1,5 +1,5 @@
-// service-worker.js - v158 (menu vertical anime top-right : Home/Notifs/Profil/Parametres)
-const CACHE_NAME = 'changeyourlife-v158';
+// service-worker.js - v159 (badge ID interactif lanyard + fix CSP : giveaway/badge en <script src>)
+const CACHE_NAME = 'changeyourlife-v159';
 const urlsToCache = [
   '/',
   '/app/',
@@ -64,6 +64,7 @@ const urlsToCache = [
   '/js/login-init.js',
   '/js/particle-avatar.js',
   '/js/avatar-upload.js',
+  '/js/id-badge.js',
   '/js/pixel-badge.js',
   '/js/archi-build.js',
   '/js/syl-chat.js',

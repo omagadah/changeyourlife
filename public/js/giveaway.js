@@ -216,4 +216,9 @@ export function initGiveaway() {
   setInterval(tick, 1000);
 }
 
+// Auto-init (chargé en <script type="module" src> ; l'inline est bloqué par la CSP).
+function boot() { try { initGiveaway(); } catch (e) { console.warn('giveaway', e); } }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+else boot();
+
 export default { initGiveaway };

@@ -641,12 +641,7 @@
     <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/agenda.js"></script>
     <script type="module" src="/js/app.js"></script>
-    <script type="module">
-      import { initGiveaway } from '/js/giveaway.js';
-      const boot = () => { try { initGiveaway(); } catch (e) { console.warn('giveaway', e); } };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-      else boot();
-    </script>
+    <script type="module" src="/js/giveaway.js"></script>
     <script type="module" src="/js/syl-chat.js"></script>
 </body>
 </html>
