@@ -1,5 +1,5 @@
-// service-worker.js - v159 (badge ID interactif lanyard + fix CSP : giveaway/badge en <script src>)
-const CACHE_NAME = 'changeyourlife-v159';
+// service-worker.js - v160 (espace Notifications reel : store XP/giveaway + badge non-lus)
+const CACHE_NAME = 'changeyourlife-v160';
 const urlsToCache = [
   '/',
   '/app/',
@@ -42,6 +42,7 @@ const urlsToCache = [
   '/js/home-auth-modal.js',
   '/js/home-failsafe.js',
   '/js/userMenu.js',
+  '/js/notifications.js',
   '/js/inscription.js',
   '/js/firebase.js',
   '/js/arbre3d.js',

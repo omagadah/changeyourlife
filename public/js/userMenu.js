@@ -1,6 +1,16 @@
 // public/js/userMenu.js
 // Lightweight modern user menu. Uses window._cyfFirebase.auth if available.
 import { updateGlobalAvatar, normalizeVantaAndHeader } from './common.js';
+import { getNotifs, markAllRead, unreadCount } from './notifications.js';
+
+function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function timeAgo(ts) {
+  const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (s < 60) return "à l'instant";
+  const m = Math.floor(s / 60); if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60); if (h < 24) return `il y a ${h} h`;
+  const d = Math.floor(h / 24); return `il y a ${d} j`;
+}
 
 // ── Toggle thème (dark/light) global dans le bandeau supérieur ──────────────
 // S'appuie sur le système existant (classe `light-mode` + localStorage 'theme').
@@ -197,6 +207,18 @@ export function initUserMenu() {
                 color: #8ba0b8; font-size: 0.82rem; line-height: 1.5;
             }
             .cyf-notifs-bell { font-size: 1.9rem; opacity: 0.7; }
+            .cyf-notif { position: relative; display: flex; gap: 10px; padding: 10px 10px 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.03); }
+            .cyf-notif.unread { background: rgba(124,58,237,0.12); }
+            .cyf-notif.unread::before { content: ''; position: absolute; left: 4px; top: 50%; transform: translateY(-50%); width: 5px; height: 5px; border-radius: 50%; background: #a855f7; }
+            .cyf-notif-ic { font-size: 1.15rem; flex-shrink: 0; line-height: 1.3; }
+            .cyf-notif-body { min-width: 0; flex: 1; }
+            .cyf-notif-title { font-size: 0.82rem; font-weight: 700; color: #eef2f8; line-height: 1.25; }
+            .cyf-notif-text { font-size: 0.76rem; color: #a9b6c8; margin-top: 2px; line-height: 1.35; }
+            .cyf-notif-time { font-size: 0.68rem; color: #6b7789; margin-top: 3px; }
+            body.light-mode .cyf-notif { background: rgba(0,0,0,0.04); }
+            body.light-mode .cyf-notif.unread { background: rgba(124,58,237,0.1); }
+            body.light-mode .cyf-notif-title { color: #1a2230; }
+            body.light-mode .cyf-notif-text { color: #556; }
 
             /* Thème clair */
             body.light-mode .cyf-menu-card { background: linear-gradient(180deg, #ffffff, #f2f4f7); border-color: rgba(0,0,0,0.08); box-shadow: 0 18px 50px rgba(0,0,0,0.18); }
@@ -227,11 +249,49 @@ export function initUserMenu() {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMenu(); }
     });
 
-    // Vue Notifications (espace dédié)
+    // ── Vue Notifications (espace dédié, alimenté par notifications.js) ──
     const notifsBtn = document.getElementById('cyf-open-notifs');
     const notifsBack = document.getElementById('cyf-notifs-back');
-    if (notifsBtn) notifsBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showView('notifs'); });
+    const notifBadge = document.getElementById('cyf-notif-badge');
+    const notifsList = document.getElementById('cyf-notifs-list');
+
+    function refreshBadge() {
+        if (!notifBadge) return;
+        const n = unreadCount();
+        notifBadge.textContent = n > 99 ? '99+' : String(n);
+        notifBadge.hidden = n === 0;
+    }
+    function renderNotifsList() {
+        if (!notifsList) return;
+        const items = getNotifs();
+        if (!items.length) {
+            notifsList.innerHTML = `<div class="cyf-notifs-empty"><span class="cyf-notifs-bell">🔕</span>Aucune notification pour l'instant.<br><span style="font-size:.74rem;opacity:.8">Tes actions (XP, giveaway...) apparaîtront ici.</span></div>`;
+            return;
+        }
+        notifsList.innerHTML = items.map(n => `
+            <div class="cyf-notif${n.read ? '' : ' unread'}">
+                <span class="cyf-notif-ic">${escapeHtml(n.emoji || '🔔')}</span>
+                <div class="cyf-notif-body">
+                    <div class="cyf-notif-title">${escapeHtml(n.title)}</div>
+                    ${n.body ? `<div class="cyf-notif-text">${escapeHtml(n.body)}</div>` : ''}
+                    <div class="cyf-notif-time">${escapeHtml(timeAgo(n.ts))}</div>
+                </div>
+            </div>`).join('');
+    }
+    function openNotifs() {
+        renderNotifsList();
+        showView('notifs');
+        markAllRead();       // vues → lues
+        refreshBadge();
+    }
+    if (notifsBtn) notifsBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openNotifs(); });
     if (notifsBack) notifsBack.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showView('main'); });
+    // MAJ live du badge + de la liste quand une notif arrive
+    window.addEventListener('cyl:notifs-changed', () => {
+        refreshBadge();
+        if (menu.querySelector('.cyf-view-notifs') && !menu.querySelector('.cyf-view-notifs').hidden) renderNotifsList();
+    });
+    refreshBadge();
 
     // Click outside to close (ignore clicks inside trigger or menu)
     window.addEventListener('click', (e) => {
