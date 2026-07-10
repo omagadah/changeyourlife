@@ -121,6 +121,18 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // ── Giveaway — participations ──────────────────────────────────────────
+    // Une participation par cycle par utilisateur (doc id = uid). Création seule
+    // (définitive) ; chacun lit/écrit uniquement SA participation. Le tirage réel
+    // se fera côté serveur (Admin SDK) le jour du passage en plan Blaze.
+    match /giveaways/{cycleId}/entries/{uid} {
+      allow read:   if isSignedIn() && isOwner(uid);
+      allow create: if isSignedIn() && isOwner(uid)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.cycleId == cycleId;
+      // pas d'update / delete : une participation ne se modifie pas
+    }
+
     // ── Collections backend-only (admin SDK exclusif) ──────────────────────
     // OTP de vérification email
     match /verificationCodes/{uid} {

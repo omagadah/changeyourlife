@@ -9,8 +9,19 @@
 //    clé dépendante de l'UID si connecté) → bouton verrouillé + état "cooldown"
 //    jusqu'au tirage suivant.
 //
-// 100% client-side pour l'instant (pas de backend giveaway) : structure prête à
-// être reliée à Firestore/Cloud Function le jour où le tirage devient réel.
+// Backend : les participations sont persistées dans Firestore
+// (giveaways/{cycleId}/entries/{uid}) → cross-device, définitives. localStorage
+// sert de cache instantané / repli anonyme. Le TIRAGE reste à faire côté serveur
+// (Admin SDK) le jour du plan Blaze.
+
+import { doc, getDoc, setDoc, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+let _db = null, _auth = null;
+try { if (window._cyfFirebase) { _db = window._cyfFirebase.db; _auth = window._cyfFirebase.auth; } } catch (_) {}
+function currentUid() { try { return _auth?.currentUser?.uid || null; } catch (_) { return null; } }
 
 const GIVEAWAY = {
   // Lot mis en jeu (éditable ici en attendant un back-office).
@@ -54,6 +65,27 @@ function hasEnteredCurrentCycle(now) {
 
 function markEntered(now) {
   try { localStorage.setItem(entryKey(), currentCycleId(now)); } catch (_) {}
+}
+
+// ── Persistance Firestore (giveaways/{cycleId}/entries/{uid}) ────────────────
+function entryDocRef(cycleId, uid) {
+  if (!_db || !uid) return null;
+  return doc(_db, 'giveaways', cycleId, 'entries', uid);
+}
+async function writeFirestoreEntry(cycleId) {
+  const uid = currentUid();
+  const ref = entryDocRef(cycleId, uid);
+  if (!ref) return; // anonyme / pas de db → localStorage seul
+  try {
+    await setDoc(ref, { uid, cycleId, ts: serverTimestamp() });
+  } catch (e) { console.warn('[giveaway] write entry failed', e && e.message); }
+}
+async function checkFirestoreEntry(cycleId) {
+  const uid = currentUid();
+  const ref = entryDocRef(cycleId, uid);
+  if (!ref) return false;
+  try { const s = await getDoc(ref); return s.exists(); }
+  catch (e) { console.warn('[giveaway] check entry failed', e && e.message); return false; }
 }
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
@@ -189,8 +221,10 @@ export function initGiveaway() {
       el.hint.innerHTML = `Participe avant la fin du compte à rebours.`;
       const btn = el.action.querySelector('#gw-participate');
       btn.addEventListener('click', () => {
-        markEntered(Date.now());
+        const cid = currentCycleId(Date.now());
+        markEntered(Date.now());          // cache instantané
         renderAction();
+        writeFirestoreEntry(cid);         // persistance backend (async)
         try { window.dispatchEvent(new CustomEvent('cyf:giveaway-entered')); } catch (_) {}
       });
     }
@@ -214,6 +248,20 @@ export function initGiveaway() {
   renderAction();
   tick();
   setInterval(tick, 1000);
+
+  // Synchro backend : si l'utilisateur a déjà participé sur un autre appareil,
+  // on reflète l'état (une fois l'auth prête).
+  async function syncFromBackend() {
+    const cid = currentCycleId(Date.now());
+    if (hasEnteredCurrentCycle(Date.now())) return; // déjà connu localement
+    const entered = await checkFirestoreEntry(cid);
+    if (entered) { markEntered(Date.now()); renderAction(); }
+  }
+  if (currentUid()) syncFromBackend();
+  else if (_auth) {
+    // attend que l'auth soit prête (une seule fois)
+    const stop = onAuthStateChanged(_auth, (u) => { if (u) { try { stop && stop(); } catch (_) {} syncFromBackend(); } });
+  }
 }
 
 // Auto-init (chargé en <script type="module" src> ; l'inline est bloqué par la CSP).

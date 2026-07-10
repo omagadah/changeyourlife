@@ -1,5 +1,5 @@
-// service-worker.js - v161 (fusion profile-card : bio + lien dans la carte d'identite)
-const CACHE_NAME = 'changeyourlife-v161';
+// service-worker.js - v162 (giveaway backend Firestore : participations persistees cross-device)
+const CACHE_NAME = 'changeyourlife-v162';
 const urlsToCache = [
   '/',
   '/app/',
