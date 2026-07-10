@@ -24,6 +24,12 @@ function setToken(t) { try { sessionStorage.setItem(TKEY, JSON.stringify({ t, ex
 function clearToken() { try { sessionStorage.removeItem(TKEY); } catch (_) {} }
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
+// Codes d'erreur popup pour lesquels un repli signInWithPopup est légitime.
+const POPUP_RETRYABLE = new Set([
+  'auth/user-mismatch', 'auth/requires-recent-login', 'auth/user-token-expired',
+  'auth/operation-not-supported-in-this-environment',
+]);
+
 async function connect() {
   const provider = new GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/calendar.events.readonly');
@@ -34,14 +40,44 @@ async function connect() {
       ? await reauthenticateWithPopup(auth.currentUser, provider)
       : await signInWithPopup(auth, provider);
   } catch (e) {
-    // repli si la ré-authentification échoue (popup, recent-login…)
-    result = await signInWithPopup(auth, provider);
+    const code = e && e.code;
+    // Popup fermée / bloquée / annulée par l'utilisateur : ne PAS relancer un
+    // 2e popup (Chrome le bloquerait) → on remonte l'erreur telle quelle.
+    if (['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/popup-blocked'].includes(code)) {
+      throw e;
+    }
+    // Repli légitime (recent-login, env non supporté…) : une seule tentative.
+    if (POPUP_RETRYABLE.has(code) || auth.currentUser) {
+      result = await signInWithPopup(auth, provider);
+    } else {
+      throw e;
+    }
   }
   const cred = GoogleAuthProvider.credentialFromResult(result);
   const token = cred && cred.accessToken;
-  if (!token) throw new Error('no-token');
+  if (!token) { const err = new Error('no-token'); err.code = 'gcal/no-token'; throw err; }
   setToken(token);
   return token;
+}
+
+// Traduit un code d'erreur en message utilisateur clair (aide au diagnostic).
+function connectErrorMessage(err) {
+  const code = (err && err.code) || '';
+  switch (code) {
+    case 'auth/popup-blocked':
+      return 'Popup bloquée par le navigateur/VPN. Autorise les popups pour changeyourlife.ai puis réessaie.';
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+      return 'Connexion annulée (fenêtre fermée).';
+    case 'auth/unauthorized-domain':
+      return 'Domaine non autorisé dans Firebase (Authorized domains).';
+    case 'gcal/no-token':
+      return 'Accès à l\'agenda refusé : autorise la lecture du calendrier lors de la connexion.';
+    case 'auth/internal-error':
+      return 'Erreur OAuth Google. Vérifie les popups (navigateur/VPN) et réessaie.';
+    default:
+      return 'Connexion impossible.' + (code ? ' (' + code + ')' : '');
+  }
 }
 
 async function api(path, opts) {
@@ -121,7 +157,11 @@ function renderConnect() {
   el.querySelector('#ag-connect').onclick = async (e) => {
     const b = e.currentTarget; b.disabled = true; b.textContent = 'Connexion…';
     try { await connect(); await renderConnected(); }
-    catch (err) { b.disabled = false; b.textContent = 'Connecter Google Agenda'; toast('Connexion annulée ou refusée'); }
+    catch (err) {
+      console.error('[GCal connect] code:', err && err.code, 'message:', err && err.message, err);
+      b.disabled = false; b.textContent = 'Connecter Google Agenda';
+      toast(connectErrorMessage(err));
+    }
   };
 }
 

@@ -1,5 +1,5 @@
-// service-worker.js - v155 (fiche profil premium : bordure metallique + upload avatar anime)
-const CACHE_NAME = 'changeyourlife-v155';
+// service-worker.js - v156 (agenda : diagnostic d'erreur clair + robustesse popup Chrome)
+const CACHE_NAME = 'changeyourlife-v156';
 const urlsToCache = [
   '/',
   '/app/',
