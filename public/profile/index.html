@@ -136,6 +136,17 @@
         display: inline-flex; align-items: center; gap: 6px;
       }
       .hero-stat strong { color: var(--text-1); font-weight: 700; }
+      .hero-bio {
+        font-size: 0.86rem; color: var(--text-2); line-height: 1.5;
+        margin-top: 6px; max-width: 560px;
+      }
+      .hero-link {
+        display: inline-flex; align-items: center; gap: 6px; margin-top: 4px;
+        font-size: 0.8rem; font-weight: 600; color: var(--blue-light);
+        text-decoration: none; width: fit-content;
+      }
+      .hero-link::before { content: '🔗'; font-size: 0.85rem; }
+      .hero-link:hover { text-decoration: underline; }
 
       /* ── Tabs ────────────────────────────────────────────────── */
       .tabs {
@@ -519,6 +530,8 @@
               <span class="hero-stat">🏆 <strong id="hero-stat-badges">0</strong> badges</span>
               <span class="hero-stat">🌳 Niv. <strong id="hero-stat-avg">0</strong> moyen</span>
             </div>
+            <p class="hero-bio" id="hero-bio-display" hidden></p>
+            <a class="hero-link" id="hero-website-display" target="_blank" rel="noopener noreferrer" hidden></a>
           </div>
         </div>
       </section>

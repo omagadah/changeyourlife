@@ -1,5 +1,5 @@
-// service-worker.js - v160 (espace Notifications reel : store XP/giveaway + badge non-lus)
-const CACHE_NAME = 'changeyourlife-v160';
+// service-worker.js - v161 (fusion profile-card : bio + lien dans la carte d'identite)
+const CACHE_NAME = 'changeyourlife-v161';
 const urlsToCache = [
   '/',
   '/app/',

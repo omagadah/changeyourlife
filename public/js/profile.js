@@ -226,6 +226,23 @@ async function loadUserData(uid, userDocRef, user) {
             titleDisplay.textContent = data.profileTitle || '';
             if (bioInput) bioInput.value = data.bio || '';
             if (websiteInput) websiteInput.value = data.website || '';
+            // Surface bio + site dans la carte d'identité (fusion profile-card)
+            const heroBio = document.getElementById('hero-bio-display');
+            if (heroBio) {
+                const bio = (data.bio || '').trim();
+                heroBio.textContent = bio;
+                heroBio.hidden = !bio;
+            }
+            const heroLink = document.getElementById('hero-website-display');
+            if (heroLink) {
+                let url = (data.website || '').trim();
+                if (url) {
+                    const href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+                    heroLink.href = href;
+                    heroLink.textContent = url.replace(/^https?:\/\//i, '');
+                    heroLink.hidden = false;
+                } else { heroLink.hidden = true; }
+            }
             const avatarUrl = data.avatarUrl || localStorage.getItem('userAvatarUrl');
             if (avatarUrl) {
                 showAvatar(avatarUrl);
@@ -282,6 +299,16 @@ async function saveUserData(uid) {
         await setDoc(userDocRef, { displayName, profileTitle, avatarUrl, bio, website, prefs }, { merge: true });
         usernameDisplay.textContent = displayName;
         titleDisplay.textContent = profileTitle;
+        // Rafraîchit bio + lien dans la carte d'identité (sans reload)
+        const heroBio = document.getElementById('hero-bio-display');
+        if (heroBio) { heroBio.textContent = bio; heroBio.hidden = !bio; }
+        const heroLink = document.getElementById('hero-website-display');
+        if (heroLink) {
+            if (website) {
+                const href = /^https?:\/\//i.test(website) ? website : 'https://' + website;
+                heroLink.href = href; heroLink.textContent = website.replace(/^https?:\/\//i, ''); heroLink.hidden = false;
+            } else { heroLink.hidden = true; }
+        }
         showAvatar(avatarUrl || generateInitialAvatar(displayName.charAt(0) || 'U'));
         // update global avatar
         updateGlobalAvatar((displayName || 'U').charAt(0).toUpperCase());
