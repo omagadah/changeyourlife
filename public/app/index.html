@@ -27,12 +27,15 @@
           z-index:1; overflow-y:auto;
           display:flex; flex-direction:column;
         }
-        /* Hiérarchie d'arrivée : giveaway (promo) → accueil → l'ARBRE (cœur du
-           produit, cf. VISION) → ta journée (agenda + aujourd'hui) → tes chiffres
-           (stats + niveaux) → puis les outils. */
-        #giveaway-card  { order:-7; }
-        .welcome-row    { order:-6; }
-        #tree-stage     { order:-5; }
+        /* Hiérarchie d'arrivée (vision « Aujourd'hui d'abord ») :
+           promo → accueil → l'ARBRE (cœur du produit) → QUOI FAIRE MAINTENANT
+           (plan du jour + actions rapides, juste sous l'arbre) → ta journée
+           (agenda + aujourd'hui) → tes chiffres (stats + niveaux) → les outils. */
+        #giveaway-card  { order:-9; }
+        .welcome-row    { order:-8; }
+        #tree-stage     { order:-7; }
+        #plan-cta       { order:-6; }   /* le moteur central : Aujourd'hui */
+        .quick-actions  { order:-5; }   /* log rapide en 1 clic */
         #agenda-card    { order:-4; }
         #today-progress-card { order:-3; }
         .stats-row      { order:-2; }
