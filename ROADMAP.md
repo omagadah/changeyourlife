@@ -99,6 +99,10 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   - Mémoire long-terme entre sessions (Lya se souvient de ce qu'elle t'a dit hier)
   - Tool-use : Lya peut directement ouvrir un module, créer un objectif, planifier dans le calendrier
   - Streaming des réponses (effet « elle écrit en direct »)
+- [ ] **Visualiseur audio SYL** (réf. v0 `audio-visualizer-k7XX4QGgciS`) : anim d'ondes
+  réactive quand SYL parle/écoute. Posture voulue : parler à l'IA n'est **pas central**
+  mais **essentiel** — module branché à l'oral quand des connecteurs vocaux arriveront.
+  À poser dès qu'on a un canal audio (TTS/STT) ou des modules IA externes connectés.
 
 ## ⚖️ Cadre éthique & conformité (SYL) — NON NÉGOCIABLE
 
@@ -159,6 +163,14 @@ de toute responsabilité sur les décisions des utilisateurs.
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
+- [~] **Fiche profil premium** (réf. v0 `metallic-silver-border-card` + `profile-card` +
+  `animated-file-upload`) : carte d'identité utilisateur soignée = bordure métallique
+  argentée + contenu profile-card fusionné + upload d'avatar animé (drag & drop + preview).
+  « L'identification de l'utilisateur » → doit être irréprochable.
+- [~] **Dark / Light mode dans le bandeau supérieur** : toggle global à côté du logo (le
+  système de thème `light-mode` existe déjà via settings, on l'expose partout).
+- [~] **Module Giveaway** (réf. v0 `ios-style-timer`) : compte à rebours façon iOS + cooldown,
+  couleur **violet** (contraste), affiché en page principale `/app` après connexion.
 - [x] **Mesures d'urgence (bouton « Urgence »)** ✅ (`urgence.js`) : bouton rectangulaire
   bas-gauche, texte vertical « URGENCE ». Au clic, triage bienveillant (danger / détresse /
   besoin de souffler). Détresse grave → ressources d'urgence immédiates (3114, 15, 112,

@@ -2,7 +2,63 @@
 // Lightweight modern user menu. Uses window._cyfFirebase.auth if available.
 import { updateGlobalAvatar, normalizeVantaAndHeader } from './common.js';
 
+// ── Toggle thème (dark/light) global dans le bandeau supérieur ──────────────
+// S'appuie sur le système existant (classe `light-mode` + localStorage 'theme').
+export function initThemeToggle() {
+    if (document.getElementById('cyf-theme-toggle')) return;
+
+    const SUN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`;
+    const MOON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+    const styleId = 'cyf-theme-toggle-style';
+    if (!document.getElementById(styleId)) {
+        const s = document.createElement('style');
+        s.id = styleId;
+        s.textContent = `
+            #cyf-theme-toggle {
+                position: fixed; top: 18px; right: 76px; z-index: 10001;
+                width: 36px; height: 36px; border-radius: 50%;
+                display: inline-flex; align-items: center; justify-content: center;
+                cursor: pointer; padding: 0;
+                color: #e5eef8;
+                background: rgba(8,16,28,0.55);
+                border: 1px solid rgba(255,255,255,0.12);
+                backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+                transition: transform .2s var(--ease,cubic-bezier(.4,0,.2,1)), box-shadow .2s, background .2s, color .2s;
+            }
+            #cyf-theme-toggle:hover { transform: scale(1.08); box-shadow: 0 0 16px rgba(255,255,255,0.18); }
+            #cyf-theme-toggle:active { transform: scale(0.94); }
+            #cyf-theme-toggle svg { display: block; }
+            body.light-mode #cyf-theme-toggle { color: #1a1a1a; background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.12); }
+            @media (max-width: 600px) { #cyf-theme-toggle { top: 14px; right: 62px; width: 32px; height: 32px; } }
+        `;
+        document.head.appendChild(s);
+    }
+
+    const btn = document.createElement('button');
+    btn.id = 'cyf-theme-toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Basculer le thème clair/sombre');
+    btn.title = 'Thème clair / sombre';
+
+    const isLight = () => (localStorage.getItem('theme') === 'light');
+    const render = () => { btn.innerHTML = isLight() ? MOON : SUN; };
+    render();
+
+    btn.addEventListener('click', () => {
+        const next = isLight() ? 'dark' : 'light';
+        try { localStorage.setItem('theme', next); } catch (_) {}
+        document.body.classList.toggle('light-mode', next === 'light');
+        render();
+        // Sync avec la page Paramètres si des boutons y sont présents
+        try { window.dispatchEvent(new CustomEvent('cyf:theme-changed', { detail: next })); } catch (_) {}
+    });
+
+    document.body.appendChild(btn);
+}
+
 export function initUserMenu() {
+    try { initThemeToggle(); } catch (e) { /* ignore */ }
     const trigger = document.querySelector('.user-panel-trigger');
     if (!trigger) return;
 

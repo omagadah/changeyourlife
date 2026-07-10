@@ -1,5 +1,5 @@
-// service-worker.js - v152 (fix login Chrome : COOP + CSP google.com + redirection explicite)
-const CACHE_NAME = 'changeyourlife-v152';
+// service-worker.js - v153 (dark/light toggle global dans le bandeau + roadmap MAJ)
+const CACHE_NAME = 'changeyourlife-v153';
 const urlsToCache = [
   '/',
   '/app/',
