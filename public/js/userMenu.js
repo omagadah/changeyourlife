@@ -26,7 +26,7 @@ export function initThemeToggle() {
         s.id = styleId;
         s.textContent = `
             #cyf-theme-toggle {
-                position: fixed; top: 18px; right: 76px; z-index: 10001;
+                position: fixed; top: 18px; right: 72px; z-index: 10001;
                 width: 36px; height: 36px; border-radius: 50%;
                 display: inline-flex; align-items: center; justify-content: center;
                 cursor: pointer; padding: 0;
@@ -40,7 +40,7 @@ export function initThemeToggle() {
             #cyf-theme-toggle:active { transform: scale(0.94); }
             #cyf-theme-toggle svg { display: block; }
             body.light-mode #cyf-theme-toggle { color: #1a1a1a; background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.12); }
-            @media (max-width: 600px) { #cyf-theme-toggle { top: 14px; right: 62px; width: 32px; height: 32px; } }
+            @media (max-width: 600px) { #cyf-theme-toggle { top: 14px; right: 56px; width: 32px; height: 32px; } }
         `;
         document.head.appendChild(s);
     }

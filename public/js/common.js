@@ -51,6 +51,12 @@ export function setupThemeToggle() {
 // Jolis emojis (Twemoji) sur toutes les pages qui chargent common.js.
 try { if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); } } catch (_) {}
 
+// i18n SITE-WIDE : sélecteur de langue + traduction automatique du DOM sur TOUTES
+// les pages qui chargent common.js (avant, seules ~12 pages avaient i18n.js, donc
+// changer de langue ne traduisait presque rien). Import dédupliqué par URL : sur
+// les pages qui incluent déjà <script src="/js/i18n.js">, c'est la même instance.
+try { import('/js/i18n.js').catch(() => {}); } catch (_) {}
+
 // ── Couche de POLISH visuel globale (toutes les pages) ──────────────────────
 // Additive et douce : transitions, survols, focus accessible, halo de champs,
 // léger relief des cartes, et scrollbars « premium » sombres. Aucun changement

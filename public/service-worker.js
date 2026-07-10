@@ -1,5 +1,5 @@
-// service-worker.js - v165 (polish : pastille notifs sur le logo + reduced-motion badge ID)
-const CACHE_NAME = 'changeyourlife-v165';
+// service-worker.js - v166 (i18n site-wide : auto-traduction du DOM + selecteur sur toutes les pages)
+const CACHE_NAME = 'changeyourlife-v166';
 const urlsToCache = [
   '/',
   '/app/',
@@ -47,6 +47,7 @@ const urlsToCache = [
   '/js/firebase.js',
   '/js/arbre3d.js',
   '/js/i18n.js',
+  '/js/auto-translate.js',
   '/js/plan.js',
   '/js/skills.js',
   '/js/competences.js',
