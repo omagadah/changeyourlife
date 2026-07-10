@@ -1,5 +1,5 @@
-// service-worker.js - v164 (refonte /app : Aujourd'hui + actions rapides promus sous l'arbre)
-const CACHE_NAME = 'changeyourlife-v164';
+// service-worker.js - v165 (polish : pastille notifs sur le logo + reduced-motion badge ID)
+const CACHE_NAME = 'changeyourlife-v165';
 const urlsToCache = [
   '/',
   '/app/',

@@ -207,8 +207,9 @@ export function initIdBadge(mount) {
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
 
-  // petite impulsion d'accueil pour montrer que ça bouge
-  setTimeout(() => { if (!dragging) { vel = 0.16; ensureLoop(); } }, 500);
+  // petite impulsion d'accueil pour montrer que ça bouge (sauf reduced-motion)
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) setTimeout(() => { if (!dragging) { vel = 0.16; ensureLoop(); } }, 500);
 
   render();
 }

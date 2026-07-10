@@ -255,11 +255,19 @@ export function initUserMenu() {
     const notifBadge = document.getElementById('cyf-notif-badge');
     const notifsList = document.getElementById('cyf-notifs-list');
 
+    // Pastille de non-lus directement sur le logo (visible sans ouvrir le menu).
+    let triggerDot = trigger.querySelector('.cyf-trigger-dot');
+    if (!triggerDot) {
+        if (getComputedStyle(trigger).position === 'static') trigger.style.position = 'relative';
+        triggerDot = document.createElement('span');
+        triggerDot.className = 'cyf-trigger-dot';
+        triggerDot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#ef4444;border:2px solid rgba(8,16,28,0.9);box-shadow:0 0 8px rgba(239,68,68,0.7);display:none;pointer-events:none;';
+        trigger.appendChild(triggerDot);
+    }
     function refreshBadge() {
-        if (!notifBadge) return;
         const n = unreadCount();
-        notifBadge.textContent = n > 99 ? '99+' : String(n);
-        notifBadge.hidden = n === 0;
+        if (notifBadge) { notifBadge.textContent = n > 99 ? '99+' : String(n); notifBadge.hidden = n === 0; }
+        if (triggerDot) triggerDot.style.display = n > 0 ? 'block' : 'none';
     }
     function renderNotifsList() {
         if (!notifsList) return;
