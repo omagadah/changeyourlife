@@ -1,5 +1,5 @@
-// service-worker.js - v162 (giveaway backend Firestore : participations persistees cross-device)
-const CACHE_NAME = 'changeyourlife-v162';
+// service-worker.js - v163 (arbre /app : croissance animee au gain d'XP - pousse elastique + rebuild)
+const CACHE_NAME = 'changeyourlife-v163';
 const urlsToCache = [
   '/',
   '/app/',

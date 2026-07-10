@@ -45,7 +45,7 @@ export function initLivingTree(userData) {
   if (!stage) return;
   stage.innerHTML = '';
 
-  const totalXp = totalXpFrom(userData);
+  let totalXp = totalXpFrom(userData);
   let growth = clamp01(totalXp / TARGET_XP);
   let type = (localStorage.getItem('cyl_treeType') === 'frene') ? 'frene' : 'chene';
   const universe = (localStorage.getItem('cyl_universe') === 'archi') ? 'archi' : 'arbre';
@@ -160,6 +160,12 @@ export function initLivingTree(userData) {
 
   let tree = null;
   const target = new THREE.Vector3(0, 40, 0);
+  // Animation de croissance de l'arbre ENTIER (au gain d'XP).
+  const nowMs = () => (performance.now ? performance.now() : Date.now());
+  const easeOutBack = (e) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(e - 1, 3) + c1 * Math.pow(e - 1, 2); };
+  let treeScaleAnim = null;   // { t0, dur, type:'pulse'|'grow', from, to, amp }
+  function surgeGrow() { treeScaleAnim = { t0: nowMs(), dur: 950, type: 'grow', from: 0.9, to: 1.0 }; }
+  function surgePulse() { treeScaleAnim = { t0: nowMs(), dur: 620, type: 'pulse', amp: 0.05 }; }
   function rebuild() {
     if (!buildFn) return;
     if (tree) { scene.remove(tree); tree.traverse((o) => o.geometry?.dispose?.()); tree = null; }
@@ -256,6 +262,15 @@ export function initLivingTree(userData) {
     const sp = Math.sin(st.po), cp = Math.cos(st.po);
     camera.position.set(target.x + st.r * sp * Math.sin(st.az), target.y + st.r * cp, target.z + st.r * sp * Math.cos(st.az));
     camera.lookAt(target);
+    // Croissance animée de l'arbre entier (pousse au gain d'XP)
+    if (treeScaleAnim && tree) {
+      const e = clamp01((nowMs() - treeScaleAnim.t0) / treeScaleAnim.dur);
+      let s;
+      if (treeScaleAnim.type === 'pulse') s = 1 + treeScaleAnim.amp * Math.sin(Math.PI * e);
+      else s = treeScaleAnim.from + (treeScaleAnim.to - treeScaleAnim.from) * easeOutBack(e);
+      tree.scale.setScalar(s);
+      if (e >= 1) { tree.scale.setScalar(treeScaleAnim.type === 'pulse' ? 1 : treeScaleAnim.to); treeScaleAnim = null; }
+    }
     // pulse doux des nœuds actifs (halo qui respire ; plus fort au survol)
     const tEl = clock.elapsedTime;
     nodeMap.forEach((n, key) => {
@@ -292,14 +307,28 @@ export function initLivingTree(userData) {
   // Croissance PAR BRANCHE en temps réel : awardXp() émet cyl:xp-gained -> le nœud
   // concerné grossit (et s'allume s'il était dormant), sans recharger la page.
   function onXpGained(ev) {
-    const d = ev.detail || {}; const n = nodeMap.get(d.branch); if (!n) return;
-    const fromR = nodeRadius(n.xp);
-    n.xp += Number(d.amount) || 0;
-    if (n.xp > 0) {
-      n.core.material.color.setHex(n.def.color); n.core.material.opacity = 0.95;
-      n.halo.material.color.setHex(n.def.color); n.halo.material.opacity = 0.3;
+    const d = ev.detail || {}; const amount = Number(d.amount) || 0;
+    const n = nodeMap.get(d.branch);
+    // Croissance du nœud de la branche nourrie (si connue)
+    if (n) {
+      const fromR = nodeRadius(n.xp);
+      n.xp += amount;
+      if (n.xp > 0) {
+        n.core.material.color.setHex(n.def.color); n.core.material.opacity = 0.95;
+        n.halo.material.color.setHex(n.def.color); n.halo.material.opacity = 0.3;
+      }
+      animateNode(d.branch, fromR, nodeRadius(n.xp));
     }
-    animateNode(d.branch, fromR, nodeRadius(n.xp));
+    // Croissance de l'ARBRE ENTIER : l'XP total monte -> growth augmente.
+    if (amount > 0) {
+      totalXp += amount;
+      const newGrowth = clamp01(totalXp / TARGET_XP);
+      tag.textContent = `${stageName(newGrowth)} · ${totalXp.toLocaleString('fr-FR')} XP`;
+      // Franchit un palier de croissance -> on reconstruit l'arbre plus grand
+      // avec une pousse élastique. Sinon, simple pulse « respiration ».
+      if (newGrowth - growth >= 0.012) { growth = newGrowth; rebuild(); surgeGrow(); }
+      else { growth = newGrowth; surgePulse(); }
+    }
   }
   document.addEventListener('cyl:xp-gained', onXpGained);
 
