@@ -1,5 +1,5 @@
-// service-worker.js - v168 (giveaway back-office + tirage serveur admin + annonce gagnant)
-const CACHE_NAME = 'changeyourlife-v168';
+// service-worker.js - v169 (UX anti-IA : palette organique en variables main.min.css)
+const CACHE_NAME = 'changeyourlife-v169';
 const urlsToCache = [
   '/',
   '/app/',
