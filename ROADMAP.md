@@ -163,6 +163,11 @@ de toute responsabilité sur les décisions des utilisateurs.
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
+- [ ] **Matrice / pluie « Matrix »** (réf. v0 `dynamic-rain-website`) : fond de pluie de
+  caractères style Matrix. **IMPÉRATIF** pour l'owner. À **débloquer aux niveaux
+  supérieurs** (récompense de progression : décor/thème réservé aux hauts niveaux d'XP ou
+  au titre max). À poser plus tard — idéalement branché sur le niveau utilisateur comme un
+  univers premium (cf. changement d'univers/thème). Pas d'intégration immédiate.
 - [ ] **Tags « gravité » animés** (réf. v0 `tags-gravity-animation`) : nuage de tags/mots
   soumis à une physique de gravité (chute, rebond, drag). À poser **plus tard** — idéal
   pour un mini-jeu ou une intégration stylée (ex. tags de compétences/valeurs/émotions qui
