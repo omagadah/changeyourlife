@@ -27,16 +27,34 @@
         .profile-page { padding: 76px 14px 40px; }
       }
 
-      /* ── Hero card (banner + avatar overlay) ─────────────────── */
+      /* ── Hero card = carte d'identité METALLIQUE ARGENTÉE animée ─── */
+      @property --cyl-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
       .hero-card {
         position: relative;
-        background: var(--bg-surface);
-        border: 1px solid var(--glass-border);
         border-radius: var(--r-xl);
         overflow: hidden;
         margin-bottom: 28px;
-        box-shadow: var(--shadow);
+        border: 1.6px solid transparent;
+        /* padding-box = corps sombre · border-box = liseré métal argenté rotatif */
+        background:
+          linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
+          conic-gradient(from var(--cyl-angle),
+            #6e6e6e 0%, #d9d9d9 12%, #ffffff 20%, #9a9a9a 32%,
+            #5f5f5f 46%, #e8e8e8 60%, #b8b8b8 72%, #7a7a7a 86%, #6e6e6e 100%) border-box;
+        box-shadow: var(--shadow), 0 0 22px rgba(200,200,210,0.10);
+        animation: cylMetalSpin 9s linear infinite;
       }
+      @keyframes cylMetalSpin { to { --cyl-angle: 360deg; } }
+      /* Fallback navigateurs sans @property : liseré métal statique */
+      @supports not (background: conic-gradient(from 0deg, red, red)) {
+        .hero-card { border-color: rgba(210,210,215,0.35); background: var(--bg-surface); animation: none; }
+      }
+      /* Voile de brillance métallique par-dessus la carte (statique, subtil) */
+      .hero-card::after {
+        content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+        background: linear-gradient(115deg, rgba(255,255,255,0.06) 0%, transparent 22%, transparent 78%, rgba(255,255,255,0.05) 100%);
+      }
+      @media (prefers-reduced-motion: reduce) { .hero-card { animation: none; } }
       .hero-banner {
         height: 120px;
         background:
@@ -57,11 +75,17 @@
         margin-top: -56px;
         background: var(--bg-elevated);
         border: 4px solid var(--bg-surface);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        /* Anneau métallique argenté autour de l'avatar (raccord avec la carte) */
+        box-shadow:
+          0 0 0 1.5px rgba(230,230,235,0.55),
+          0 0 0 5px var(--bg-surface),
+          0 0 0 6.5px rgba(150,150,158,0.45),
+          0 10px 26px rgba(0,0,0,0.45);
         display: flex; align-items: center; justify-content: center;
         overflow: hidden;
         font-size: 2.4rem; font-weight: 800;
         color: var(--text-1);
+        position: relative; z-index: 5;
       }
       .hero-avatar img,
       .hero-avatar svg {
@@ -230,24 +254,34 @@
       }
       @media (max-width: 600px) { .avatar-tools { grid-template-columns: 1fr; } }
       .file-drop {
-        border: 1px dashed var(--glass-border);
+        position: relative; overflow: hidden;
+        border: 1.5px dashed var(--glass-border);
         border-radius: var(--r);
-        padding: 20px;
+        padding: 22px 20px;
         text-align: center;
         cursor: pointer;
-        transition: border-color var(--duration), background var(--duration);
+        transition: border-color var(--duration) var(--ease), background var(--duration), transform var(--duration), box-shadow var(--duration);
         background: rgba(255,255,255,0.02);
       }
       .file-drop:hover {
         border-color: rgba(0,112,243,0.45);
         background: rgba(0,112,243,0.06);
       }
+      /* état drag survolé : la zone respire et s'illumine */
+      .file-drop.dragover {
+        border-color: rgba(96,174,255,0.9);
+        background: rgba(0,112,243,0.12);
+        transform: scale(1.015);
+        box-shadow: 0 0 0 3px rgba(0,112,243,0.14), 0 10px 30px rgba(0,112,243,0.18);
+      }
+      .file-drop.dragover .file-drop__icon { transform: translateY(-4px) scale(1.12); opacity: 1; }
       .file-drop input[type="file"] {
         position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
       }
       .file-drop__icon {
-        font-size: 1.6rem; opacity: 0.6;
+        font-size: 1.8rem; opacity: 0.6;
         margin-bottom: 6px;
+        transition: transform .25s var(--ease-spring, cubic-bezier(.34,1.56,.64,1)), opacity .2s;
       }
       .file-drop__title {
         font-size: 0.88rem; font-weight: 600; color: var(--text-1);
@@ -255,6 +289,25 @@
       .file-drop__hint {
         font-size: 0.74rem; color: var(--text-3); margin-top: 2px;
       }
+      /* Barre de progression animée (upload) */
+      .file-drop__progress {
+        position: absolute; left: 0; bottom: 0; height: 3px; width: 0%;
+        background: linear-gradient(90deg, #0070f3, #60aeff);
+        transition: width .1s linear; opacity: 0;
+      }
+      .file-drop.uploading .file-drop__progress { opacity: 1; }
+      /* Vignette de prévisualisation qui apparaît après import */
+      .file-drop__preview {
+        position: absolute; top: 10px; right: 10px;
+        width: 40px; height: 40px; border-radius: 10px; object-fit: cover;
+        border: 1.5px solid rgba(230,230,235,0.5);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        opacity: 0; transform: scale(0.6) translateY(-4px);
+        transition: opacity .3s var(--ease), transform .35s var(--ease-spring, cubic-bezier(.34,1.56,.64,1));
+      }
+      .file-drop.done .file-drop__preview { opacity: 1; transform: scale(1) translateY(0); }
+      .file-drop.done { border-color: rgba(34,197,94,0.5); background: rgba(34,197,94,0.06); }
+      .file-drop.done .file-drop__icon::after { content: ' ✓'; color: #86efac; }
       .initial-row {
         display: flex; gap: 10px; align-items: stretch;
       }
@@ -566,11 +619,13 @@
           </header>
 
           <div class="avatar-tools">
-            <label class="file-drop" for="avatar-file-input">
+            <label class="file-drop" for="avatar-file-input" id="avatar-drop">
+              <img class="file-drop__preview" id="avatar-drop-preview" alt=""/>
               <div class="file-drop__icon">🖼️</div>
               <div class="file-drop__title">Importer une photo</div>
-              <div class="file-drop__hint">PNG, JPG ou WebP - max 2 Mo</div>
+              <div class="file-drop__hint">Glisse-dépose ou clique · PNG, JPG, WebP - max 2 Mo</div>
               <input type="file" id="avatar-file-input" accept="image/*"/>
+              <div class="file-drop__progress" id="avatar-drop-progress"></div>
             </label>
 
             <div class="field">
@@ -726,5 +781,6 @@
     <div id="vanta-birds-bg"></div>
     <script type="module" src="/js/profile.js"></script>
     <script type="module" src="/js/profile-init.js"></script>
+    <script type="module" src="/js/avatar-upload.js"></script>
 </body>
 </html>

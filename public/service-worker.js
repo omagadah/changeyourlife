@@ -1,5 +1,5 @@
-// service-worker.js - v154 (module giveaway violet + timer iOS sur /app)
-const CACHE_NAME = 'changeyourlife-v154';
+// service-worker.js - v155 (fiche profil premium : bordure metallique + upload avatar anime)
+const CACHE_NAME = 'changeyourlife-v155';
 const urlsToCache = [
   '/',
   '/app/',
@@ -63,6 +63,7 @@ const urlsToCache = [
   '/js/login-bg.js',
   '/js/login-init.js',
   '/js/particle-avatar.js',
+  '/js/avatar-upload.js',
   '/js/pixel-badge.js',
   '/js/archi-build.js',
   '/js/syl-chat.js',
