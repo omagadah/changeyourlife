@@ -66,6 +66,23 @@ if (window.__sylChat) { /* déjà chargé */ } else {
       .syl-disc{padding:7px 12px 9px;font:500 10px Segoe UI,Roboto,sans-serif;color:#7e9ab5;text-align:center;
         border-top:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.18);line-height:1.4;}
       .syl-disc b{color:#9fb2cb;}
+      /* Écran de consentement (1re ouverture) */
+      .syl-consent{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;padding:22px 20px;gap:14px;
+        background:rgba(8,16,28,0.98);overflow-y:auto;}
+      .syl-consent.show{display:flex;animation:sylUp .22s ease;}
+      .syl-consent-orb{width:52px;height:52px;border-radius:50%;align-self:center;flex-shrink:0;
+        background:radial-gradient(circle at 36% 32%,#fbe6b0,#e7b15c 40%,#4a7a3a 100%);box-shadow:0 0 18px rgba(231,177,92,.45);}
+      .syl-consent-title{font:800 16px Segoe UI,Roboto,sans-serif;color:#fff;text-align:center;}
+      .syl-consent-body{font:500 12.7px Segoe UI,Roboto,sans-serif;color:#c3d2e6;line-height:1.55;}
+      .syl-consent-body ul{margin:8px 0 0;padding-left:18px;}
+      .syl-consent-body li{margin-bottom:5px;}
+      .syl-consent-body b{color:#fbe6b0;}
+      .syl-consent-check{display:flex;gap:9px;align-items:flex-start;font:500 12px Segoe UI,Roboto,sans-serif;color:#c3d2e6;cursor:pointer;}
+      .syl-consent-check input{margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#84c25e;cursor:pointer;}
+      .syl-consent-ok{margin-top:2px;padding:11px;border:none;border-radius:12px;cursor:pointer;font:800 13.5px Segoe UI,Roboto,sans-serif;
+        color:#0c130a;background:linear-gradient(135deg,#f1cd92,#e7b15c);transition:filter .2s,opacity .2s;}
+      .syl-consent-ok:hover{filter:brightness(1.07);}
+      .syl-consent-ok:disabled{opacity:.45;cursor:default;}
       @media (max-width:600px){ .syl-panel{right:8px;bottom:8px;height:min(72vh,560px);} .syl-fab{right:14px;bottom:14px;} }
     `;
     document.head.appendChild(s);
@@ -139,7 +156,23 @@ if (window.__sylChat) { /* déjà chargé */ } else {
       `<div class="syl-msgs"></div>` +
       `<div class="syl-form"><textarea class="syl-input" rows="1" placeholder="Ecris à SYL..."></textarea>` +
         `<button class="syl-send" aria-label="Envoyer">↑</button></div>` +
-      `<div class="syl-disc">SYL t'écoute et t'aide à clarifier TES choix - il ne décide pas à ta place et ne remplace pas un professionnel. Urgence : <b>3114</b> · <b>15</b></div>`;
+      `<div class="syl-disc">SYL t'écoute et t'aide à clarifier TES choix - il ne décide pas à ta place et ne remplace pas un professionnel. Urgence : <b>3114</b> · <b>15</b></div>` +
+      `<div class="syl-consent" role="dialog" aria-label="Avant de parler à SYL">
+        <div class="syl-consent-orb"></div>
+        <div class="syl-consent-title">Avant de commencer</div>
+        <div class="syl-consent-body">
+          SYL est un <b>assistant de vie</b>, pas un professionnel. Pour ton bien :
+          <ul>
+            <li>SYL <b>ne remplace pas</b> un médecin, psychologue ou tout autre professionnel de santé.</li>
+            <li>Il <b>ne décide pas à ta place</b> : il t'aide à clarifier TES propres choix.</li>
+            <li>Il ne donne pas de conseil médical, juridique ou financier prescriptif.</li>
+            <li>En cas de détresse : <b>3114</b> (souffrance, prévention suicide), <b>15</b> (SAMU), <b>112</b> (urgences).</li>
+          </ul>
+        </div>
+        <label class="syl-consent-check"><input type="checkbox" id="syl-consent-cb"/>
+          <span>J'ai compris que SYL ne remplace pas un professionnel et ne décide pas à ma place.</span></label>
+        <button class="syl-consent-ok" id="syl-consent-ok" disabled>Commencer à parler à SYL</button>
+      </div>`;
 
     document.body.appendChild(fab);
     document.body.appendChild(panel);
@@ -147,9 +180,28 @@ if (window.__sylChat) { /* déjà chargé */ } else {
     inputEl = panel.querySelector('.syl-input');
     sendBtn = panel.querySelector('.syl-send');
 
+    // ── Consentement (1re ouverture, exigence de conformité) ────────────────
+    const CONSENT_KEY = 'cyl_syl_consent_v1';
+    const consentEl = panel.querySelector('.syl-consent');
+    const consentCb = panel.querySelector('#syl-consent-cb');
+    const consentOk = panel.querySelector('#syl-consent-ok');
+    const hasConsent = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'; } catch (_) { return false; } };
+    consentCb.addEventListener('change', () => { consentOk.disabled = !consentCb.checked; });
+    consentOk.addEventListener('click', () => {
+      try { localStorage.setItem(CONSENT_KEY, '1'); } catch (_) {}
+      consentEl.classList.remove('show');
+      startChat();
+      inputEl.focus();
+    });
+
+    function startChat() {
+      if (!started) { started = true; addMsg('syl', 'Bonjour, je suis SYL, ton assistant de vie. Comment te sens-tu aujourd\'hui ?'); }
+    }
+
     const open = () => {
       panel.classList.add('open'); fab.style.display = 'none';
-      if (!started) { started = true; addMsg('syl', 'Bonjour, je suis SYL, ton assistant de vie. Comment te sens-tu aujourd\'hui ?'); }
+      if (!hasConsent()) { consentEl.classList.add('show'); return; }
+      startChat();
       inputEl.focus();
     };
     const close = () => { panel.classList.remove('open'); fab.style.display = ''; };

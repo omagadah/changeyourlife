@@ -118,10 +118,12 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **Wording produit corrigé** ✅ (satellite SYL, widget) : plus de « t'oriente vers la
   bonne action » ; disclaimer visible dans le chat (« ne décide pas à ta place / pas un pro »).
 - [ ] **CGU + mentions légales + politique de confidentialité** (pages dédiées, lien footer).
-- [ ] **Consentement explicite** à la 1re ouverture de SYL (case « j'ai compris que SYL ne
-  remplace pas un professionnel »).
-- [ ] **Modération / garde-fou serveur** : filtre de sécurité sur les réponses (anti-conseil
-  dangereux), journalisation minimale anonymisée des cas de détresse signalés.
+- [x] **Consentement explicite** ✅ à la 1re ouverture de SYL (`syl-chat.js` : écran de
+  consentement + case « j'ai compris que SYL ne remplace pas un professionnel », stocké
+  `cyl_syl_consent_v1`). Bloque le chat tant que non accepté.
+- [x] **Modération / garde-fou serveur** ✅ (`api/chat.js` : `moderateReply()` détecte la
+  détresse dans le message et GARANTIT les ressources d'urgence 3114/15/112/114 dans la
+  réponse, quel que soit le retour du modèle ; flag `safety`).
 
 ## 📝 Idées validées (à planifier)
 

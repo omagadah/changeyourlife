@@ -69,6 +69,28 @@ FORMAT DE SORTIE : réponds UNIQUEMENT par un objet JSON valide (aucun texte aut
 {"reply": "ta réponse", "modules": ["cle_module", ...]}
 "modules" est optionnel, 0 à 3 clés MAXIMUM, choisies STRICTEMENT dans la liste ci-dessus, seulement si elles aident vraiment.`;
 
+// ── Modération / garde-fou serveur ──────────────────────────────────────────
+// Filet de sécurité : quelle que soit la réponse du modèle, si l'utilisateur
+// exprime une détresse grave / un danger, on GARANTIT l'affichage des ressources
+// d'urgence. (Le system prompt le fait déjà, mais on ne s'en remet pas qu'à lui.)
+const DISTRESS_RE = new RegExp([
+  'suicid', 'me tuer', 'me suicider', 'en finir', 'plus envie de vivre',
+  'envie d.en finir', 'me faire du mal', 'automutil', 'scarification',
+  'passer à l.acte', 'me pendre', 'sauter du', 'overdose',
+  'kill myself', 'end my life', 'want to die', 'self[- ]?harm', 'hurt myself',
+  'suicidal',
+].join('|'), 'i');
+
+const SAFETY_FOOTER = "\n\nSi tu es en souffrance ou en danger, tu n'es pas seul(e) : 3114 (prévention du suicide, gratuit, 24h/24), 15 (SAMU), 112 (urgences), ou 114 par SMS. Parler à un proche ou à un professionnel peut vraiment aider.";
+
+function moderateReply(reply, userText) {
+  if (userText && DISTRESS_RE.test(userText)) {
+    const r = /3114|114|SAMU/i.test(reply) ? reply : reply + SAFETY_FOOTER;
+    return { reply: r, safety: true };
+  }
+  return { reply, safety: false };
+}
+
 function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];
   const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -167,7 +189,12 @@ module.exports = async function handler(req, res) {
     // Ne renvoie que des modules valides (clé + route), max 3.
     const mods = Array.isArray(parsed.modules) ? parsed.modules : [];
     const modules = mods.filter((k) => MODULES[k]).slice(0, 3).map((k) => ({ key: k, href: MODULES[k] }));
-    return res.status(200).json({ reply: String(parsed.reply || '').trim() || "Je suis là. Raconte-moi.", modules });
+
+    // Garde-fou serveur : garantit les ressources d'urgence en cas de détresse.
+    const baseReply = String(parsed.reply || '').trim() || "Je suis là. Raconte-moi.";
+    const lastUser = [...safeMessages].reverse().find((m) => m.role === 'user');
+    const { reply, safety } = moderateReply(baseReply, lastUser && lastUser.content);
+    return res.status(200).json({ reply, modules, safety });
   } catch (e) {
     console.error('[chat] handler error:', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });

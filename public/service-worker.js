@@ -1,5 +1,5 @@
-// service-worker.js - v166 (i18n site-wide : auto-traduction du DOM + selecteur sur toutes les pages)
-const CACHE_NAME = 'changeyourlife-v166';
+// service-worker.js - v167 (conformite SYL : consentement 1re ouverture + moderation serveur)
+const CACHE_NAME = 'changeyourlife-v167';
 const urlsToCache = [
   '/',
   '/app/',
