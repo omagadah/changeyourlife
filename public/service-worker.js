@@ -1,5 +1,5 @@
-// service-worker.js - v156 (agenda : diagnostic d'erreur clair + robustesse popup Chrome)
-const CACHE_NAME = 'changeyourlife-v156';
+// service-worker.js - v157 (reorg /app : arbre remonte, hierarchie d'arrivee)
+const CACHE_NAME = 'changeyourlife-v157';
 const urlsToCache = [
   '/',
   '/app/',

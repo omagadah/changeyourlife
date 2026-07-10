@@ -27,13 +27,16 @@
           z-index:1; overflow-y:auto;
           display:flex; flex-direction:column;
         }
-        /* Hiérarchie : le récap (XP, niveaux, stats) remonte en haut. */
+        /* Hiérarchie d'arrivée : giveaway (promo) → accueil → l'ARBRE (cœur du
+           produit, cf. VISION) → ta journée (agenda + aujourd'hui) → tes chiffres
+           (stats + niveaux) → puis les outils. */
+        #giveaway-card  { order:-7; }
         .welcome-row    { order:-6; }
-        .stats-row      { order:-5; }
-        .rings-section  { order:-4; }
+        #tree-stage     { order:-5; }
+        #agenda-card    { order:-4; }
         #today-progress-card { order:-3; }
-        #agenda-card    { order:-2; }
-        #tree-stage     { order:-1; }
+        .stats-row      { order:-2; }
+        .rings-section  { order:-1; }
         .tree-stage {
           position:relative; width:100%; height:380px; border-radius:20px; overflow:hidden;
           background:radial-gradient(circle at 50% 28%, rgba(20,40,70,0.45), rgba(6,12,22,0.65));
