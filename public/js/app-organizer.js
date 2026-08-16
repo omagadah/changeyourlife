@@ -9,7 +9,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/f
 import {
   loadBoard, saveBoard, getCol, findCard, moveCard, addCard, logCard,
   allCards, dueToday, topPriorities, stripEmoji,
-  BRANCHES, BRANCH_BY_KEY, SUBS, TRI_ID, FINISH_ID, FINISH_XP,
+  BRANCHES, BRANCH_BY_KEY, SUBS, reliefOptions, TRI_ID, FINISH_ID, FINISH_XP,
 } from '/js/organizer-data.js';
 import * as gcal from '/js/gcal.js';
 
@@ -275,6 +275,21 @@ function onDragEnd(evt) {
 //  - l'aide a été refusée : elle s'efface, mais reste joignable en un clic.
 // Dans tous les cas l'utilisateur garde la main : c'est lui qui décide.
 function cylBlock(card) {
+  // La détresse passe AVANT toute logique de rangement. On ne demande pas à
+  // quelqu'un qui va mal de choisir une colonne Eisenhower : on lui ouvre des
+  // portes, et il prend celle qu'il veut - ou aucune.
+  if (card.distress) {
+    const opts = reliefOptions(card).map((o) => o.act === 'cyl'
+      ? `<button class="hub-relief-b" data-relief="cyl">${esc(o.label)}</button>`
+      : `<a class="hub-relief-b${o.tone === 'urgent' ? ' urgent' : ''}" href="${esc(o.href)}">${esc(o.label)}</a>`).join('');
+    return `<div class="hub-relief${card.crisis ? ' crisis' : ''}">
+      <div class="hub-relief-t">${card.crisis ? 'Tu comptes.' : 'Ça passe devant le reste.'}</div>
+      <div class="hub-relief-r">${esc(card.cylReason)}</div>
+      <div class="hub-relief-opts">${opts}</div>
+      ${card.crisis ? '<div class="hub-relief-num"><b>3114</b> (24h/24, gratuit) · <b>15</b> SAMU · <b>112</b> urgences</div>' : ''}
+      <button class="hub-cyl-no" id="hs-cyl-no">Je gère, range-la normalement</button>
+    </div>`;
+  }
   const needs = (card.confidence < 0.5 || card.complexity === 'complexe' || card.altBranch);
   if (needs && !card.cylDismissed) {
     return `<div class="hub-cyl">
@@ -381,6 +396,8 @@ function openSheet(cardId) {
 
   const cylGo = $('#hs-cyl');
   if (cylGo) cylGo.onclick = () => { close(); askCylAbout(card); };
+  const relief = s.querySelector('[data-relief="cyl"]');
+  if (relief) relief.onclick = () => { close(); askCylAbout(card); };
   const cylNo = $('#hs-cyl-no');
   if (cylNo) cylNo.onclick = () => {
     // « Non, c'est bon » : CYL se retire de CETTE fiche, mais reste joignable.
@@ -573,6 +590,22 @@ function injectCSS() {
   .hub-cyl-go:hover{filter:brightness(1.07);}
   .hub-cyl-no{background:var(--surface-2);color:var(--text-2);border:1px solid var(--line-strong);}
   .hub-cyl-no:hover{background:var(--surface-3);color:var(--text-1);}
+  /* Fiche de detresse : le rangement s'efface, les portes de sortie passent devant */
+  .hub-relief{margin:16px 0 2px;padding:15px 16px;border-radius:14px;
+    background:rgba(224,120,95,0.08);border:1px solid rgba(224,120,95,0.32);}
+  .hub-relief.crisis{background:rgba(224,120,95,0.14);border-color:rgba(224,120,95,0.55);}
+  .hub-relief-t{font-size:0.86rem;font-weight:800;color:#e58e73;}
+  .hub-relief-r{font-size:0.78rem;color:var(--text-2);line-height:1.5;margin-top:4px;}
+  .hub-relief-opts{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
+  .hub-relief-b{display:inline-flex;align-items:center;border:1px solid var(--line-strong);
+    background:var(--surface-2);color:var(--text-1);text-decoration:none;cursor:pointer;
+    font:inherit;font-size:0.76rem;font-weight:700;padding:8px 14px;border-radius:99px;
+    transition:background .16s,border-color .16s;}
+  .hub-relief-b:hover{background:rgba(224,120,95,0.16);border-color:rgba(224,120,95,0.5);}
+  .hub-relief-b.urgent{background:linear-gradient(135deg,#e0785f,#c0503a);color:#fff;border-color:transparent;}
+  .hub-relief-num{margin-top:11px;font-size:0.76rem;color:var(--text-2);}
+  .hub-relief-num b{color:#e58e73;}
+  .hub-relief .hub-cyl-no{margin-top:12px;}
   .hub-cyl-quiet{margin:14px 0 2px;}
   .hub-cyl-link{background:none;border:none;padding:0;cursor:pointer;font:inherit;font-size:0.74rem;
     color:var(--text-3);text-decoration:underline;text-underline-offset:3px;transition:color .16s;}

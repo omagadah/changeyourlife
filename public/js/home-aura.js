@@ -3,6 +3,9 @@
 (function () {
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce) return;
+  // Mode leger (mobile / connexion lente) : le canvas est masque, cette boucle
+  // d'animation consommerait du CPU et de la batterie pour rien.
+  if (document.documentElement.classList.contains('lite')) return;
   var cv = document.getElementById('aura-canvas');
   if (!cv) return;
   var ctx = cv.getContext('2d'), w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);

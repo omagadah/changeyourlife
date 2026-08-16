@@ -91,6 +91,8 @@ export function normalizeBoard(raw) {
         k.altBranch = r.alt || null;
         k.cylReason = r.reason || '';
         k.cylDismissed = false;
+        k.distress = r.distress;
+        k.crisis = r.crisis;
         if (!k.branch) k.branch = r.branch;
       }
     });
@@ -163,6 +165,8 @@ export function newCard(title, extra = {}) {
     altBranch: r.alt || null,      // 2e branche plausible quand c'est serre
     cylReason: r.reason || '',     // pourquoi CYL propose de l'aide
     cylDismissed: false,           // « non, c'est bon » de l'utilisateur
+    distress: r.distress,          // mal-etre : passe devant tout le reste
+    crisis: r.crisis,              // mise en danger : oriente vers de l'aide
     ...extra,
   };
   logCard(card, 'Fiche créée');
@@ -375,6 +379,20 @@ function scoreComplexity(raw, t, kind) {
 
 const URGENT_RE = /\b(urgent|aujourd hui|ce soir|demain|au plus vite|asap|deadline|en retard|derniere minute|imperatif)/;
 const IMPORTANT_RE = /\b(important|crucial|vital|prioritaire|essentiel|indispensable)/;
+
+// ── DETRESSE ────────────────────────────────────────────────────────────────
+// Quand quelqu'un ecrit qu'il n'en peut plus, ce n'est PAS « a planifier ».
+// C'est ce qu'il y a de plus urgent ET de plus important dans sa journee.
+// Deux niveaux, deux reponses tres differentes.
+//
+//  · DISTRESS : mal-etre installe (« j'en ai marre de ce boulot », epuisement,
+//    perte de sens). -> remonte en Urgent · Important, et la fiche propose un
+//    eventail de portes de sortie. On PROPOSE, on ne prescrit pas : c'est lui
+//    qui choisit, y compris de ne rien faire.
+//  · CRISIS : mise en danger. -> on n'essaie surtout pas de « ranger » ca dans
+//    une matrice de productivite : on oriente vers de l'aide humaine reelle.
+const DISTRESS_RE = /\b(j en ai marre|marre de|ras le bol|j en peux plus|je (n )?en peux plus|a bout|au bout du rouleau|epuis|burn ?out|craque|je craque|je tiens plus|je (ne )?supporte plus|degoute|deprim|mal etre|je vais mal|ca va pas du tout|plus envie de rien|vide|desespere|angoiss|panique|je pleure|insupportable)/;
+const CRISIS_RE = /\b(envie d en finir|en finir avec la vie|me suicider|suicide|plus envie de vivre|disparaitre a jamais|me faire du mal|mettre fin a mes jours|je veux mourir)/;
 // Les motifs sont ecrits SANS accent : on normalise le titre avant de tester,
 // sinon « mediter » ne matcherait jamais « mediter » ecrit avec un accent (le
 // \b de JS s'appuie sur [A-Za-z0-9_], les lettres accentuees le cassent).
@@ -419,23 +437,30 @@ export function classify(raw) {
   const cScore = scoreComplexity(raw, t, kind);
   const complexity = cScore >= 5 ? 'complexe' : cScore >= 3 ? 'moyen' : 'simple';
 
+  // 3 bis. Detresse : elle prime sur tout le reste du classement.
+  const crisis = CRISIS_RE.test(t);
+  const distress = crisis || DISTRESS_RE.test(t);
+
   // 4. Colonne Eisenhower proposee
   let col;
   const urgent = URGENT_RE.test(t);
   const important = IMPORTANT_RE.test(t);
-  if (urgent && (important || complexity !== 'simple')) col = 'ui';
+  if (distress) col = 'ui';                    // rien ne passe avant
+  else if (urgent && (important || complexity !== 'simple')) col = 'ui';
   else if (urgent) col = 'up';
   else if (kind === 'ressenti' || kind === 'objectif') col = 'ni';
   else if (kind === 'envie') col = complexity === 'simple' ? 'ni' : 'nn';
   else if (kind === 'idee') col = 'nn';
   else col = complexity === 'simple' ? 'up' : 'ni';
 
-  // 5. CYL tend la main quand elle ne peut PAS ranger seule, ou quand la
-  //    pensee merite d'etre depliee avant d'etre priorisee.
-  const needsCyl = confidence < 0.5 || complexity === 'complexe' || !!alt;
+  // 5. CYL tend la main quand elle ne peut PAS ranger seule, quand la pensee
+  //    merite d'etre depliee, ou quand la personne ne va pas bien.
+  const needsCyl = distress || confidence < 0.5 || complexity === 'complexe' || !!alt;
 
   let reason = '';
-  if (!branch) reason = "Je n'ai pas su rattacher ça à une part de ta vie.";
+  if (crisis) reason = "Tu n'as pas à porter ça seul. Il y a des gens dont c'est le métier d'écouter, tout de suite.";
+  else if (distress) reason = "Ça passe devant le reste. Tu n'as rien à organiser tant que tu te sens comme ça.";
+  else if (!branch) reason = "Je n'ai pas su rattacher ça à une part de ta vie.";
   else if (alt) reason = `Ça touche à deux choses : ${BRANCH_BY_KEY[branch]?.label} et ${BRANCH_BY_KEY[alt]?.label}.`;
   else if (kind === 'ressenti') reason = "C'est un ressenti, pas une tâche : il gagne à être déplié avant d'être rangé.";
   else if (complexity === 'complexe') reason = "C'est large : il y a sans doute plusieurs choses là-dedans.";
@@ -444,7 +469,27 @@ export function classify(raw) {
     branch, sub: branch ? (bestSub[branch]?.sub || null) : null,
     kind, complexity, complexityScore: cScore,
     confidence, col, alt, needsCyl, reason,
+    distress, crisis,
   };
+}
+
+// Portes de sortie proposees sur une fiche de detresse.
+// PROPOSITIONS, jamais prescriptions : l'utilisateur choisit, y compris de
+// tout ignorer. Aucune ne promet de « regler » quoi que ce soit.
+export function reliefOptions(card) {
+  if (card && card.crisis) {
+    return [
+      { label: 'Parler à quelqu\'un maintenant', href: '#urgence', tone: 'urgent' },
+      { label: 'En parler à CYL', act: 'cyl' },
+      { label: 'Poser ce qui pèse', href: '/journal/' },
+    ];
+  }
+  return [
+    { label: 'En parler à CYL', act: 'cyl' },
+    { label: 'Poser ce qui pèse', href: '/journal/' },
+    { label: 'Souffler 5 min', href: '/meditation/' },
+    { label: 'Voir ce qui va', href: '/gratitude/' },
+  ];
 }
 
 // Compatibilite : l'ancienne API ne rendait que la branche.

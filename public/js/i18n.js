@@ -387,7 +387,9 @@ function pick() {
 // ── Cache des traductions IA (langues sans dictionnaire écrit à la main, ou
 //    clés manquantes d'une langue principale comme les panneaux de branches). ──
 // Bump SRC_VERSION si on modifie une chaîne source FR → invalide les caches.
-const SRC_VERSION = 5;
+// v6 : renommage SYL -> CYL. Sans ce bump, les traductions IA en cache
+// localStorage continuaient d'afficher « SYL » alors que la source dit CYL.
+const SRC_VERSION = 6;
 const ai = {};                 // ai[lang] = { clé: traduction }
 const translating = new Set(); // langues dont une traduction IA est en cours
 
