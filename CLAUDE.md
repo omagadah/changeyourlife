@@ -49,7 +49,7 @@ vision. Toute proposition de feature doit s'inscrire dans la métaphore de l'arb
 
 ## Modules frontend (~34 pages HTML · 5 API serverless)
 
-> API `/api/*` : `chat` (SYL/Anthropic), `coach` (Lya/Groq+Gemini),
+> API `/api/*` : `chat` (CYL/Anthropic), `coach` (Lya/Groq+Gemini),
 > `translate` (Groq+Gemini), `send-verification`, `verify-code`.
 
 | Module | Route | Notes |

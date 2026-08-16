@@ -1,7 +1,7 @@
-// /js/arbre3d.js - Page d'accueil : arbre de vie procédural + croissance + SYL.
+// /js/arbre3d.js - Page d'accueil : arbre de vie procédural + croissance + CYL.
 // Cf. docs/VISION.md, docs/ARCHITECTURE.md.
 //
-// v7 - fix du texte de SYL (plus de superposition au clic rapide), flux de
+// v7 - fix du texte de CYL (plus de superposition au clic rapide), flux de
 // pop-ups « tâche accomplie » (satisfaisant), panneau explicatif au clic sur
 // une branche. Barre de temps + caméra cinématique conservées.
 
@@ -610,8 +610,8 @@ const SAT_INFO = {
     body: "Le cœur de l'app est gratuit et ouvert. Tu construis ta vie, pas un abonnement.",
     link: { label: 'Le code (GitHub) ↗', href: 'https://github.com/omagadah/changeyourlife' },
   },
-  syl: {
-    title: '✨ SYL, ton assistant',
+  cyl: {
+    title: '✨ CYL, ton assistant',
     body: "Une IA bienveillante qui t'écoute et t'aide à y voir clair dans TES propres choix. Elle ne décide jamais à ta place.",
   },
 };
@@ -692,16 +692,16 @@ function initSatInfo(infoSats) {
   };
 }
 
-// ── SYL ─────────────────────────────────────────────────────────────────────
+// ── CYL ─────────────────────────────────────────────────────────────────────
 // Répliques d'intro : [clé i18n, repli FR]
 const LYA_INTRO = [
-  ['lya.intro1', 'Bonjour, je suis SYL. Ravie de te rencontrer.'],
+  ['lya.intro1', 'Bonjour, je suis CYL. Ravie de te rencontrer.'],
   ['lya.intro2', 'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.'],
   ['lya.intro3', 'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.'],
 ];
 let lyaSay = null;        // (label) => affiche la réplique « branche »
 let lyaState = null;      // mémoire de la réplique courante (pour relocaliser)
-let typeGen = 0;            // jeton anti-superposition du texte de SYL
+let typeGen = 0;            // jeton anti-superposition du texte de CYL
 function typeLine(el, text, done) {
   const gen = ++typeGen;   // toute frappe précédente est invalidée
   if (!el) return;
@@ -730,19 +730,19 @@ function speak(text, on) {
 function branchLine(label) {
   return T('lya.branch', '%s - voici ce qui fait grandir cette branche.').replace('%s', label);
 }
-// Texte courant de SYL selon l'état mémorisé (pour relocalisation).
+// Texte courant de CYL selon l'état mémorisé (pour relocalisation).
 function lyaCurrentText() {
   if (!lyaState) return '';
   if (lyaState.type === 'branch') return branchLine(lyaState.label);
   return T(lyaState.key, lyaState.fb);
 }
 
-function initSYL() {
+function initCyl() {
   const lineEl = document.getElementById('lya-line');
   const voiceBtn = document.getElementById('lya-voice');
   let voiceOn = false;
   const introTimers = [];
-  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de SYL');
+  const voiceLabel = () => (voiceOn ? '🔊 ' : '🔇 ') + T('lya.voice', 'Voix de CYL');
   if (voiceBtn) {
     voiceBtn.textContent = voiceLabel();
     voiceBtn.addEventListener('click', () => {
@@ -807,7 +807,7 @@ function initTree3D(canvas) {
   const satInfo = initSatInfo(infoSats);
   // ┌─────────────────────────────────────────────────────────────────────────┐
   // │ RÉGLAGE PANNEAUX SATELLITES : distance caméra au-delà de laquelle les     │
-  // │ panneaux (SYL, connecté, open source, transparent) DISPARAISSENT au       │
+  // │ panneaux (CYL, connecté, open source, transparent) DISPARAISSENT au       │
   // │ dézoom. Ils RÉAPPARAISSENT en-dessous. Zoom min = 95, zoom max = 7000.    │
   // │ Augmente ce nombre pour pouvoir dézoomer plus avant qu'ils disparaissent. │
   // └─────────────────────────────────────────────────────────────────────────┘
@@ -843,20 +843,20 @@ function initTree3D(canvas) {
   let hovered = null;
   let pointerDown = false;
 
-  // ── Bouton URGENCE -> pointillés animés jusqu'au satellite SYL ──────────────
+  // ── Bouton URGENCE -> pointillés animés jusqu'au satellite CYL ──────────────
   const urgBtn = document.getElementById('urgence-btn');
   const urgSvg = document.getElementById('urgence-link');
   const urgPath = urgSvg && urgSvg.querySelector('path');
-  const sylSat = (infoSats || []).find((s) => s.userData && s.userData.info === 'syl');
+  const cylSat = (infoSats || []).find((s) => s.userData && s.userData.info === 'cyl');
   const _projU = new THREE.Vector3();
   let urgenceOn = false;
   // Le clic sur le bouton Urgence est géré par /js/urgence.js (flux d'aide / crise).
-  // On ne fait plus de toggle « pointillés vers SYL » ici (évite le double-comportement).
+  // On ne fait plus de toggle « pointillés vers CYL » ici (évite le double-comportement).
   function updateUrgence() {
-    if (!urgenceOn || !urgPath || !sylSat || !urgBtn) return;
+    if (!urgenceOn || !urgPath || !cylSat || !urgBtn) return;
     const r = urgBtn.getBoundingClientRect();
     const bx = r.left + r.width / 2, by = r.top + r.height / 2;
-    sylSat.getWorldPosition(_projU).project(camera);
+    cylSat.getWorldPosition(_projU).project(camera);
     const w = canvas.clientWidth, h = canvas.clientHeight;
     const sx = (_projU.x * 0.5 + 0.5) * w, sy = (-_projU.y * 0.5 + 0.5) * h;
     const mx = (bx + sx) / 2, my = Math.min(by, sy) - 70;   // courbe douce
@@ -979,7 +979,7 @@ function initTree3D(canvas) {
       orbitT = Math.min(1, orbitT + dt / 6);   // ~6 s pour dessiner l'atome complet
       orbits.setProgress(orbitT);
     }
-    updateUrgence();   // pointillés bouton -> satellite SYL
+    updateUrgence();   // pointillés bouton -> satellite CYL
     // Croissance animée de l'ez-tree : on remonte le plan de coupe (bas -> haut).
     if (ez.clip) {
       const e = easeOut(Math.min(1, Math.max(0, age)));
@@ -1029,7 +1029,7 @@ function init() {
     try { initTree3D(canvas); }
     catch (e) { console.error('[arbre3d] init failed', e); }
   }
-  initSYL();
+  initCyl();
   document.body.classList.add('tree-ready');
 }
 

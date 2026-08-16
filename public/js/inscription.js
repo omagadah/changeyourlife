@@ -205,7 +205,7 @@ if (form) {
       const confirm = passwordConfirmInput ? passwordConfirmInput.value : '';
       if (password !== confirm) { setHint(passwordConfirmHint, 'Les mots de passe ne correspondent pas'); return; }
 
-      // Consentement obligatoire (CGU + confidentialité + SYL non-médical).
+      // Consentement obligatoire (CGU + confidentialité + CYL non-médical).
       const consentCheck = document.getElementById('consent-check');
       if (consentCheck && !consentCheck.checked) {
         setHint(document.getElementById('consent-hint'), 'Merci d’accepter les CGU et la politique de confidentialité pour créer ton compte.');

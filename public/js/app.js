@@ -89,7 +89,7 @@
             } else { window.location.href = '/login'; }
         });
 
-        // L'onboarding est désormais conversationnel : SYL accueille le nouvel
+        // L'onboarding est désormais conversationnel : CYL accueille le nouvel
         // utilisateur et plante l'arbre avec lui (cf. tree-widget.js). L'ancien
         // tutoriel guidé Shepherd a été retiré.
 

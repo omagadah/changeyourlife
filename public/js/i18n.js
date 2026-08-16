@@ -3,7 +3,7 @@
 // Principe : chaque texte traduisible porte un attribut data-i18n="clé"
 // (textContent), data-i18n-html="clé" (innerHTML, pour <br>/<strong>) ou
 // data-i18n-ph="clé" (placeholder). Au chargement et à chaque changement de
-// langue, on parcourt le DOM et on remplace. La 3D (SYL, stades) lit les
+// langue, on parcourt le DOM et on remplace. La 3D (CYL, stades) lit les
 // chaînes via window.CYL.t(). Choix mémorisé dans localStorage.
 //
 // Ajouter une langue = ajouter une entrée dans LANGS + un bloc dans DICT.
@@ -60,11 +60,11 @@ const DICT = {
     'nav.login': 'Se connecter',
     'hero.eyebrow': 'Font de toi qui tu es et font grandir ton arbre',
     'hero.title': 'Deviens qui tu rêves d\'être.<br>Un geste après l\'autre.',
-    'hero.desc': 'Ici, ta vie prend la forme d\'un arbre numérique.<br>Chaque geste de ta vie réelle s\'y inscrit et le fait grandir, et toi avec lui. <strong>SYL, ton assistant personnel, t\'aide à mener tes projets à bien</strong> et à t\'épanouir dans le style de vie qui est le tien.',
+    'hero.desc': 'Ici, ta vie prend la forme d\'un arbre numérique.<br>Chaque geste de ta vie réelle s\'y inscrit et le fait grandir, et toi avec lui. <strong>CYL, ton assistant personnel, t\'aide à mener tes projets à bien</strong> et à t\'épanouir dans le style de vie qui est le tien.',
     'stream.caption': 'Tes actions dans la vraie vie',
     'cta.start': 'Commencer l\'aventure',
-    'lya.voice': 'Voix de SYL',
-    'lya.intro1': 'Bonjour, je suis SYL. Ravie de te rencontrer.',
+    'lya.voice': 'Voix de CYL',
+    'lya.intro1': 'Bonjour, je suis CYL. Ravie de te rencontrer.',
     'lya.intro2': 'Regarde : chaque chose que tu fais dans ta vraie vie fait pousser ton arbre.',
     'lya.intro3': 'Le voilà épanoui. Touche une branche pour voir ce qui la nourrit.',
     'lya.branch': '%s - voici ce qui fait grandir cette branche.',
@@ -180,11 +180,11 @@ const DICT = {
     'nav.login': 'Sign in',
     'hero.eyebrow': 'They make you who you are - and grow your tree',
     'hero.title': 'Every action makes you grow.<br>For real.',
-    'hero.desc': 'A meditation, a full night\'s sleep, a call to a loved one… <strong>every act of your real life makes your tree grow.</strong> Everything is connected - and SYL, your coach, walks with you every step.',
+    'hero.desc': 'A meditation, a full night\'s sleep, a call to a loved one… <strong>every act of your real life makes your tree grow.</strong> Everything is connected - and CYL, your coach, walks with you every step.',
     'stream.caption': 'Your actions, in real life',
     'cta.start': 'Begin the journey',
-    'lya.voice': 'SYL\'s voice',
-    'lya.intro1': 'Hello, I\'m SYL. So glad to meet you.',
+    'lya.voice': 'CYL\'s voice',
+    'lya.intro1': 'Hello, I\'m CYL. So glad to meet you.',
     'lya.intro2': 'Look: everything you do in your real life makes your tree grow.',
     'lya.intro3': 'There it is, in full bloom. Tap a branch to see what feeds it.',
     'lya.branch': '%s - here\'s what makes this branch grow.',
@@ -212,11 +212,11 @@ const DICT = {
     'nav.login': 'Iniciar sesión',
     'hero.eyebrow': 'Te hacen quien eres y hacen crecer tu árbol',
     'hero.title': 'Cada acción te hace crecer.<br>De verdad.',
-    'hero.desc': 'Una meditación, una noche completa, una llamada a un ser querido… <strong>cada gesto de tu vida real hace crecer tu árbol.</strong> Todo está conectado, y SYL, tu coach, te acompaña en cada paso.',
+    'hero.desc': 'Una meditación, una noche completa, una llamada a un ser querido… <strong>cada gesto de tu vida real hace crecer tu árbol.</strong> Todo está conectado, y CYL, tu coach, te acompaña en cada paso.',
     'stream.caption': 'Tus acciones, en la vida real',
     'cta.start': 'Comenzar la aventura',
-    'lya.voice': 'Voz de SYL',
-    'lya.intro1': 'Hola, soy SYL. Encantada de conocerte.',
+    'lya.voice': 'Voz de CYL',
+    'lya.intro1': 'Hola, soy CYL. Encantada de conocerte.',
     'lya.intro2': 'Mira: todo lo que haces en tu vida real hace crecer tu árbol.',
     'lya.intro3': 'Ahí está, pleno. Toca una rama para ver qué la nutre.',
     'lya.branch': '%s - esto es lo que hace crecer esta rama.',
@@ -244,11 +244,11 @@ const DICT = {
     'nav.login': 'Anmelden',
     'hero.eyebrow': 'Sie machen dich zu dem, der du bist, und lassen deinen Baum wachsen',
     'hero.title': 'Jede Handlung lässt dich wachsen.<br>Wirklich.',
-    'hero.desc': 'Eine Meditation, eine durchschlafene Nacht, ein Anruf bei einem geliebten Menschen… <strong>jede Handlung deines echten Lebens lässt deinen Baum wachsen.</strong> Alles ist verbunden - und SYL, dein Coach, begleitet dich bei jedem Schritt.',
+    'hero.desc': 'Eine Meditation, eine durchschlafene Nacht, ein Anruf bei einem geliebten Menschen… <strong>jede Handlung deines echten Lebens lässt deinen Baum wachsen.</strong> Alles ist verbunden - und CYL, dein Coach, begleitet dich bei jedem Schritt.',
     'stream.caption': 'Deine Taten, im echten Leben',
     'cta.start': 'Das Abenteuer beginnen',
-    'lya.voice': 'SYLs Stimme',
-    'lya.intro1': 'Hallo, ich bin SYL. Schön, dich kennenzulernen.',
+    'lya.voice': 'CYLs Stimme',
+    'lya.intro1': 'Hallo, ich bin CYL. Schön, dich kennenzulernen.',
     'lya.intro2': 'Schau: alles, was du in deinem echten Leben tust, lässt deinen Baum wachsen.',
     'lya.intro3': 'Da ist er, voll erblüht. Tippe auf einen Ast, um zu sehen, was ihn nährt.',
     'lya.branch': '%s - das lässt diesen Ast wachsen.',
@@ -276,11 +276,11 @@ const DICT = {
     'nav.login': 'Accedi',
     'hero.eyebrow': 'Ti rendono chi sei e fanno crescere il tuo albero',
     'hero.title': 'Ogni azione ti fa crescere.<br>Davvero.',
-    'hero.desc': 'Una meditazione, una notte intera, una telefonata a una persona cara… <strong>ogni gesto della tua vita reale fa crescere il tuo albero.</strong> Tutto è collegato, e SYL, il tuo coach, ti accompagna a ogni passo.',
+    'hero.desc': 'Una meditazione, una notte intera, una telefonata a una persona cara… <strong>ogni gesto della tua vita reale fa crescere il tuo albero.</strong> Tutto è collegato, e CYL, il tuo coach, ti accompagna a ogni passo.',
     'stream.caption': 'Le tue azioni, nella vita reale',
     'cta.start': 'Inizia l\'avventura',
-    'lya.voice': 'Voce di SYL',
-    'lya.intro1': 'Ciao, sono SYL. Felice di conoscerti.',
+    'lya.voice': 'Voce di CYL',
+    'lya.intro1': 'Ciao, sono CYL. Felice di conoscerti.',
     'lya.intro2': 'Guarda: ogni cosa che fai nella tua vita reale fa crescere il tuo albero.',
     'lya.intro3': 'Eccolo, rigoglioso. Tocca un ramo per vedere cosa lo nutre.',
     'lya.branch': '%s - ecco cosa fa crescere questo ramo.',
@@ -308,11 +308,11 @@ const DICT = {
     'nav.login': 'Entrar',
     'hero.eyebrow': 'Fazem de ti quem és e fazem crescer a tua árvore',
     'hero.title': 'Cada ação faz-te crescer.<br>A sério.',
-    'hero.desc': 'Uma meditação, uma noite inteira, uma chamada a alguém querido… <strong>cada gesto da tua vida real faz crescer a tua árvore.</strong> Está tudo ligado - e a SYL, o teu coach, acompanha-te a cada passo.',
+    'hero.desc': 'Uma meditação, uma noite inteira, uma chamada a alguém querido… <strong>cada gesto da tua vida real faz crescer a tua árvore.</strong> Está tudo ligado - e a CYL, o teu coach, acompanha-te a cada passo.',
     'stream.caption': 'As tuas ações, na vida real',
     'cta.start': 'Começar a aventura',
-    'lya.voice': 'Voz da SYL',
-    'lya.intro1': 'Olá, sou a SYL. Muito prazer em conhecer-te.',
+    'lya.voice': 'Voz da CYL',
+    'lya.intro1': 'Olá, sou a CYL. Muito prazer em conhecer-te.',
     'lya.intro2': 'Olha: tudo o que fazes na tua vida real faz crescer a tua árvore.',
     'lya.intro3': 'Aqui está, florescente. Toca num ramo para ver o que o alimenta.',
     'lya.branch': '%s - eis o que faz crescer este ramo.',
@@ -340,11 +340,11 @@ const DICT = {
     'nav.login': 'Inloggen',
     'hero.eyebrow': 'Ze maken je wie je bent en laten je boom groeien',
     'hero.title': 'Elke actie laat je groeien.<br>Echt waar.',
-    'hero.desc': 'Een meditatie, een volledige nacht slaap, een telefoontje naar een dierbare… <strong>elke daad uit je echte leven laat je boom groeien.</strong> Alles is verbonden - en SYL, je coach, loopt bij elke stap met je mee.',
+    'hero.desc': 'Een meditatie, een volledige nacht slaap, een telefoontje naar een dierbare… <strong>elke daad uit je echte leven laat je boom groeien.</strong> Alles is verbonden - en CYL, je coach, loopt bij elke stap met je mee.',
     'stream.caption': 'Jouw acties, in het echte leven',
     'cta.start': 'Begin het avontuur',
-    'lya.voice': 'Stem van SYL',
-    'lya.intro1': 'Hallo, ik ben SYL. Leuk je te ontmoeten.',
+    'lya.voice': 'Stem van CYL',
+    'lya.intro1': 'Hallo, ik ben CYL. Leuk je te ontmoeten.',
     'lya.intro2': 'Kijk: alles wat je in je echte leven doet, laat je boom groeien.',
     'lya.intro3': 'Daar is hij, volgroeid. Tik op een tak om te zien wat hem voedt.',
     'lya.branch': '%s - dit laat deze tak groeien.',
@@ -518,13 +518,13 @@ function setLang(code, persist) {
   applyDom();
   syncButton();
   syncList();
-  // La 3D (SYL, stades, panneaux) se met à jour via cet évènement.
+  // La 3D (CYL, stades, panneaux) se met à jour via cet évènement.
   window.dispatchEvent(new CustomEvent('cyl:langchange', { detail: { lang: code } }));
   // Complète les clés manquantes via l'IA (langues exotiques, branches…).
   ensureTranslations(code);
 }
 
-// Exposé global pour arbre3d.js (SYL, stades).
+// Exposé global pour arbre3d.js (CYL, stades).
 window.CYL = window.CYL || {};
 window.CYL.t = t;
 window.CYL.getLang = () => current;

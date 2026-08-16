@@ -1,11 +1,11 @@
-// api/syl-brief.js - SYL lit ton ORGANIZER + ton agenda et te renvoie :
+// api/cyl-brief.js - CYL lit ton ORGANIZER + ton agenda et te renvoie :
 //   1. un brief du jour (par quoi commencer, ce qui peut attendre)
 //   2. un « profil type » : comment tu fonctionnes, d'apres tes vraies donnees
 //
 // C'est la piece qui rend l'IA CENTRALE : elle ne repond plus seulement quand
 // on lui parle, elle lit l'etat reel du systeme et le restitue en une phrase.
 //
-// STRICTEMENT NON-DIRECTIF (cf. cadre ethique du projet) : SYL observe, reflete
+// STRICTEMENT NON-DIRECTIF (cf. cadre ethique du projet) : CYL observe, reflete
 // et PROPOSE un ordre possible. Elle ne prescrit pas, ne juge pas, ne decide pas.
 //
 // Variables d'environnement Vercel :
@@ -29,7 +29,7 @@ const BRANCH_LABELS = {
   transcendance: 'Transcendance (sens, contribution)',
 };
 
-const SYSTEM_PROMPT = `Tu es SYL, l'assistant de vie de Change Your Life (changeyourlife.ai).
+const SYSTEM_PROMPT = `Tu es CYL, l'assistant de vie de Change Your Life (changeyourlife.ai).
 
 CE QUE TU RECOIS : l'etat reel du systeme de l'utilisateur - les fiches de son ORGANIZER (une matrice d'Eisenhower : urgent/important, a planifier, vite fait, plus tard, plus une colonne « a trier »), leurs echeances, la branche de vie que chacune nourrit (modele de Maslow, 8 branches), et les evenements deja poses dans son Google Agenda.
 
@@ -144,7 +144,7 @@ module.exports = async function handler(req, res) {
     calls.push(now);
     await rateRef.set({ calls, lastAt: new Date() }, { merge: true });
   } catch (e) {
-    console.error('[syl-brief] rate-limit error:', e?.message || e);
+    console.error('[cyl-brief] rate-limit error:', e?.message || e);
     return res.status(503).json({ error: 'Service temporairement indisponible' });
   }
 
@@ -170,8 +170,8 @@ module.exports = async function handler(req, res) {
     });
     if (!r.ok) {
       const errText = await r.text();
-      console.error('[syl-brief] Anthropic error:', r.status, errText.slice(0, 240));
-      return res.status(502).json({ error: 'SYL est momentanement indisponible' });
+      console.error('[cyl-brief] Anthropic error:', r.status, errText.slice(0, 240));
+      return res.status(502).json({ error: 'CYL est momentanement indisponible' });
     }
     const data = await r.json();
     const text = data.content?.map((b) => (b.type === 'text' ? b.text : '')).join('') || '';
@@ -189,7 +189,7 @@ module.exports = async function handler(req, res) {
       jachere: pickBranches(p.jachere),
     });
   } catch (e) {
-    console.error('[syl-brief] handler error:', e?.message || e);
+    console.error('[cyl-brief] handler error:', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });
   }
 };

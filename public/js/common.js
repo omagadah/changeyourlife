@@ -250,7 +250,9 @@ if (typeof window !== 'undefined') {
 
         // Register service worker once globally, if supported and not already registered
         if ('serviceWorker' in navigator) {
-            const swUrl = '/service-worker.js?v=68';
+            // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
+  // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
+  const swUrl = '/service-worker.js?v=172';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
@@ -432,14 +434,18 @@ if (typeof window !== 'undefined') {
   window.cyl = Object.assign(window.cyl || {}, { escapeHtml, toast, saveWithFeedback });
 }
 
-// ── SYL overlay (orb + chat) - chargée sur toutes les pages auth ────────────
-// Pas sur la landing, login, signup, verify-email (pages publiques sans SYL).
-(function maybeLoadSYLOverlay() {
+// ── CYL (orbe + chat) - chargée sur toutes les pages authentifiées ──────────
+// Pas sur la landing, login, signup, verify-email (pages publiques sans CYL).
+//
+// UNE SEULE IA, UN SEUL MODULE : c'est `cyl-chat.js` (consentement, garde-fous
+// de conformité, préremplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
+// chargeait une SECONDE orbe en parallèle sur /app/ - il n'est plus utilisé.
+(function maybeLoadCylChat() {
   try {
     var p = location.pathname;
     if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
         || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0) return;
     // import dynamique : non bloquant si le module échoue
-    import('/js/lya-overlay.js').catch(function (e) { try { console.warn('[lya-overlay]', e && e.message || e); } catch (_) {} });
+    import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
   } catch (_) { /* ignore */ }
 })();

@@ -158,7 +158,7 @@ pire (drag `pointerdown` exclusivement).
   deploy, `firebase.json` n'a pas de hook `predeploy`, et `lib/` est gitignoré.
 - **`web/`** : refonte Next.js 15 complète (29 fichiers trackés, 687 Mo en local),
   **absente de CLAUDE.md**. À trancher : supprimer ou documenter comme gelée.
-- **CLAUDE.md documente 5 API serverless, il y en a 7** (`syl-brief`,
+- **CLAUDE.md documente 5 API serverless, il y en a 7** (`cyl-brief`,
   `giveaway-draw` manquent). `addXp` (Cloud Function) n'est pas documenté non plus.
 - **Sitemap : 17 URLs pour 35 pages** — ~13 pages publiques absentes.
 - **`/coach/` est orpheline** : dans le sitemap et le précache, mais **aucun lien
@@ -186,7 +186,7 @@ Rien n'a été supprimé : ce sont des actions destructives.
 ## Curiosités
 
 - Le SW précache `/js/gcal.js`, `/organizer-data.js`, `/app-organizer.js`,
-  `/syl-brief.js` : ces 4 fichiers sont **untracked en git**. `cache.addAll()` est
+  `/cyl-brief.js` : ces 4 fichiers sont **untracked en git**. `cache.addAll()` est
   **atomique** → s'ils sont poussés sans le SW (ou l'inverse), **l'installation du
   SW échoue en entier pour tous les utilisateurs**. Ils doivent partir dans le
   **même commit**.
@@ -215,5 +215,5 @@ Vulns npm racine   8 modérées     Vulns functions     10 modérées
       de compte, le back-office admin et le verrou giveaway restent inactifs.
 - [ ] **Reconnecter Google Agenda** une fois (le scope OAuth a changé pour
       l'écriture lors de la session précédente).
-- [ ] Vérifier `API_ANTHROPIC_CHATBOT` sur Vercel (utilisé par `/api/syl-brief`).
+- [ ] Vérifier `API_ANTHROPIC_CHATBOT` sur Vercel (utilisé par `/api/cyl-brief`).
 - [ ] Trancher : supprimer le code mort listé ci-dessus (~2,3 Mo) ?

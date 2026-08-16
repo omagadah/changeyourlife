@@ -1,4 +1,4 @@
-// api/chat.js - SYL, l'assistant de vie du site, propulsé par Claude (Anthropic).
+// api/chat.js - CYL, l'assistant de vie du site, propulsé par Claude (Anthropic).
 // Conversationnel : écoute l'utilisateur, conseille, et l'oriente vers le bon
 // module du site. Sécurisé : exige un ID token Firebase valide + rate-limit.
 //
@@ -16,7 +16,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
-// Modules du site que SYL peut recommander (clé → route).
+// Modules du site que CYL peut recommander (clé → route).
 const MODULES = {
   meditation: '/meditation/', journal: '/journal/', objectifs: '/objectifs/',
   habitudes: '/habitudes/', sommeil: '/sommeil/', humeur: '/humeur/',
@@ -28,7 +28,7 @@ const MODULES = {
   accomplissement: '/accomplissement/', transcendance: '/transcendance/',
 };
 
-const SYSTEM_PROMPT = `Tu es SYL, l'assistant de vie incarné de l'application Change Your Life (changeyourlife.ai).
+const SYSTEM_PROMPT = `Tu es CYL, l'assistant de vie incarné de l'application Change Your Life (changeyourlife.ai).
 
 L'INTERFACE EST UN ARBRE VIVANT : la vie de l'utilisateur prend la forme d'un arbre numérique, calqué sur la pyramide de Maslow. Chaque action faite dans la vraie vie (dormir, méditer, appeler un proche, atteindre un objectif...) fait grandir une branche de l'arbre et rapporte de l'XP. L'utilisateur ne remplit pas une appli : il construit sa vie, et tu veilles à ses côtés.
 
@@ -189,7 +189,7 @@ module.exports = async function handler(req, res) {
     if (!r.ok) {
       const errText = await r.text();
       console.error('[chat] Anthropic error:', r.status, errText.slice(0, 240));
-      return res.status(502).json({ error: 'SYL est momentanément indisponible' });
+      return res.status(502).json({ error: 'CYL est momentanément indisponible' });
     }
     const data = await r.json();
     const text = data.content?.map((b) => (b.type === 'text' ? b.text : '')).join('') || '';

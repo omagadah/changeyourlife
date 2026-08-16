@@ -1,7 +1,64 @@
 # Roadmap - ChangeYourLife.ai
 
 > Liste opérationnelle, à cocher au fil de l'eau. Vision narrative → [docs/VISION.md](docs/VISION.md).
-> Architecture technique → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). MAJ : **2026-08-08**.
+> Architecture technique → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). MAJ : **2026-08-16**.
+
+---
+
+# 🎬 CHANTIER MAJEUR - « le site s'explique tout seul »
+
+> Décidé le 2026-08-16. **Priorité produit après l'ORGANIZER.**
+> Aucun utilisateur ne doit se demander « qu'est-ce que je fais ici ? ».
+
+## 1 · Démonstration fantôme à la première connexion (le gros morceau)
+
+À la **toute première** visite d'un module - et **uniquement** celle-là - le
+site se joue lui-même sous les yeux de l'utilisateur, en filigrane.
+
+Scénario pour l'ORGANIZER :
+
+1. Une idée d'exemple **s'écrit toute seule** dans le champ de dépôt, lettre
+   par lettre, en gris très clair, presque invisible (ex. « Rappeler le
+   dentiste »).
+2. Elle **part dans « À trier »** : la fiche fantôme glisse du champ vers la
+   colonne, avec la même courbe que le vrai rendu.
+3. Un **curseur de souris dessiné** apparaît, vient saisir la fiche (le curseur
+   change visiblement de la flèche à la main fermée), la **déplace** dans
+   « Urgent · Important », et la relâche.
+4. Tout s'efface. L'utilisateur a compris sans lire une ligne.
+
+Règles impératives :
+
+- **Jamais de doute sur ce qui se passe.** Un libellé discret et permanent
+  (« Démonstration - regarde comment ça marche ») doit accompagner l'animation,
+  sinon l'utilisateur croit à un bug ou à une saisie fantôme.
+- **Interruptible à tout moment** : la moindre frappe ou le moindre clic arrête
+  la démo et rend la main. Bouton « passer » visible.
+- **Aucune donnée créée** : la fiche de démo est purement visuelle, jamais
+  écrite dans Firestore.
+- **Une seule fois par module**, mémorisé côté utilisateur (`users/{uid}.seenDemo`),
+  pas en localStorage seul (sinon elle se rejoue sur chaque appareil).
+- `prefers-reduced-motion` → remplacer l'animation par 3 captures fixes légendées.
+
+**À décliner ensuite sur TOUS les modules** (plan, agenda, journal, habitudes,
+compétences, arbre…). C'est le fil conducteur de l'onboarding : le site
+enseigne son propre usage, module par module, au moment où on y arrive.
+
+## 2 · CYL propose un tri automatique dans la matrice Eisenhower
+
+Quand des fiches attendent dans « À trier », CYL propose un rangement -
+**proposition, jamais application automatique** :
+
+- Pour chaque fiche : colonne Eisenhower suggérée + branche Maslow + une
+  échéance plausible, avec **une raison en une ligne** (« tu l'as notée trois
+  fois cette semaine », « ça bloque autre chose »).
+- L'utilisateur voit la proposition **en aperçu** (fiches fantômes posées dans
+  les colonnes cibles) et valide **en bloc** ou **fiche par fiche**.
+- Un « Annuler » qui remet tout en place, tant que l'utilisateur n'a pas quitté.
+- **Chronologie** : CYL propose aussi un ordre dans la journée / la semaine,
+  cohérent avec le Google Agenda déjà rempli.
+- Cadre non-négociable : CYL **ne décide pas**. Le vocabulaire reste celui de la
+  suggestion, jamais de l'injonction.
 
 ---
 
@@ -13,7 +70,7 @@
 > IA qui voit tout. L'arbre reste - c'est la signature visuelle et le langage du
 > produit - mais il devient le **reflet** de l'action, plus le sujet principal.
 >
-> Règle de conception : **une seule IA (SYL), au-dessus de tous les modules.**
+> Règle de conception : **une seule IA (CYL), au-dessus de tous les modules.**
 > Elle lit l'état réel du système et le restitue. Elle propose, ne prescrit jamais
 > (cf. cadre éthique non-négociable plus bas).
 
@@ -22,7 +79,7 @@
 ```
         ORGANIZER  (ce que tu as en tête, trié par priorité)
              │
-    branche  │  échéance                      SYL lit les trois
+    branche  │  échéance                      CYL lit les trois
     Maslow   │  + planification               et rend un brief
              ▼
   MASLOW ◄────────► GOOGLE AGENDA  (ce qui est déjà pris)
@@ -44,15 +101,15 @@
 - [x] **`/js/app-organizer.js`** - l'ORGANIZER **embarqué en tête de `/app/`** :
   capture en une ligne, 4 colonnes Eisenhower, drag & drop, fiche → branche
   Maslow, échéance en 1 clic, « Planifier dans Google Agenda ».
-- [x] **`/api/syl-brief.js` + `/js/syl-brief.js`** - SYL lit l'organizer **et**
+- [x] **`/api/cyl-brief.js` + `/js/cyl-brief.js`** - CYL lit l'organizer **et**
   l'agenda, et rend : un brief du jour, un **profil type** (comment tu fonctionnes,
   d'après tes vraies données), les fiches à regarder en premier, les branches
   nourries vs en jachère. Cache ~12 h, rate-limit 8/h, repli 100 % local sans IA.
 - [x] **Refonte de `/app/`** : le « bonjour » réduit à une ligne discrète ·
-  ORGANIZER tout en haut · SYL juste dessous · journée (agenda + fiches échues
+  ORGANIZER tout en haut · CYL juste dessous · journée (agenda + fiches échues
   fusionnés) · raccourcis · **arbre relégué** (260 px, sous les blocs utiles).
 - [x] **Une seule IA** : l'ancien gros CTA « Coach IA / Gemini 2.0 » retiré de
-  `/app/` (doublon avec SYL, cf. AUDIT « 3 stacks IA concurrentes »).
+  `/app/` (doublon avec CYL, cf. AUDIT « 3 stacks IA concurrentes »).
 - [x] **L'XP suit la vraie branche** : une fiche terminée crédite la branche
   Maslow qu'elle nourrit (au lieu d'« accomplissement » systématiquement).
 
@@ -60,7 +117,7 @@
 
 - [ ] **Écriture bidirectionnelle** : cocher une fiche → mettre à jour /
   supprimer l'événement agenda ; déplacer un événement → décaler l'échéance.
-- [ ] **SYL agissante (tool-use)** : « range ça en urgent », « planifie-moi ça
+- [ ] **CYL agissante (tool-use)** : « range ça en urgent », « planifie-moi ça
   jeudi » exécuté directement depuis le chat, avec confirmation de l'utilisateur.
 - [ ] **Profil type persistant** : stocker l'analyse dans `users/{uid}.profileAI`
   et la faire évoluer dans le temps (tendances sur 4 semaines) au lieu d'un
@@ -68,7 +125,7 @@
 - [ ] **Capture depuis partout** : raccourci clavier global + partage PWA
   (`share_target`) pour déverser une idée sans ouvrir le site.
 - [ ] **Vue « ma semaine »** : organizer + agenda sur 7 jours dans un seul écran.
-- [ ] **Retirer `/coach/`** (3e stack IA) ou le fusionner dans SYL.
+- [ ] **Retirer `/coach/`** (3e stack IA) ou le fusionner dans CYL.
 - [ ] **Rappels** : Web Push sur les fiches à échéance du jour (quick win, aucun
   connecteur externe).
 
@@ -141,7 +198,7 @@ Exemple cible (arrêter de fumer) :
 Sans connecteurs, l'arbre est borgne. Avec, il devient un chêne.
 
 - [x] **Google Calendar** ✅ - connecteur unifié `/js/gcal.js` (lecture + écriture).
-  Lit tes événements pour contextualiser SYL, et reçoit les fiches que tu planifies
+  Lit tes événements pour contextualiser CYL, et reçoit les fiches que tu planifies
   depuis l'ORGANIZER. *Reste : synchro bidirectionnelle (cf. refonte 2026-08).*
 - [ ] **Trello** - pipeline Notes / idées → objectifs structurés
 - [ ] **Montre connectée** (Apple Watch / Google Fit / Garmin) - sommeil + activité + cœur en automatique
@@ -170,14 +227,14 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   - Mémoire long-terme entre sessions (Lya se souvient de ce qu'elle t'a dit hier)
   - Tool-use : Lya peut directement ouvrir un module, créer un objectif, planifier dans le calendrier
   - Streaming des réponses (effet « elle écrit en direct »)
-- [ ] **Visualiseur audio SYL** (réf. v0 `audio-visualizer-k7XX4QGgciS`) : anim d'ondes
-  réactive quand SYL parle/écoute. Posture voulue : parler à l'IA n'est **pas central**
+- [ ] **Visualiseur audio CYL** (réf. v0 `audio-visualizer-k7XX4QGgciS`) : anim d'ondes
+  réactive quand CYL parle/écoute. Posture voulue : parler à l'IA n'est **pas central**
   mais **essentiel** - module branché à l'oral quand des connecteurs vocaux arriveront.
   À poser dès qu'on a un canal audio (TTS/STT) ou des modules IA externes connectés.
 
-## ⚖️ Cadre éthique & conformité (SYL) - NON NÉGOCIABLE
+## ⚖️ Cadre éthique & conformité (CYL) - NON NÉGOCIABLE
 
-Principe : SYL **assiste** sans jamais **diriger**. La frontière (assister vs manipuler)
+Principe : CYL **assiste** sans jamais **diriger**. La frontière (assister vs manipuler)
 est tenue par une posture **non-directive** (approche centrée sur la personne / entretien
 motivationnel) : refléter, questionner, clarifier - l'utilisateur décide seul. Objectif :
 protéger l'utilisateur (autonomie, pas de dérive sectaire/idéologique) ET dédouaner le site
@@ -186,12 +243,12 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **System prompt non-directif** ✅ (`api/chat.js`) : interdit de prescrire / décider /
   pousser une idéologie ; pas de conseil médical-juridique-financier prescriptif ; sécurité
   détresse (3114/15/112) ; rappel « pas un professionnel de santé ».
-- [x] **Wording produit corrigé** ✅ (satellite SYL, widget) : plus de « t'oriente vers la
+- [x] **Wording produit corrigé** ✅ (satellite CYL, widget) : plus de « t'oriente vers la
   bonne action » ; disclaimer visible dans le chat (« ne décide pas à ta place / pas un pro »).
 - [ ] **CGU + mentions légales + politique de confidentialité** (pages dédiées, lien footer).
-- [x] **Consentement explicite** ✅ à la 1re ouverture de SYL (`syl-chat.js` : écran de
-  consentement + case « j'ai compris que SYL ne remplace pas un professionnel », stocké
-  `cyl_syl_consent_v1`). Bloque le chat tant que non accepté.
+- [x] **Consentement explicite** ✅ à la 1re ouverture de CYL (`cyl-chat.js` : écran de
+  consentement + case « j'ai compris que CYL ne remplace pas un professionnel », stocké
+  `cyl_consent_v1`). Bloque le chat tant que non accepté.
 - [x] **Modération / garde-fou serveur** ✅ (`api/chat.js` : `moderateReply()` détecte la
   détresse dans le message et GARANTIT les ressources d'urgence 3114/15/112/114 dans la
   réponse, quel que soit le retour du modèle ; flag `safety`).
@@ -269,8 +326,8 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **Mesures d'urgence (bouton « Urgence »)** ✅ (`urgence.js`) : bouton rectangulaire
   bas-gauche, texte vertical « URGENCE ». Au clic, triage bienveillant (danger / détresse /
   besoin de souffler). Détresse grave → ressources d'urgence immédiates (3114, 15, 112,
-  SMS 114). Sinon → respiration guidée + « Parler à SYL ». Anonyme, sans compte.
-  Reste possible : détection auto de détresse par SYL pendant la conversation.
+  SMS 114). Sinon → respiration guidée + « Parler à CYL ». Anonyme, sans compte.
+  Reste possible : détection auto de détresse par CYL pendant la conversation.
 
 ## 🌳 Arbre vivant - raffinements restants
 
@@ -289,7 +346,7 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **Plaque de Pioneer** ✅ déplacée loin dans l'espace + agrandie (visible au dézoom max).
 - [x] **Panneaux satellites masqués au dézoom** ✅ (réglable : constante `SAT_PANEL_HIDE_RADIUS`
   dans `arbre3d.js`, défaut 3000 ; zoom min 95, repos ~200, max 7000).
-- [x] **SYL posé sur un rayon** ✅ (mi-hauteur de l'arbre, quasi-géostationnaire ; n'est plus en bas).
+- [x] **CYL posé sur un rayon** ✅ (mi-hauteur de l'arbre, quasi-géostationnaire ; n'est plus en bas).
 - [x] **Squelette ESP (exosquelette rayon-X)** ✅ BASE FAITE : wireframe réel de l'ez-tree
   (parfaitement aligné), limité au **tronc bas + corridors tronc→8 points-catégories + halos
   sous-familles** (`addEspSkeletonCorridors` dans `ez-tree-build.js`, sur accueil + /app ;

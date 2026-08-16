@@ -1,5 +1,5 @@
-// service-worker.js - v171 (refonte visuelle /app palette organique + fixes AUDIT 2026-08-16)
-const CACHE_NAME = 'changeyourlife-v171';
+// service-worker.js - v172 (SYL -> CYL partout, une seule IA ; bandeau ORGANIZER cliquable)
+const CACHE_NAME = 'changeyourlife-v172';
 const urlsToCache = [
   '/',
   '/app/',
@@ -60,12 +60,11 @@ const urlsToCache = [
   '/js/organizer.js',
   '/js/organizer-data.js',
   '/js/app-organizer.js',
-  '/js/syl-brief.js',
+  '/js/cyl-brief.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',
   '/js/xp-reward.js',
-  '/js/lya-overlay.js',
   '/js/login-bg.js',
   '/js/login-init.js',
   '/js/particle-avatar.js',
@@ -73,7 +72,7 @@ const urlsToCache = [
   '/js/id-badge.js',
   '/js/pixel-badge.js',
   '/js/archi-build.js',
-  '/js/syl-chat.js',
+  '/js/cyl-chat.js',
   '/js/giveaway.js',
   '/js/admin-giveaway.js',
   '/js/ez-tree-build.js',

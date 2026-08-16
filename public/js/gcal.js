@@ -135,7 +135,7 @@ export async function listToday() {
   return listRange(s, e, 25);
 }
 
-// Les N prochains jours (aujourd'hui inclus) - sert au brief de SYL.
+// Les N prochains jours (aujourd'hui inclus) - sert au brief de CYL.
 export async function listUpcoming(days = 3, max = 50) {
   const s = new Date(); s.setHours(0, 0, 0, 0);
   const e = new Date(s); e.setDate(e.getDate() + Math.max(1, days));

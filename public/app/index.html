@@ -16,7 +16,7 @@
     <style>
         /* ════════════════════════════════════════════════════════════
            /app/ - refonte « palette organique » (forêt nocturne, or, mousse).
-           Hiérarchie d'arrivée : 1. ORGANIZER (le cerveau) · 2. SYL ·
+           Hiérarchie d'arrivée : 1. ORGANIZER (le cerveau) · 2. CYL ·
            3. ta journée · 4. raccourcis · 5. l'arbre · 6. le reste.
            L'ordre du DOM EST l'ordre visuel (plus de réordonnancement CSS).
            ════════════════════════════════════════════════════════════ */
@@ -47,10 +47,10 @@
         /* En colonne flex, les enfants ne doivent PAS se compresser. */
         .app-container > * { flex-shrink: 0; }
 
-        /* Les blocs rendus par JS (organizer, SYL, agenda) restent invisibles
+        /* Les blocs rendus par JS (organizer, CYL, agenda) restent invisibles
            tant qu'ils sont vides : sinon deux cadres bordés vides s'affichent
            au premier paint, avant que l'auth ne résolve. */
-        #organizer-hub:empty, #agenda-card:empty, #syl-brief:empty { display: none; }
+        #organizer-hub:empty, #agenda-card:empty, #cyl-brief:empty { display: none; }
 
         /* ── Welcome : une seule ligne discrète ── */
         .welcome-row {
@@ -280,7 +280,7 @@
         /* ── Animations d'entrée ── */
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         #organizer-hub { animation:fadeUp .5s var(--ease) both; animation-delay:40ms; }
-        #syl-brief     { animation:fadeUp .5s var(--ease) both; animation-delay:100ms; }
+        #cyl-brief     { animation:fadeUp .5s var(--ease) both; animation-delay:100ms; }
         #agenda-card   { animation:fadeUp .5s var(--ease) both; animation-delay:160ms; }
         .hub-shortcuts { animation:fadeUp .5s var(--ease) both; animation-delay:220ms; }
         .tree-caption, #tree-stage { animation:fadeUp .5s var(--ease) both; animation-delay:280ms; }
@@ -301,7 +301,7 @@
           .qa-xp { font-size:0.56rem; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .app-container *, #organizer-hub, #syl-brief, #agenda-card { animation:none !important; }
+          .app-container *, #organizer-hub, #cyl-brief, #agenda-card { animation:none !important; }
         }
     </style>
 </head>
@@ -365,10 +365,10 @@
              Rendu par /js/app-organizer.js. -->
         <section id="organizer-hub" aria-label="ORGANIZER - ton espace de pensées et de priorités"></section>
 
-        <!-- ══ 2 · SYL : le brief du jour ══
+        <!-- ══ 2 · CYL : le brief du jour ══
              L'IA lit ton organizer + ton agenda et te propose une lecture.
-             Rendu par /js/syl-brief.js. -->
-        <div id="syl-brief"></div>
+             Rendu par /js/cyl-brief.js. -->
+        <div id="cyl-brief"></div>
 
         <!-- ══ 3 · TA JOURNÉE : Google Agenda + fiches échues, fusionnés ══ -->
         <div id="agenda-card" class="agenda-card"></div>
@@ -520,7 +520,7 @@
           <div style="font-size:0.82rem;color:var(--text-2)">5 minutes · 20 questions · Résultat radar visuel immédiat</div>
         </a>
 
-        <!-- ── Modules : grille compacte, une seule IA (SYL) ── -->
+        <!-- ── Modules : grille compacte, une seule IA (CYL) ── -->
         <div class="modules-label" data-i18n="app.modules">Tous les modules</div>
         <div class="tools-grid">
 
@@ -621,10 +621,11 @@
     <script src="/js/quotes.js"></script>
     <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/app-organizer.js"></script>
-    <script type="module" src="/js/syl-brief.js"></script>
+    <script type="module" src="/js/cyl-brief.js"></script>
     <script type="module" src="/js/agenda.js"></script>
     <script type="module" src="/js/app.js"></script>
     <script type="module" src="/js/giveaway.js"></script>
-    <script type="module" src="/js/syl-chat.js"></script>
+    <!-- CYL est chargée globalement par common.js sur toutes les pages
+         authentifiées : pas de balise ici, sinon deux orbes se superposent. -->
 </body>
 </html>

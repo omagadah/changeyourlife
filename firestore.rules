@@ -173,7 +173,7 @@ service cloud.firestore {
     match /coachRate/{uid} {
       allow read, write: if false;
     }
-    // Rate-limit SYL chat (api/chat.js)
+    // Rate-limit CYL chat (api/chat.js)
     match /chatRate/{uid} {
       allow read, write: if false;
     }
@@ -181,7 +181,7 @@ service cloud.firestore {
     match /translateRate/{docId} {
       allow read, write: if false;
     }
-    // Rate-limit brief SYL (api/syl-brief.js)
+    // Rate-limit brief CYL (api/cyl-brief.js)
     match /briefRate/{uid} {
       allow read, write: if false;
     }

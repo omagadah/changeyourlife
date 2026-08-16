@@ -41,7 +41,7 @@ STRICT RULES:
 - Keep the SAME ids as the input. Include EVERY id from the input in your output - never omit, merge or rename a single id, even short ones.
 - Preserve any HTML tags exactly (<br>, <strong>…) and their position.
 - Preserve placeholders like %s exactly.
-- Do NOT translate these: "ChangeYourLife.ai", "Syl", "XP".
+- Do NOT translate these: "ChangeYourLife.ai", "Cyl", "XP".
 - Use simple hyphens "-" only. NEVER use em dashes (—) or en dashes (–).
 - Keep the tone warm, encouraging, natural — not literal. Use the informal/friendly register when the language has one (tutoiement, du, tú…).
 - Output the translation in ${targetName} only.`;

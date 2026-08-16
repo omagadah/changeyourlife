@@ -43,12 +43,12 @@ Nécessaires au bon fonctionnement des API serverless :
 
 | Variable | Utilité | Requis |
 |---|---|---|
-| `API_ANTHROPIC_CHATBOT` (ou `ANTHROPIC_API_KEY`) | SYL (`/api/chat`) | pour activer SYL |
+| `API_ANTHROPIC_CHATBOT` (ou `ANTHROPIC_API_KEY`) | CYL (`/api/chat`) | pour activer CYL |
 | `GROQ_API_KEY` | Coach + traduction (`/api/coach`, `/api/translate`) | recommandé |
 | `GEMINI_API_KEY` (ou équiv.) | fallback coach/traduction | optionnel |
 | `RESEND_API_KEY` | emails de vérification | pour le signup email |
 
-`api/chat.js` lit `ANTHROPIC_API_KEY || API_ANTHROPIC_CHATBOT`. Sans clé, SYL reste inactif (dégradé propre).
+`api/chat.js` lit `ANTHROPIC_API_KEY || API_ANTHROPIC_CHATBOT`. Sans clé, CYL reste inactif (dégradé propre).
 
 ## 4. Checklist avant chaque push prod
 

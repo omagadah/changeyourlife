@@ -113,7 +113,7 @@ Elles ne sont **PAS** dans GitHub (c'est voulu : le repo est public). Elles sont
 déjà stockées **sur Vercel**, donc le site en ligne fonctionne à 100 %.
 
 Tu n'en as besoin sur le Mac **que** si tu veux tester les fonctions `/api/*` en
-local (SYL, traduction…). Dans ce cas :
+local (CYL, traduction…). Dans ce cas :
 ```bash
 vercel link      # relie le dossier à ton projet Vercel
 vercel dev       # lance le site + les /api en local avec les bonnes clés

@@ -41,7 +41,7 @@ function toast(msg, cls) {
 
 function persist() {
   saveBoard(db, uid, board, {
-    onError: () => toast('Sauvegarde impossible - verifie ta connexion', 'err'),
+    onError: () => toast('Sauvegarde impossible - vérifie ta connexion', 'err'),
   });
   try { document.dispatchEvent(new CustomEvent('cyl:organizer-changed', { detail: { board } })); } catch (_) {}
 }
@@ -58,25 +58,26 @@ async function award(branchKey, amount, label) {
 function render() {
   const host = $('#organizer-hub');
   if (!host || !board) return;
+  // Le bandeau ENTIER est un lien vers le board complet : c'est l'onglet
+  // ORGANIZER. Plus de bouton « Ouvrir en grand » - on clique sur le titre.
   host.innerHTML = `
     <div class="hub-head">
-      <div class="hub-brand">
+      <a class="hub-brand" href="/organizer/" title="Ouvrir l'ORGANIZER complet - toutes tes idées, triées ou non">
         <span class="hub-dot"></span>
-        <div>
-          <div class="hub-title">ORGANIZER</div>
-          <div class="hub-sub">Tout ce que tu as en tete. Trie, priorise, planifie.</div>
+        <div class="hub-brand-txt">
+          <div class="hub-title">ORGANIZER<span class="hub-go" aria-hidden="true">→</span></div>
+          <div class="hub-sub">Tout ce que tu as en tête. Trie, priorise, planifie.</div>
         </div>
-      </div>
+      </a>
       <div class="hub-head-actions">
-        <button class="hub-ghost" id="hub-syl" title="Demander a SYL de trier et de proposer un plan">SYL, aide-moi a trier</button>
-        <a class="hub-ghost" href="/organizer/" title="Ouvrir le board complet (canvas, colonnes, liens)">Ouvrir en grand ⤢</a>
+        <button class="hub-ghost" id="hub-cyl" title="Demander à CYL une proposition de tri">CYL, aide-moi à trier</button>
       </div>
     </div>
 
     <form class="hub-capture" id="hub-capture" autocomplete="off">
       <input type="text" id="hub-input" maxlength="300"
-             placeholder="Deverse une idee, une tache, une pensee - Entree pour capturer" />
-      <button type="submit" class="hub-add" aria-label="Capturer">Capturer</button>
+             placeholder="Qu'est-ce que tu as en tête ? - Entrée pour déposer" />
+      <button type="submit" class="hub-add" aria-label="Déposer cette idée">Déposer</button>
     </form>
 
     <div class="hub-cols" id="hub-cols"></div>
@@ -92,12 +93,13 @@ function render() {
     const card = addCard(board, TRI_ID, v);
     input.value = '';
     persist(); render();
-    if (card && card.branch) toast(`Capture · rangee dans ${BRANCH_BY_KEY[card.branch].label}`);
-    else toast('Capture dans « Idees a trier »');
+    $('#hub-input').focus();   // on enchaîne : vider sa tête sans reprendre la souris
+    if (card && card.branch) toast(`Déposée · rangée dans ${BRANCH_BY_KEY[card.branch].label}`);
+    else toast('Déposée dans « À trier »');
   });
 
-  const sylBtn = $('#hub-syl');
-  if (sylBtn) sylBtn.addEventListener('click', askSyl);
+  const cylBtn = $('#hub-cyl');
+  if (cylBtn) cylBtn.addEventListener('click', askCyl);
 
   renderCols();
   renderFoot();
@@ -131,7 +133,7 @@ function renderCols() {
 }
 
 // Titres courts pour les colonnes du hub (le titre long reste sur /organizer/).
-const SHORT = { [TRI_ID]: 'A trier', ui: 'Urgent · Important', ni: 'A planifier', up: 'Vite fait / deleguer', nn: 'Plus tard' };
+const SHORT = { [TRI_ID]: 'À trier', ui: 'Urgent · Important', ni: 'À planifier', up: 'Vite fait / déléguer', nn: 'Plus tard' };
 function shortTitle(c) { return SHORT[c.id] || stripEmoji(c.title); }
 
 function renderCard(card) {
@@ -173,9 +175,9 @@ function renderFoot() {
   const done = (getCol(board, FINISH_ID) || { cards: [] }).cards.length;
   const bits = [
     `<b>${open.length}</b> en cours`,
-    tri ? `<b>${tri}</b> a trier` : '',
+    tri ? `<b>${tri}</b> à trier` : '',
     late ? `<b class="late">${late}</b> en retard` : '',
-    done ? `<b>${done}</b> terminees` : '',
+    done ? `<b>${done}</b> terminées` : '',
   ].filter(Boolean);
   f.innerHTML = bits.join('<span class="sep">·</span>');
 }
@@ -211,7 +213,7 @@ function onDragEnd(evt) {
   const cardRef = before && before.card;
   syncFromDom();
   if (from !== to && cardRef) {
-    logCard(cardRef, `Deplacee : ${stripEmoji(SHORT[from] || from)} -> ${stripEmoji(SHORT[to] || to)}`);
+    logCard(cardRef, `Déplacée : ${stripEmoji(SHORT[from] || from)} -> ${stripEmoji(SHORT[to] || to)}`);
   }
   persist(); renderCols(); renderFoot(); initDnd();
 }
@@ -228,7 +230,7 @@ function openSheet(cardId) {
       <button class="hub-sheet-x" id="hs-x" aria-label="Fermer">✕</button>
       <textarea class="hub-sheet-title" id="hs-title" rows="1">${esc(card.title)}</textarea>
 
-      <div class="hub-l">Quelle part de ta vie ca nourrit</div>
+      <div class="hub-l">Quelle part de ta vie ça nourrit</div>
       <div class="hub-branches" id="hs-branches">
         ${BRANCHES.map((b) => `<button class="hub-br${card.branch === b.key ? ' on' : ''}" data-b="${b.key}" style="--bc:${b.color}" title="${esc(b.label)}">${b.emoji}<span>${esc(b.label)}</span></button>`).join('')}
       </div>
@@ -241,14 +243,14 @@ function openSheet(cardId) {
         <input type="date" id="hs-due" value="${dueVal}" />
       </div>
 
-      <div class="hub-l">Priorite</div>
+      <div class="hub-l">Priorité</div>
       <div class="hub-when" id="hs-move">
         ${['ui', 'ni', 'up', 'nn'].map((id) => `<button class="hub-chip${f.col.id === id ? ' on' : ''}" data-move="${id}">${esc(SHORT[id] || id)}</button>`).join('')}
       </div>
 
       <div class="hub-sheet-actions">
         <button class="hub-b cal" id="hs-cal">${card.gcalId ? '✓ Dans ton agenda' : '↗ Planifier dans Google Agenda'}</button>
-        <button class="hub-b ok" id="hs-done">Terminee (+${FINISH_XP} XP)</button>
+        <button class="hub-b ok" id="hs-done">Terminée (+${FINISH_XP} XP)</button>
         <button class="hub-b del" id="hs-del">Supprimer</button>
       </div>
     </div>`;
@@ -270,21 +272,21 @@ function openSheet(cardId) {
   grow(); ta.oninput = grow;
   ta.onblur = () => {
     const v = ta.value.trim();
-    if (v && v !== card.title) { card.title = v; logCard(card, 'Titre modifie'); persist(); renderCols(); }
+    if (v && v !== card.title) { card.title = v; logCard(card, 'Titre modifié'); persist(); renderCols(); }
   };
 
   s.querySelectorAll('#hs-branches .hub-br').forEach((btn) => {
     btn.onclick = () => {
       const k = btn.dataset.b;
       card.branch = card.branch === k ? null : k;
-      logCard(card, card.branch ? 'Branche : ' + BRANCH_BY_KEY[k].label : 'Branche retiree');
+      logCard(card, card.branch ? 'Branche : ' + BRANCH_BY_KEY[k].label : 'Branche retirée');
       persist(); openSheet(cardId); renderCols();
     };
   });
 
   const setDue = (ts) => {
     card.due = ts;
-    logCard(card, ts ? 'Echeance ' + fmtDate(ts) : 'Echeance retiree');
+    logCard(card, ts ? 'Échéance ' + fmtDate(ts) : 'Échéance retirée');
     persist(); openSheet(cardId); renderCols(); renderFoot();
   };
   s.querySelectorAll('[data-when]').forEach((btn) => {
@@ -300,7 +302,7 @@ function openSheet(cardId) {
     btn.onclick = () => {
       moveCard(board, cardId, btn.dataset.move);
       persist(); close(); renderCols(); renderFoot(); initDnd();
-      toast('Priorite : ' + (SHORT[btn.dataset.move] || btn.dataset.move));
+      toast('Priorité : ' + (SHORT[btn.dataset.move] || btn.dataset.move));
     };
   });
 
@@ -309,14 +311,14 @@ function openSheet(cardId) {
   $('#hs-done').onclick = async () => {
     const r = moveCard(board, cardId, FINISH_ID);
     persist(); close(); renderCols(); renderFoot(); initDnd();
-    if (r.finished) await award(card.branch, FINISH_XP, 'fiche terminee');
+    if (r.finished) await award(card.branch, FINISH_XP, 'fiche terminée');
   };
 
   $('#hs-del').onclick = () => {
     if (!confirm('Supprimer cette fiche ?')) return;
     f.col.cards = f.col.cards.filter((x) => x.id !== cardId);
     persist(); close(); renderCols(); renderFoot(); initDnd();
-    toast('Fiche supprimee');
+    toast('Fiche supprimée');
   };
 }
 
@@ -334,16 +336,16 @@ async function planInCalendar(card, btn) {
     });
     card.gcalId = (ev && ev.id) || null;
     if (!card.due) card.due = Date.now();
-    logCard(card, 'Planifiee dans Google Agenda');
+    logCard(card, 'Planifiée dans Google Agenda');
     persist(); renderCols(); renderFoot();
     btn.textContent = '✓ Dans ton agenda';
-    toast('Ajoutee a ton Google Agenda');
+    toast('Ajoutée à ton Google Agenda');
     document.dispatchEvent(new CustomEvent('cyl:gcal-refresh'));
   } catch (err) {
     console.error('[hub] plan in calendar:', err && err.code, err && err.message);
     btn.disabled = false; btn.textContent = label;
     if (err && err.code === 'gcal/forbidden') {
-      toast("Ton acces agenda est en lecture seule - reconnecte-le pour autoriser l'ecriture", 'err');
+      toast("Ton accès agenda est en lecture seule - reconnecte-le pour autoriser l'écriture", 'err');
       gcal.disconnect();
     } else {
       toast(gcal.connectErrorMessage(err), 'err');
@@ -351,20 +353,20 @@ async function planInCalendar(card, btn) {
   }
 }
 
-// ── SYL : trier et proposer un plan ──────────────────────────────────────────
-// Ouvre le chat SYL avec un contexte pre-rempli (l'utilisateur garde la main :
-// SYL propose, il decide - cf. cadre non-directif).
-function askSyl() {
+// ── CYL : trier et proposer un plan ──────────────────────────────────────────
+// Ouvre le chat CYL avec un contexte pre-rempli (l'utilisateur garde la main :
+// CYL propose, il decide - cf. cadre non-directif).
+function askCyl() {
   const top = topPriorities(board, 6);
   const due = dueToday(board);
   const lines = top.map(({ card, col }) =>
-    `- ${card.title}${card.due ? ` (echeance ${fmtDate(card.due)})` : ''} [${stripEmoji(SHORT[col.id] || col.title)}]`);
+    `- ${card.title}${card.due ? ` (échéance ${fmtDate(card.due)})` : ''} [${stripEmoji(SHORT[col.id] || col.title)}]`);
   const msg =
-    `Voici ce que j'ai en tete aujourd'hui :\n${lines.join('\n') || '(rien de note)'}\n\n` +
-    (due.length ? `${due.length} echeance(s) tombent aujourd'hui ou avant.\n\n` : '') +
-    `Aide-moi a y voir clair : par quoi commencer, et qu'est-ce qui peut attendre ?`;
+    `Voici ce que j'ai en tête aujourd'hui :\n${lines.join('\n') || '(rien de noté)'}\n\n` +
+    (due.length ? `${due.length} échéance(s) tombent aujourd'hui ou avant.\n\n` : '') +
+    `Aide-moi à y voir clair : par quoi commencer, et qu'est-ce qui peut attendre ?`;
   try {
-    document.dispatchEvent(new CustomEvent('cyl:syl-open', { detail: { prefill: msg } }));
+    document.dispatchEvent(new CustomEvent('cyl:chat-open', { detail: { prefill: msg } }));
   } catch (_) {}
 }
 
@@ -377,9 +379,18 @@ function injectCSS() {
     border:1px solid rgba(231,177,92,0.28);border-radius:20px;padding:18px 18px 14px;margin-bottom:18px;
     box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset,0 18px 46px rgba(0,0,0,0.35);}
   .hub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
-  .hub-brand{display:flex;align-items:center;gap:11px;min-width:0;}
+  /* Le bandeau est un lien : tout le bloc titre ouvre /organizer/ */
+  .hub-brand{display:flex;align-items:center;gap:11px;min-width:0;text-decoration:none;
+    padding:6px 12px 6px 8px;margin:-6px 0 0 -8px;border-radius:12px;
+    border:1px solid transparent;transition:background .18s,border-color .18s,transform .18s;}
+  .hub-brand:hover{background:rgba(231,177,92,0.10);border-color:rgba(231,177,92,0.32);transform:translateX(2px);}
+  .hub-brand:focus-visible{outline:2px solid rgba(231,177,92,0.7);outline-offset:2px;}
+  .hub-brand-txt{min-width:0;}
   .hub-dot{width:10px;height:10px;border-radius:50%;background:#e7b15c;box-shadow:0 0 14px rgba(231,177,92,0.8);flex-shrink:0;}
-  .hub-title{font-size:1.02rem;font-weight:900;letter-spacing:1.4px;color:#f4efe1;}
+  .hub-title{font-size:1.02rem;font-weight:900;letter-spacing:1.4px;color:#f4efe1;display:flex;align-items:center;gap:7px;}
+  .hub-go{font-size:0.92rem;font-weight:700;color:#e7b15c;opacity:0;transform:translateX(-4px);
+    transition:opacity .18s,transform .18s;}
+  .hub-brand:hover .hub-go{opacity:1;transform:translateX(0);}
   .hub-sub{font-size:0.78rem;color:#b4ad94;margin-top:1px;}
   .hub-head-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .hub-ghost{display:inline-flex;align-items:center;padding:7px 13px;border-radius:99px;cursor:pointer;

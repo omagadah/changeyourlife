@@ -744,7 +744,7 @@ export function buildTree(THREE, model, opts) {
     root.add(s);
     satellites.push(s);
   }
-  // SYL : posé sur l'un des RAYONS (le plan 2 = 'open'), à un créneau LIBRE, à
+  // CYL : posé sur l'un des RAYONS (le plan 2 = 'open'), à un créneau LIBRE, à
   // l'extrémité horizontale de l'ellipse -> mi-hauteur de l'arbre. Quasi-géostationnaire.
   {
     const p = planes[2];
@@ -754,7 +754,7 @@ export function buildTree(THREE, model, opts) {
     s.userData.center = SAT_CENTER;   // (0,40,0) = milieu de l'arbre
     s.userData.angle = PI;            // extrémité horizontale opposée à 'open' (créneau libre)
     s.userData.speed = 0.005;         // quasi géostationnaire
-    s.userData.info = 'syl';
+    s.userData.info = 'cyl';
     s.scale.setScalar(1.0);
     root.add(s);
     satellites.push(s); infoSats.push(s);

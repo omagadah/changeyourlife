@@ -14,7 +14,7 @@ Tout committé sur `main` (6 commits), **rien poussé** (à toi de valider le pu
 - **P0-1 CSP accueil** : 3 scripts inline → `home-aura.js` / `home-auth-modal.js` / `home-failsafe.js`. Le failsafe `tree-ready` remarche (plus de risque d'accueil noir).
 - **P0-2 Fiabilité** : socle `common.js` (`saveWithFeedback` + `toast` XSS-safe + `escapeHtml` + bannière offline). Écritures silencieuses corrigées : gratitude, organizer, plan, skills, **habitudes** (le pire : faux succès), objectifs, yourlife, coach.
 - **P0-3 Données** : avatar redimensionné 256px avant stockage (LE vrai risque 1 Mo). `meditation.history` déjà borné (20).
-- **P0-4 Légal** : `/legal/ /cgu/ /confidentialite/` (tiers listés = pilier "données non vendues") + footer accueil + consentement SYL 1re ouverture + case signup (accueil + /login/).
+- **P0-4 Légal** : `/legal/ /cgu/ /confidentialite/` (tiers listés = pilier "données non vendues") + footer accueil + consentement CYL 1re ouverture + case signup (accueil + /login/).
 - **P0-5 Deploy** : `DEPLOY.md` créé. À lancer par toi : `firebase deploy --only firestore`.
 
 **P2 — anti-IA (démarré) :** ~75 emojis décoratifs retirés (titres/toasts/boutons) sur 32 fichiers ; sélecteurs d'humeur/pickers/**maps de données** préservés. Titre/OG accueil réécrit ("pour de vrai"). Tutoiement verify-email + settings.
@@ -38,7 +38,7 @@ Tout committé sur `main` (6 commits), **rien poussé** (à toi de valider le pu
 - **Fontes** : aucune fonte chargée. Paire auto-hébergée dans `public/fonts/` (pas Google Fonts, RGPD). Nécessite les .woff2.
 - **9 pages** sans `main.min.css` (pas 4) : autoevaluation, codex, login, verify-email + index, signup, 404, tree-preview, tree-lab.
 
-**5. P1 restants** : App Check (reCAPTCHA v3), retirer `ROOT_ADMIN_UID`, unifier Lya/SYL (3 stacks IA), purger ~3,5 Mo morts (retirer du précache SW AVANT suppression : `tree-widget.js`/`tree-lab.js` y sont), trancher `web/` (2,7 Mo Next.js), factoriser 17 toasts/10 escapeHtml locaux → `common.js` (socle prêt), CSP à durcir (SRI), `ipwho.is` à déclarer/remplacer.
+**5. P1 restants** : App Check (reCAPTCHA v3), retirer `ROOT_ADMIN_UID`, unifier Lya/CYL (3 stacks IA), purger ~3,5 Mo morts (retirer du précache SW AVANT suppression : `tree-widget.js`/`tree-lab.js` y sont), trancher `web/` (2,7 Mo Next.js), factoriser 17 toasts/10 escapeHtml locaux → `common.js` (socle prêt), CSP à durcir (SRI), `ipwho.is` à déclarer/remplacer.
 
 ---
 
@@ -101,10 +101,10 @@ rules. Sortir l'avatar data-URL du doc (ou le borner fortement).
 ### P0-4 · Légal : rien n'existe
 Produit de bien-être mental avec IA, données santé (sommeil, humeur, détresse), tiers US
 (Anthropic, Groq, Gemini, ipwho.is, Tidio ?). Aucune CGU, mentions légales, politique de
-confidentialité, ni consentement 1re ouverture SYL. Bloquant pour ouvrir au public en France.
+confidentialité, ni consentement 1re ouverture CYL. Bloquant pour ouvrir au public en France.
 **Fix** : pages `/legal/` (mentions), `/cgu/`, `/confidentialite/` (lister TOUS les tiers et
 ce qui leur est envoyé — c'est LE pilier de la promesse « données non vendues, vérifiable ») ;
-liens footer ; consentement stocké à la 1re ouverture de SYL (« SYL ne remplace pas un
+liens footer ; consentement stocké à la 1re ouverture de CYL (« CYL ne remplace pas un
 professionnel ») ; case à cocher au signup.
 
 ### P0-5 · Déploiement Firebase en retard (cf. section « corrigé ce jour »)
@@ -132,9 +132,9 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       à déclarer dans la politique de confidentialité ou remplacer par un choix manuel.
 
 ### Architecture / dette
-- [ ] **Unifier Lya/SYL — LE cœur du produit existe en 3 exemplaires** :
-      `lya-overlay.js` (partout, backend `/api/coach` Groq/Gemini) vs `syl-chat.js` (/app,
-      backend `/api/chat` Anthropic) vs page `/coach/` (Gemini). Un seul nom (SYL, déjà le
+- [ ] **Unifier Lya/CYL — LE cœur du produit existe en 3 exemplaires** :
+      `lya-overlay.js` (partout, backend `/api/coach` Groq/Gemini) vs `cyl-chat.js` (/app,
+      backend `/api/chat` Anthropic) vs page `/coach/` (Gemini). Un seul nom (CYL, déjà le
       seul visible), un seul widget, un seul backend (`/api/chat`), un seul prompt système.
       Rediriger `/coach/` ou la fusionner. Renommer les classes/fichiers `lya-*` ensuite.
 - [ ] **Purger les morts (~3,5 Mo de public/, 30 %)** — ordre impératif : retirer d'abord du
@@ -161,7 +161,7 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
 - [ ] Décision owner : garder le repo public intégral (transparence maximale, tout copiable
       de facto) OU repo privé + miroir public minimal (`firestore.rules`, politique données,
       api/ anonymisée) qui suffit à prouver « on ne vend pas les données ». Noter : le JS
-      restera de toute façon lisible en prod dans le navigateur. Les prompts système de SYL
+      restera de toute façon lisible en prod dans le navigateur. Les prompts système de CYL
       sont actuellement publics dans `api/chat.js:31` — les déplacer en variable d'env si
       considérés stratégiques.
 
@@ -218,7 +218,7 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       `verify-email.js:140,147` (vouvoient).
 - [ ] Une seule langue par écran : renommer « ORGANIZER » (`organizer:169`), « Dashboard »
       (`settings:462`), « Your Life ».
-- [ ] Donner à SYL une voix cohérente sur toutes ses lignes (`coach.js:375` « Salut ! Je
+- [ ] Donner à CYL une voix cohérente sur toutes ses lignes (`coach.js:375` « Salut ! Je
       suis ton coach IA… » = présentation générique de chatbot ; la ligne de meditation
       « Avant de méditer - comment te sens-tu, là, maintenant ? » est le bon registre).
 
@@ -232,7 +232,7 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
 ### À PRÉSERVER (déjà humain, différenciant)
 L'arbre 3D landing + timeline de croissance · la plaque de Pioneer cliquable · le satellite
 vie privée (« Tes données restent sur ton appareil. Rien n'est revendu. ») · le hero copy ·
-le concept XP-branches Maslow · l'accueil SYL de /meditation/.
+le concept XP-branches Maslow · l'accueil CYL de /meditation/.
 
 ---
 

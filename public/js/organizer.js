@@ -30,13 +30,17 @@ const TRI_ID = 'tri';
 const FINISH_ID = 'finish';
 const FINISH_XP = 50;
 const DEFAULT_COLUMNS = [
-  { id: TRI_ID,   title: 'Idées à trier',                               color: '#8aa0bf' },
-  { id: 'ui',     title: 'Urgent · Important - à faire',                color: '#f87171' },
-  { id: 'ni',     title: 'Important, non urgent - à planifier',         color: '#38bdf8' },
-  { id: 'up',     title: 'Urgent, peu important - vite fait / déléguer',color: '#fbbf24' },
-  { id: 'nn',     title: 'Non urgent · non important - plus tard',      color: '#7e9ab5' },
-  { id: FINISH_ID, title: 'Terminé ✅',                                  color: '#4ade80' },
+  { id: TRI_ID,   title: 'Idées à trier',                               color: '#b4ad94' },
+  { id: 'ui',     title: 'Urgent · Important - à faire',                color: '#e0785f' },
+  { id: 'ni',     title: 'Important, non urgent - à planifier',         color: '#e7b15c' },
+  { id: 'up',     title: 'Urgent, peu important - vite fait / déléguer',color: '#6f9a52' },
+  { id: 'nn',     title: 'Non urgent · non important - plus tard',      color: '#7c7660' },
+  { id: FINISH_ID, title: 'Terminé ✅',                                  color: '#84c25e' },
 ];
+// Palette organique appliquée aux colonnes, quelles que soient les couleurs
+// stockées dans le board (héritées de la palette navy v2). Même table que le
+// hub de /app/ : les deux vues affichent la même colonne de la même couleur.
+const COL_COLORS = { [TRI_ID]: '#b4ad94', ui: '#e0785f', ni: '#e7b15c', up: '#6f9a52', nn: '#7c7660', [FINISH_ID]: '#84c25e' };
 
 const now = () => Date.now();
 const uid6 = (p) => (p || 'c') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -113,7 +117,7 @@ function updateLockUI() {
 function renderColumn(c, into) {
   const el = into || document.createElement('div');
   if (!into) el.className = 'org-col';
-  el.style.setProperty('--cc', c.color || '#8aa0bf');
+  el.style.setProperty('--cc', COL_COLORS[c.id] || c.color || '#b4ad94');
   el.dataset.col = c.id;
   el.innerHTML =
     `<div class="org-col-head">` +
@@ -166,7 +170,16 @@ function renderCard(card) {
   el.appendChild(title);
   const badges = badgesHtml(card);
   if (badges.length) { const b = document.createElement('div'); b.className = 'org-card-badges'; b.innerHTML = badges.join(''); el.appendChild(b); }
+  // Accessible au clavier (AUDIT C4) : la fiche s'ouvre a Entree/Espace, et la
+  // fiche detaillee contient le select « Deplacer vers » - donc le drag&drop
+  // souris n'est plus le SEUL moyen de trier.
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', card.title);
   el.addEventListener('click', () => openCard(card.id));
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCard(card.id); }
+  });
   return el;
 }
 

@@ -28,26 +28,26 @@ export const FINISH_ID = 'finish';
 export const FINISH_XP = 50;
 
 export const DEFAULT_COLUMNS = [
-  { id: TRI_ID,    title: 'Idees a trier',                                color: '#8aa0bf' },
-  { id: 'ui',      title: 'Urgent · Important - a faire',                 color: '#f87171' },
-  { id: 'ni',      title: 'Important, non urgent - a planifier',          color: '#38bdf8' },
-  { id: 'up',      title: 'Urgent, peu important - vite fait / deleguer', color: '#fbbf24' },
+  { id: TRI_ID,    title: 'Idées à trier',                                color: '#8aa0bf' },
+  { id: 'ui',      title: 'Urgent · Important - à faire',                 color: '#f87171' },
+  { id: 'ni',      title: 'Important, non urgent - à planifier',          color: '#38bdf8' },
+  { id: 'up',      title: 'Urgent, peu important - vite fait / déléguer', color: '#fbbf24' },
   { id: 'nn',      title: 'Non urgent · non important - plus tard',       color: '#7e9ab5' },
-  { id: FINISH_ID, title: 'Termine',                                      color: '#4ade80' },
+  { id: FINISH_ID, title: 'Terminé',                                      color: '#4ade80' },
 ];
 
 // Les 8 branches Maslow (miroir de tree-model.js, sans dependance THREE).
 // PALETTE ORGANIQUE - source unique de verite des couleurs de branche : elle
 // est reprise a l'identique par app.js (anneaux), tree-model.js (arbre 3D),
-// le hub ORGANIZER, l'agenda et le brief SYL. Avant, trois palettes navy v2
+// le hub ORGANIZER, l'agenda et le brief CYL. Avant, trois palettes navy v2
 // concurrentes coloraient la meme branche differemment (AUDIT 2026-08-16).
 export const BRANCHES = [
   { key: 'physio',          label: 'Physiologique',   emoji: '🌱', color: '#84c25e' },
-  { key: 'securite',        label: 'Securite',        emoji: '🛡️', color: '#e7b15c' },
+  { key: 'securite',        label: 'Sécurité',        emoji: '🛡️', color: '#e7b15c' },
   { key: 'appartenance',    label: 'Appartenance',    emoji: '🤝', color: '#e0785f' },
   { key: 'estime',          label: 'Estime',          emoji: '🏆', color: '#c39a6b' },
   { key: 'cognitif',        label: 'Cognitif',        emoji: '📚', color: '#9d8ec4' },
-  { key: 'esthetique',      label: 'Esthetique',      emoji: '🎨', color: '#d98cae' },
+  { key: 'esthetique',      label: 'Esthétique',      emoji: '🎨', color: '#d98cae' },
   { key: 'accomplissement', label: 'Accomplissement', emoji: '🚀', color: '#6f9a52' },
   { key: 'transcendance',   label: 'Transcendance',   emoji: '✨', color: '#f1cd92' },
 ];
@@ -139,7 +139,7 @@ export function newCard(title, extra = {}) {
     checklist: [], logs: [], done: false, createdAt: now(),
     branch: extra.branch || guessBranch(title), gcalId: null, ...extra,
   };
-  logCard(card, 'Fiche creee');
+  logCard(card, 'Fiche créée');
   return card;
 }
 
@@ -204,7 +204,7 @@ export function dueToday(board, ref = new Date()) {
 }
 
 // ── Heuristique de branche (pre-remplissage, l'utilisateur peut corriger) ────
-// Volontairement simple et locale : SYL affinera cote serveur. Aucune decision
+// Volontairement simple et locale : CYL affinera cote serveur. Aucune decision
 // n'est imposee, c'est juste une suggestion de rangement.
 // Le `\b` de fin est volontairement absent : il permet de tolerer pluriels et
 // conjugaisons (« impots », « courses », « meditation ») sans lister chaque forme.

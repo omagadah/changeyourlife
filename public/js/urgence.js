@@ -1,7 +1,7 @@
 // /js/urgence.js - Bouton URGENCE : flux d'aide bienveillant. Au clic, on demande
 // à la personne comment elle va. Si détresse grave (danger, pensées suicidaires),
 // on affiche IMMEDIATEMENT des mesures d'urgence (numéros d'aide France 24/7).
-// Sinon : respiration guidée + possibilité de parler à SYL. Anonyme, sans compte.
+// Sinon : respiration guidée + possibilité de parler à CYL. Anonyme, sans compte.
 //
 // Ressources : 3114 (prévention suicide, gratuit 24/7), 15 (SAMU), 112 (urgences
 // Europe), 114 (SMS sourds/malentendants).
@@ -65,9 +65,9 @@
   function open() { ensureDom(); stepIntro(); ov.classList.add('on'); }
   function close() { if (ov) ov.classList.remove('on'); if (breathTimer) { clearInterval(breathTimer); breathTimer = null; } }
 
-  function talkToSyl() {
-    // SYL n'est dispo qu'une fois connecté (/app). Sur l'accueil -> on y redirige.
-    if (window.cylSylChat && typeof window.cylSylChat.open === 'function') { close(); window.cylSylChat.open(); return; }
+  function talkToCyl() {
+    // CYL n'est dispo qu'une fois connecté (/app). Sur l'accueil -> on y redirige.
+    if (window.cylChat && typeof window.cylChat.open === 'function') { close(); window.cylChat.open(); return; }
     window.location.href = '/app/';
   }
 
@@ -107,7 +107,7 @@
       '<p class="urg-p">Suis la bulle : elle gonfle quand tu inspires, se dégonfle quand tu expires. 4 secondes chacun.</p>' +
       '<div class="urg-breath"><div class="ball"></div><div class="lab">Inspire…</div></div>' +
       '<div class="urg-opt" style="margin-top:18px">' +
-        '<button class="urg-b calm" data-syl><span class="ic">✨</span><span>Parler à SYL<small>Une IA bienveillante qui t\'écoute, sans jamais décider à ta place</small></span></button>' +
+        '<button class="urg-b calm" data-cyl><span class="ic">✨</span><span>Parler à CYL<small>Une IA bienveillante qui t\'écoute, sans jamais décider à ta place</small></span></button>' +
       '</div>' +
       '<button class="urg-ghost" data-crisis>Voir les numéros d\'aide d\'urgence</button>';
     var lab = card.querySelector('.lab');
@@ -115,7 +115,7 @@
     var i = 0; if (lab) lab.textContent = phases[0];
     if (breathTimer) clearInterval(breathTimer);
     breathTimer = setInterval(function () { i = (i + 1) % phases.length; if (lab) lab.textContent = phases[i]; }, 2000);
-    card.querySelector('[data-syl]').addEventListener('click', talkToSyl);
+    card.querySelector('[data-cyl]').addEventListener('click', talkToCyl);
     card.querySelector('[data-crisis]').addEventListener('click', stepCrisis);
   }
 

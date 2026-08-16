@@ -32,7 +32,7 @@ function head(extra = '') {
   return `<div class="ag-head">
       <span class="ag-ic">📅</span>
       <div style="flex:1;min-width:0">
-        <div class="ag-title">Ta journee</div>
+        <div class="ag-title">Ta journée</div>
         <div class="ag-sub" id="ag-date">${esc(d)}</div>
       </div>${extra}</div>`;
 }
@@ -42,7 +42,7 @@ function renderConnect() {
   el.innerHTML = head() + `
     <div class="ag-tasks-only" id="ag-list"></div>
     <button class="ag-btn" id="ag-connect">Connecter Google Agenda</button>
-    <div class="ag-note">Lecture de tes evenements + ecriture des fiches que tu planifies depuis l'ORGANIZER.</div>`;
+    <div class="ag-note">Lecture de tes événements + écriture des fiches que tu planifies depuis l'ORGANIZER.</div>`;
   renderList([]);
   el.querySelector('#ag-connect').onclick = async (e) => {
     const b = e.currentTarget; b.disabled = true; b.textContent = 'Connexion…';
@@ -59,9 +59,9 @@ async function renderConnected() {
   const el = host(); if (!el) return;
   el.innerHTML = head(
     `<a class="ag-open" href="/agenda/" title="Ouvrir mon agenda en grand">⤢</a>` +
-    `<button class="ag-x" id="ag-disc" title="Deconnecter">✕</button>`) + `
+    `<button class="ag-x" id="ag-disc" title="Déconnecter">✕</button>`) + `
     <div id="ag-list" class="ag-events"><div class="ag-empty">Chargement…</div></div>`;
-  el.querySelector('#ag-disc').onclick = () => { gcal.disconnect(); renderConnect(); toast('Agenda deconnecte'); };
+  el.querySelector('#ag-disc').onclick = () => { gcal.disconnect(); renderConnect(); toast('Agenda déconnecté'); };
   await refresh();
 }
 
@@ -80,7 +80,7 @@ function buildTimeline(events) {
       if (card.gcalId && gcalIds.has(card.gcalId)) return;
       const late = card.due < new Date().setHours(0, 0, 0, 0);
       items.push({
-        kind: 'task', at: card.due || 0, time: late ? 'En retard' : 'A faire',
+        kind: 'task', at: card.due || 0, time: late ? 'En retard' : 'À faire',
         title: card.title, branch: card.branch, late,
       });
     });
@@ -92,7 +92,7 @@ function renderList(events) {
   const box = document.getElementById('ag-list'); if (!box) return;
   const items = buildTimeline(events);
   if (!items.length) {
-    box.innerHTML = `<div class="ag-empty">Rien de prevu aujourd'hui - belle page blanche.</div>`;
+    box.innerHTML = `<div class="ag-empty">Rien de prévu aujourd'hui - belle page blanche.</div>`;
     return;
   }
   box.innerHTML = items.map((it) => {
