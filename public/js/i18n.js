@@ -246,7 +246,7 @@ const DICT = {
   de: {
     'nav.login': 'Anmelden',
     'hero.eyebrow': 'Sie machen dich zu dem, der du bist, und lassen deinen Baum wachsen',
-    'hero.kicker': 'Das Komplettpaket, um dein Leben (neu) zu ordnen.',
+    'hero.kicker': 'Das Alles-in-einem-Kit, um dein Leben zu (re)organisieren.',
     'hero.title': 'Dein Leben hat eine Gestalt.<br>Hier wird sie sichtbar.',
     'hero.desc': 'Ein Leben beim Wachsen zuzusehen, geht sonst nicht. <strong>Hier schon.</strong><br>Was du heute tust, merkt sich dein Baum. CYL, dein persönlicher Assistent, hilft dir, deine Vorhaben zu Ende zu bringen und in deinem eigenen Leben aufzublühen.',
     'stream.caption': 'Deine Taten, im echten Leben',
@@ -374,6 +374,33 @@ const DICT = {
     'ui.langTitle': 'Kies je taal',
     'ui.langSearch': 'Zoek een taal',
     'ui.langNone': 'Geen taal gevonden',
+  },
+  pl: {
+    'hero.kicker': 'Kompletny zestaw do (re)organizacji swojego życia.',
+  },
+  ru: {
+    'hero.kicker': 'Всё для (ре)организации твоей жизни.',
+  },
+  sv: {
+    'hero.kicker': 'Allt-i-ett-kitet för att (om)organisera ditt liv.',
+  },
+  tr: {
+    'hero.kicker': 'Hayatını (yeniden) düzenlemek için hepsi bir arada set.',
+  },
+  ja: {
+    'hero.kicker': '人生を（再）構築する、オールインワンのキット。',
+  },
+  zh: {
+    'hero.kicker': '（重新）规划人生的一站式工具包。',
+  },
+  ko: {
+    'hero.kicker': '인생을 (재)정리하는 올인원 키트.',
+  },
+  hi: {
+    'hero.kicker': 'अपनी ज़िंदगी को (फिर से) व्यवस्थित करने की संपूर्ण किट।',
+  },
+  ar: {
+    'hero.kicker': 'العُدّة الشاملة لـ(إعادة) تنظيم حياتك.',
   },
 };
 

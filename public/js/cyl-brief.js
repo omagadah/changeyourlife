@@ -8,7 +8,7 @@
 // le brief se rafraichit tout seul, ou a la demande via le bouton.
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { loadBoard, allCards, FINISH_ID, BRANCH_BY_KEY } from '/js/organizer-data.js';
+import { loadBoard, allCards, topPriorities, FINISH_ID, BRANCH_BY_KEY } from '/js/organizer-data.js';
 import * as gcal from '/js/gcal.js';
 
 let auth, db, uid;
@@ -73,6 +73,7 @@ function collectCards() {
       branch: card.branch || null,
       dueDays: card.due ? (card.due - ref) / 86400000 : null,
       inCalendar: !!card.gcalId,
+      distress: !!card.distress,
     }));
 }
 
@@ -126,22 +127,103 @@ function show(data) {
   });
 }
 
-// Repli 100 % local : meme sans IA, la page dit quelque chose d'utile.
-function localFallback() {
+// ── Lecture locale de l'etat, recalculee A CHAQUE ACTION ────────────────────
+// Le brief de l'IA est fige en cache une demi-journee. Si CYL s'en tenait la,
+// elle repeterait la meme phrase pendant que l'utilisateur range ses fiches
+// sous ses yeux - ce qui donne l'impression d'un site qui ne regarde rien.
+// Des la premiere action, ce moteur local prend la main : il coute 0 appel,
+// et il dit toujours quelque chose de VRAI de l'instant present.
+
+function readState() {
   const cards = collectCards();
-  const late = cards.filter((c) => c.dueDays !== null && c.dueDays < 0).length;
-  const today = cards.filter((c) => c.dueDays !== null && c.dueDays >= 0 && c.dueDays < 1).length;
-  const tri = cards.filter((c) => c.col === 'tri').length;
-  let text;
-  if (!cards.length) text = "Rien de note pour l'instant. Depose ce que tu as en tete juste au-dessus, on triera apres.";
-  else if (late) text = `${late} fiche${late > 1 ? 's ont' : ' a'} une echeance passee. Certaines n'ont peut-etre plus lieu d'etre - a toi de voir.`;
-  else if (today) text = `${today} echeance${today > 1 ? 's tombent' : ' tombe'} aujourd'hui. Le reste peut attendre si tu le decides.`;
-  else if (tri) text = `${tri} idee${tri > 1 ? 's attendent' : ' attend'} d'etre triee${tri > 1 ? 's' : ''}. Quand tu veux.`;
-  else text = `${cards.length} fiche${cards.length > 1 ? 's' : ''} en cours, rien d'urgent. Journee libre de contraintes.`;
-  paint({ text, cta: 'Parler a CYL' });
+  const n = (f) => cards.filter(f).length;
+  return {
+    total: cards.length,
+    tri: n((c) => c.col === 'tri'),
+    urgent: n((c) => c.col === 'ui'),
+    plan: n((c) => c.col === 'ni'),
+    quick: n((c) => c.col === 'up'),
+    late: n((c) => c.dueDays !== null && c.dueDays < 0),
+    today: n((c) => c.dueDays !== null && c.dueDays >= 0 && c.dueDays < 1),
+    dated: n((c) => c.dueDays !== null),
+    inCal: n((c) => c.inCalendar),
+    distress: cards.filter((c) => c.distress),
+  };
+}
+
+const plural = (n, s, p) => (n > 1 ? p : s);
+
+// Le message tient compte de ce qui vient de CHANGER, pas seulement de l'etat.
+// C'est ce qui fait la difference entre un tableau de bord et quelqu'un qui
+// suit. Aucune injonction : on decrit, on propose, l'utilisateur tranche.
+function localText(s, prev) {
+  // 1. Le mal-etre passe avant la logistique.
+  if (s.distress.length) {
+    const t = s.distress[0].title;
+    return `Tu as noté « ${String(t).slice(0, 48)}${t.length > 48 ? '…' : ''} ». Ça passe avant le rangement - on peut en parler quand tu veux.`;
+  }
+  // 2. Rien du tout.
+  if (!s.total) {
+    return "Rien de noté pour l'instant. Dépose ce que tu as en tête juste au-dessus, on triera après.";
+  }
+  // 3. Reaction a l'action qui vient d'avoir lieu.
+  if (prev) {
+    const sorted = prev.tri - s.tri;
+    if (sorted > 0 && s.tri === 0) {
+      return `Tout est trié. ${s.dated ? 'Reste à voir ce que tu cales quand.' : "Aucune fiche n'a d'échéance : tu peux en poser une, ou laisser filer."}`;
+    }
+    if (sorted > 0) {
+      return `${sorted} ${plural(sorted, 'fiche rangée', 'fiches rangées')}. Il en reste ${s.tri} à trier - rien ne presse.`;
+    }
+    if (s.total > prev.total) {
+      return `Noté. ${s.tri} ${plural(s.tri, 'fiche attend', 'fiches attendent')} d'être triée${s.tri > 1 ? 's' : ''} - tu peux continuer à déverser, on rangera après.`;
+    }
+    if (s.dated > prev.dated) {
+      return `Échéance posée. ${s.today ? `${s.today} ${plural(s.today, 'chose tombe', 'choses tombent')} aujourd'hui.` : 'Rien ne tombe aujourd\'hui, la journée reste libre.'}`;
+    }
+    if (s.total < prev.total) {
+      return `Une fiche de moins. Il t'en reste ${s.total} en cours.`;
+    }
+  }
+  // 4. Lecture de l'etat au repos.
+  if (s.late) {
+    return `${s.late} ${plural(s.late, 'fiche a', 'fiches ont')} une échéance passée. Certaines n'ont peut-être plus lieu d'être - à toi de voir.`;
+  }
+  if (s.today) {
+    return `${s.today} ${plural(s.today, 'échéance tombe', 'échéances tombent')} aujourd'hui. Le reste peut attendre si tu le décides.`;
+  }
+  if (s.tri >= 5) {
+    return `${s.tri} fiches attendent d'être triées. Le tri va plus vite que la liste ne le laisse croire.`;
+  }
+  if (s.tri) {
+    return `${s.tri} ${plural(s.tri, 'idée attend', 'idées attendent')} d'être triée${s.tri > 1 ? 's' : ''}. Quand tu veux.`;
+  }
+  if (s.urgent) {
+    return `${s.urgent} ${plural(s.urgent, 'chose est marquée', 'choses sont marquées')} urgente${s.urgent > 1 ? 's' : ''} et importante${s.urgent > 1 ? 's' : ''}. Le reste peut attendre.`;
+  }
+  if (!s.dated) {
+    return `${s.total} ${plural(s.total, 'fiche en cours', 'fiches en cours')}, aucune datée. Rien ne te presse - c'est un choix qui se tient.`;
+  }
+  return `${s.total} ${plural(s.total, 'fiche en cours', 'fiches en cours')}, rien d'urgent. Journée libre de contraintes.`;
+}
+
+let lastState = null;
+
+// `reactive` : appelee apres une action de l'utilisateur -> on compare a l'etat
+// precedent pour que CYL reagisse a CE qu'il vient de faire.
+function localFallback(reactive) {
+  const s = readState();
+  const text = localText(s, reactive ? lastState : null);
+  lastState = s;
+  const focus = board ? topPriorities(board, 3).map(({ card }) => String(card.title).slice(0, 70)) : [];
+  paint({ text, focus, cta: 'Parler à CYL' });
 }
 
 async function run() {
+  // Point de référence pris AVANT tout affichage : sans lui, la toute première
+  // action de l'utilisateur n'aurait rien à quoi se comparer et CYL resterait
+  // muette au moment précis où elle doit réagir.
+  lastState = readState();
   const cached = readCache();
   if (cached) { show(cached); return; }
   paint({ text: 'Je regarde ou tu en es…', loading: true, cta: '' });
@@ -206,7 +288,10 @@ onAuthStateChanged(auth, async (user) => {
 
 // Le hub a change : on rafraichit l'etat local sans rappeler l'IA (le brief
 // reste celui du cache jusqu'a expiration - pas d'appel a chaque clic).
+// L'utilisateur vient d'agir : CYL se remet à jour, TOUJOURS. Le brief de
+// l'IA décrivait l'état d'avant - le garder affiché reviendrait à commenter
+// une photo pendant que la scène a changé.
 document.addEventListener('cyl:organizer-changed', (e) => {
   if (e.detail && e.detail.board) board = e.detail.board;
-  if (!readCache()) localFallback();
+  localFallback(true);
 });
