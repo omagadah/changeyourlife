@@ -23,9 +23,10 @@
     .ap-shell {
       position:fixed; inset:72px 16px 16px; background:var(--glass-bg);
       backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
-      padding:14px 16px 12px; display:grid; grid-template-rows:auto auto 1fr;
+      padding:14px 16px 12px; display:grid; grid-template-rows:auto auto auto 1fr;
       gap:11px; overflow:hidden; box-shadow:var(--shadow-lg);
     }
+    #ap-notice[hidden] { display:none; }
     @media (max-width:700px){ .ap-shell { inset:68px 8px 8px; padding:11px 10px 8px; } }
 
     /* ── Barre de commande, sur deux rangées lisibles ──
@@ -166,6 +167,39 @@
     .ap-rroots { padding:12px 14px 0; font-size:.7rem; color:var(--text-3);
       border-top:1px dashed var(--line); margin-top:8px; }
 
+    /* ── Bandeau « rien n'est daté » ──
+       Rouge posé, terre cuite : on signale un manque, on n'annonce pas une
+       panne. Il porte toujours le geste qui le fait disparaître. */
+    .ap-notice { display:flex; align-items:center; gap:13px; padding:11px 14px;
+      border-radius:13px; background:rgba(224,120,95,.09);
+      border:1px solid rgba(224,120,95,.30); }
+    .ap-notice .ic { font-size:1.3rem; flex-shrink:0; }
+    .ap-notice b { display:block; font-size:.85rem; color:#e58e73; }
+    .ap-notice small { display:block; font-size:.75rem; color:var(--text-2);
+      line-height:1.45; margin-top:2px; }
+    .ap-notice-b { margin-left:auto; flex-shrink:0; padding:8px 14px; border-radius:99px;
+      text-decoration:none; font-size:.78rem; font-weight:700; white-space:nowrap;
+      background:rgba(224,120,95,.16); border:1px solid rgba(224,120,95,.45);
+      color:#f0a48d; transition:background .18s,color .18s; }
+    .ap-notice-b:hover { background:rgba(224,120,95,.3); color:#fff; }
+    @media (max-width:700px){
+      .ap-notice { flex-wrap:wrap; }
+      .ap-notice-b { margin-left:0; width:100%; text-align:center; }
+    }
+
+    /* Créneau dessiné pendant le glissement (avant saisie du titre) */
+    .ap-ghost { position:absolute; left:3px; right:3px; z-index:7; border-radius:8px;
+      pointer-events:none; display:flex; align-items:center; justify-content:center;
+      font-size:.66rem; font-weight:700; color:var(--leaf);
+      background:rgba(132,194,94,.20); border:1px dashed rgba(132,194,94,.7); }
+    .ap-col { cursor:cell; }
+
+    /* Fiche posée sur l'agenda mais pas encore rangée dans la matrice */
+    .ap-untri { display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px;
+      font-size:.56rem; font-weight:800; letter-spacing:.03em; text-transform:uppercase;
+      vertical-align:1px; background:rgba(231,177,92,.22); color:var(--gold-soft);
+      border:1px solid rgba(231,177,92,.4); }
+
     .ap-toast { position:fixed; top:20px; left:50%; transform:translate(-50%,-130px);
       background:rgba(74,122,58,.96); color:var(--text-1); padding:10px 20px; border-radius:10px;
       font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.85rem; }
@@ -235,6 +269,8 @@
       <button class="ap-b ico" id="ap-next" aria-label="Période suivante">›</button>
       <span class="ap-range" id="ap-range"></span>
     </div>
+
+    <div id="ap-notice" hidden></div>
 
     <div class="ap-body">
       <aside class="ap-rail">

@@ -19,7 +19,10 @@
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { loadBoard, allCards, BRANCHES, BRANCH_BY_KEY, FINISH_ID } from '/js/organizer-data.js';
+import {
+  loadBoard, saveBoard, addCard, allCards, logCard,
+  BRANCHES, BRANCH_BY_KEY, FINISH_ID, TRI_ID,
+} from '/js/organizer-data.js';
 import { initUserMenu } from '/js/userMenu.js';
 import * as gcal from '/js/gcal.js';
 
@@ -66,9 +69,11 @@ function occurrences() {
       const d = new Date(card.due);
       out.push({
         kind: 'card', date: d, allDay: false,
-        h: d.getHours() + d.getMinutes() / 60, dur: 45,
+        h: d.getHours() + d.getMinutes() / 60, dur: card.dur || 45,
         title: card.title, branch: card.branch, done: !!card.done,
         late: !card.done && card.due < Date.now(),
+        // Posée directement sur l'agenda, donc jamais passée par la matrice.
+        untriaged: col.id === TRI_ID,
       });
     });
   }
@@ -151,6 +156,7 @@ function renderWeek(all) {
   html += '</div></div>';
   $('#ap-view').innerHTML = html;
   $('#ap-view').style.setProperty('--nd', nd);
+  initDragCreate(H0, PX, days);
 }
 
 // Répartition des chevauchements en colonnes de largeur égale, comme Google.
@@ -181,8 +187,81 @@ function block(it, H0, PX) {
   const cls = 'ap-ev ' + it.kind + (it.done ? ' done' : '') + (it.late ? ' late' : '');
   const sub = it.kind === 'gcal' ? 'Google Agenda' : it.late ? 'en retard' : 'fiche';
   const bg = it.kind === 'gcal' ? '' : `background:color-mix(in srgb,${it.color} 16%,transparent);`;
+  // Signale une fiche posée sur l'agenda mais jamais rangée dans la matrice.
+  const flag = it.untriaged ? '<span class="ap-untri" title="Cette fiche n\'est pas encore rangée dans l\'ORGANIZER">non triée</span>' : '';
   return `<div class="${cls}" style="top:${top}px;height:${hgt}px;left:calc(${l}% + 3px);width:calc(${w}% - 6px);color:${it.color};${bg}">
-    <span class="t">${esc(it.title)}</span><span class="s">${fmtH(it.h)} · ${sub}</span></div>`;
+    <span class="t">${esc(it.title)}${flag}</span><span class="s">${fmtH(it.h)} · ${sub}</span></div>`;
+}
+
+// ── Création par glissement, comme sur Google Agenda ─────────────────────────
+// On appuie sur une colonne, on tire vers le bas, on relâche : le créneau est
+// dessiné pendant le geste, puis on saisit le titre. Pas de formulaire lourd :
+// le but est de poser une intention en trois secondes.
+const SNAP = 0.25;               // quart d'heure, comme Google
+const snap = (h) => Math.round(h / SNAP) * SNAP;
+
+function initDragCreate(H0, PX, days) {
+  const scene = $('#ap-view');
+  scene.querySelectorAll('.ap-col').forEach((col, di) => {
+    col.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.ap-ev')) return;      // on ne recouvre pas un bloc
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      const rect = col.getBoundingClientRect();
+      const startH = snap(H0 + (e.clientY - rect.top) / PX);
+      let endH = startH + 0.5;
+
+      const ghost = document.createElement('div');
+      ghost.className = 'ap-ghost';
+      col.appendChild(ghost);
+      const paint = () => {
+        const a = Math.min(startH, endH), b = Math.max(startH, endH);
+        ghost.style.top = (a - H0) * PX + 'px';
+        ghost.style.height = Math.max(12, (b - a) * PX) + 'px';
+        ghost.textContent = `${fmtH(a)} - ${fmtH(b)}`;
+      };
+      paint();
+
+      const move = (ev) => {
+        endH = snap(H0 + (ev.clientY - rect.top) / PX);
+        if (Math.abs(endH - startH) < SNAP) endH = startH + SNAP;
+        paint();
+      };
+      const up = async (ev) => {
+        col.removeEventListener('pointermove', move);
+        col.removeEventListener('pointerup', up);
+        col.removeEventListener('pointercancel', up);
+        try { col.releasePointerCapture(ev.pointerId); } catch (_) {}
+        const a = Math.min(startH, endH), b = Math.max(startH, endH);
+        ghost.remove();
+        await createAt(days[di], a, Math.max(15, Math.round((b - a) * 60)));
+      };
+      try { col.setPointerCapture(e.pointerId); } catch (_) {}
+      col.addEventListener('pointermove', move);
+      col.addEventListener('pointerup', up);
+      col.addEventListener('pointercancel', up);
+    });
+  });
+}
+
+async function createAt(day, hour, minutes) {
+  const label = window.prompt(
+    `Nouvelle fiche le ${day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${fmtH(hour)} (${minutes} min)\n\nQu'est-ce que tu poses là ?`,
+  );
+  const title = (label || '').trim();
+  if (!title) return;
+  if (!board) { toast('Board indisponible - réessaie dans un instant.'); return; }
+
+  const when = new Date(day);
+  when.setHours(Math.floor(hour), Math.round((hour % 1) * 60), 0, 0);
+  // La fiche rejoint l'ORGANIZER (source unique) dans « À trier », avec son
+  // échéance. Le badge « non triée » disparaîtra dès qu'elle sera rangée.
+  const card = addCard(board, TRI_ID, title, { due: when.getTime(), dur: minutes });
+  if (card) logCard(card, 'Posée depuis l\'agenda');
+  saveBoard(db, uid, board, { onError: () => toast('Sauvegarde impossible - vérifie ta connexion.') });
+  try { document.dispatchEvent(new CustomEvent('cyl:organizer-changed', { detail: { board } })); } catch (_) {}
+  render();
+  toast('Fiche posée · elle attend d\'être rangée dans l\'ORGANIZER');
 }
 
 // ── Vue MOIS : la canopée ────────────────────────────────────────────────────
@@ -305,12 +384,45 @@ function renderRail(all) {
 }
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
+// Un agenda vide n'est pas une erreur, mais rester devant une grille blanche
+// sans savoir quoi faire en est une. Le bandeau dit POURQUOI c'est vide et
+// donne le geste qui le remplit. Rouge posé, pas alarmiste : il ne s'est rien
+// passé de grave, il manque juste des dates.
+function renderEmptyNotice(all) {
+  const host = $('#ap-notice');
+  if (!host) return;
+  const dated = all.length;
+  const cards = board ? allCards(board).filter(({ card, col }) => col.id !== FINISH_ID && !card.done).length : 0;
+  const goalsN = goals.length;
+
+  if (dated) { host.innerHTML = ''; host.hidden = true; return; }
+  host.hidden = false;
+
+  if (!cards && !goalsN) {
+    host.innerHTML = `<div class="ap-notice">
+      <span class="ic">🗓️</span>
+      <div><b>Ton agenda est vide, et c'est normal</b>
+        <small>Rien n'a encore de date. Dépose ce que tu as en tête dans l'ORGANIZER,
+        puis pose une échéance : ça apparaîtra ici.</small></div>
+      <a class="ap-notice-b" href="/organizer/">Ouvrir l'ORGANIZER →</a></div>`;
+    return;
+  }
+  host.innerHTML = `<div class="ap-notice">
+    <span class="ic">📌</span>
+    <div><b>${cards} fiche${cards > 1 ? 's' : ''} et ${goalsN} objectif${goalsN > 1 ? 's' : ''}, aucune date</b>
+      <small>L'agenda ne montre que ce qui est daté. Pose une échéance sur une fiche
+      (panneau de la fiche → « Quand ») ou un jalon sur un objectif, et il se remplira.
+      Tu peux aussi tirer directement sur la grille pour poser un créneau.</small></div>
+    <a class="ap-notice-b" href="/organizer/">Dater mes fiches →</a></div>`;
+}
+
 function render() {
   const all = occurrences().filter(visible).sort((a, b) => a.date - b.date);
   if (view === 'week') renderWeek(all);
   else if (view === 'month') renderMonth(all);
   else renderRiver();
   renderRail(all);
+  renderEmptyNotice(all);
   document.body.dataset.view = view;
 }
 function syncTabs() {
