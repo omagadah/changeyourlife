@@ -59,6 +59,7 @@ const DICT = {
   fr: {
     'nav.login': 'Se connecter',
     'hero.eyebrow': 'Font de toi qui tu es et font grandir ton arbre',
+    'hero.kicker': 'Le kit tout en 1 pour (ré)organiser sa vie.',
     'hero.title': 'Ta vie a une forme.<br>Ici, elle devient visible.',
     'hero.desc': 'On ne voit pas une vie grandir. <strong>Ici, si.</strong><br>Ce que tu fais aujourd\'hui, ton arbre s\'en souvient. CYL, ton assistant personnel, t\'aide à mener tes projets à bien et à t\'épanouir dans le style de vie qui est le tien.',
     'stream.caption': 'Tes actions dans la vraie vie',
@@ -179,6 +180,7 @@ const DICT = {
   en: {
     'nav.login': 'Sign in',
     'hero.eyebrow': 'They make you who you are - and grow your tree',
+    'hero.kicker': 'The all-in-one kit to (re)organize your life.',
     'hero.title': 'Your life has a shape.<br>Here, it becomes visible.',
     'hero.desc': 'You never get to watch a life grow. <strong>Here, you do.</strong><br>What you do today, your tree remembers. CYL, your personal assistant, helps you see your projects through and thrive in the life that is yours.',
     'stream.caption': 'Your actions, in real life',
@@ -211,6 +213,7 @@ const DICT = {
   es: {
     'nav.login': 'Iniciar sesión',
     'hero.eyebrow': 'Te hacen quien eres y hacen crecer tu árbol',
+    'hero.kicker': 'El kit todo en uno para (re)organizar tu vida.',
     'hero.title': 'Tu vida tiene una forma.<br>Aquí se vuelve visible.',
     'hero.desc': 'Nunca se ve crecer una vida. <strong>Aquí, sí.</strong><br>Lo que haces hoy, tu árbol lo recuerda. CYL, tu asistente personal, te ayuda a llevar tus proyectos a buen puerto y a florecer en la vida que es tuya.',
     'stream.caption': 'Tus acciones, en la vida real',
@@ -243,6 +246,7 @@ const DICT = {
   de: {
     'nav.login': 'Anmelden',
     'hero.eyebrow': 'Sie machen dich zu dem, der du bist, und lassen deinen Baum wachsen',
+    'hero.kicker': 'Das Komplettpaket, um dein Leben (neu) zu ordnen.',
     'hero.title': 'Dein Leben hat eine Gestalt.<br>Hier wird sie sichtbar.',
     'hero.desc': 'Ein Leben beim Wachsen zuzusehen, geht sonst nicht. <strong>Hier schon.</strong><br>Was du heute tust, merkt sich dein Baum. CYL, dein persönlicher Assistent, hilft dir, deine Vorhaben zu Ende zu bringen und in deinem eigenen Leben aufzublühen.',
     'stream.caption': 'Deine Taten, im echten Leben',
@@ -275,6 +279,7 @@ const DICT = {
   it: {
     'nav.login': 'Accedi',
     'hero.eyebrow': 'Ti rendono chi sei e fanno crescere il tuo albero',
+    'hero.kicker': 'Il kit tutto-in-uno per (ri)organizzare la tua vita.',
     'hero.title': 'La tua vita ha una forma.<br>Qui diventa visibile.',
     'hero.desc': 'Non si vede mai crescere una vita. <strong>Qui sì.</strong><br>Quello che fai oggi, il tuo albero se lo ricorda. CYL, il tuo assistente personale, ti aiuta a portare a termine i tuoi progetti e a fiorire nella vita che è la tua.',
     'stream.caption': 'Le tue azioni, nella vita reale',
@@ -307,6 +312,7 @@ const DICT = {
   pt: {
     'nav.login': 'Entrar',
     'hero.eyebrow': 'Fazem de ti quem és e fazem crescer a tua árvore',
+    'hero.kicker': 'O kit tudo-em-um para (re)organizar a tua vida.',
     'hero.title': 'A tua vida tem uma forma.<br>Aqui, torna-se visível.',
     'hero.desc': 'Nunca se vê uma vida a crescer. <strong>Aqui, vê-se.</strong><br>O que fazes hoje, a tua árvore lembra-se. CYL, o teu assistente pessoal, ajuda-te a levar os teus projetos a bom porto e a florescer na vida que é a tua.',
     'stream.caption': 'As tuas ações, na vida real',
@@ -339,6 +345,7 @@ const DICT = {
   nl: {
     'nav.login': 'Inloggen',
     'hero.eyebrow': 'Ze maken je wie je bent en laten je boom groeien',
+    'hero.kicker': 'De alles-in-één kit om je leven te (her)ordenen.',
     'hero.title': 'Je leven heeft een vorm.<br>Hier wordt die zichtbaar.',
     'hero.desc': 'Een leven zie je nooit groeien. <strong>Hier wel.</strong><br>Wat je vandaag doet, onthoudt je boom. CYL, je persoonlijke assistent, helpt je je plannen af te maken en te bloeien in het leven dat van jou is.',
     'stream.caption': 'Jouw acties, in het echte leven',
