@@ -89,7 +89,8 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 
-  // ── Rate limit (10 req / min / uid) ────────────────────────────────────────
+  // ── Rate limit (10 req/min/uid + 150/jour/uid, fail-closed) ────────────────
+  const DAILY_MAX = 150;
   const db = getFirestore(getAdminApp());
   const rateRef = db.collection('coachRate').doc(uid);
   try {
@@ -97,9 +98,11 @@ module.exports = async function handler(req, res) {
     const now = Date.now();
     const windowMs = 60_000;
     const maxPerWindow = 10;
+    const day = new Date().toISOString().slice(0, 10);
+    const d = snap.exists ? snap.data() : {};
     let calls = [];
     if (snap.exists) {
-      calls = (snap.data().calls || []).filter(t => now - t < windowMs);
+      calls = (d.calls || []).filter(t => now - t < windowMs);
     }
     if (calls.length >= maxPerWindow) {
       return res.status(429).json({
@@ -107,8 +110,12 @@ module.exports = async function handler(req, res) {
         retryAfter: Math.ceil((windowMs - (now - calls[0])) / 1000),
       });
     }
+    const dayCount = d.day === day ? (d.dayCount || 0) : 0;
+    if (dayCount >= DAILY_MAX) {
+      return res.status(429).json({ error: "Limite atteinte pour aujourd'hui. On reprend demain." });
+    }
     calls.push(now);
-    await rateRef.set({ calls, lastAt: new Date() }, { merge: true });
+    await rateRef.set({ calls, lastAt: new Date(), day, dayCount: dayCount + 1 }, { merge: true });
   } catch (e) {
     console.error('[coach] rate-limit error:', e?.message || e);
     // Fail-closed: if rate-limit can't be enforced, refuse the call

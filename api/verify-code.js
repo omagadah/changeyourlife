@@ -41,15 +41,38 @@ module.exports = async function handler(req, res) {
 
     const data = snap.data();
 
+    // Code deja consomme/invalide (le doc survit pour garder le compteur du jour)
+    if (!data.code) {
+      return res.status(400).json({ error: 'Aucun code actif. Demandez-en un nouveau.' });
+    }
+
+    // Le code doit valider l'adresse A LAQUELLE il a ete envoye. Sans ce
+    // controle, demander un code sur son propre email puis changer l'email du
+    // compte permettait de marquer verifiee une adresse jamais confirmee
+    // (AUDIT 2026-08-16).
+    // Invalider un code SANS effacer le compteur journalier d'envois : le doc
+    // porte aussi `dayKey`/`sentToday` (garde-fou anti email-bombing). Le
+    // supprimer laissait 5 codes faux remettre ce compteur - et le cooldown
+    // de 60 s - a zero (AUDIT 2026-08-16).
+    const burnCode = () => codeRef.set(
+      { code: null, attempts: 0, dayKey: data.dayKey || null, sentToday: data.sentToday || 0 },
+      { merge: false },
+    );
+
+    if (data.email && data.email !== decoded.email) {
+      await burnCode();
+      return res.status(400).json({ error: 'Ce code ne correspond pas à cet email. Demandez-en un nouveau.' });
+    }
+
     const expiresAt = data.expiresAt?.toMillis?.() || 0;
     if (Date.now() > expiresAt) {
-      await codeRef.delete();
+      await burnCode();
       return res.status(400).json({ error: 'Code expiré. Demandez-en un nouveau.' });
     }
 
     const attempts = (data.attempts || 0) + 1;
     if (attempts > 5) {
-      await codeRef.delete();
+      await burnCode();
       return res.status(400).json({ error: 'Trop de tentatives. Demandez un nouveau code.' });
     }
 
@@ -66,7 +89,7 @@ module.exports = async function handler(req, res) {
     }
 
     await auth.updateUser(uid, { emailVerified: true });
-    await codeRef.delete();
+    await burnCode();   // conserve le compteur du jour, invalide le code
 
     return res.status(200).json({ success: true });
 

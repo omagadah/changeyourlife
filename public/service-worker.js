@@ -1,5 +1,5 @@
-// service-worker.js - v169 (UX anti-IA : palette organique en variables main.min.css)
-const CACHE_NAME = 'changeyourlife-v169';
+// service-worker.js - v171 (refonte visuelle /app palette organique + fixes AUDIT 2026-08-16)
+const CACHE_NAME = 'changeyourlife-v171';
 const urlsToCache = [
   '/',
   '/app/',
@@ -56,7 +56,11 @@ const urlsToCache = [
   '/js/agenda.js',
   '/js/agenda-page.js',
   '/js/emoji.js',
+  '/js/gcal.js',
   '/js/organizer.js',
+  '/js/organizer-data.js',
+  '/js/app-organizer.js',
+  '/js/syl-brief.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
   '/js/tree-widget.js',

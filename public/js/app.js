@@ -214,8 +214,8 @@
                   labels: WHEEL_DOMAINS.map(wd => wd.emoji + ' ' + wd.label),
                   datasets: [{
                     data: WHEEL_DOMAINS.map(wd => scores[wd.key] ?? 0),
-                    backgroundColor: 'rgba(0,112,243,0.1)',
-                    borderColor: '#0070f3', borderWidth: 1.5,
+                    backgroundColor: 'rgba(132,194,94,0.12)',
+                    borderColor: '#84c25e', borderWidth: 1.5,
                     pointBackgroundColor: WHEEL_DOMAINS.map(wd => wd.color),
                     pointBorderColor: 'transparent', pointRadius: 4
                   }]
@@ -225,9 +225,9 @@
                   scales: { r: {
                     min:0, max:10,
                     ticks: { display:false },
-                    grid: { color:'rgba(255,255,255,0.06)' },
-                    angleLines: { color:'rgba(255,255,255,0.06)' },
-                    pointLabels: { color:'#7ba3c8', font:{size:9} }
+                    grid: { color:'rgba(244,239,225,0.07)' },
+                    angleLines: { color:'rgba(244,239,225,0.07)' },
+                    pointLabels: { color:'#b4ad94', font:{size:9} }
                   }},
                   plugins: { legend:{display:false}, tooltip:{enabled:false} }
                 }
@@ -236,14 +236,27 @@
           } catch(e) { console.warn('Wheel widget:', e); }
         }
 
-        // ── XP Domain Rings ────────────────────────────────────────────────────
+        // ── XP par branche de l'arbre ──────────────────────────────────────────
+        // Source de vérité = `tree` (8 branches Maslow), PAS le miroir legacy
+        // `levels` qui ne couvre que 4 domaines. Bug corrigé (AUDIT 2026-08-16) :
+        // BRANCH_TO_LEGACY ne mappe que physio/appartenance/cognitif/securite —
+        // l'XP gagné sur estime, esthétique, accomplissement et transcendance
+        // (les branches les plus fréquentes via l'ORGANIZER) n'apparaissait
+        // NULLE PART à l'écran : anneaux figés et total XP bloqué.
+        const BRANCHES_UI = [
+          {key:'physio',          label:'Physiologique',   emoji:'🌱', color:'#84c25e'},
+          {key:'securite',        label:'Sécurité',        emoji:'🛡️', color:'#e7b15c'},
+          {key:'appartenance',    label:'Appartenance',    emoji:'🤝', color:'#e0785f'},
+          {key:'estime',          label:'Estime',          emoji:'🏆', color:'#c39a6b'},
+          {key:'cognitif',        label:'Cognitif',        emoji:'📚', color:'#9d8ec4'},
+          {key:'esthetique',      label:'Esthétique',      emoji:'🎨', color:'#d98cae'},
+          {key:'accomplissement', label:'Accomplissement', emoji:'🚀', color:'#6f9a52'},
+          {key:'transcendance',   label:'Transcendance',   emoji:'✨', color:'#f1cd92'},
+        ];
+        const LEGACY_TO_BRANCH = { body:'physio', heart:'appartenance', etre:'cognitif', order:'securite' };
+
         function loadXPRings(userData) {
-          const DOMAINS = [
-            {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf'},
-            {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171'},
-            {key:'etre',  label:'Être',  emoji:'✨', color:'#a78bfa'},
-            {key:'order', label:'Ordre', emoji:'⚡', color:'#fbbf24'},
-          ];
+          const DOMAINS = BRANCHES_UI;
           const THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 4000, 8000, Infinity];
           const TITLES = ['Novice','Apprenti','Initié','Pratiquant','Avancé','Expert','Maître','Légende'];
           const getInfo = rawXp => {
@@ -255,7 +268,19 @@
             const pct = nextXP === Infinity ? 100 : Math.round((xp - prevXP) / (nextXP - prevXP) * 100);
             return { xp, lvl: lvl+1, title: TITLES[Math.min(lvl, TITLES.length-1)], pct };
           };
-          const levels = userData.levels || {};
+
+          // `tree.branches` = { <cle>: { xp, lastActionAt } }. Repli : on remonte
+          // l'ancien `levels` (comptes antérieurs à la refonte de l'arbre).
+          const treeBranches = (userData.tree && userData.tree.branches) || null;
+          const legacy = userData.levels || {};
+          const levels = {};
+          BRANCHES_UI.forEach(b => { levels[b.key] = treeBranches ? (treeBranches[b.key] || { xp: 0 }) : { xp: 0 }; });
+          if (!treeBranches) {
+            Object.entries(LEGACY_TO_BRANCH).forEach(([old, branch]) => {
+              const v = legacy[old];
+              if (v) levels[branch] = { xp: typeof v === 'number' ? v : (v.xp || 0) };
+            });
+          }
           const grid = document.getElementById('rings-grid');
           if (!grid) return;
 
@@ -301,30 +326,26 @@
         function loadActionDuJour(userData) {
           const el = document.getElementById('action-today');
           if (!el) return;
-          const DOMAINS = [
-            {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf', href:'/meditation/'},
-            {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171', href:'/journal/'},
-            {key:'etre',  label:'Être',  emoji:'✨', color:'#a78bfa', href:'/journal/'},
-            {key:'order', label:'Ordre', emoji:'⚡', color:'#fbbf24', href:'/objectifs/'},
-          ];
-          const med = userData.meditation || {};
-          const today = new Date().toDateString();
-          const meditatedToday = med.lastSessionAt && new Date(med.lastSessionAt).toDateString() === today;
+          // Chaque branche mène à SA page de drill-down (cf. /physio/, /securite/…)
+          const DOMAINS = BRANCHES_UI.map(b => ({ ...b, href: `/${b.key}/` }));
 
-          let icon, label, text, btnText, href;
-          if (!meditatedToday) {
-            icon = '🧘'; label = 'Action du jour';
-            text = 'Tu n\'as pas encore médité aujourd\'hui. Une séance de 10 min peut transformer ta journée.';
-            btnText = 'Méditer maintenant (+15 XP)'; href = '/meditation/';
-          } else {
-            // Suggest weakest domain
-            const levels = userData.levels || {};
-            const sorted = DOMAINS.slice().sort((a,b) => (levels[a.key]?.xp||0) - (levels[b.key]?.xp||0));
-            const weak = sorted[0];
-            icon = weak.emoji; label = 'Domaine à renforcer';
-            text = `Ton domaine <strong>${weak.label}</strong> a le moins d'XP. Quelques actions ciblées peuvent faire une grande différence.`;
-            btnText = `Agir sur ${weak.label} →`; href = weak.href;
-          }
+          // Posture NON-DIRECTIVE (règle produit non négociable) : on décrit un
+          // état observé, on ne prescrit pas d'action et on ne culpabilise pas.
+          // L'utilisateur fixe lui-même ce qui compte pour lui.
+          const branches = (userData.tree && userData.tree.branches) || {};
+          const sorted = DOMAINS.slice().sort((a,b) => (branches[a.key]?.xp||0) - (branches[b.key]?.xp||0));
+          const quiet = sorted[0];
+          const active = sorted[sorted.length - 1];
+          const hasXp = (branches[active.key]?.xp || 0) > 0;
+          if (!hasXp) return;   // rien d'observé -> on n'affiche rien plutôt que d'inventer
+
+          const icon = quiet.emoji;
+          const label = 'Ce que ton arbre montre';
+          const text = `Ces temps-ci, <strong>${active.label}</strong> reçoit le plus de ton énergie ; `
+            + `<strong>${quiet.label}</strong> est la plus silencieuse. `
+            + `C'est un constat, pas un reproche - peut-être que c'est exactement ce que tu veux en ce moment.`;
+          const btnText = `Voir ${quiet.label} →`;
+          const href = quiet.href;
 
           el.innerHTML = `<div class="action-card">
             <div class="action-card-icon">${icon}</div>
@@ -444,44 +465,6 @@
         }
         loadQuoteDuJour();
 
-        const card = document.getElementById('tool-card-1');
-        if (card) {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; const centerX = rect.width / 2; const centerY = rect.height / 2; const rotateX = ((y - centerY) / centerY) * -7; const rotateY = ((x - centerX) / centerX) * 7;
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
-            });
-            card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)'; });
-        }
-
-// ── Vanta birds (background) - bootstrap après les imports/init ──
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({
-        el: "#vanta-birds-bg",
-        mouseControls: true, touchControls: true,
-        backgroundColor: 0x07192f,
-        color1: 0x4a3a3a, color2: 0xcccccc,
-        quantity: 4.0,
-      });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
-window.addEventListener("DOMContentLoaded", bootVanta);
-
-// ── Event listeners (remplacent les onmouseover/onmouseout inline pour CSP stricte) ──
-const linkProfile = document.getElementById('link-profile');
-if (linkProfile) {
-  linkProfile.addEventListener('mouseover', () => { linkProfile.style.color = '#8ba4c8'; });
-  linkProfile.addEventListener('mouseout',  () => { linkProfile.style.color = '#4a6a8a'; });
-}
-
-const linkCoach = document.getElementById('link-coach');
-if (linkCoach) {
-  const coachBgHover = 'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15))';
-  const coachBgRest  = 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.08))';
-  linkCoach.addEventListener('mouseover', () => { linkCoach.style.background = coachBgHover; });
-  linkCoach.addEventListener('mouseout',  () => { linkCoach.style.background = coachBgRest; });
-}
+// Le fond Vanta « oiseaux » (template v1) a été retiré : le fond est désormais
+// un dégradé organique en CSS pur (cf. app/index.html) - zéro JS, zéro CDN.
+// Le hover de « Voir profil complet » est géré en CSS (.rings-link:hover).

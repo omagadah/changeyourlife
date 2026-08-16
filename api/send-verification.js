@@ -120,14 +120,23 @@ module.exports = async function handler(req, res) {
     if (!email) return res.status(400).json({ error: 'Aucun email associé au compte' });
     if (decoded.email_verified) return res.status(400).json({ error: 'Email déjà vérifié' });
 
-    // Rate limit: check last sent time
+    // Rate limit 1 : 60 s entre deux envois.
+    // Rate limit 2 : plafond journalier par uid (anti « email bombing » d'un
+    //   tiers dont l'adresse aurait servi à créer le compte - AUDIT 2026-08-16).
+    const DAILY_CAP = 8;
+    const dayKey = new Date().toISOString().slice(0, 10);
     const codeRef = db.collection('verificationCodes').doc(uid);
     const existing = await codeRef.get();
+    let sentToday = 0;
     if (existing.exists) {
       const data = existing.data();
       const elapsed = Date.now() - (data.sentAt?.toMillis?.() || 0);
       if (elapsed < 60_000) {
         return res.status(429).json({ error: 'Attendez 60 secondes avant de renvoyer', retryAfter: Math.ceil((60_000 - elapsed) / 1000) });
+      }
+      sentToday = data.dayKey === dayKey ? (data.sentToday || 0) : 0;
+      if (sentToday >= DAILY_CAP) {
+        return res.status(429).json({ error: 'Limite d\'envois atteinte pour aujourd\'hui, réessayez demain' });
       }
     }
 
@@ -141,6 +150,8 @@ module.exports = async function handler(req, res) {
       sentAt: new Date(),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       attempts: 0,
+      dayKey,
+      sentToday: sentToday + 1,
     });
 
     // Send email via Resend

@@ -1,13 +1,17 @@
 // /js/organizer.js - ORGANIZER : board type Trello (matrice d'Eisenhower).
 // Colonnes + fiches déplaçables (drag & drop via SortableJS), échéances, étapes
-// (checklist), logs d'activité par fiche. Fiche -> Terminé = XP (Accomplissement).
+// (checklist), logs d'activité par fiche. Chaque fiche est rattachée à une
+// branche Maslow : terminée, elle crédite l'XP de CETTE branche (l'arbre pousse
+// là où tu as vraiment agi). Planification dans Google Agenda via /js/gcal.js.
 // "Idées à trier" est figée à gauche ; les autres colonnes sont réordonnables.
-// Données : users/{uid}.organizer.
+// Données : users/{uid}.organizer (schéma partagé : /js/organizer-data.js).
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
+import { BRANCHES, BRANCH_BY_KEY, guessBranch } from '/js/organizer-data.js';
+import * as gcal from '/js/gcal.js';
 
 let auth, db, uid;
 let board = null;
@@ -50,7 +54,14 @@ function findCard(id) {
   return null;
 }
 function log(card, m) { card.logs = card.logs || []; card.logs.unshift({ at: now(), m }); if (card.logs.length > 60) card.logs.length = 60; }
-async function awardXp() { try { const fn = window._cyfFirebase && window._cyfFirebase.awardXp; if (fn) await fn('accomplissement', FINISH_XP); } catch (e) {} }
+// L'XP va sur la branche Maslow de la fiche (la part de vie qu'elle nourrit) ;
+// « accomplissement » sert de repli quand la fiche n'a pas été rattachée.
+async function awardXp(card) {
+  try {
+    const fn = window._cyfFirebase && window._cyfFirebase.awardXp;
+    if (fn) await fn((card && card.branch) || 'accomplissement', FINISH_XP);
+  } catch (e) {}
+}
 
 async function load() {
   try {
@@ -148,7 +159,10 @@ function renderCard(card) {
   const el = document.createElement('div');
   el.className = 'org-card' + (card.done ? ' done' : '');
   el.dataset.id = card.id;
-  const title = document.createElement('div'); title.className = 'org-card-title'; title.textContent = card.title;
+  const b = card.branch && BRANCH_BY_KEY[card.branch];
+  if (b) { el.style.borderLeft = '3px solid ' + b.color; el.title = 'Nourrit : ' + b.label; }
+  const title = document.createElement('div'); title.className = 'org-card-title';
+  title.textContent = (b ? b.emoji + ' ' : '') + card.title;
   el.appendChild(title);
   const badges = badgesHtml(card);
   if (badges.length) { const b = document.createElement('div'); b.className = 'org-card-badges'; b.innerHTML = badges.join(''); el.appendChild(b); }
@@ -382,7 +396,7 @@ function handleCardEnd(evt) {
     const f = findCard(cardId);
     if (f) {
       log(f.card, `Déplacée : ${stripEmoji(colTitle(fromCol))} → ${stripEmoji(colTitle(toCol))}`);
-      if (toCol === FINISH_ID && !f.card.done) { f.card.done = true; log(f.card, 'Terminé 🎉'); awardXp(); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp'); }
+      if (toCol === FINISH_ID && !f.card.done) { f.card.done = true; log(f.card, 'Terminé 🎉'); awardXp(f.card); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp'); }
       else if (toCol !== FINISH_ID && f.card.done) { f.card.done = false; }
       evt.item.classList.toggle('done', !!f.card.done);
     }
@@ -407,7 +421,7 @@ function openAdd(c, btn) {
   const commit = () => {
     const v = ta.value.trim();
     if (v) {
-      const card = { id: uid6(), title: v, desc: '', due: null, checklist: [], logs: [], done: c.id === FINISH_ID, createdAt: now() };
+      const card = { id: uid6(), title: v, desc: '', due: null, checklist: [], logs: [], done: c.id === FINISH_ID, createdAt: now(), branch: guessBranch(v), gcalId: null };
       log(card, 'Fiche créée');
       c.cards.push(card); save(); render();
     } else { render(); }
@@ -444,7 +458,7 @@ function moveCard(cardId, toColId) {
   f.col.cards = f.col.cards.filter((x) => x.id !== cardId);
   dest.cards.push(f.card);
   log(f.card, `Déplacée : ${stripEmoji(f.col.title)} → ${stripEmoji(dest.title)}`);
-  if (toColId === FINISH_ID && !f.card.done) { f.card.done = true; log(f.card, 'Terminé 🎉'); awardXp(); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp'); }
+  if (toColId === FINISH_ID && !f.card.done) { f.card.done = true; log(f.card, 'Terminé 🎉'); awardXp(f.card); toast(`Fiche terminée · +${FINISH_XP} XP`, 'xp'); }
   else if (toColId !== FINISH_ID && f.card.done) { f.card.done = false; }
   save(); render();
 }
@@ -462,6 +476,10 @@ function openCard(cardId) {
       <textarea class="org-d-title" id="d-title" rows="1">${escapeHtml(card.title)}</textarea>
       <div class="org-d-label">Description</div>
       <textarea class="org-d-input" id="d-desc" placeholder="Détaille cette idée...">${escapeHtml(card.desc || '')}</textarea>
+      <div class="org-d-label">Quelle part de ta vie ça nourrit</div>
+      <div class="org-d-branches" id="d-branches">
+        ${BRANCHES.map((b) => `<button class="org-d-br${card.branch === b.key ? ' on' : ''}" data-b="${b.key}" style="--bc:${b.color}" title="${escapeHtml(b.label)}">${b.emoji}<span>${escapeHtml(b.label)}</span></button>`).join('')}
+      </div>
       <div class="org-d-label">Échéance</div>
       <input type="date" class="org-d-input" id="d-due" value="${dueVal}" />
       <div class="org-d-label">Étapes ${total ? `· ${checked}/${total}` : ''}</div>
@@ -486,6 +504,14 @@ function openCard(cardId) {
   titleEl.oninput = () => autoGrow(titleEl);
   titleEl.onblur = () => { const v = titleEl.value.trim(); if (v && v !== card.title) { card.title = v; log(card, 'Titre modifié'); save(); render(); } };
   m.querySelector('#d-desc').onblur = (e) => { if ((e.target.value || '') !== (card.desc || '')) { card.desc = e.target.value; save(); } };
+  m.querySelectorAll('#d-branches .org-d-br').forEach((btn) => {
+    btn.onclick = () => {
+      const k = btn.dataset.b;
+      card.branch = card.branch === k ? null : k;
+      log(card, card.branch ? 'Branche : ' + BRANCH_BY_KEY[k].label : 'Branche retirée');
+      save(); openCard(cardId); render();
+    };
+  });
   m.querySelector('#d-due').onchange = (e) => {
     card.due = e.target.value ? new Date(e.target.value + 'T09:00:00').getTime() : null;
     log(card, card.due ? 'Échéance ' + fmtDate(card.due) : 'Échéance retirée'); save(); render();
@@ -524,22 +550,31 @@ function renderLogs(card) {
 }
 function closeModal() { const m = document.getElementById('org-modal'); if (m) m.classList.add('hidden'); }
 
-// ── Agenda (réutilise le jeton du connecteur Google Agenda) ─────────────────
+// ── Agenda (via le connecteur unifié /js/gcal.js) ───────────────────────────
+// Avant : le jeton était relu dans localStorage alors qu'il est écrit dans
+// sessionStorage, et le scope était en lecture seule → l'ajout ne pouvait pas
+// aboutir. Tout passe désormais par gcal.js (scope lecture + écriture).
 async function addToAgenda(card) {
-  let tok = null;
-  try { const x = JSON.parse(localStorage.getItem('cyl_gcal_token') || 'null'); if (x && x.t && x.exp > now()) tok = x.t; } catch (_) {}
-  if (!tok) { toast("Connecte d'abord Google Agenda (depuis Mon espace)"); return; }
-  const day = (card.due ? new Date(card.due) : new Date());
-  const d = day.toISOString().slice(0, 10);
-  const dn = new Date(day.getTime() + 86400000).toISOString().slice(0, 10);
   try {
-    const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
-      method: 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ summary: '🗂 ' + card.title, start: { date: d }, end: { date: dn }, description: 'ORGANIZER - ChangeYourLife.ai' }),
+    if (!gcal.isConnected() || !gcal.canWrite()) await gcal.connect({ write: true });
+    const ev = await gcal.createEvent({
+      summary: card.title,
+      description: 'ORGANIZER - changeyourlife.ai',
+      day: card.due ? new Date(card.due) : new Date(),
     });
-    if (!r.ok) throw new Error('http');
-    log(card, 'Ajoutée à Google Agenda'); save(); toast('Ajoutée à ton Agenda');
-  } catch (e) { toast("Échec de l'ajout à l'Agenda"); }
+    card.gcalId = (ev && ev.id) || null;
+    log(card, 'Ajoutée à Google Agenda');
+    save(); render();
+    toast('Ajoutée à ton Agenda');
+  } catch (e) {
+    console.error('[organizer] addToAgenda:', e && e.code, e && e.message);
+    if (e && e.code === 'gcal/forbidden') {
+      gcal.disconnect();
+      toast("Accès agenda en lecture seule - reconnecte-le pour autoriser l'écriture");
+    } else {
+      toast(gcal.connectErrorMessage(e));
+    }
+  }
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────

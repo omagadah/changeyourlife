@@ -211,6 +211,18 @@ if (window.__sylChat) { /* déjà chargé */ } else {
     inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
     // Permet au module Urgence (urgence.js) d'ouvrir SYL directement.
     window.cylSylChat = { open, close };
+    // Ouverture depuis un autre module (hub ORGANIZER, brief du jour…) avec un
+    // message pré-rempli : SYL propose, l'utilisateur garde la main (il peut
+    // relire, modifier ou effacer avant d'envoyer - jamais d'envoi automatique).
+    document.addEventListener('cyl:syl-open', (e) => {
+      open();
+      const pre = e.detail && e.detail.prefill;
+      if (pre) {
+        inputEl.value = pre;
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(160, inputEl.scrollHeight) + 'px';
+      }
+    });
   }
 
   onAuthStateChanged(auth, (user) => {

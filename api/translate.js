@@ -19,6 +19,7 @@ const MAX_CHARS = 24000;
 const IP_WINDOW_MS = 60_000;      // fenêtre du rate-limit IP
 const IP_MAX_PER_WINDOW = 4;      // 4 requêtes / min / IP (le client cache en localStorage : largement assez)
 const GLOBAL_DAILY_MAX = 400;     // plafond global de traductions / jour (protège le quota provider)
+const IP_DAILY_MAX = 60;          // plafond / jour / IP : empêche une seule IP d'épuiser le global
 
 function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];
@@ -90,19 +91,28 @@ module.exports = async function handler(req, res) {
     const now = Date.now();
     const ip = clientIp(req);
 
-    // Par IP : IP_MAX_PER_WINDOW req / min (doc par hash simple de l'IP)
+    const day = new Date().toISOString().slice(0, 10);
+
+    // Par IP : IP_MAX_PER_WINDOW req/min ET IP_DAILY_MAX req/jour.
+    // Sans le plafond journalier par IP, une seule IP anonyme épuisait le
+    // quota global (400/j) en ~100 min et coupait l'i18n pour tout le monde
+    // (AUDIT 2026-08-16).
     const ipKey = Buffer.from(ip).toString('base64url').slice(0, 60);
     const ipRef = db.collection('translateRate').doc(ipKey);
     const ipSnap = await ipRef.get();
-    let calls = ipSnap.exists ? (ipSnap.data().calls || []).filter((t) => now - t < IP_WINDOW_MS) : [];
+    const ipData = ipSnap.exists ? ipSnap.data() : {};
+    let calls = ipSnap.exists ? (ipData.calls || []).filter((t) => now - t < IP_WINDOW_MS) : [];
     if (calls.length >= IP_MAX_PER_WINDOW) {
       return res.status(429).json({ error: 'Trop de requêtes. Patiente une minute.' });
     }
+    const ipDayCount = ipData.day === day ? (ipData.dayCount || 0) : 0;
+    if (ipDayCount >= IP_DAILY_MAX) {
+      return res.status(429).json({ error: 'Quota de traduction atteint pour aujourd\'hui.' });
+    }
     calls.push(now);
-    await ipRef.set({ calls, lastAt: new Date() }, { merge: true });
+    await ipRef.set({ calls, lastAt: new Date(), day, dayCount: ipDayCount + 1 }, { merge: true });
 
     // Global : GLOBAL_DAILY_MAX req / jour (protège le quota Groq/Gemini)
-    const day = new Date().toISOString().slice(0, 10);
     const gRef = db.collection('translateRate').doc('_global');
     const gSnap = await gRef.get();
     const g = gSnap.exists ? gSnap.data() : {};

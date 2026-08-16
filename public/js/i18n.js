@@ -481,13 +481,24 @@ async function ensureTranslations(lang) {
   }
 }
 
+// Les traductions peuvent venir du LLM (/api/translate) et sont mises en cache
+// en localStorage : on ne les injecte JAMAIS telles quelles en innerHTML.
+// On echappe tout, puis on re-autorise uniquement la mise en forme legitime
+// utilisee par les cles source (<br>, <strong>, <em>). AUDIT 2026-08-16.
+const I18N_ALLOWED_TAGS = /&lt;(\/?)(br\s*\/?|strong|em)&gt;/gi;
+function safeI18nHtml(str) {
+  return String(str ?? '')
+    .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+    .replace(I18N_ALLOWED_TAGS, '<$1$2>');
+}
+
 function applyDom(root) {
   const scope = root || document;
   scope.querySelectorAll('[data-i18n]').forEach((el) => {
     el.textContent = t(el.getAttribute('data-i18n'));
   });
   scope.querySelectorAll('[data-i18n-html]').forEach((el) => {
-    el.innerHTML = t(el.getAttribute('data-i18n-html'));
+    el.innerHTML = safeI18nHtml(t(el.getAttribute('data-i18n-html')));
   });
   scope.querySelectorAll('[data-i18n-ph]').forEach((el) => {
     el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));

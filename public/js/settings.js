@@ -501,6 +501,34 @@ document.addEventListener('DOMContentLoaded', () => {
             // orphelines alors que l'utilisateur croit tout supprime (la promesse
             // "donnees supprimees" doit rester fiable). Le miroir roles/{uid} est
             // read-only cote client (nettoye serveur) -> best-effort silencieux.
+            //
+            // 1. Sous-collections : deleteDoc(users/{uid}) ne les supprime PAS
+            //    (comportement Firestore). On purge chacune explicitement.
+            // Un echec ici doit ARRETER la suppression : sinon on supprime le
+            // compte Auth en promettant « donnees supprimees » alors qu'elles
+            // restent orphelines (cas typique : rules pas encore deployees).
+            const purgeFailed = [];
+            for (const sub of ['journal', 'moods', 'bilans', 'sleep', 'gratitude']) {
+                try {
+                    const snap = await getDocs(collection(db, 'users', user.uid, sub));
+                    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+                } catch(e) {
+                    if (e?.code === 'permission-denied') purgeFailed.push(sub);
+                }
+            }
+            // 2. Collections racine rattachees par uid (roue de vie, codex).
+            for (const coll of ['assessments', 'codexNotes']) {
+                try {
+                    const snap = await getDocs(query(collection(db, coll), where('uid', '==', user.uid)));
+                    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+                } catch(e) {
+                    if (e?.code === 'permission-denied') purgeFailed.push(coll);
+                }
+            }
+            if (purgeFailed.length) {
+                throw new Error('Suppression incomplète (' + purgeFailed.join(', ') + '). Compte NON supprimé - réessaie plus tard.');
+            }
+            // 3. Le document principal en dernier.
             await deleteDoc(doc(db, 'users', user.uid));
             dataDeleted = true;
             try { await deleteDoc(doc(db, 'roles', user.uid)); } catch(_) {}

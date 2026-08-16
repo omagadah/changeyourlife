@@ -137,19 +137,28 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 
-  // ── Rate limit (15 req / min / uid, fail-closed) ───────────────────────────
+  // ── Rate limit (15 req/min/uid + 200/jour/uid, fail-closed) ────────────────
+  // Le plafond journalier borne le coût LLM d'un compte hostile : sans lui,
+  // 15/min = 21 600 appels/jour possibles (AUDIT 2026-08-16).
+  const DAILY_MAX = 200;
   const db = getFirestore(getAdminApp());
   const rateRef = db.collection('chatRate').doc(uid);
   try {
     const snap = await rateRef.get();
     const now = Date.now();
     const windowMs = 60_000, maxPerWindow = 15;
-    let calls = snap.exists ? (snap.data().calls || []).filter((t) => now - t < windowMs) : [];
+    const day = new Date().toISOString().slice(0, 10);
+    const d = snap.exists ? snap.data() : {};
+    let calls = snap.exists ? (d.calls || []).filter((t) => now - t < windowMs) : [];
     if (calls.length >= maxPerWindow) {
       return res.status(429).json({ error: 'Trop de messages. Patiente une minute.', retryAfter: Math.ceil((windowMs - (now - calls[0])) / 1000) });
     }
+    const dayCount = d.day === day ? (d.dayCount || 0) : 0;
+    if (dayCount >= DAILY_MAX) {
+      return res.status(429).json({ error: "Limite de messages atteinte pour aujourd'hui. On reprend demain." });
+    }
     calls.push(now);
-    await rateRef.set({ calls, lastAt: new Date() }, { merge: true });
+    await rateRef.set({ calls, lastAt: new Date(), day, dayCount: dayCount + 1 }, { merge: true });
   } catch (e) {
     console.error('[chat] rate-limit error:', e?.message || e);
     return res.status(503).json({ error: 'Service temporairement indisponible' });

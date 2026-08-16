@@ -14,21 +14,21 @@
 // De la base du tronc (besoins vitaux) à la cime (transcendance). C'est
 // l'épine dorsale du modèle : l'arbre EST la pyramide de Maslow, verticale.
 export const DIMENSIONS = [
-  { key: 'physio',          label: 'Physiologique',  color: 0x2dd4bf, tier: 1, azimuth: 205, attach: 0.20, elev: 47,
+  { key: 'physio',          label: 'Physiologique',  color: 0x84c25e, tier: 1, azimuth: 205, attach: 0.20, elev: 47,
     sub: ['Sommeil', 'Nutrition', 'Hydratation', 'Mouvement', 'Repos'] },
-  { key: 'securite',        label: 'Sécurité',       color: 0xfbbf24, tier: 1, azimuth:  35, attach: 0.32, elev: 46,
+  { key: 'securite',        label: 'Sécurité',       color: 0xe7b15c, tier: 1, azimuth:  35, attach: 0.32, elev: 46,
     sub: ['Logement', 'Stabilité', 'Finances', 'Santé', 'Sérénité'] },
-  { key: 'appartenance',    label: 'Appartenance',   color: 0xf87171, tier: 2, azimuth: 300, attach: 0.44, elev: 41,
+  { key: 'appartenance',    label: 'Appartenance',   color: 0xe0785f, tier: 2, azimuth: 300, attach: 0.44, elev: 41,
     sub: ['Famille', 'Amis', 'Amour', 'Empathie', 'Communauté'] },
-  { key: 'estime',          label: 'Estime',         color: 0xfb923c, tier: 2, azimuth: 110, attach: 0.56, elev: 40,
+  { key: 'estime',          label: 'Estime',         color: 0xc39a6b, tier: 2, azimuth: 110, attach: 0.56, elev: 40,
     sub: ['Confiance', 'Compétence', 'Réussite', 'Reconnaissance', 'Fierté'] },
-  { key: 'cognitif',        label: 'Cognitif',       color: 0xa78bfa, tier: 3, azimuth: 250, attach: 0.67, elev: 36,
+  { key: 'cognitif',        label: 'Cognitif',       color: 0x9d8ec4, tier: 3, azimuth: 250, attach: 0.67, elev: 36,
     sub: ['Savoir', 'Curiosité', 'Compréhension', 'Apprentissage', 'Lucidité'] },
-  { key: 'esthetique',      label: 'Esthétique',     color: 0xe879c7, tier: 3, azimuth: 140, attach: 0.78, elev: 34,
+  { key: 'esthetique',      label: 'Esthétique',     color: 0xd98cae, tier: 3, azimuth: 140, attach: 0.78, elev: 34,
     sub: ['Beauté', 'Harmonie', 'Ordre', 'Créativité', 'Émerveillement'] },
-  { key: 'accomplissement', label: 'Accomplissement',color: 0x38bdf8, tier: 4, azimuth:  20, attach: 0.89, elev: 33,
+  { key: 'accomplissement', label: 'Accomplissement',color: 0x6f9a52, tier: 4, azimuth:  20, attach: 0.89, elev: 33,
     sub: ['Croissance', 'Projets', 'Maîtrise', 'Authenticité', 'Vision'] },
-  { key: 'transcendance',   label: 'Transcendance',  color: 0xc4b5fd, tier: 4, azimuth:   0, attach: 1.00, elev: 80,
+  { key: 'transcendance',   label: 'Transcendance',  color: 0xf1cd92, tier: 4, azimuth:   0, attach: 1.00, elev: 80,
     sub: ['Spiritualité', 'Contribution', 'Sens', 'Transmission', 'Héritage'] },
 ];
 

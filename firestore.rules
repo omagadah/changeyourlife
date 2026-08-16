@@ -10,6 +10,13 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // Admin = custom claim posé côté serveur (Cloud Function setUserRole).
+    // Le miroir Firestore roles/{uid} reste read-only : impossible de
+    // s'auto-promouvoir en écrivant un document.
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
     function isValidJournalEntry() {
       let data = request.resource.data;
       return data.content is string
@@ -56,10 +63,15 @@ service cloud.firestore {
 
     // ── Collection utilisateurs ─────────────────────────────────────────────
     match /users/{userId} {
-      allow read:   if isSignedIn() && isOwner(userId);
+      // isAdmin() couvre get ET list : nécessaire au back-office de /settings/
+      // (compteur d'utilisateurs, recherche, export). En lecture seule.
+      allow read:   if (isSignedIn() && isOwner(userId)) || isAdmin();
       allow create: if isSignedIn() && isOwner(userId);
       allow update: if isSignedIn() && isOwner(userId) && xpFieldsValid();
-      // (no delete — préférable de garder l'historique)
+      // Suppression de compte (RGPD) : le bouton « Danger Zone » de /settings/
+      // supprime users/{uid} puis le compte Auth. Sans cette clause, la
+      // suppression échouait en permission-denied (AUDIT 2026-08-16).
+      allow delete: if isSignedIn() && isOwner(userId);
 
       match /journal/{entryId} {
         allow read:   if isSignedIn() && isOwner(userId);
@@ -68,33 +80,40 @@ service cloud.firestore {
         allow delete: if isSignedIn() && isOwner(userId);
       }
 
+      // NB : `allow write` avec validation de request.resource.data ne couvre
+      // PAS le delete (resource nulle -> condition fausse). Chaque sous-
+      // collection sépare donc create/update (validés) et delete (owner).
       match /moods/{dateStr} {
         allow read:  if isSignedIn() && isOwner(userId);
-        allow write: if isSignedIn() && isOwner(userId)
+        allow create, update: if isSignedIn() && isOwner(userId)
           && request.resource.data.mood is int
           && request.resource.data.mood >= 1
           && request.resource.data.mood <= 5;
+        allow delete: if isSignedIn() && isOwner(userId);
       }
 
       match /bilans/{weekKey} {
         allow read:  if isSignedIn() && isOwner(userId);
-        allow write: if isSignedIn() && isOwner(userId) && isValidBilan();
+        allow create, update: if isSignedIn() && isOwner(userId) && isValidBilan();
+        allow delete: if isSignedIn() && isOwner(userId);
       }
 
       match /sleep/{dateStr} {
         allow read:  if isSignedIn() && isOwner(userId);
-        allow write: if isSignedIn() && isOwner(userId)
+        allow create, update: if isSignedIn() && isOwner(userId)
           && request.resource.data.quality is int
           && request.resource.data.quality >= 1
           && request.resource.data.quality <= 5;
+        allow delete: if isSignedIn() && isOwner(userId);
       }
 
       match /gratitude/{dateStr} {
         allow read:  if isSignedIn() && isOwner(userId);
-        allow write: if isSignedIn() && isOwner(userId)
+        allow create, update: if isSignedIn() && isOwner(userId)
           && request.resource.data.g1 is string && request.resource.data.g1.size() <= 2000
           && request.resource.data.g2 is string && request.resource.data.g2.size() <= 2000
           && request.resource.data.g3 is string && request.resource.data.g3.size() <= 2000;
+        allow delete: if isSignedIn() && isOwner(userId);
       }
     }
 
@@ -133,9 +152,15 @@ service cloud.firestore {
     // fait côté serveur (Admin SDK) : lecture de la liste réservée au serveur.
     match /giveaways/{cycleId}/entries/{uid} {
       allow read:   if isSignedIn() && isOwner(uid);
+      // Email vérifié requis (anti-Sybil léger) ; cycleId = timestamp (ms) du
+      // prochain tirage -> doit être futur et à moins de 8 jours (bloque la
+      // pré-inscription à des cycles lointains et les cycles passés).
       allow create: if isSignedIn() && isOwner(uid)
+        && request.auth.token.email_verified == true
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.cycleId == cycleId;
+        && request.resource.data.cycleId == cycleId
+        && int(cycleId) > request.time.toMillis()
+        && int(cycleId) < request.time.toMillis() + 8 * 24 * 60 * 60 * 1000;
       // pas d'update / delete : une participation ne se modifie pas
     }
 
@@ -156,9 +181,13 @@ service cloud.firestore {
     match /translateRate/{docId} {
       allow read, write: if false;
     }
+    // Rate-limit brief SYL (api/syl-brief.js)
+    match /briefRate/{uid} {
+      allow read, write: if false;
+    }
     // Rôles (modérateur, admin) — réservé Custom Claims serveur
     match /roles/{uid} {
-      allow read:  if isSignedIn() && isOwner(uid);
+      allow read:  if (isSignedIn() && isOwner(uid)) || isAdmin();
       allow write: if false;
     }
 

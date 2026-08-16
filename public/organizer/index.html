@@ -85,6 +85,13 @@
     .org-d-input { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#e5eef8; font-family:inherit; font-size:0.9rem; padding:9px 11px; outline:none; }
     .org-d-input:focus { border-color:rgba(96,165,250,0.5); }
     textarea.org-d-input { resize:vertical; min-height:70px; }
+    /* Rattachement d'une fiche à une branche Maslow (elle nourrit cette part de vie) */
+    .org-d-branches { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+    .org-d-br { display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 4px; border-radius:11px; cursor:pointer;
+      border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#9db8d8; font-family:inherit; font-size:1rem; transition:all .16s; }
+    .org-d-br span { font-size:0.56rem; font-weight:700; text-align:center; line-height:1.1; }
+    .org-d-br:hover { background:rgba(255,255,255,0.08); }
+    .org-d-br.on { border-color:var(--bc); background:color-mix(in srgb, var(--bc) 18%, transparent); color:#fff; }
     .org-check { display:flex; align-items:center; gap:9px; padding:5px 0; }
     .org-check input[type=checkbox] { width:17px; height:17px; accent-color:#22c55e; cursor:pointer; flex-shrink:0; }
     .org-check span { flex:1; font-size:0.88rem; color:#dbe6f5; }

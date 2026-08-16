@@ -2,84 +2,115 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <!-- Deploy trigger: force Vercel rebuild 2025-11-12T11:30 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Espace - Change Your Life</title>
-    <meta name="description" content="Votre espace personnel sur Change Your Life - accédez à tous vos outils de santé mentale, suivez votre progression et atteignez vos objectifs.">
+    <meta name="description" content="Ton espace personnel sur Change Your Life - dépose ce que tu as en tête, organise tes priorités et fais grandir ton arbre.">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
     <link rel="icon" href="/favicon.ico">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <meta name="theme-color" content="#0070f3">
-    <meta name="msapplication-TileColor" content="#07192f">
+    <meta name="theme-color" content="#0a0f0a">
+    <meta name="msapplication-TileColor" content="#0a0f0a">
     <link rel="stylesheet" href="/css/main.min.css"/>
     <style>
-        /* ── App container ── */
+        /* ════════════════════════════════════════════════════════════
+           /app/ - refonte « palette organique » (forêt nocturne, or, mousse).
+           Hiérarchie d'arrivée : 1. ORGANIZER (le cerveau) · 2. SYL ·
+           3. ta journée · 4. raccourcis · 5. l'arbre · 6. le reste.
+           L'ordre du DOM EST l'ordre visuel (plus de réordonnancement CSS).
+           ════════════════════════════════════════════════════════════ */
+        :root {
+          --line:     rgba(221,205,160,0.12);
+          --line-hov: rgba(132,194,94,0.42);
+        }
+        body {
+          background:
+            radial-gradient(ellipse 64% 42% at 50% -6%, rgba(231,177,92,0.13), transparent 62%),
+            radial-gradient(ellipse 80% 60% at 50% 110%, rgba(74,122,58,0.16), transparent 64%),
+            radial-gradient(ellipse 90% 70% at 12% 50%, rgba(111,154,82,0.06), transparent 60%),
+            var(--bg);
+        }
+
+        /* ── App container : verre forêt ── */
         .app-container {
           position:absolute; top:15px; bottom:15px; left:15px; right:15px;
-          background:rgba(11,24,41,0.82);
+          background:var(--glass-bg);
           backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
           border-radius:22px;
-          border:1px solid rgba(255,255,255,0.07);
-          box-shadow:0 0 0 1px rgba(255,255,255,0.03) inset, 0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 56px rgba(0,0,0,0.5);
+          border:1px solid var(--line);
+          box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 1px 0 rgba(255,255,255,0.05) inset, var(--shadow-lg);
           padding:28px 28px 24px;
           z-index:1; overflow-y:auto;
           display:flex; flex-direction:column;
         }
-        /* Hiérarchie d'arrivée (vision « Aujourd'hui d'abord ») :
-           promo → accueil → l'ARBRE (cœur du produit) → QUOI FAIRE MAINTENANT
-           (plan du jour + actions rapides, juste sous l'arbre) → ta journée
-           (agenda + aujourd'hui) → tes chiffres (stats + niveaux) → les outils. */
-        #giveaway-card  { order:-9; }
-        .welcome-row    { order:-8; }
-        #tree-stage     { order:-7; }
-        #plan-cta       { order:-6; }   /* le moteur central : Aujourd'hui */
-        .quick-actions  { order:-5; }   /* log rapide en 1 clic */
-        #agenda-card    { order:-4; }
-        #today-progress-card { order:-3; }
-        .stats-row      { order:-2; }
-        .rings-section  { order:-1; }
-        .tree-stage {
-          position:relative; width:100%; height:380px; border-radius:20px; overflow:hidden;
-          background:radial-gradient(circle at 50% 28%, rgba(20,40,70,0.45), rgba(6,12,22,0.65));
-          border:1px solid rgba(255,255,255,0.06); cursor:grab; touch-action:none;
-        }
-        .tree-stage:active { cursor:grabbing; }
-        /* Badge XP du coin masqué (redondant avec le récap) -> coin propre. */
-        .welcome-right  { display:none; }
-        /* En colonne flex, les enfants ne doivent PAS se compresser (sinon texte
-           ecrase) : hauteur naturelle + scroll du conteneur. */
+        /* En colonne flex, les enfants ne doivent PAS se compresser. */
         .app-container > * { flex-shrink: 0; }
 
-        /* ── Welcome ── */
-        .welcome-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; gap:12px; margin-top:20px; padding-right:96px; }
-        @media (max-width:600px){ .welcome-row { padding-right:60px; margin-top:14px; } }
-        .welcome-left h1 { font-size:1.55rem; font-weight:800; color:#eef4ff; letter-spacing:-.4px; margin-bottom:4px; }
-        .welcome-date { font-size:0.78rem; color:#4a6a8a; }
-        .welcome-sub-text { font-size:0.82rem; color:#4a6a8a; margin-top:2px; }
-        .welcome-right { flex-shrink:0; }
+        /* Les blocs rendus par JS (organizer, SYL, agenda) restent invisibles
+           tant qu'ils sont vides : sinon deux cadres bordés vides s'affichent
+           au premier paint, avant que l'auth ne résolve. */
+        #organizer-hub:empty, #agenda-card:empty, #syl-brief:empty { display: none; }
+
+        /* ── Welcome : une seule ligne discrète ── */
+        .welcome-row {
+          display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+          margin:4px 0 14px; padding-right:96px;
+          animation:fadeUp .5s var(--ease) both;
+        }
+        @media (max-width:600px){ .welcome-row { padding-right:56px; } }
+        .welcome-left { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+        .welcome-left h1 { font-size:0.84rem; font-weight:700; color:var(--text-2); letter-spacing:0; margin:0; }
+        .welcome-date { font-size:0.76rem; color:var(--text-3); }
+        .welcome-date::before { content:'·'; margin-right:8px; opacity:.6; }
+        .welcome-sub-text { font-size:0.76rem; color:var(--text-3); }
+        .welcome-sub-text::before { content:'·'; margin-right:8px; opacity:.6; }
+        .welcome-right { display:none; }
+
+        /* XP total : pastille or fixe, sous le logo */
         .xp-corner {
           position:fixed; top:56px; right:20px; z-index:8000;
           display:inline-flex; align-items:center; gap:6px;
           padding:6px 13px; border-radius:999px;
-          background:rgba(8,16,28,0.72); border:1px solid rgba(96,165,250,0.38);
-          backdrop-filter:blur(8px); font-size:0.8rem; font-weight:800; color:#8ab4f8;
+          background:rgba(16,21,13,0.78); border:1px solid rgba(231,177,92,0.38);
+          backdrop-filter:blur(8px); font-size:0.8rem; font-weight:800; color:var(--gold-soft);
         }
-        @media (max-width:600px){ .xp-corner{ top:48px; right:14px; font-size:0.74rem; padding:5px 10px; } }
-        .total-xp-badge {
-          display:inline-flex; align-items:center; gap:5px;
-          padding:6px 14px; border-radius:999px;
-          background:rgba(0,112,243,0.1); border:1px solid rgba(0,112,243,0.25);
-          font-size:0.78rem; font-weight:700; color:#60a5fa;
-          animation:fadeUp .5s ease both;
+        /* mobile : le logo occupe 12px + 40px -> le badge passe SOUS lui (58px) */
+        @media (max-width:600px){ .xp-corner{ top:58px; right:14px; font-size:0.74rem; padding:5px 10px; } }
+        .total-xp-badge { display:none; }
+
+        /* ── Arbre : le reflet de ce que tu fais ── */
+        .tree-caption {
+          font-size:0.66rem; text-transform:uppercase; letter-spacing:.8px;
+          color:var(--text-3); font-weight:700; margin-bottom:8px;
         }
+        #tree-stage.tree-stage:not(.expanded) {
+          position:relative; width:100%; height:260px; border-radius:20px; overflow:hidden;
+          background:radial-gradient(circle at 50% 26%, rgba(231,177,92,0.10), rgba(10,15,10,0.72));
+          border:1px solid var(--line); cursor:grab; touch-action:none;
+          margin-bottom:18px;
+        }
+        .tree-stage:active { cursor:grabbing; }
+
+        /* ── Raccourcis (rangée compacte) ── */
+        .hub-shortcuts { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+        .hub-sc {
+          display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px;
+          text-decoration:none; border:1px solid var(--line);
+          background:rgba(255,255,255,0.025); transition:transform .18s, border-color .18s, background .18s;
+        }
+        .hub-sc:hover { transform:translateY(-2px); background:rgba(132,194,94,0.07); border-color:var(--sc,var(--line-hov)); }
+        .hub-sc-ic { font-size:1.3rem; flex-shrink:0; }
+        .hub-sc > span:not(.hub-sc-ic) { min-width:0; }
+        .hub-sc-t { display:block; font-size:0.82rem; font-weight:800; color:var(--text-1); line-height:1.2; }
+        .hub-sc-s { display:block; font-size:0.7rem; color:var(--text-3); margin-top:1px; }
+        @media (max-width:640px){ .hub-shortcuts { grid-template-columns:1fr; } }
 
         /* ── Today progress ── */
         .today-card {
           display:flex; align-items:center; gap:16px;
           padding:14px 18px; border-radius:16px; margin-bottom:18px;
-          background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+          background:rgba(255,255,255,0.02); border:1px solid var(--line);
           flex-wrap:wrap;
         }
         .today-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3); font-weight:700; flex-shrink:0; }
@@ -87,11 +118,11 @@
         .today-item {
           display:inline-flex; align-items:center; gap:6px;
           padding:5px 11px; border-radius:999px; font-size:0.75rem; font-weight:600;
-          border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:var(--text-2);
+          border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--text-2);
           transition:all .2s;
         }
-        .today-item.done { background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3); color:#86efac; }
-        .today-item.partial { background:rgba(251,191,36,0.08); border-color:rgba(251,191,36,0.25); color:#fde68a; }
+        .today-item.done { background:rgba(132,194,94,0.10); border-color:rgba(132,194,94,0.32); color:var(--leaf); }
+        .today-item.partial { background:rgba(231,177,92,0.08); border-color:rgba(231,177,92,0.28); color:var(--gold-soft); }
         .today-dot { width:7px; height:7px; border-radius:50%; background:currentColor; opacity:0.8; flex-shrink:0; }
         .today-pct { font-size:0.65rem; font-weight:700; opacity:0.7; }
 
@@ -100,159 +131,159 @@
         .qa-btn {
           display:flex; flex-direction:column; align-items:center; gap:6px;
           padding:14px 10px; border-radius:16px; text-decoration:none;
-          border:1px solid rgba(255,255,255,0.07);
-          background:rgba(255,255,255,0.03);
-          transition:all .2s cubic-bezier(.4,0,.2,1);
-          position:relative; overflow:hidden;
+          border:1px solid var(--line);
+          background:rgba(255,255,255,0.02);
+          transition:all .2s var(--ease);
         }
-        .qa-btn::before {
-          content:''; position:absolute; inset:0; border-radius:16px;
-          background:var(--qa-bg, transparent); opacity:0.08;
-          transition:opacity .2s;
-        }
-        .qa-btn:hover { transform:translateY(-3px); border-color:var(--qa-border,rgba(255,255,255,0.15)); box-shadow:0 8px 24px rgba(0,0,0,0.3), var(--qa-glow,none); }
-        .qa-btn:hover::before { opacity:0.14; }
+        .qa-btn:hover { transform:translateY(-3px); border-color:var(--line-hov); background:rgba(132,194,94,0.07); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
         .qa-btn:active { transform:translateY(-1px) scale(0.98); }
         .qa-icon { font-size:1.6rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
-        .qa-label { font-size:0.72rem; font-weight:700; color:#8ba4c8; text-align:center; letter-spacing:.2px; }
-        .qa-xp { font-size:0.6rem; color:#4a6a8a; font-weight:600; }
+        .qa-label { font-size:0.72rem; font-weight:700; color:var(--text-2); text-align:center; letter-spacing:.2px; }
+        .qa-xp { font-size:0.6rem; color:var(--gold); font-weight:700; }
 
         /* ── Stats bar ── */
-        .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:22px; }
+        /* 7 chips : auto-fit évite la dernière rangée orpheline d'une grille fixe */
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px; margin-bottom:22px; }
         .stat-chip {
-          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+          background:rgba(255,255,255,0.02); border:1px solid var(--line);
           border-radius:14px; padding:14px 14px 12px;
           display:flex; flex-direction:column; gap:3px;
           position:relative; overflow:hidden;
-          border-bottom:2px solid var(--chip-color,rgba(255,255,255,0.08));
+          border-bottom:2px solid var(--chip-color,var(--line));
           transition:border-color .2s;
         }
-        .stat-chip:hover { border-color:var(--chip-color,rgba(255,255,255,0.2)); background:rgba(255,255,255,0.05); }
+        .stat-chip:hover { border-color:var(--chip-color,var(--line-hov)); background:rgba(255,255,255,0.04); }
         .stat-chip-icon { font-size:1.1rem; }
-        .stat-chip-value { font-size:1.5rem; font-weight:800; color:#eef4ff; line-height:1.1; }
-        .stat-chip-label { font-size:0.65rem; color:#4a6a8a; text-transform:uppercase; letter-spacing:.5px; }
-        .stat-chip.streak { --chip-color:#f59e0b; }
-        .stat-chip.xp     { --chip-color:#3b82f6; }
-        .stat-chip.goals  { --chip-color:#f97316; }
-        .stat-chip.journal{ --chip-color:#a78bfa; }
-        .stat-chip.streak .stat-chip-value { color:#fbbf24; }
+        .stat-chip-value { font-size:1.5rem; font-weight:800; color:var(--text-1); line-height:1.1; }
+        .stat-chip-label { font-size:0.65rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
+        .stat-chip.streak { --chip-color:var(--gold); }
+        .stat-chip.xp     { --chip-color:var(--leaf); }
+        .stat-chip.goals  { --chip-color:var(--bark); }
+        .stat-chip.journal{ --chip-color:var(--etre); }
+        .stat-chip.streak .stat-chip-value { color:var(--gold-soft); }
         .xp-bar-outer { height:2px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; margin-top:6px; }
-        .xp-bar-inner { height:100%; background:linear-gradient(90deg,#3b82f6,#60a5fa); border-radius:4px; transition:width .8s ease; }
+        .xp-bar-inner { height:100%; background:linear-gradient(90deg,var(--leaf-deep),var(--leaf)); border-radius:4px; transition:width .8s ease; }
 
         /* ── Domain rings (XP) ── */
         .rings-section { margin-bottom:22px; }
         .rings-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .rings-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; }
+        .rings-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; }
+        .rings-link { font-size:0.68rem; color:var(--text-3); text-decoration:none; transition:color .2s; }
+        .rings-link:hover { color:var(--text-2); }
         .rings-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
         .ring-card {
           display:flex; flex-direction:column; align-items:center; gap:10px;
           padding:16px 10px; border-radius:16px;
-          background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+          background:rgba(255,255,255,0.02); border:1px solid var(--line);
           transition:transform .2s, background .2s;
         }
-        .ring-card:hover { transform:translateY(-2px); background:rgba(255,255,255,0.045); }
+        .ring-card:hover { transform:translateY(-2px); background:rgba(255,255,255,0.04); }
         .ring-wrap {
           width:72px; height:72px; border-radius:50%; flex-shrink:0;
-          background:conic-gradient(var(--rcolor,#3b82f6) var(--rpct,0%), rgba(255,255,255,0.05) 0%);
+          background:conic-gradient(var(--rcolor,var(--leaf)) var(--rpct,0%), rgba(255,255,255,0.05) 0%);
           display:flex; align-items:center; justify-content:center;
-          position:relative; transition:background 1s cubic-bezier(.4,0,.2,1);
+          position:relative; transition:background 1s var(--ease);
         }
         .ring-wrap::before {
           content:''; position:absolute; inset:7px; border-radius:50%;
-          background:var(--bg-surface,#0b1829);
+          background:var(--bg-elevated);
         }
         .ring-inner { position:relative; z-index:1; text-align:center; }
         .ring-emoji { font-size:1.2rem; display:block; }
-        .ring-level { font-size:0.65rem; font-weight:800; color:var(--rcolor,#3b82f6); line-height:1; }
+        .ring-level { font-size:0.65rem; font-weight:800; color:var(--rcolor,var(--leaf)); line-height:1; }
         .ring-meta { text-align:center; }
         .ring-title { font-size:0.65rem; font-weight:700; color:var(--rcolor); text-transform:uppercase; letter-spacing:.4px; }
-        .ring-xp { font-size:0.62rem; color:#4a6a8a; margin-top:2px; }
+        .ring-xp { font-size:0.62rem; color:var(--text-3); margin-top:2px; }
 
         /* ── Action du jour ── */
         #action-today { margin-bottom:22px; }
+        #action-today:empty { display:none; }
         .action-card {
           display:flex; align-items:center; gap:16px;
           padding:16px 20px; border-radius:16px;
-          background:rgba(0,112,243,0.06); border:1px solid rgba(0,112,243,0.18);
+          background:rgba(132,194,94,0.05); border:1px solid rgba(132,194,94,0.18);
           position:relative; overflow:hidden;
         }
         .action-card::before {
           content:''; position:absolute; left:0; top:0; bottom:0;
-          width:3px; background:linear-gradient(180deg,#3b82f6,#60a5fa);
+          width:3px; background:linear-gradient(180deg,var(--leaf),var(--leaf-deep));
           border-radius:3px 0 0 3px;
         }
         .action-card-icon { font-size:1.8rem; flex-shrink:0; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
         .action-card-body { flex:1; }
-        .action-card-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:.6px; color:#60aeff; font-weight:700; margin-bottom:3px; }
-        .action-card-text { font-size:0.86rem; color:#c8d8ee; line-height:1.45; }
+        .action-card-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:.6px; color:var(--leaf); font-weight:700; margin-bottom:3px; }
+        .action-card-text { font-size:0.86rem; color:var(--text-2); line-height:1.45; }
+        .action-card-text strong { color:var(--text-1); }
         .action-card-btn {
           display:inline-flex; align-items:center; gap:4px; margin-top:8px;
           padding:6px 12px; border-radius:8px; font-size:0.76rem; font-weight:700;
-          background:rgba(0,112,243,0.18); border:1px solid rgba(0,112,243,0.3);
-          color:#60aeff; text-decoration:none; transition:background .2s;
+          background:rgba(132,194,94,0.14); border:1px solid rgba(132,194,94,0.3);
+          color:var(--leaf); text-decoration:none; transition:background .2s;
         }
-        .action-card-btn:hover { background:rgba(0,112,243,0.28); }
+        .action-card-btn:hover { background:rgba(132,194,94,0.24); }
 
-        /* ── Wheel widget ── */
-        #wheel-section { margin-bottom:22px; }
-        .wheel-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
-        .wheel-section-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:#4a6a8a; font-weight:700; }
-        .wheel-eval-date { font-size:0.72rem; color:#4a6a8a; flex:1; text-align:center; }
-        .wheel-new-eval-btn { font-size:0.72rem; color:#60aeff; text-decoration:none; padding:4px 10px; border:1px solid rgba(96,174,255,0.25); border-radius:7px; transition:background .2s; white-space:nowrap; font-weight:600; }
-        .wheel-new-eval-btn:hover { background:rgba(96,174,255,0.1); }
-        .wheel-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
-        .wheel-radar-box { width:150px; height:150px; flex-shrink:0; }
-        .wheel-domain-bars { flex:1; min-width:180px; display:flex; flex-direction:column; gap:10px; }
-        .wdb-row { display:flex; align-items:center; gap:8px; }
-        .wdb-label { width:60px; font-size:0.74rem; color:#7ba3c8; white-space:nowrap; }
-        .wdb-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; }
-        .wdb-bar { height:100%; border-radius:4px; width:0%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
-        .wdb-val { width:24px; text-align:right; font-size:0.76rem; font-weight:700; }
-        .wheel-cta-card { background:rgba(0,112,243,0.05); border:1px dashed rgba(0,112,243,0.2); border-radius:16px; padding:22px; text-align:center; text-decoration:none; display:block; transition:background .2s, border-color .2s; margin-bottom:22px; }
-        .wheel-cta-card:hover { background:rgba(0,112,243,0.09); border-color:rgba(0,112,243,0.35); }
-
-        /* ── Tools grid ── */
-        .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
-        .tool-card {
-          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
-          border-radius:18px; padding:0; text-decoration:none; color:#e0e0e0;
-          transition:transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s, border-color .22s;
-          position:relative; overflow:hidden; display:flex; flex-direction:column;
-        }
-        .tool-card:not(.coming-soon):hover {
-          transform:translateY(-5px) scale(1.01);
-          box-shadow:0 20px 48px rgba(0,0,0,0.45), var(--card-glow,none);
-          border-color:var(--card-accent,rgba(255,255,255,0.18));
-        }
-        .tool-card.coming-soon { opacity:0.42; cursor:default; pointer-events:none; }
-        .tool-card-banner {
-          height:110px; border-radius:17px 17px 0 0;
-          display:flex; align-items:center; justify-content:center;
-          background:var(--card-gradient); position:relative; overflow:hidden; flex-shrink:0;
-        }
-        .tool-card-banner::after {
-          content:''; position:absolute; inset:0;
-          background:radial-gradient(ellipse at 30% 60%,rgba(255,255,255,0.15) 0%,transparent 65%);
-        }
-        .tool-card-banner-icon { font-size:2.6rem; position:relative; z-index:1; filter:drop-shadow(0 4px 14px rgba(0,0,0,0.45)); }
-        .coming-soon-badge { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.4); color:rgba(255,255,255,0.6); padding:3px 8px; border-radius:5px; font-size:0.65rem; font-weight:700; letter-spacing:.4px; z-index:2; }
-        .tool-card-body { padding:16px 18px 18px; flex:1; display:flex; flex-direction:column; }
-        .tool-card h3 { font-size:0.95rem; font-weight:800; margin-bottom:5px; color:#eef4ff; letter-spacing:-.2px; }
-        .tool-card p { font-size:0.8rem; color:#7e9ab5; line-height:1.55; flex:1; }
-        .tool-card-arrow { display:inline-flex; align-items:center; gap:4px; font-size:0.76rem; font-weight:700; color:var(--card-accent-text,#7bbfff); margin-top:12px; transition:gap .18s; }
-        .tool-card:not(.coming-soon):hover .tool-card-arrow { gap:8px; }
-
-        /* ── Quote du jour ── */
+        /* ── Citation du jour ── */
         .quote-card {
           padding:16px 20px; border-radius:16px;
-          background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06);
+          background:rgba(255,255,255,0.02); border:1px solid var(--line);
           display:flex; align-items:flex-start; gap:14px;
           position:relative; overflow:hidden;
         }
-        .quote-mark { font-size:2.2rem; line-height:1; color:rgba(255,255,255,0.12); flex-shrink:0; font-family:Georgia,serif; margin-top:-4px; }
+        .quote-mark { font-size:2.2rem; line-height:1; color:rgba(231,177,92,0.25); flex-shrink:0; font-family:Georgia,serif; margin-top:-4px; }
         .quote-body { flex:1; min-width:0; }
-        .quote-text { font-size:0.9rem; color:#c8d8ee; line-height:1.65; font-style:italic; margin-bottom:6px; }
-        .quote-author { font-size:0.72rem; font-weight:700; color:#4a6a8a; text-transform:uppercase; letter-spacing:.4px; }
+        .quote-text { font-size:0.9rem; color:var(--text-2); line-height:1.65; font-style:italic; margin-bottom:6px; }
+        .quote-author { font-size:0.72rem; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
+
+        /* ── Roue de Vie ── */
+        #wheel-section { margin-bottom:22px; }
+        .wheel-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+        .wheel-section-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; }
+        .wheel-eval-date { font-size:0.72rem; color:var(--text-3); flex:1; text-align:center; }
+        .wheel-new-eval-btn { font-size:0.72rem; color:var(--leaf); text-decoration:none; padding:4px 10px; border:1px solid rgba(132,194,94,0.28); border-radius:7px; transition:background .2s; white-space:nowrap; font-weight:600; }
+        .wheel-new-eval-btn:hover { background:rgba(132,194,94,0.10); }
+        .wheel-card { background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+        .wheel-radar-box { width:150px; height:150px; flex-shrink:0; }
+        .wheel-domain-bars { flex:1; min-width:180px; display:flex; flex-direction:column; gap:10px; }
+        .wdb-row { display:flex; align-items:center; gap:8px; }
+        .wdb-label { width:60px; font-size:0.74rem; color:var(--text-2); white-space:nowrap; }
+        .wdb-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; }
+        .wdb-bar { height:100%; border-radius:4px; width:0%; transition:width 1.2s var(--ease); }
+        .wdb-val { width:24px; text-align:right; font-size:0.76rem; font-weight:700; }
+        .wheel-cta-card { background:rgba(231,177,92,0.04); border:1px dashed rgba(231,177,92,0.25); border-radius:16px; padding:22px; text-align:center; text-decoration:none; display:block; transition:background .2s, border-color .2s; margin-bottom:22px; }
+        .wheel-cta-card:hover { background:rgba(231,177,92,0.08); border-color:rgba(231,177,92,0.4); }
+
+        /* ── Modules : grille compacte (fini les grosses bannières) ── */
+        .modules-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; margin-bottom:12px; }
+        .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; }
+        .tool-card {
+          display:flex; align-items:flex-start; gap:12px;
+          background:rgba(255,255,255,0.02); border:1px solid var(--line);
+          border-radius:14px; padding:13px 14px; text-decoration:none;
+          transition:transform .2s var(--ease), border-color .2s, background .2s;
+          position:relative; overflow:hidden;
+        }
+        .tool-card:hover {
+          transform:translateY(-2px);
+          background:rgba(132,194,94,0.06);
+          border-color:var(--card-accent,var(--line-hov));
+        }
+        .tool-card-ic { font-size:1.45rem; flex-shrink:0; line-height:1.2; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.35)); }
+        .tool-card-body { min-width:0; flex:1; }
+        .tool-card h3 { font-size:0.85rem; font-weight:800; margin:0 0 2px; color:var(--text-1); letter-spacing:-.2px; }
+        .tool-card p { font-size:0.72rem; color:var(--text-3); line-height:1.45; margin:0; }
+        .tool-card-stat { font-size:0.68rem; font-weight:700; color:var(--leaf); margin-top:5px; display:block; }
+        .tool-card-stat:empty { display:none; }
+
+        /* ── Toast connexion (héritée) ── */
+        .toast-notification .checkmark { stroke:var(--leaf); }
+
+        /* ── Animations d'entrée ── */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        #organizer-hub { animation:fadeUp .5s var(--ease) both; animation-delay:40ms; }
+        #syl-brief     { animation:fadeUp .5s var(--ease) both; animation-delay:100ms; }
+        #agenda-card   { animation:fadeUp .5s var(--ease) both; animation-delay:160ms; }
+        .hub-shortcuts { animation:fadeUp .5s var(--ease) both; animation-delay:220ms; }
+        .tree-caption, #tree-stage { animation:fadeUp .5s var(--ease) both; animation-delay:280ms; }
 
         /* ── Responsive ── */
         @media (max-width: 760px) {
@@ -263,37 +294,15 @@
         }
         @media (max-width: 480px) {
           .stats-row { grid-template-columns: repeat(2,1fr); }
-          .welcome-left h1 { font-size: 1.25rem; }
           .quick-actions { grid-template-columns: repeat(4,1fr); }
           .qa-btn { padding:10px 6px; }
           .qa-icon { font-size:1.3rem; }
           .qa-label { font-size:0.62rem; }
           .qa-xp { font-size:0.56rem; }
         }
-
-        /* ── Shepherd ── */
-        .shepherd-element { background:rgba(10,22,45,0.97) !important; backdrop-filter:blur(20px) !important; border-radius:14px !important; border:1px solid rgba(255,255,255,0.1) !important; box-shadow:0 16px 48px rgba(0,0,0,0.5) !important; }
-        .shepherd-header { background:transparent !important; }
-        .shepherd-title { color:#eef4ff !important; font-weight:700; font-size:1rem; }
-        .shepherd-text { color:#8ba4c8 !important; font-size:0.88rem; line-height:1.6; }
-        .shepherd-button { background:#0070f3 !important; border-radius:9px !important; color:#fff !important; padding:0.55rem 1.2rem !important; font-weight:700 !important; }
-        .shepherd-button.shepherd-button-secondary { background:rgba(255,255,255,0.08) !important; }
-        .shepherd-button:not(:disabled):hover { background:#0080ff !important; }
-        .shepherd-arrow::before { background:rgba(10,22,45,0.97) !important; }
-        .shepherd-highlight-user { z-index:10001; box-shadow:0 0 0 3px rgba(0,112,243,0.8),0 0 20px rgba(0,112,243,0.5); border-radius:50%; animation:pulse-blue 2s infinite; }
-        @keyframes pulse-blue { 0%,100%{box-shadow:0 0 0 3px rgba(0,112,243,0.8),0 0 20px rgba(0,112,243,0.5)} 50%{box-shadow:0 0 0 6px rgba(0,112,243,0.8),0 0 35px rgba(0,112,243,0.8)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-
-        /* ── Staggered section entry animations ── */
-        .welcome-row   { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:0ms; }
-        #today-progress-card { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:60ms; }
-        .quick-actions { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:120ms; }
-        .stats-row     { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:180ms; }
-        .rings-section { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:240ms; }
-        #action-today  { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:300ms; }
-        #wheel-section { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:360ms; }
-        #quote-du-jour { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:420ms; }
-        .tools-section { animation:fadeUp .5s var(--ease,cubic-bezier(.4,0,.2,1)) both; animation-delay:480ms; }
+        @media (prefers-reduced-motion: reduce) {
+          .app-container *, #organizer-hub, #syl-brief, #agenda-card { animation:none !important; }
+        }
     </style>
 </head>
 <body>
@@ -307,15 +316,14 @@
         </div>
         <span>Connexion réussie !</span>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <div id="vanta-birds-bg"></div>
+    <!-- defer : Chart.js ne sert qu'au widget Roue de Vie, tout en bas et souvent
+         masqué. En bloquant, il retardait le premier rendu pour rien. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <header class="header">
                 <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
                             <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
                                 <g stroke-width="3">
-                                    <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+                                    <circle cx="60" cy="60" r="40" fill="black" stroke="#84c25e" stroke-width="8"/>
                                     <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
                                     <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
                                     <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
@@ -338,101 +346,106 @@
                 </button>
         </header>
     <main class="app-container">
-        <!-- ── Welcome ── -->
+        <!-- ── Ligne d'accueil : discrète, ce n'est pas le sujet ── -->
         <div class="welcome-row">
           <div class="welcome-left">
             <h1 id="greeting-h1">Bonjour</h1>
             <div class="welcome-date" id="welcome-date"></div>
-            <div class="welcome-sub-text" id="welcome-sub">Prêt à avancer aujourd'hui ?<span id="user-title" style="color:#9fb5ff;font-style:italic;margin-left:6px"></span></div>
+            <div class="welcome-sub-text" id="welcome-sub">Prêt à avancer aujourd'hui ?<span id="user-title" style="color:var(--gold-soft);font-style:italic;margin-left:6px"></span></div>
           </div>
           <div class="welcome-right">
             <div class="total-xp-badge">⚡ <span id="total-xp-badge">0 XP</span></div>
           </div>
         </div>
 
-        <!-- ── Google Agenda (connecteur central) ── -->
+        <!-- ══ 1 · LE CERVEAU : ORGANIZER ══
+             Tout ce qui te passe par la tête se dépose ici (« À trier »),
+             se range dans la matrice Eisenhower, se rattache à une branche
+             de ta vie (Maslow) et part dans ton Google Agenda.
+             Rendu par /js/app-organizer.js. -->
+        <section id="organizer-hub" aria-label="ORGANIZER - ton espace de pensées et de priorités"></section>
+
+        <!-- ══ 2 · SYL : le brief du jour ══
+             L'IA lit ton organizer + ton agenda et te propose une lecture.
+             Rendu par /js/syl-brief.js. -->
+        <div id="syl-brief"></div>
+
+        <!-- ══ 3 · TA JOURNÉE : Google Agenda + fiches échues, fusionnés ══ -->
         <div id="agenda-card" class="agenda-card"></div>
 
-        <!-- ── Arbre de vie (widget → plein écran) ── -->
-        <div id="tree-stage" class="tree-stage" role="button" tabindex="0"
-             aria-label="Ton arbre de vie - clique pour explorer"></div>
+        <!-- ══ 4 · Raccourcis ══ -->
+        <div class="hub-shortcuts">
+          <a href="/organizer/" class="hub-sc" style="--sc:rgba(231,177,92,0.5)">
+            <span class="hub-sc-ic">🗂️</span>
+            <span><span class="hub-sc-t">Board complet</span>
+              <span class="hub-sc-s">Colonnes, canvas, liens</span></span>
+          </a>
+          <a href="/plan/" id="plan-cta" class="hub-sc" style="--sc:rgba(132,194,94,0.5)">
+            <span class="hub-sc-ic">🌅</span>
+            <span><span class="hub-sc-t">Aujourd'hui</span>
+              <span class="hub-sc-s">Rythme et base vitale</span></span>
+          </a>
+          <a href="/competences/" id="skills-cta" class="hub-sc" style="--sc:rgba(195,154,107,0.5)">
+            <span class="hub-sc-ic">🧗</span>
+            <span><span class="hub-sc-t" data-i18n="app.skills.title">Mes compétences</span>
+              <span class="hub-sc-s">Ce que tu sais faire</span></span>
+          </a>
+        </div>
 
-        <!-- ── Aujourd'hui : poste de pilotage (module /plan/) ── -->
-        <a href="/plan/" id="plan-cta" style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(45,212,191,0.16),rgba(14,165,233,0.07));border:1px solid rgba(45,212,191,0.32);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:18px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden">
-          <div style="font-size:2rem;flex-shrink:0">🌅</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:1rem;font-weight:800;color:#e5fbf6;margin-bottom:3px" data-i18n="app.plan.title">Aujourd'hui - ton plan du jour</div>
-            <div style="font-size:0.82rem;color:#8fe3d6;line-height:1.4" data-i18n="app.plan.desc">Ton rythme, tes besoins essentiels et tes tâches - chaque action fait grandir ton arbre.</div>
-          </div>
-          <div style="font-size:0.82rem;font-weight:700;color:#7fe3d6;white-space:nowrap" data-i18n="app.open">Ouvrir →</div>
-        </a>
+        <!-- ══ 5 · L'arbre : le reflet de ce que tu fais ══ -->
+        <div class="tree-caption">Ton arbre - il pousse là où tu agis vraiment</div>
+        <!-- Pas de role="button" : l'interaction (orbite, clic sur les nœuds) est
+             gérée par le canvas injecté par living-tree.js, qui contient ses
+             propres boutons. Annoncer un bouton inerte trompait le clavier. -->
+        <div id="tree-stage" class="tree-stage"
+             aria-label="Ton arbre de vie"></div>
 
-        <!-- ── Compétences (module /competences/) ── -->
-        <a href="/competences/" id="skills-cta" style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(124,58,237,0.16),rgba(168,85,247,0.07));border:1px solid rgba(124,58,237,0.32);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:18px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden">
-          <div style="font-size:2rem;flex-shrink:0">🧗</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:1rem;font-weight:800;color:#f0e9ff;margin-bottom:3px" data-i18n="app.skills.title">Mes compétences</div>
-            <div style="font-size:0.82rem;color:#c4b5fd;line-height:1.4" data-i18n="app.skills.desc">Tes savoir-faire (cuisine, info, sport…) qui montent de niveau avec le temps.</div>
-          </div>
-          <div style="font-size:0.82rem;font-weight:700;color:#c4b5fd;white-space:nowrap" data-i18n="app.open">Ouvrir →</div>
-        </a>
-
-        <!-- ── ORGANIZER (module /organizer/) ── -->
-        <a href="/organizer/" id="organizer-cta" style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(56,189,248,0.14),rgba(96,165,250,0.07));border:1px solid rgba(56,189,248,0.3);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:18px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden">
-          <div style="font-size:2rem;flex-shrink:0">🗂️</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:1rem;font-weight:800;color:#eaf6ff;margin-bottom:3px" data-i18n="app.organizer.title">ORGANIZER</div>
-            <div style="font-size:0.82rem;color:#9bd3f5;line-height:1.4" data-i18n="app.organizer.desc">Déverse tes idées, trie-les par priorité, planifie - façon Trello, relié à ton arbre.</div>
-          </div>
-          <div style="font-size:0.82rem;font-weight:700;color:#9bd3f5;white-space:nowrap" data-i18n="app.open">Ouvrir →</div>
-        </a>
-
-        <!-- ── Today's progress ── -->
+        <!-- ── Aujourd'hui : progression ── -->
         <div class="today-card" id="today-progress-card" style="display:none">
           <span class="today-label">Aujourd'hui</span>
           <div class="today-items" id="today-items"></div>
         </div>
 
-        <!-- ── Quick actions ── -->
+        <!-- ── Actions rapides ── -->
         <div class="quick-actions">
-          <a href="/meditation/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#0ea5e9,#0284c7);--qa-border:rgba(14,165,233,0.35);--qa-glow:0 8px 24px rgba(14,165,233,0.2)">
+          <a href="/meditation/" class="qa-btn">
             <span class="qa-icon">🧘</span>
             <span class="qa-label">Méditer</span>
             <span class="qa-xp">+15 XP</span>
           </a>
-          <a href="/journal/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#ec4899,#a855f7);--qa-border:rgba(236,72,153,0.3);--qa-glow:0 8px 24px rgba(236,72,153,0.18)">
+          <a href="/journal/" class="qa-btn">
             <span class="qa-icon">✍️</span>
             <span class="qa-label">Journal</span>
             <span class="qa-xp">+10 XP</span>
           </a>
-          <a href="/habitudes/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#22c55e,#16a34a);--qa-border:rgba(34,197,94,0.3);--qa-glow:0 8px 24px rgba(34,197,94,0.18)">
+          <a href="/habitudes/" class="qa-btn">
             <span class="qa-icon">✅</span>
             <span class="qa-label">Habitudes</span>
             <span class="qa-xp">+5 XP</span>
           </a>
-          <a href="/autoevaluation/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#2dd4bf,#06b6d4);--qa-border:rgba(45,212,191,0.3);--qa-glow:0 8px 24px rgba(45,212,191,0.18)">
+          <a href="/autoevaluation/" class="qa-btn">
             <span class="qa-icon">🎡</span>
             <span class="qa-label">Évaluer</span>
             <span class="qa-xp">Roue de vie</span>
           </a>
-          <a href="/humeur/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#a78bfa,#7c3aed);--qa-border:rgba(167,139,250,0.3);--qa-glow:0 8px 24px rgba(167,139,250,0.18)">
+          <a href="/humeur/" class="qa-btn">
             <span class="qa-icon">😌</span>
             <span class="qa-label">Humeur</span>
             <span class="qa-xp">+5 XP</span>
           </a>
-          <a href="/sommeil/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#0f2a4a,#1e3a6e);--qa-border:rgba(99,102,241,0.3);--qa-glow:0 8px 24px rgba(99,102,241,0.18)">
+          <a href="/sommeil/" class="qa-btn">
             <span class="qa-icon">🌙</span>
             <span class="qa-label">Sommeil</span>
             <span class="qa-xp">+5 XP</span>
           </a>
-          <a href="/gratitude/" class="qa-btn" style="--qa-bg:linear-gradient(135deg,#3d2b0a,#5c3d0f);--qa-border:rgba(251,191,36,0.3);--qa-glow:0 8px 24px rgba(251,191,36,0.15)">
+          <a href="/gratitude/" class="qa-btn">
             <span class="qa-icon">🌟</span>
             <span class="qa-label">Gratitude</span>
             <span class="qa-xp">+5 XP</span>
           </a>
         </div>
 
-        <!-- ── Live stats ── -->
+        <!-- ── Stats ── -->
         <div class="stats-row" id="stats-row">
           <div class="stat-chip streak">
             <div class="stat-chip-icon">🔥</div>
@@ -455,28 +468,28 @@
             <div class="stat-chip-value" id="stat-journal">-</div>
             <div class="stat-chip-label">Entrées journal</div>
           </div>
-          <div class="stat-chip" style="--chip-color:#22c55e">
+          <div class="stat-chip" style="--chip-color:var(--green)">
             <div class="stat-chip-icon">✅</div>
-            <div class="stat-chip-value" id="stat-habits" style="color:#86efac">-</div>
+            <div class="stat-chip-value" id="stat-habits" style="color:var(--leaf)">-</div>
             <div class="stat-chip-label">Habitudes aujourd'hui</div>
           </div>
-          <div class="stat-chip" style="--chip-color:#0ea5e9">
+          <div class="stat-chip" style="--chip-color:var(--corps)">
             <div class="stat-chip-icon">🧘</div>
-            <div class="stat-chip-value" id="stat-med-sessions" style="color:#7dd3fc">-</div>
+            <div class="stat-chip-value" id="stat-med-sessions" style="color:var(--corps)">-</div>
             <div class="stat-chip-label">Sessions méditation</div>
           </div>
-          <div class="stat-chip" style="--chip-color:#6366f1">
+          <div class="stat-chip" style="--chip-color:var(--moss)">
             <div class="stat-chip-icon">🌳</div>
-            <div class="stat-chip-value" id="stat-mylife" style="color:#a5b4fc">-</div>
+            <div class="stat-chip-value" id="stat-mylife" style="color:var(--moss)">-</div>
             <div class="stat-chip-label">Score Ma Vie</div>
           </div>
         </div>
 
-        <!-- ── Domain XP rings ── -->
+        <!-- ── Niveaux par domaine ── -->
         <div class="rings-section">
           <div class="rings-header">
             <span class="rings-label" data-i18n="app.domains">Niveaux par domaine</span>
-            <a href="/profile/" id="link-profile" style="font-size:0.68rem;color:#4a6a8a;text-decoration:none;transition:color .2s">Voir profil complet →</a>
+            <a href="/profile/" id="link-profile" class="rings-link">Voir profil complet →</a>
           </div>
           <div class="rings-grid" id="rings-grid">
             <!-- filled by JS -->
@@ -503,138 +516,103 @@
         </div>
         <a id="wheel-cta-section" href="/autoevaluation/" style="display:none" class="wheel-cta-card">
           <div style="font-size:2rem;margin-bottom:8px">🎡</div>
-          <div style="font-weight:700;color:#eef4ff;margin-bottom:5px">Lance ta première Roue de Vie</div>
-          <div style="font-size:0.82rem;color:#7ba3c8">5 minutes · 20 questions · Résultat radar visuel immédiat</div>
+          <div style="font-weight:700;color:var(--text-1);margin-bottom:5px">Lance ta première Roue de Vie</div>
+          <div style="font-size:0.82rem;color:var(--text-2)">5 minutes · 20 questions · Résultat radar visuel immédiat</div>
         </a>
 
-        <!-- ── Module cards ── -->
-        <!-- ── IA Coach CTA ── -->
-        <a href="/coach/" id="link-coach" style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.35);border-radius:16px;padding:16px 20px;text-decoration:none;margin-bottom:22px;transition:all .2s;position:relative;overflow:hidden">
-          <div style="font-size:2.2rem;flex-shrink:0">🤖</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:1rem;font-weight:800;color:#e5eef8;margin-bottom:3px">Parle à ton Coach IA</div>
-            <div style="font-size:0.8rem;color:#a5b4fc;line-height:1.4">Gemini 2.0 · Conversation personnalisée · Arbre de vie qui pousse</div>
-          </div>
-          <div style="font-size:0.82rem;font-weight:700;color:#a5b4fc;white-space:nowrap">Ouvrir →</div>
-          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(99,102,241,0.15),transparent);border-radius:50%;pointer-events:none"></div>
-        </a>
-
-        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.8px;color:#4a6a8a;font-weight:700;margin-bottom:12px" data-i18n="app.modules">Tous les modules</div>
+        <!-- ── Modules : grille compacte, une seule IA (SYL) ── -->
+        <div class="modules-label" data-i18n="app.modules">Tous les modules</div>
         <div class="tools-grid">
 
-          <a href="/yourlife" class="tool-card" id="tool-card-1"
-             style="--card-gradient:linear-gradient(135deg,#1e1b5e 0%,#3730a3 50%,#4f46e5 100%);--card-glow:0 8px 32px rgba(99,102,241,.3);--card-accent:rgba(99,102,241,.5);--card-accent-text:#a5b4fc">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">🌳</span></div>
+          <a href="/yourlife" class="tool-card" id="tool-card-1" style="--card-accent:rgba(132,194,94,0.5)">
+            <span class="tool-card-ic">🌳</span>
             <div class="tool-card-body">
               <h3>Your Life</h3>
               <p>Pyramide de Maslow interactive et carte de ta progression.</p>
-              <span class="tool-card-arrow">Explorer →</span>
-              <span id="card-stat-mylife" style="display:none;font-size:0.72rem;font-weight:700;color:#a5b4fc;margin-top:6px;display:block"></span>
+              <span id="card-stat-mylife" class="tool-card-stat"></span>
             </div>
           </a>
 
-          <a href="/meditation/" class="tool-card" id="card-meditation"
-             style="--card-gradient:linear-gradient(135deg,#0c2d48 0%,#0e4d6e 50%,#0ea5e9 100%);--card-glow:0 8px 32px rgba(14,165,233,.25);--card-accent:rgba(14,165,233,.4);--card-accent-text:#7dd3fc">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">🧘</span></div>
+          <a href="/meditation/" class="tool-card" id="card-meditation" style="--card-accent:rgba(45,212,191,0.4)">
+            <span class="tool-card-ic">🧘</span>
             <div class="tool-card-body">
               <h3>Méditation Guidée</h3>
               <p>Séances guidées, sons ambiants, streak et bien-être quotidien.</p>
-              <span class="tool-card-arrow">Commencer →</span>
-              <span id="card-stat-med" style="font-size:0.72rem;font-weight:700;color:#7dd3fc;margin-top:6px;display:block"></span>
+              <span id="card-stat-med" class="tool-card-stat"></span>
             </div>
           </a>
 
-          <a href="/objectifs/" class="tool-card" id="card-objectifs"
-             style="--card-gradient:linear-gradient(135deg,#431407 0%,#9a3412 50%,#f97316 100%);--card-glow:0 8px 32px rgba(249,115,22,.25);--card-accent:rgba(249,115,22,.4);--card-accent-text:#fdba74">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">🎯</span></div>
+          <a href="/objectifs/" class="tool-card" id="card-objectifs" style="--card-accent:rgba(231,177,92,0.45)">
+            <span class="tool-card-ic">🎯</span>
             <div class="tool-card-body">
               <h3>Objectifs & Progrès</h3>
               <p>Crée tes objectifs, fixe des deadlines et suis ta progression.</p>
-              <span class="tool-card-arrow">Mes objectifs →</span>
-              <span id="card-stat-goals" style="font-size:0.72rem;font-weight:700;color:#fdba74;margin-top:6px;display:block"></span>
+              <span id="card-stat-goals" class="tool-card-stat"></span>
             </div>
           </a>
 
-          <a href="/journal/" class="tool-card" id="card-journal"
-             style="--card-gradient:linear-gradient(135deg,#2d1b3d 0%,#7c3aed 50%,#ec4899 100%);--card-glow:0 8px 32px rgba(236,72,153,.2);--card-accent:rgba(236,72,153,.4);--card-accent-text:#f9a8d4">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">📔</span></div>
+          <a href="/journal/" class="tool-card" id="card-journal" style="--card-accent:rgba(167,139,250,0.4)">
+            <span class="tool-card-ic">📔</span>
             <div class="tool-card-body">
               <h3>Journal</h3>
               <p>Réflexions, émotions, insights - ton espace intime quotidien.</p>
-              <span class="tool-card-arrow">Écrire →</span>
-              <span id="card-stat-journal" style="font-size:0.72rem;font-weight:700;color:#f9a8d4;margin-top:6px;display:block"></span>
+              <span id="card-stat-journal" class="tool-card-stat"></span>
             </div>
           </a>
 
-          <a href="/habitudes/" class="tool-card" id="card-habitudes"
-             style="--card-gradient:linear-gradient(135deg,#052e16 0%,#166534 50%,#22c55e 100%);--card-glow:0 8px 32px rgba(34,197,94,.2);--card-accent:rgba(34,197,94,.4);--card-accent-text:#86efac">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">✅</span></div>
+          <a href="/habitudes/" class="tool-card" id="card-habitudes" style="--card-accent:rgba(34,197,94,0.4)">
+            <span class="tool-card-ic">✅</span>
             <div class="tool-card-body">
               <h3>Habitudes</h3>
               <p>Routines quotidiennes, streaks et gains d'XP chaque jour.</p>
-              <span class="tool-card-arrow">Mes habitudes →</span>
             </div>
           </a>
 
-          <a href="/codex/" class="tool-card" id="card-codex"
-             style="--card-gradient:linear-gradient(135deg,#1e293b 0%,#334155 100%);--card-accent:rgba(96,174,255,0.3);--card-glow:0 0 24px rgba(96,174,255,0.1)">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">📚</span></div>
+          <a href="/codex/" class="tool-card" id="card-codex" style="--card-accent:rgba(195,154,107,0.4)">
+            <span class="tool-card-ic">📚</span>
             <div class="tool-card-body">
               <h3>Codex de Connaissance</h3>
               <p>Tes apprentissages, citations et insights en un seul endroit.</p>
-              <span class="tool-card-arrow">Ouvrir →</span>
             </div>
           </a>
 
-          <a href="/autoevaluation/" class="tool-card" id="card-autoeval"
-             style="--card-gradient:linear-gradient(135deg,#0f2922 0%,#1a4a3a 100%);--card-accent:rgba(45,212,191,0.35);--card-glow:0 0 24px rgba(45,212,191,0.12)">
-            <div class="tool-card-banner">
-              <span class="tool-card-banner-icon">🎯</span>
-            </div>
+          <a href="/autoevaluation/" class="tool-card" id="card-autoeval" style="--card-accent:rgba(45,212,191,0.4)">
+            <span class="tool-card-ic">🎡</span>
             <div class="tool-card-body">
               <h3>Autoévaluation</h3>
-              <p>Tests rapides et bilans réguliers pour mesurer tes niveaux et guider tes priorités.</p>
-              <span class="tool-card-arrow">Évaluer →</span>
+              <p>Tests rapides et bilans réguliers pour mesurer tes niveaux.</p>
             </div>
           </a>
 
-          <a href="/humeur/" class="tool-card" id="card-humeur"
-             style="--card-gradient:linear-gradient(135deg,#1f1033 0%,#3b1d6e 100%);--card-accent:rgba(167,139,250,0.35);--card-glow:0 0 24px rgba(167,139,250,0.12);--card-accent-text:#c4b5fd">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">😌</span></div>
+          <a href="/humeur/" class="tool-card" id="card-humeur" style="--card-accent:rgba(167,139,250,0.4)">
+            <span class="tool-card-ic">😌</span>
             <div class="tool-card-body">
               <h3>Humeur</h3>
-              <p>Suis ton bien-être émotionnel au quotidien et observe tes tendances sur 30 jours.</p>
-              <span class="tool-card-arrow">Suivre →</span>
+              <p>Suis ton bien-être émotionnel et observe tes tendances sur 30 jours.</p>
             </div>
           </a>
 
-          <a href="/bilan/" class="tool-card" id="card-bilan"
-             style="--card-gradient:linear-gradient(135deg,#0f1f33 0%,#1a3a5c 100%);--card-accent:rgba(96,165,250,0.35);--card-glow:0 0 24px rgba(96,165,250,0.12);--card-accent-text:#93c5fd">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">📊</span></div>
+          <a href="/bilan/" class="tool-card" id="card-bilan" style="--card-accent:rgba(132,194,94,0.4)">
+            <span class="tool-card-ic">📊</span>
             <div class="tool-card-body">
               <h3>Bilan Hebdomadaire</h3>
-              <p>Résumé de ta semaine + 4 questions de réflexion pour ancrer ta progression.</p>
-              <span class="tool-card-arrow">Faire mon bilan →</span>
+              <p>Résumé de ta semaine + 4 questions pour ancrer ta progression.</p>
             </div>
           </a>
 
-          <a href="/sommeil/" class="tool-card" id="card-sommeil"
-             style="--card-gradient:linear-gradient(135deg,#0a1628 0%,#1e2d5c 100%);--card-accent:rgba(99,102,241,0.35);--card-glow:0 0 24px rgba(99,102,241,0.12);--card-accent-text:#a5b4fc">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">🌙</span></div>
+          <a href="/sommeil/" class="tool-card" id="card-sommeil" style="--card-accent:rgba(111,154,82,0.45)">
+            <span class="tool-card-ic">🌙</span>
             <div class="tool-card-body">
               <h3>Sommeil</h3>
-              <p>Enregistre tes nuits, ta qualité de sommeil et identifie tes patterns sur 14 jours.</p>
-              <span class="tool-card-arrow">Suivre →</span>
+              <p>Enregistre tes nuits et identifie tes patterns sur 14 jours.</p>
             </div>
           </a>
 
-          <a href="/gratitude/" class="tool-card" id="card-gratitude"
-             style="--card-gradient:linear-gradient(135deg,#1a1208 0%,#3d2b0a 100%);--card-accent:rgba(251,191,36,0.35);--card-glow:0 0 24px rgba(251,191,36,0.12);--card-accent-text:#fde68a">
-            <div class="tool-card-banner"><span class="tool-card-banner-icon">🌟</span></div>
+          <a href="/gratitude/" class="tool-card" id="card-gratitude" style="--card-accent:rgba(231,177,92,0.45)">
+            <span class="tool-card-ic">🌟</span>
             <div class="tool-card-body">
               <h3>Gratitude</h3>
-              <p>3 lignes par jour pour ancrer le positif, développer la résilience et voir la vie autrement.</p>
-              <span class="tool-card-arrow">Écrire →</span>
+              <p>3 lignes par jour pour ancrer le positif et voir la vie autrement.</p>
             </div>
           </a>
 
@@ -642,6 +620,8 @@
     </main>
     <script src="/js/quotes.js"></script>
     <script type="module" src="/js/i18n.js"></script>
+    <script type="module" src="/js/app-organizer.js"></script>
+    <script type="module" src="/js/syl-brief.js"></script>
     <script type="module" src="/js/agenda.js"></script>
     <script type="module" src="/js/app.js"></script>
     <script type="module" src="/js/giveaway.js"></script>

@@ -72,13 +72,20 @@ function entryDocRef(cycleId, uid) {
   if (!_db || !uid) return null;
   return doc(_db, 'giveaways', cycleId, 'entries', uid);
 }
+// Retourne true si la participation est REELLEMENT enregistree cote serveur.
+// Les rules exigent un email verifie : sans ce retour, l'interface affichait
+// « ✓ Tu participes » alors que l'ecriture avait ete refusee en silence.
 async function writeFirestoreEntry(cycleId) {
   const uid = currentUid();
   const ref = entryDocRef(cycleId, uid);
-  if (!ref) return; // anonyme / pas de db → localStorage seul
+  if (!ref) return true; // anonyme / pas de db → localStorage seul, pas d'echec
   try {
     await setDoc(ref, { uid, cycleId, ts: serverTimestamp() });
-  } catch (e) { console.warn('[giveaway] write entry failed', e && e.message); }
+    return true;
+  } catch (e) {
+    console.warn('[giveaway] write entry failed', e && e.code, e && e.message);
+    return false;
+  }
 }
 async function checkFirestoreEntry(cycleId) {
   const uid = currentUid();
@@ -95,78 +102,78 @@ function injectStyles() {
   s.id = 'cyl-giveaway-css';
   s.textContent = `
     .gw-card {
-      order: -7; position: relative; overflow: hidden;
+      position: relative; overflow: hidden;
       border-radius: 18px; margin-bottom: 22px;
       padding: 20px 22px;
       background:
-        radial-gradient(120% 140% at 100% 0%, rgba(192,132,252,0.20), transparent 55%),
-        linear-gradient(135deg, rgba(124,58,237,0.20), rgba(168,85,247,0.08));
-      border: 1px solid rgba(168,85,247,0.42);
-      box-shadow: 0 10px 34px rgba(124,58,237,0.22);
+        radial-gradient(120% 140% at 100% 0%, rgba(241,205,146,0.16), transparent 55%),
+        linear-gradient(135deg, rgba(231,177,92,0.16), rgba(21,32,19,0.35));
+      border: 1px solid rgba(231,177,92,0.38);
+      box-shadow: 0 10px 34px rgba(231,177,92,0.14);
       animation: fadeUp .5s cubic-bezier(.4,0,.2,1) both;
     }
     .gw-card::before {
       content: ''; position: absolute; right: -40px; top: -40px;
       width: 160px; height: 160px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(192,132,252,0.28), transparent 70%);
+      background: radial-gradient(circle, rgba(241,205,146,0.22), transparent 70%);
       pointer-events: none;
     }
     .gw-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; position: relative; z-index: 1; }
-    .gw-emoji { font-size: 1.8rem; filter: drop-shadow(0 2px 8px rgba(124,58,237,0.5)); flex-shrink: 0; }
+    .gw-emoji { font-size: 1.8rem; filter: drop-shadow(0 2px 8px rgba(231,177,92,0.5)); flex-shrink: 0; }
     .gw-titles { flex: 1; min-width: 0; }
-    .gw-title { font-size: 1.05rem; font-weight: 800; color: #f3e8ff; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
+    .gw-title { font-size: 1.05rem; font-weight: 800; color: #f4efe1; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
     .gw-pill {
       font-size: 0.6rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 999px; color: #f3e8ff;
-      background: rgba(168,85,247,0.28); border: 1px solid rgba(192,132,252,0.5);
+      padding: 3px 8px; border-radius: 999px; color: #f4efe1;
+      background: rgba(231,177,92,0.24); border: 1px solid rgba(241,205,146,0.5);
     }
-    .gw-prize { font-size: 0.83rem; color: #d8b4fe; margin-top: 2px; line-height: 1.4; }
+    .gw-prize { font-size: 0.83rem; color: #f1cd92; margin-top: 2px; line-height: 1.4; }
 
     .gw-timer { display: flex; gap: 10px; margin: 16px 0 4px; position: relative; z-index: 1; flex-wrap: wrap; }
     .gw-seg {
       flex: 1; min-width: 58px;
       display: flex; flex-direction: column; align-items: center; gap: 5px;
       padding: 12px 6px; border-radius: 14px;
-      background: rgba(10,6,22,0.5);
-      border: 1px solid rgba(192,132,252,0.22);
+      background: rgba(8,13,7,0.5);
+      border: 1px solid rgba(231,177,92,0.20);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
     .gw-seg-val {
       font-size: 1.7rem; font-weight: 800; line-height: 1;
-      color: #f5ecff; font-variant-numeric: tabular-nums;
+      color: #f4efe1; font-variant-numeric: tabular-nums;
       font-family: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, monospace;
       letter-spacing: 0.5px;
     }
-    .gw-seg-lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.8px; color: #a78bda; font-weight: 700; }
+    .gw-seg-lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.8px; color: #c0a672; font-weight: 700; }
 
     .gw-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; position: relative; z-index: 1; flex-wrap: wrap; }
-    .gw-hint { font-size: 0.74rem; color: #b79be0; }
-    .gw-hint strong { color: #e9d5ff; }
+    .gw-hint { font-size: 0.74rem; color: #b4ad94; }
+    .gw-hint strong { color: #f1cd92; }
     .gw-btn {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 11px 22px; border-radius: 12px; border: none; cursor: pointer;
       font-family: inherit; font-size: 0.88rem; font-weight: 800; letter-spacing: -0.1px;
-      color: #fff;
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
-      box-shadow: 0 6px 20px rgba(124,58,237,0.45);
+      color: #231803;
+      background: linear-gradient(135deg, #e7b15c, #c0873a);
+      box-shadow: 0 6px 20px rgba(231,177,92,0.4);
       transition: transform .18s cubic-bezier(.4,0,.2,1), box-shadow .2s, filter .2s;
     }
-    .gw-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(168,85,247,0.55); filter: brightness(1.06); }
+    .gw-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(231,177,92,0.5); filter: brightness(1.06); }
     .gw-btn:active { transform: translateY(0) scale(0.97); }
     .gw-btn[disabled] {
-      cursor: default; background: rgba(168,85,247,0.14);
-      color: #c4b5fd; box-shadow: none; border: 1px solid rgba(168,85,247,0.3);
+      cursor: default; background: rgba(231,177,92,0.12);
+      color: #f1cd92; box-shadow: none; border: 1px solid rgba(231,177,92,0.3);
     }
     .gw-btn[disabled]:hover { transform: none; filter: none; }
     .gw-entered {
       display: inline-flex; align-items: center; gap: 7px;
-      font-size: 0.82rem; font-weight: 700; color: #d8b4fe;
+      font-size: 0.82rem; font-weight: 700;
       padding: 8px 14px; border-radius: 10px;
-      background: rgba(34,197,94,0.1); border: 1px solid rgba(134,239,172,0.35); color: #bbf7d0;
+      background: rgba(132,194,94,0.1); border: 1px solid rgba(132,194,94,0.35); color: #a7d585;
     }
-    body.light-mode .gw-title { color: #4c1d95; }
-    body.light-mode .gw-prize { color: #6d28d9; }
-    body.light-mode .gw-seg-val { color: #4c1d95; }
+    body.light-mode .gw-title { color: #4a3510; }
+    body.light-mode .gw-prize { color: #8a6526; }
+    body.light-mode .gw-seg-val { color: #4a3510; }
     body.light-mode .gw-seg { background: rgba(255,255,255,0.55); }
     @media (prefers-reduced-motion: reduce) { .gw-card { animation: none; } }
   `;
@@ -203,7 +210,11 @@ export function initGiveaway() {
       <div id="gw-action"></div>
     </div>
   `;
-  container.appendChild(card);
+  // Place la carte juste après l'arbre (l'ordre du DOM est l'ordre visuel
+  // depuis la refonte organique - plus de réordonnancement CSS par `order`).
+  const tree = container.querySelector('#tree-stage');
+  if (tree && tree.parentElement === container) tree.insertAdjacentElement('afterend', card);
+  else container.appendChild(card);
 
   const el = {
     d: card.querySelector('#gw-d'), h: card.querySelector('#gw-h'),
@@ -220,11 +231,22 @@ export function initGiveaway() {
       el.action.innerHTML = `<button class="gw-btn" id="gw-participate" type="button">🎟️ Participer</button>`;
       el.hint.innerHTML = `Participe avant la fin du compte à rebours.`;
       const btn = el.action.querySelector('#gw-participate');
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const cid = currentCycleId(Date.now());
-        markEntered(Date.now());          // cache instantané
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement…';
+        const ok = await writeFirestoreEntry(cid);
+        if (!ok) {
+          // Echec serveur (email non verifie, hors fenetre, reseau) : on NE
+          // marque PAS la participation, sinon l'utilisateur croit etre inscrit
+          // alors que rien n'est enregistre.
+          btn.disabled = false;
+          btn.textContent = '🎟️ Participer';
+          el.hint.innerHTML = `Participation impossible : <strong>vérifie ton email</strong> puis réessaie.`;
+          return;
+        }
+        markEntered(Date.now());
         renderAction();
-        writeFirestoreEntry(cid);         // persistance backend (async)
         try { window.dispatchEvent(new CustomEvent('cyf:giveaway-entered')); } catch (_) {}
       });
     }

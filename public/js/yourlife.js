@@ -326,7 +326,7 @@ function renderMindmap() {
         const stroke = skill.done ? lvl.color : 'rgba(255,255,255,0.18)';
         const sw = skill.done ? 2 : 1;
         const textFill = skill.done ? '#ffffff' : '#7a9ab8';
-        const truncated = truncateStr(skill.label, 9);
+        const truncated = esc(truncateStr(skill.label, 9));
 
         svgParts.push(`<g class="mm-skill" data-level="${lvl.id}" data-skill="${skill.id}" style="cursor:pointer">
           <circle cx="${sx}" cy="${sy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" ${skill.done ? 'filter="url(#glow)"' : ''}/>
@@ -407,16 +407,16 @@ function renderTimeline() {
 
   let html = '';
   groups.forEach((skills, date) => {
-    html += `<div class="tl-group"><div class="tl-date">${date}</div><div class="tl-items">`;
+    html += `<div class="tl-group"><div class="tl-date">${esc(date)}</div><div class="tl-items">`;
     skills.forEach(skill => {
       const timeStr = skill.doneAt ? new Date(skill.doneAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
       html += `<div class="tl-item" style="--accent:${skill.lvl.color}">
         <div class="tl-dot" style="background:${skill.lvl.color}33;border-color:${skill.lvl.color}"></div>
         <div>
-          <div class="tl-level">${skill.lvl.emoji} ${skill.lvl.label}</div>
-          <div class="tl-skill">${skill.label}</div>
+          <div class="tl-level">${skill.lvl.emoji} ${esc(skill.lvl.label)}</div>
+          <div class="tl-skill">${esc(skill.label)}</div>
         </div>
-        ${timeStr ? `<div class="tl-time">${timeStr}</div>` : ''}
+        ${timeStr ? `<div class="tl-time">${esc(timeStr)}</div>` : ''}
       </div>`;
     });
     html += '</div></div>';
@@ -501,6 +501,12 @@ function lvlColor(pct) {
 function hexToRgba(hex, alpha) {
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// Echappement HTML/SVG des libelles saisis par l'utilisateur (AUDIT 2026-08-16 :
+// skill.label etait injecte brut dans la timeline et la mindmap -> XSS stocke).
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 function truncateStr(str, max) {

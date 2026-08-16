@@ -1,62 +1,28 @@
 // /js/agenda-page.js - Page Agenda en grand (/agenda/).
-// Vue semaine de ton Google Agenda (LECTURE SEULE, scope calendar.events.readonly).
-// Mêmes identifiants que l'encart de /app/ (token OAuth en sessionStorage). Les
-// événements sont lus directement depuis l'API Google, côté navigateur : rien ne
-// transite par nos serveurs. L'export des tâches se fait en fichier .ics.
+// Vue semaine de ton Google Agenda. Connexion, jeton et appels API delegues a
+// /js/gcal.js (source unique, scope lecture + ecriture) : la page /agenda/ ne
+// doit JAMAIS reconnecter en lecture seule, sinon elle casserait la
+// planification des fiches depuis l'ORGANIZER.
+// Les evenements sont lus directement depuis l'API Google, cote navigateur :
+// rien ne transite par nos serveurs. L'export des taches se fait en .ics.
 
-import { onAuthStateChanged, GoogleAuthProvider, reauthenticateWithPopup, signInWithPopup }
-  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { updateGlobalAvatar } from '/js/common.js';
+import * as gcal from '/js/gcal.js';
 
 let auth, db, uid;
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
 
-const TKEY = 'cyl_gcal_token';
-const CAL = 'https://www.googleapis.com/calendar/v3';
 let weekOffset = 0; // 0 = semaine courante
 
-// Token OAuth GCal en sessionStorage (efface a la fermeture de l'onglet) plutot
-// que localStorage (persistant) : reduit la fenetre de vol par XSS. Expire ~55 min.
-function getToken() {
-  try { const x = JSON.parse(sessionStorage.getItem(TKEY) || 'null'); if (x && x.t && x.exp > Date.now()) return x.t; } catch (_) {}
-  return null;
-}
-function setToken(t) { try { sessionStorage.setItem(TKEY, JSON.stringify({ t, exp: Date.now() + 3300 * 1000 })); } catch (_) {} }
-function clearToken() { try { sessionStorage.removeItem(TKEY); } catch (_) {} }
+const getToken = gcal.getToken;
+const clearToken = gcal.disconnect;
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
-async function connect() {
-  const provider = new GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/calendar.events.readonly');
-  provider.setCustomParameters({ prompt: 'consent' });
-  let result;
-  try {
-    result = auth.currentUser
-      ? await reauthenticateWithPopup(auth.currentUser, provider)
-      : await signInWithPopup(auth, provider);
-  } catch (e) { result = await signInWithPopup(auth, provider); }
-  const cred = GoogleAuthProvider.credentialFromResult(result);
-  const token = cred && cred.accessToken;
-  if (!token) throw new Error('no-token');
-  setToken(token);
-  return token;
-}
-
-async function api(path, opts) {
-  const token = getToken();
-  if (!token) throw new Error('not-connected');
-  const r = await fetch(CAL + path, {
-    method: (opts && opts.method) || 'GET',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: opts && opts.body,
-  });
-  if (r.status === 401 || r.status === 403) { clearToken(); throw new Error('expired'); }
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
+async function connect() { return gcal.connect({ write: true }); }
 
 // Lundi 00:00 de la semaine ciblée par weekOffset.
 function weekStart() {
@@ -70,8 +36,7 @@ function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMont
 async function listWeek() {
   const s = weekStart();
   const e = new Date(s); e.setDate(e.getDate() + 7);
-  const data = await api(`/calendars/primary/events?timeMin=${encodeURIComponent(s.toISOString())}&timeMax=${encodeURIComponent(e.toISOString())}&singleEvents=true&orderBy=startTime&maxResults=250`);
-  return data.items || [];
+  return gcal.listRange(s, e, 250);
 }
 
 async function planTasks() {
@@ -208,7 +173,7 @@ async function renderWeek() {
         </div>`).join('');
     });
   } catch (err) {
-    if (err.message === 'expired') { renderConnect(); toast('Reconnecte ton agenda'); return; }
+    if (err && (err.code === 'gcal/expired' || err.code === 'gcal/not-connected')) { renderConnect(); toast('Reconnecte ton agenda'); return; }
     el.querySelectorAll('.ap-evs').forEach((box) => { box.innerHTML = `<div class="ap-empty">!</div>`; });
     toast("Impossible de charger l'agenda");
   }

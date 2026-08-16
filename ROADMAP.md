@@ -1,15 +1,84 @@
-# Roadmap — ChangeYourLife.ai
+# Roadmap - ChangeYourLife.ai
 
 > Liste opérationnelle, à cocher au fil de l'eau. Vision narrative → [docs/VISION.md](docs/VISION.md).
-> Architecture technique → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). MAJ : 2026-05-20.
+> Architecture technique → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). MAJ : **2026-08-08**.
 
 ---
 
-## ✅ Fait
+# 🧠 REFONTE 2026-08 - « l'ORGANIZER est le cerveau »
 
-### Le cœur — l'arbre est la métaphore vivante du site
-- [x] Arbre 3D procédural en page d'accueil (landing) — 8 branches = 8 niveaux de Maslow étendue
-- [x] Arbre **dans le dashboard** `/app/` — widget en haut, clic → plein écran interactif (✕ pour fermer)
+> **Changement de cap assumé.** Le site n'est plus construit autour de l'arbre qui
+> pousse, mais autour de ce dont l'owner a réellement besoin au quotidien :
+> déverser ce qu'il a en tête, le trier, le planifier, et être accompagné par une
+> IA qui voit tout. L'arbre reste - c'est la signature visuelle et le langage du
+> produit - mais il devient le **reflet** de l'action, plus le sujet principal.
+>
+> Règle de conception : **une seule IA (SYL), au-dessus de tous les modules.**
+> Elle lit l'état réel du système et le restitue. Elle propose, ne prescrit jamais
+> (cf. cadre éthique non-négociable plus bas).
+
+## Le triangle porteur
+
+```
+        ORGANIZER  (ce que tu as en tête, trié par priorité)
+             │
+    branche  │  échéance                      SYL lit les trois
+    Maslow   │  + planification               et rend un brief
+             ▼
+  MASLOW ◄────────► GOOGLE AGENDA  (ce qui est déjà pris)
+  (l'arbre)          lecture + écriture
+```
+
+## ✅ Posé le 2026-08-08
+
+- [x] **`/js/gcal.js`** - connecteur Google Agenda **unifié**, scope
+  `calendar.events` (**lecture ET écriture**), jeton unique en `sessionStorage`.
+  *Corrige un bug bloquant : l'organizer lisait le jeton dans `localStorage`
+  alors qu'`agenda.js` l'écrivait dans `sessionStorage`, avec un scope en lecture
+  seule → « Ajouter à l'Agenda » ne pouvait pas aboutir.* `agenda.js`,
+  `agenda-page.js` et `organizer.js` passent tous par ce module.
+- [x] **`/js/organizer-data.js`** - schéma de données partagé (`users/{uid}.organizer`,
+  v2). Une fiche porte désormais une **branche Maslow** (`branch`) et l'id de son
+  **événement agenda** (`gcalId`). Priorisation (`topPriorities`, `dueToday`) et
+  heuristique de rangement (`guessBranch`) côté client.
+- [x] **`/js/app-organizer.js`** - l'ORGANIZER **embarqué en tête de `/app/`** :
+  capture en une ligne, 4 colonnes Eisenhower, drag & drop, fiche → branche
+  Maslow, échéance en 1 clic, « Planifier dans Google Agenda ».
+- [x] **`/api/syl-brief.js` + `/js/syl-brief.js`** - SYL lit l'organizer **et**
+  l'agenda, et rend : un brief du jour, un **profil type** (comment tu fonctionnes,
+  d'après tes vraies données), les fiches à regarder en premier, les branches
+  nourries vs en jachère. Cache ~12 h, rate-limit 8/h, repli 100 % local sans IA.
+- [x] **Refonte de `/app/`** : le « bonjour » réduit à une ligne discrète ·
+  ORGANIZER tout en haut · SYL juste dessous · journée (agenda + fiches échues
+  fusionnés) · raccourcis · **arbre relégué** (260 px, sous les blocs utiles).
+- [x] **Une seule IA** : l'ancien gros CTA « Coach IA / Gemini 2.0 » retiré de
+  `/app/` (doublon avec SYL, cf. AUDIT « 3 stacks IA concurrentes »).
+- [x] **L'XP suit la vraie branche** : une fiche terminée crédite la branche
+  Maslow qu'elle nourrit (au lieu d'« accomplissement » systématiquement).
+
+## 🚧 Suite immédiate de la refonte
+
+- [ ] **Écriture bidirectionnelle** : cocher une fiche → mettre à jour /
+  supprimer l'événement agenda ; déplacer un événement → décaler l'échéance.
+- [ ] **SYL agissante (tool-use)** : « range ça en urgent », « planifie-moi ça
+  jeudi » exécuté directement depuis le chat, avec confirmation de l'utilisateur.
+- [ ] **Profil type persistant** : stocker l'analyse dans `users/{uid}.profileAI`
+  et la faire évoluer dans le temps (tendances sur 4 semaines) au lieu d'un
+  instantané re-calculé.
+- [ ] **Capture depuis partout** : raccourci clavier global + partage PWA
+  (`share_target`) pour déverser une idée sans ouvrir le site.
+- [ ] **Vue « ma semaine »** : organizer + agenda sur 7 jours dans un seul écran.
+- [ ] **Retirer `/coach/`** (3e stack IA) ou le fusionner dans SYL.
+- [ ] **Rappels** : Web Push sur les fiches à échéance du jour (quick win, aucun
+  connecteur externe).
+
+---
+
+## ✅ Fait (avant la refonte)
+
+### Le cœur - l'arbre est la métaphore vivante du site
+- [x] Arbre 3D procédural en page d'accueil (landing) - 8 branches = 8 niveaux de Maslow étendue
+- [x] Arbre **dans le dashboard** `/app/` - widget en haut, clic → plein écran interactif (✕ pour fermer)
 - [x] L'arbre reflète les **vraies données utilisateur** Firestore (`tree.branches`, sinon migration de `levels`)
 - [x] Évolution visible : un nouvel utilisateur démarre niveau 1 (8 branches dormantes), l'arbre pousse avec l'XP
 - [x] Clic sur une branche → panneau : niveau / XP cumulé / progression / dev / vitalité **réels** + sous-éléments + outils
@@ -26,7 +95,7 @@
 - [x] Présence dans l'arbre en plein écran : message contextuel à l'arrivée
 - [x] **Conversation libre** branchée sur l'IA (`/api/coach`) qui voit l'état réel de l'arbre
 - [x] Historique de conversation conservé
-- [x] **Double provider** : Groq (Llama 3.3 70B, gratuit, rapide — préféré si `GROQ_API_KEY` Vercel) avec fallback Gemini 2.0 Flash
+- [x] **Double provider** : Groq (Llama 3.3 70B, gratuit, rapide - préféré si `GROQ_API_KEY` Vercel) avec fallback Gemini 2.0 Flash
 - [x] Diagnostic des erreurs IA remonté côté client (status Gemini/Groq + début du message)
 
 ### Onboarding conversationnel
@@ -43,7 +112,7 @@
 
 ---
 
-## 🚧 Prochaine itération — la « supra-appli » de gestion de vie
+## 🚧 Prochaine itération - la « supra-appli » de gestion de vie
 
 > Vision : un objectif réel → des jalons dans le site → synchronisés au calendrier → rappels multi-canaux → l'arbre pousse.
 
@@ -54,40 +123,42 @@ Exemple cible (arrêter de fumer) :
 - [x] Surlignage du « prochain jalon » sur chaque carte d'objectif (avec emoji ⚠️ si en retard)
 - [x] Chaque jalon coché = **+5 XP** sur la branche de l'objectif (en plus de l'XP de complétion de l'objectif)
 - [ ] Une frise globale sous l'arbre pour visualiser tous les jalons sur la durée (page dédiée, plus tard)
-- [ ] Génération automatique de jalons par Lya (« Propose-moi 5 jalons pour cet objectif » — nécessite IA payante)
+- [ ] Génération automatique de jalons par Lya (« Propose-moi 5 jalons pour cet objectif » - nécessite IA payante)
 
 ### B · Lya overlay sur TOUTES les interfaces ✅
-> L'IA n'est pas dans l'arbre seulement — elle est addossée à chaque page.
+> L'IA n'est pas dans l'arbre seulement - elle est addossée à chaque page.
 
 - [x] Orb « Parler à Lya » persistant en bas à droite de chaque page authentifiée
 - [x] Panneau de chat compact, ferme sur clic en dehors / Échap / ✕
 - [x] Contexte envoyé : page actuelle + résumé de l'arbre (8 branches : niveau/dev/vitalité)
 - [x] Sur `/app/`, l'orb s'efface quand l'arbre passe en plein écran (le tree-widget a sa propre Lya)
-- [ ] **Phase suivante (besoin payant)** : Lya pré-charge l'historique sommeil sur `/sommeil/`, lit les jalons sur `/objectifs/`, propose une amorce de journal sur `/journal/` — vrai contexte spécifique par page
+- [ ] **Phase suivante (besoin payant)** : Lya pré-charge l'historique sommeil sur `/sommeil/`, lit les jalons sur `/objectifs/`, propose une amorce de journal sur `/journal/` - vrai contexte spécifique par page
 
-### C · Onboarding — message de clôture
+### C · Onboarding - message de clôture
 - [ ] Après les 8 branches plantées, Lya explique : « Maintenant à toi. Chaque action sur ce site (méditer, journaler, dormir, atteindre un objectif…) fait pousser SA branche. Pas de magie : on agit dans le vrai, ça compte ici. »
 
-### D · Page Paramètres — connecteurs (le système nerveux)
+### D · Page Paramètres - connecteurs (le système nerveux)
 Sans connecteurs, l'arbre est borgne. Avec, il devient un chêne.
 
-- [ ] **Google Calendar** — synchronise les jalons et rappels, lit les événements pour contextualiser Lya
-- [ ] **Trello** — pipeline Notes / idées → objectifs structurés
-- [ ] **Montre connectée** (Apple Watch / Google Fit / Garmin) — sommeil + activité + cœur en automatique
-- [ ] **WhatsApp bot** — rappels et coups de coude (Lya t'écrit) + journal vocal
-- [ ] **SMS / Email** — fallback rappels pour ceux sans WhatsApp
-- [ ] **Notifications navigateur** (Web Push) — quick win sans connecteur externe
+- [x] **Google Calendar** ✅ - connecteur unifié `/js/gcal.js` (lecture + écriture).
+  Lit tes événements pour contextualiser SYL, et reçoit les fiches que tu planifies
+  depuis l'ORGANIZER. *Reste : synchro bidirectionnelle (cf. refonte 2026-08).*
+- [ ] **Trello** - pipeline Notes / idées → objectifs structurés
+- [ ] **Montre connectée** (Apple Watch / Google Fit / Garmin) - sommeil + activité + cœur en automatique
+- [ ] **WhatsApp bot** - rappels et coups de coude (Lya t'écrit) + journal vocal
+- [ ] **SMS / Email** - fallback rappels pour ceux sans WhatsApp
+- [ ] **Notifications navigateur** (Web Push) - quick win sans connecteur externe
 
 UI : chaque connecteur = une carte dans `/settings/` avec son état (connecté / non) + bouton OAuth.
 
-### E · Modèle « plugins » — extensibilité
+### E · Modèle « plugins » - extensibilité
 - [ ] Chaque connecteur devient un **add-on** pluggable (manifest minimal : nom, branche nourrie, droits demandés)
 - [ ] Le panneau d'une branche affiche les add-ons actifs qui la nourrissent
 - [ ] Préparer une API interne `connectors/` pour ajouter facilement de nouveaux pluggables
 
 ---
 
-## 🤖 IA — montée en gamme progressive
+## 🤖 IA - montée en gamme progressive
 
 Stratégie : démarrer avec des modèles **gratuits et simples** (Groq Llama 3.3 70B,
 Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèles
@@ -101,14 +172,14 @@ Gemini 2.0 Flash), itérer sur l'UX et la valeur, puis basculer vers des modèle
   - Streaming des réponses (effet « elle écrit en direct »)
 - [ ] **Visualiseur audio SYL** (réf. v0 `audio-visualizer-k7XX4QGgciS`) : anim d'ondes
   réactive quand SYL parle/écoute. Posture voulue : parler à l'IA n'est **pas central**
-  mais **essentiel** — module branché à l'oral quand des connecteurs vocaux arriveront.
+  mais **essentiel** - module branché à l'oral quand des connecteurs vocaux arriveront.
   À poser dès qu'on a un canal audio (TTS/STT) ou des modules IA externes connectés.
 
-## ⚖️ Cadre éthique & conformité (SYL) — NON NÉGOCIABLE
+## ⚖️ Cadre éthique & conformité (SYL) - NON NÉGOCIABLE
 
 Principe : SYL **assiste** sans jamais **diriger**. La frontière (assister vs manipuler)
 est tenue par une posture **non-directive** (approche centrée sur la personne / entretien
-motivationnel) : refléter, questionner, clarifier — l'utilisateur décide seul. Objectif :
+motivationnel) : refléter, questionner, clarifier - l'utilisateur décide seul. Objectif :
 protéger l'utilisateur (autonomie, pas de dérive sectaire/idéologique) ET dédouaner le site
 de toute responsabilité sur les décisions des utilisateurs.
 
@@ -127,9 +198,9 @@ de toute responsabilité sur les décisions des utilisateurs.
 
 ## 📝 Idées validées (à planifier)
 
-- [ ] **Racines / frise chronologique** — le passé de la personne sous l'arbre (mémoire longue, depuis la naissance)
+- [ ] **Racines / frise chronologique** - le passé de la personne sous l'arbre (mémoire longue, depuis la naissance)
 - [ ] **Décor environnant l'arbre** dérivé de la frise (campagne / ville / mer selon le vécu)
-- [ ] **Remplacer la vieille page `/yourlife/`** (pyramide statique) par l'arbre — la migration est prête, à activer
+- [ ] **Remplacer la vieille page `/yourlife/`** (pyramide statique) par l'arbre - la migration est prête, à activer
 - [ ] **Pousse de nouvelles branches** quand des dimensions inconnues émergent (au-delà des 8 Maslow de base)
 - [ ] **Anti-triche serveur** : repasser l'écriture XP en Cloud Function le jour où on passe en plan Blaze
 - [ ] **Vue détaillée de la branche** dans une page dédiée (`/branche/cognitif/` par ex.) pour drill-down complet
@@ -138,13 +209,13 @@ de toute responsabilité sur les décisions des utilisateurs.
 
 ## 🌌 Phases futures (cf. [VISION.md §15](docs/VISION.md))
 
-- **Phase 3** — Patterns émergents sur la frise (cycles de joie / d'échec / de croissance détectés par IA)
-- **Phase 4** — Scénarios de crise / protocoles de reconstruction (séparation, perte d'emploi, deuil…)
-- **Phase 5** — Communauté « ceux qui aident / ceux qui sont aidés » + blockchain + token CYL
+- **Phase 3** - Patterns émergents sur la frise (cycles de joie / d'échec / de croissance détectés par IA)
+- **Phase 4** - Scénarios de crise / protocoles de reconstruction (séparation, perte d'emploi, deuil…)
+- **Phase 5** - Communauté « ceux qui aident / ceux qui sont aidés » + blockchain + token CYL
 
 ---
 
-## 🎨 Univers & expériences premium (idées owner — juin 2026)
+## 🎨 Univers & expériences premium (idées owner - juin 2026)
 
 > Templates repérés sur **v0.app** : ce sont des composants **React / Next.js**. Notre
 > site est **vanilla JS sans build** → chaque template doit être **adapté** en vanilla
@@ -158,20 +229,20 @@ de toute responsabilité sur les décisions des utilisateurs.
   Gamification / profil public. À préparer dès maintenant.
 - [x] **ORGANIZER façon canvas IA** ✅ (bascule Board/Canvas sur `/organizer/` : toile
   infinie pan/zoom, fiches positionnables/persistées, nœuds colorés par colonne, grille
-  pointée, **connecteurs/flèches entre fiches** — tirer le point d'une fiche, clic sur un
+  pointée, **connecteurs/flèches entre fiches** - tirer le point d'une fiche, clic sur un
   lien pour l'effacer). Vision workflow IA atteinte (réf. v0 `ai-workflow-canvas`).
 - [~] **Changement d’UNIVERS / thème en 1 clic** (Arbre↔Architecture FAIT sur accueil+login+/app via selecteur /profile ; reste : adapter les TEXTES en mode archi, d’autres mondes, plus de details).
-  d'autres mondes — ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
+  d'autres mondes - ex. **architecture / bureau 3D** (réf. v0 `3d-software-engineer-portfolio`).
   Objectif : **plusieurs arbres + plusieurs thèmes**, décor au choix, préférence persistée.
 - [x] **Boutons magnifiques** ✅ (couche premium globale via common.js : relief + halo + press) - + : animations premium sur les CTA (réf. v0 `button`).
   *(Démarré : effet « shine » sur le CTA d'accueil.)*
 - [ ] **Matrice / pluie « Matrix »** (réf. v0 `dynamic-rain-website`) : fond de pluie de
   caractères style Matrix. **IMPÉRATIF** pour l'owner. À **débloquer aux niveaux
   supérieurs** (récompense de progression : décor/thème réservé aux hauts niveaux d'XP ou
-  au titre max). À poser plus tard — idéalement branché sur le niveau utilisateur comme un
+  au titre max). À poser plus tard - idéalement branché sur le niveau utilisateur comme un
   univers premium (cf. changement d'univers/thème). Pas d'intégration immédiate.
 - [ ] **Tags « gravité » animés** (réf. v0 `tags-gravity-animation`) : nuage de tags/mots
-  soumis à une physique de gravité (chute, rebond, drag). À poser **plus tard** — idéal
+  soumis à une physique de gravité (chute, rebond, drag). À poser **plus tard** - idéal
   pour un mini-jeu ou une intégration stylée (ex. tags de compétences/valeurs/émotions qui
   tombent et s'empilent, section ludique). Pas d'intégration immédiate.
 - [ ] **Image → ASCII** (réf. v0 `image-to-ascii`) : convertir une image en art ASCII.
@@ -201,7 +272,7 @@ de toute responsabilité sur les décisions des utilisateurs.
   SMS 114). Sinon → respiration guidée + « Parler à SYL ». Anonyme, sans compte.
   Reste possible : détection auto de détresse par SYL pendant la conversation.
 
-## 🌳 Arbre vivant — raffinements restants
+## 🌳 Arbre vivant - raffinements restants
 
 - [x] **Croissance PAR BRANCHE Maslow** ✅ (FAIT sur `/app` : 8 nœuds Maslow autour de
   l'arbre, taille/halo ∝ XP réel de chaque branche `tree.branches[key].xp`, croissance
@@ -210,7 +281,7 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [ ] **Optimisation** : lazy-load ez-tree (4 Mo) après 1er paint ; arbre allégé sur
   l'accueil ; dispose des géométries au changement.
 
-## 🪐 Cosmos / accueil — qualité visuelle
+## 🪐 Cosmos / accueil - qualité visuelle
 
 - [x] **Système solaire à l'échelle** ✅ (Soleil ENORME + 7 planètes proportionnelles
   entre elles, distances croissantes, anneaux d'orbite visibles). Échelle compressée
@@ -230,7 +301,7 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **Emojis premium** ✅ (`emoji.js`) : Twemoji rendu d'abord (couverture 100 %, jamais
   d'emoji système), puis **upgrade Fluent 3D** par probe (swap si l'image charge → 0 cassée).
   Observer = parse des nœuds AJOUTÉS seulement (fix « site qui saute » sur l'accueil 3D).
-- [ ] **Références visuelles owner** (sites/templates donnés en session) — à ré-appliquer
+- [ ] **Références visuelles owner** (sites/templates donnés en session) - à ré-appliquer
   une par une (l'owner doit re-partager les liens ; non conservés entre sessions).
 
 ## Principes de priorisation
