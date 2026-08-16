@@ -101,170 +101,154 @@ function injectStyles() {
   const s = document.createElement('style');
   s.id = 'cyl-giveaway-css';
   s.textContent = `
-    .gw-card {
-      position: relative; overflow: hidden;
-      border-radius: 18px; margin-bottom: 22px;
-      padding: 20px 22px;
-      background:
-        radial-gradient(120% 140% at 100% 0%, rgba(241,205,146,0.16), transparent 55%),
-        linear-gradient(135deg, rgba(231,177,92,0.16), rgba(21,32,19,0.35));
-      border: 1px solid rgba(231,177,92,0.38);
-      box-shadow: 0 10px 34px rgba(231,177,92,0.14);
-      animation: fadeUp .5s cubic-bezier(.4,0,.2,1) both;
+    /* ── Bandeau d'annonce, tout en haut du site ──
+       Modèle : la barre d'annonce de GitHub. Fine, pleine largeur, contenu
+       centré dans une gouttière, séparée par un filet, et refermable. Elle
+       s'annonce sans occuper la place d'un module. */
+    .gw-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9500;
+      height: 34px; display: flex; align-items: center; justify-content: center;
+      padding: 0 46px;
+      background: linear-gradient(90deg,
+        rgba(231,177,92,0.09) 0%, rgba(231,177,92,0.17) 50%, rgba(231,177,92,0.09) 100%);
+      border-bottom: 1px solid rgba(231,177,92,0.22);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      font-family: inherit;
+      animation: gwDown .5s cubic-bezier(.4,0,.2,1) both;
     }
-    .gw-card::before {
-      content: ''; position: absolute; right: -40px; top: -40px;
-      width: 160px; height: 160px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(241,205,146,0.22), transparent 70%);
-      pointer-events: none;
+    @keyframes gwDown { from { transform: translateY(-100%); } to { transform: none; } }
+    .gw-in {
+      display: flex; align-items: center; gap: 10px;
+      max-width: 1180px; width: 100%; justify-content: center;
+      font-size: 0.775rem; line-height: 1; color: #ddd3b8; min-width: 0;
     }
-    .gw-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; position: relative; z-index: 1; }
-    .gw-emoji { font-size: 1.8rem; filter: drop-shadow(0 2px 8px rgba(231,177,92,0.5)); flex-shrink: 0; }
-    .gw-titles { flex: 1; min-width: 0; }
-    .gw-title { font-size: 1.05rem; font-weight: 800; color: #f4efe1; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
-    .gw-pill {
-      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 999px; color: #f4efe1;
-      background: rgba(231,177,92,0.24); border: 1px solid rgba(241,205,146,0.5);
+    .gw-ic { font-size: 0.9rem; flex-shrink: 0; }
+    .gw-txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gw-txt b { color: #f4efe1; font-weight: 700; }
+    .gw-sep { color: rgba(231,177,92,0.45); flex-shrink: 0; }
+    .gw-time {
+      flex-shrink: 0; font-variant-numeric: tabular-nums; letter-spacing: 0.4px;
+      font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem; font-weight: 700; color: #f1cd92;
     }
-    .gw-prize { font-size: 0.83rem; color: #f1cd92; margin-top: 2px; line-height: 1.4; }
+    .gw-cta {
+      flex-shrink: 0; margin-left: 2px;
+      padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(231,177,92,0.45);
+      background: rgba(231,177,92,0.16); color: #f6e6c4;
+      font-family: inherit; font-size: 0.73rem; font-weight: 700; cursor: pointer;
+      transition: background .18s, border-color .18s, color .18s;
+    }
+    .gw-cta:hover { background: rgba(231,177,92,0.3); border-color: rgba(231,177,92,0.7); color: #fff; }
+    .gw-cta:disabled { opacity: .6; cursor: default; }
+    .gw-done { flex-shrink: 0; font-size: 0.73rem; font-weight: 700; color: #a7d585; }
+    .gw-x {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      width: 24px; height: 24px; border-radius: 6px; border: none; cursor: pointer;
+      background: transparent; color: #b4ad94; font-size: 0.82rem; line-height: 1;
+      transition: background .18s, color .18s;
+    }
+    .gw-x:hover { background: rgba(255,255,255,0.09); color: #f4efe1; }
+    .gw-bar :focus-visible { outline: 2px solid rgba(231,177,92,0.8); outline-offset: 2px; }
 
-    .gw-timer { display: flex; gap: 10px; margin: 16px 0 4px; position: relative; z-index: 1; flex-wrap: wrap; }
-    .gw-seg {
-      flex: 1; min-width: 58px;
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
-      padding: 12px 6px; border-radius: 14px;
-      background: rgba(8,13,7,0.5);
-      border: 1px solid rgba(231,177,92,0.20);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    /* En dessous de 720 px : on garde l'essentiel (compte à rebours + action) */
+    @media (max-width: 720px) {
+      .gw-bar { padding: 0 38px 0 10px; }
+      .gw-in { gap: 8px; font-size: 0.72rem; }
+      .gw-prize-txt, .gw-sep-2 { display: none; }
     }
-    .gw-seg-val {
-      font-size: 1.7rem; font-weight: 800; line-height: 1;
-      color: #f4efe1; font-variant-numeric: tabular-nums;
-      font-family: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, monospace;
-      letter-spacing: 0.5px;
+    @media (max-width: 420px) {
+      .gw-txt { display: none; }
     }
-    .gw-seg-lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.8px; color: #c0a672; font-weight: 700; }
-
-    .gw-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; position: relative; z-index: 1; flex-wrap: wrap; }
-    .gw-hint { font-size: 0.74rem; color: #b4ad94; }
-    .gw-hint strong { color: #f1cd92; }
-    .gw-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 22px; border-radius: 12px; border: none; cursor: pointer;
-      font-family: inherit; font-size: 0.88rem; font-weight: 800; letter-spacing: -0.1px;
-      color: #231803;
-      background: linear-gradient(135deg, #e7b15c, #c0873a);
-      box-shadow: 0 6px 20px rgba(231,177,92,0.4);
-      transition: transform .18s cubic-bezier(.4,0,.2,1), box-shadow .2s, filter .2s;
+    body.light-mode .gw-bar {
+      background: linear-gradient(90deg, rgba(231,177,92,0.14), rgba(231,177,92,0.22), rgba(231,177,92,0.14));
+      border-bottom-color: rgba(163,120,52,0.3);
     }
-    .gw-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(231,177,92,0.5); filter: brightness(1.06); }
-    .gw-btn:active { transform: translateY(0) scale(0.97); }
-    .gw-btn[disabled] {
-      cursor: default; background: rgba(231,177,92,0.12);
-      color: #f1cd92; box-shadow: none; border: 1px solid rgba(231,177,92,0.3);
-    }
-    .gw-btn[disabled]:hover { transform: none; filter: none; }
-    .gw-entered {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-size: 0.82rem; font-weight: 700;
-      padding: 8px 14px; border-radius: 10px;
-      background: rgba(132,194,94,0.1); border: 1px solid rgba(132,194,94,0.35); color: #a7d585;
-    }
-    body.light-mode .gw-title { color: #4a3510; }
-    body.light-mode .gw-prize { color: #8a6526; }
-    body.light-mode .gw-seg-val { color: #4a3510; }
-    body.light-mode .gw-seg { background: rgba(255,255,255,0.55); }
-    @media (prefers-reduced-motion: reduce) { .gw-card { animation: none; } }
+    body.light-mode .gw-in { color: #4a3510; }
+    body.light-mode .gw-txt b { color: #2c2a1c; }
+    @media (prefers-reduced-motion: reduce) { .gw-bar { animation: none; } }
   `;
   document.head.appendChild(s);
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
+// Bandeau masqué à la main : on le retient POUR CE CYCLE seulement, il
+// réapparaît au tirage suivant (sinon on perd l'annonce définitivement).
+const dismissKey = () => `cyl_gw_dismissed_${currentCycleId(Date.now())}`;
+function isDismissed() { try { return localStorage.getItem(dismissKey()) === '1'; } catch (_) { return false; } }
+function dismiss() { try { localStorage.setItem(dismissKey(), '1'); } catch (_) {} }
+
 export function initGiveaway() {
-  const container = document.querySelector('.app-container');
-  if (!container || document.getElementById('giveaway-card')) return;
+  if (!document.querySelector('.app-container')) return;   // /app/ uniquement
+  if (document.getElementById('giveaway-bar') || isDismissed()) return;
 
   injectStyles();
 
-  const card = document.createElement('div');
-  card.id = 'giveaway-card';
-  card.className = 'gw-card';
-  card.innerHTML = `
-    <div class="gw-head">
-      <span class="gw-emoji">🎁</span>
-      <div class="gw-titles">
-        <div class="gw-title">Giveaway de la semaine <span class="gw-pill">Gratuit</span></div>
-        <div class="gw-prize">À gagner : <strong>${GIVEAWAY.prize}</strong></div>
-      </div>
+  const bar = document.createElement('div');
+  bar.id = 'giveaway-bar';
+  bar.className = 'gw-bar';
+  bar.setAttribute('role', 'region');
+  bar.setAttribute('aria-label', 'Giveaway de la semaine');
+  bar.innerHTML = `
+    <div class="gw-in">
+      <span class="gw-ic" aria-hidden="true">🎁</span>
+      <span class="gw-txt"><b>Giveaway de la semaine</b><span class="gw-prize-txt"> · ${GIVEAWAY.prize}</span></span>
+      <span class="gw-sep gw-sep-2" aria-hidden="true">·</span>
+      <span class="gw-time" id="gw-time" role="timer" aria-label="Temps restant avant le tirage">--</span>
+      <span id="gw-action"></span>
     </div>
-    <div class="gw-timer" id="gw-timer" role="timer" aria-label="Temps avant le prochain tirage">
-      <div class="gw-seg"><span class="gw-seg-val" id="gw-d">00</span><span class="gw-seg-lbl">Jours</span></div>
-      <div class="gw-seg"><span class="gw-seg-val" id="gw-h">00</span><span class="gw-seg-lbl">Heures</span></div>
-      <div class="gw-seg"><span class="gw-seg-val" id="gw-m">00</span><span class="gw-seg-lbl">Min</span></div>
-      <div class="gw-seg"><span class="gw-seg-val" id="gw-s">00</span><span class="gw-seg-lbl">Sec</span></div>
-    </div>
-    <div class="gw-foot">
-      <div class="gw-hint" id="gw-hint">Participe avant la fin du compte à rebours.</div>
-      <div id="gw-action"></div>
-    </div>
+    <button class="gw-x" id="gw-dismiss" type="button" aria-label="Masquer cette annonce">✕</button>
   `;
-  // Place la carte juste après l'arbre (l'ordre du DOM est l'ordre visuel
-  // depuis la refonte organique - plus de réordonnancement CSS par `order`).
-  const tree = container.querySelector('#tree-stage');
-  if (tree && tree.parentElement === container) tree.insertAdjacentElement('afterend', card);
-  else container.appendChild(card);
+  // Tout en haut du document, au-dessus de l'espace de travail.
+  document.body.insertBefore(bar, document.body.firstChild);
+  document.body.classList.add('has-gw-bar');
 
-  const el = {
-    d: card.querySelector('#gw-d'), h: card.querySelector('#gw-h'),
-    m: card.querySelector('#gw-m'), s: card.querySelector('#gw-s'),
-    hint: card.querySelector('#gw-hint'), action: card.querySelector('#gw-action'),
-  };
+  bar.querySelector('#gw-dismiss').addEventListener('click', () => {
+    dismiss();
+    bar.remove();
+    document.body.classList.remove('has-gw-bar');
+  });
+
+  const el = { time: bar.querySelector('#gw-time'), action: bar.querySelector('#gw-action') };
 
   function renderAction() {
-    const now = Date.now();
-    if (hasEnteredCurrentCycle(now)) {
-      el.action.innerHTML = `<span class="gw-entered">✓ Tu participes</span>`;
-      el.hint.innerHTML = `Tu es <strong>inscrit</strong> pour ce tirage. Prochaine participation après le prochain tirage.`;
-    } else {
-      el.action.innerHTML = `<button class="gw-btn" id="gw-participate" type="button">🎟️ Participer</button>`;
-      el.hint.innerHTML = `Participe avant la fin du compte à rebours.`;
-      const btn = el.action.querySelector('#gw-participate');
-      btn.addEventListener('click', async () => {
-        const cid = currentCycleId(Date.now());
-        btn.disabled = true;
-        btn.textContent = 'Enregistrement…';
-        const ok = await writeFirestoreEntry(cid);
-        if (!ok) {
-          // Echec serveur (email non verifie, hors fenetre, reseau) : on NE
-          // marque PAS la participation, sinon l'utilisateur croit etre inscrit
-          // alors que rien n'est enregistre.
-          btn.disabled = false;
-          btn.textContent = '🎟️ Participer';
-          el.hint.innerHTML = `Participation impossible : <strong>vérifie ton email</strong> puis réessaie.`;
-          return;
-        }
-        markEntered(Date.now());
-        renderAction();
-        try { window.dispatchEvent(new CustomEvent('cyf:giveaway-entered')); } catch (_) {}
-      });
+    if (hasEnteredCurrentCycle(Date.now())) {
+      el.action.innerHTML = `<span class="gw-done">✓ Tu participes</span>`;
+      return;
     }
+    el.action.innerHTML = `<button class="gw-cta" id="gw-participate" type="button">Participer</button>`;
+    const btn = el.action.querySelector('#gw-participate');
+    btn.addEventListener('click', async () => {
+      const cid = currentCycleId(Date.now());
+      btn.disabled = true; btn.textContent = 'Enregistrement…';
+      const ok = await writeFirestoreEntry(cid);
+      if (!ok) {
+        // Echec serveur (email non verifie, hors fenetre, reseau) : on NE marque
+        // PAS la participation, sinon l'utilisateur se croit inscrit pour rien.
+        btn.disabled = false; btn.textContent = 'Participer';
+        btn.title = "Participation impossible - vérifie ton email puis réessaie.";
+        el.action.insertAdjacentHTML('afterbegin',
+          '<span class="gw-done" style="color:#f0a48d">Vérifie ton email</span> ');
+        return;
+      }
+      markEntered(Date.now());
+      renderAction();
+      try { window.dispatchEvent(new CustomEvent('cyf:giveaway-entered')); } catch (_) {}
+    });
   }
 
+  // Compte à rebours compact : « 3 j 06:12 » puis « 06:56:49 » le dernier jour.
   function tick() {
     const now = Date.now();
     let diff = Math.max(0, nextDrawDate(now).getTime() - now);
     const days = Math.floor(diff / 86400000); diff -= days * 86400000;
-    const hrs = Math.floor(diff / 3600000);  diff -= hrs * 3600000;
+    const hrs = Math.floor(diff / 3600000);   diff -= hrs * 3600000;
     const mins = Math.floor(diff / 60000);    diff -= mins * 60000;
     const secs = Math.floor(diff / 1000);
-    el.d.textContent = pad(days);
-    el.h.textContent = pad(hrs);
-    el.m.textContent = pad(mins);
-    el.s.textContent = pad(secs);
-    // Nouveau cycle atteint → réafficher le bouton de participation
-    if (days === 0 && hrs === 0 && mins === 0 && secs === 0) renderAction();
+    el.time.textContent = days > 0
+      ? `${days} j ${pad(hrs)}:${pad(mins)}`
+      : `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+    if (!days && !hrs && !mins && !secs) renderAction();
   }
 
   renderAction();

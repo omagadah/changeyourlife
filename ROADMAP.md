@@ -44,7 +44,36 @@ Règles impératives :
 compétences, arbre…). C'est le fil conducteur de l'onboarding : le site
 enseigne son propre usage, module par module, au moment où on y arrive.
 
-## 2 · CYL propose un tri automatique dans la matrice Eisenhower
+## 2 · Généraliser l'« onglet-module » de l'ORGANIZER
+
+Le motif validé le 2026-08-16 sur `/app/` : **un aperçu utile en haut de la
+page d'accueil, dont TOUT le bandeau d'en-tête est cliquable et mène au module
+complet.** L'utilisateur agit tout de suite (déposer une idée) sans quitter
+l'accueil, et n'ouvre la page complète que s'il en a besoin.
+
+À décliner, chacun avec son aperçu actionnable :
+
+| Module | Aperçu en tête de `/app/` | Mène à |
+|---|---|---|
+| ORGANIZER | dépôt + 4 colonnes Eisenhower | `/organizer/` ✅ fait |
+| Aujourd'hui | rythme du jour, base vitale à cocher | `/plan/` |
+| Agenda | 3 prochains créneaux + ajout rapide | `/agenda/` |
+| Journal | champ « une ligne sur ta journée » | `/journal/` |
+| Compétences | les 2-3 compétences qui montent | `/competences/` |
+| Habitudes | cases du jour, cochables sur place | `/habitudes/` |
+
+Règles du motif :
+
+- **Toute la bande** est la zone de clic (lien étiré, `pointer-events:none`
+  sur le texte), pas seulement le titre. Le survol éclaire la bande entière :
+  la surface visible et la surface cliquable doivent coïncider.
+- Les boutons d'action de l'en-tête restent **au-dessus** du lien et ne
+  déclenchent pas la navigation.
+- L'aperçu ne montre que l'essentiel ; **le module complet garde la totalité**
+  des données (l'ORGANIZER affiche tout, y compris ce qui est déjà planifié).
+- Un module par bandeau, jamais empilés au point de faire défiler l'accueil.
+
+## 3 · CYL propose un tri automatique dans la matrice Eisenhower
 
 Quand des fiches attendent dans « À trier », CYL propose un rangement -
 **proposition, jamais application automatique** :

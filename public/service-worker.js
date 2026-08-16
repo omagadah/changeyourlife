@@ -1,5 +1,5 @@
-// service-worker.js - v173 (onglet ORGANIZER : toute la bande d'en-tete cliquable)
-const CACHE_NAME = 'changeyourlife-v173';
+// service-worker.js - v174 (plaque ALEX dans l'espace 3D + bandeau giveaway en tete de /app/)
+const CACHE_NAME = 'changeyourlife-v174';
 const urlsToCache = [
   '/',
   '/app/',

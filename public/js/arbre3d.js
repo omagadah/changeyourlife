@@ -240,7 +240,76 @@ function initScene(canvas) {
     return { obj: grp, glow };
   })();
 
-  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, plaque, gfx: { tier: gfxTier, basePR } };
+  // ── Seconde plaque gravée, dérivant à l'opposé : « I ♥ ALEX » ───────────────
+  // Même principe que la plaque Pioneer : loin dans l'espace, à la même hauteur,
+  // on ne la découvre qu'en dézoomant à fond. Purement décorative (pas de clic).
+  // Texture dessinée sur un canvas : aucun asset à charger, aucune requête.
+  const plaqueAlex = (function () {
+    const grp = new THREE.Group();
+    grp.position.set(-2250, 700, -1780);
+
+    // halo doux, doré (rappel du métal gravé)
+    const gc = document.createElement('canvas'); gc.width = gc.height = 128;
+    const gg = gc.getContext('2d');
+    const rad = gg.createRadialGradient(64, 64, 0, 64, 64, 64);
+    rad.addColorStop(0, 'rgba(255,214,140,0.42)');
+    rad.addColorStop(0.5, 'rgba(200,150,70,0.18)');
+    rad.addColorStop(1, 'rgba(0,0,0,0)');
+    gg.fillStyle = rad; gg.fillRect(0, 0, 128, 128);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(gc), transparent: true, opacity: 0.7,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    glow.scale.set(760, 760, 1); grp.add(glow);
+
+    // la plaque : rectangle doré arrondi, motif gravé
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 648;
+    const x = c.getContext('2d');
+    const r = 34;
+    const grad = x.createLinearGradient(0, 0, c.width, c.height);
+    grad.addColorStop(0, '#e9cd8d'); grad.addColorStop(0.45, '#c49a52');
+    grad.addColorStop(0.75, '#a97f38'); grad.addColorStop(1, '#dcb970');
+    x.beginPath();
+    x.moveTo(r, 0); x.lineTo(c.width - r, 0); x.quadraticCurveTo(c.width, 0, c.width, r);
+    x.lineTo(c.width, c.height - r); x.quadraticCurveTo(c.width, c.height, c.width - r, c.height);
+    x.lineTo(r, c.height); x.quadraticCurveTo(0, c.height, 0, c.height - r);
+    x.lineTo(0, r); x.quadraticCurveTo(0, 0, r, 0); x.closePath();
+    x.fillStyle = grad; x.fill();
+    x.lineWidth = 7; x.strokeStyle = 'rgba(255,240,200,0.55)'; x.stroke();
+
+    // gravure : « I ♥ ALEX »
+    x.fillStyle = '#3a2a0d';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '700 150px Georgia, "Times New Roman", serif';
+    x.fillText('I', 158, 232);
+    // cœur
+    x.beginPath();
+    const hx = 320, hy = 240, hs = 62;
+    x.moveTo(hx, hy + hs * 0.85);
+    x.bezierCurveTo(hx - hs * 1.5, hy - hs * 0.25, hx - hs * 0.55, hy - hs * 1.15, hx, hy - hs * 0.35);
+    x.bezierCurveTo(hx + hs * 0.55, hy - hs * 1.15, hx + hs * 1.5, hy - hs * 0.25, hx, hy + hs * 0.85);
+    x.closePath();
+    x.fillStyle = '#8f2b26'; x.fill();
+    x.fillStyle = '#3a2a0d';
+    x.font = '700 132px Georgia, "Times New Roman", serif';
+    x.fillText('ALEX', c.width / 2, 452);
+    // rivets d'angle
+    x.fillStyle = 'rgba(60,44,16,0.45)';
+    [[42, 42], [c.width - 42, 42], [42, c.height - 42], [c.width - 42, c.height - 42]]
+      .forEach(([px, py]) => { x.beginPath(); x.arc(px, py, 9, 0, Math.PI * 2); x.fill(); });
+
+    const atex = new THREE.CanvasTexture(c);
+    atex.colorSpace = THREE.SRGBColorSpace; atex.anisotropy = 8;
+    const W2 = 400, H2 = W2 * (c.height / c.width);
+    const asp = new THREE.Sprite(new THREE.SpriteMaterial({ map: atex, transparent: true, depthWrite: false }));
+    asp.scale.set(W2, H2, 1); grp.add(asp);
+
+    scene.add(grp);
+    return { obj: grp, glow };
+  })();
+
+  return { renderer, scene, camera, treeGroup: group, nodes, subNodes, grow, animateCosmos, setEarthLocation, infoSats, ez, orbits, plaque, plaqueAlex, gfx: { tier: gfxTier, basePR } };
 }
 
 // Géoloc IP (sans permission navigateur) : place l'arbre sur le pays de

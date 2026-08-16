@@ -32,6 +32,50 @@
             var(--bg);
         }
 
+        /* ══ BANDEAU SUPÉRIEUR ══
+           Quand le bandeau d'annonce (giveaway) est présent, TOUT ce qui est
+           fixé en haut descend de sa hauteur exacte (34 px) : l'espace de
+           travail, le logo, le sélecteur de langue, le thème, la pastille XP
+           et le menu utilisateur. Un seul nombre à changer : --gw-h.
+           Ces règles sont scopées à /app/ : les autres pages ne bougent pas. */
+        :root { --gw-h: 34px; }
+        body.has-gw-bar .app-container      { top: calc(15px + var(--gw-h)); }
+        body.has-gw-bar .header             { top: calc(16px + var(--gw-h)); }
+        body.has-gw-bar #cyf-theme-toggle   { top: calc(18px + var(--gw-h)); }
+        body.has-gw-bar .lang-switch--floating { top: calc(17px + var(--gw-h)); }
+        body.has-gw-bar .xp-corner          { top: calc(56px + var(--gw-h)); }
+        body.has-gw-bar #cyf-user-menu      { top: calc(66px + var(--gw-h)); }
+        @media (max-width:600px) {
+          body.has-gw-bar #cyf-theme-toggle    { top: calc(14px + var(--gw-h)); }
+          body.has-gw-bar .lang-switch--floating { top: calc(12px + var(--gw-h)); }
+          body.has-gw-bar .xp-corner           { top: calc(58px + var(--gw-h)); }
+        }
+        /* La descente accompagne l'apparition du bandeau, sans à-coup. */
+        .app-container, .header, #cyf-theme-toggle, .lang-switch--floating, .xp-corner {
+          transition: top .35s cubic-bezier(.4,0,.2,1);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .app-container, .header, #cyf-theme-toggle, .lang-switch--floating, .xp-corner { transition: none; }
+        }
+
+        /* Alignement : les 3 contrôles partagent le même axe vertical (centre
+           à 36 px). Leurs hauteurs diffèrent (40 / 36 / ~34), donc leurs `top`
+           aussi - ils étaient approximatifs (16 / 18 / 17). */
+        .lang-switch--floating { top:19px; }
+        body.has-gw-bar .lang-switch--floating { top: calc(19px + var(--gw-h)); }
+
+        /* Le sélecteur de thème était resté en navy v2 : on le raccorde au
+           verre organique des autres contrôles. */
+        #cyf-theme-toggle {
+          background: rgba(16,21,13,0.62) !important;
+          border-color: rgba(221,205,160,0.18) !important;
+          color: var(--gold-soft) !important;
+        }
+        #cyf-theme-toggle:hover {
+          background: rgba(231,177,92,0.16) !important;
+          border-color: rgba(231,177,92,0.45) !important;
+        }
+
         /* ── App container : verre forêt ── */
         .app-container {
           position:absolute; top:15px; bottom:15px; left:15px; right:15px;
