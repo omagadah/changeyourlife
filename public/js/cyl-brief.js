@@ -14,6 +14,17 @@ import * as gcal from '/js/gcal.js';
 let auth, db, uid;
 let board = null;
 
+// ── Ce qui reste, ce qui bouge ──────────────────────────────────────────────
+// Les analyses de CYL coutent un appel et valent d'etre relues : elles restent
+// EPINGLEES tant que l'IA n'en a pas produit de nouvelles. Seules la phrase
+// d'accueil et les 3 priorites se recalculent a chaque geste.
+// Sans ca, deplacer une fiche effacait tout le travail d'analyse - c'est
+// l'inverse de ce qu'on veut : plus c'est le desordre, plus les conseils
+// doivent tenir sous les yeux.
+// Declare ICI (et pas plus bas) : `show()` s'en sert, et une `let` reste
+// inaccessible tant que sa ligne n'est pas passee.
+let pinned = { insights: [], profile: '', nourries: [], jachere: [] };
+
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
 
@@ -141,13 +152,21 @@ async function fetchBrief() {
 }
 
 function show(data) {
-  paint({
-    text: data.brief,
-    profile: data.profile,
-    focus: focusTitles(data.focus),
+  // Tout ce qui vient de l'IA devient le bloc EPINGLE : il survivra aux
+  // repeints locaux jusqu'a la prochaine analyse.
+  pinned = {
+    insights: data.insights || [],
+    profile: data.profile || '',
     nourries: data.nourries || [],
     jachere: data.jachere || [],
-    insights: data.insights || [],
+  };
+  paint({
+    text: data.brief,
+    profile: pinned.profile,
+    focus: focusTitles(data.focus),
+    nourries: pinned.nourries,
+    jachere: pinned.jachere,
+    insights: pinned.insights,
   });
 }
 
@@ -233,14 +252,20 @@ function localText(s, prev) {
 
 let lastState = null;
 
-// `reactive` : appelee apres une action de l'utilisateur -> on compare a l'etat
-// precedent pour que CYL reagisse a CE qu'il vient de faire.
+// `reactive` : appelee apres une action -> on compare a l'etat precedent pour
+// que CYL reagisse a CE que l'utilisateur vient de faire.
 function localFallback(reactive) {
   const s = readState();
   const text = localText(s, reactive ? lastState : null);
   lastState = s;
   const focus = board ? topPriorities(board, 3).map(({ card }) => String(card.title).slice(0, 70)) : [];
-  paint({ text, focus, cta: 'Parler à CYL' });
+  paint({
+    text, focus, cta: 'Parler à CYL',
+    insights: pinned.insights,
+    profile: pinned.profile,
+    nourries: pinned.nourries,
+    jachere: pinned.jachere,
+  });
 }
 
 async function run() {

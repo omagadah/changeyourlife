@@ -216,6 +216,11 @@ if (window.__cylChat) { /* déjà chargé */ } else {
     // message pré-rempli : CYL propose, l'utilisateur garde la main (il peut
     // relire, modifier ou effacer avant d'envoyer - jamais d'envoi automatique).
     openChat = (prefill) => {
+      // Sans message pré-rempli, l'appel se comporte en BASCULE : recliquer sur
+      // l'encart CYL referme le chat, au lieu d'obliger à viser la croix.
+      // Avec un prefill (« CYL, aide-moi à trier », une analyse cliquée), on
+      // ouvre toujours : l'intention est explicite, refermer serait absurde.
+      if (!prefill && panel.classList.contains('open')) { close(); return; }
       open();
       if (prefill) {
         inputEl.value = prefill;
