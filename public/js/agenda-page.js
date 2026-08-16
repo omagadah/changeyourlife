@@ -113,7 +113,7 @@ function renderWeek(all) {
   $('#ap-range').textContent = days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
     + ' - ' + days[nd - 1].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  let html = '<div class="ap-weekhd"><div></div>' + days.map((d) => {
+  let html = '<div class="ap-weekwrap"><div class="ap-weekhd"><div></div>' + days.map((d) => {
     const t = sameDay(d, now);
     const n = all.filter((x) => !x.allDay && sameDay(x.date, d)).length;
     return `<div class="dh${t ? ' today' : ''}">
@@ -148,7 +148,7 @@ function renderWeek(all) {
     }
     html += '</div>';
   });
-  html += '</div>';
+  html += '</div></div>';
   $('#ap-view').innerHTML = html;
   $('#ap-view').style.setProperty('--nd', nd);
 }

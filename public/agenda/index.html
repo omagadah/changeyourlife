@@ -17,20 +17,29 @@
        temporelle de tout le reste. Trois vues sur une même source.
        ════════════════════════════════════════════════════════════ */
     body { color:var(--text-1); }
+    /* La barre de navigation du site est fixe et haute de 62 px : sans ce
+       décalage, l'en-tête de l'agenda passait dessous et ses boutons
+       devenaient inatteignables. */
     .ap-shell {
-      position:fixed; inset:16px; background:var(--glass-bg);
+      position:fixed; inset:72px 16px 16px; background:var(--glass-bg);
       backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
-      padding:16px 18px 12px; display:grid; grid-template-rows:auto 1fr;
-      gap:12px; overflow:hidden; box-shadow:var(--shadow-lg);
+      padding:14px 16px 12px; display:grid; grid-template-rows:auto auto 1fr;
+      gap:11px; overflow:hidden; box-shadow:var(--shadow-lg);
     }
+    @media (max-width:700px){ .ap-shell { inset:68px 8px 8px; padding:11px 10px 8px; } }
 
-    /* ── Barre de commande ── */
+    /* ── Barre de commande, sur deux rangées lisibles ──
+       Rangée 1 : identité + vues + actions.  Rangée 2 : période.
+       Tout tenait sur une ligne avant, et se chevauchait dès que la fenêtre
+       rétrécissait. */
     .ap-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .ap-title { font-size:1.05rem; font-weight:800; letter-spacing:-.3px; }
-    .ap-title small { display:block; font-size:.68rem; font-weight:500; color:var(--text-3);
+    .ap-bar2 { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      padding-top:10px; border-top:1px solid var(--line); }
+    .ap-title { font-size:1.02rem; font-weight:800; letter-spacing:-.3px; line-height:1.15; }
+    .ap-title small { display:block; font-size:.66rem; font-weight:500; color:var(--text-3);
       letter-spacing:.06em; text-transform:uppercase; margin-top:1px; }
     .ap-sp { flex:1; }
-    .ap-range { font-size:.86rem; color:var(--text-2); font-weight:600; }
+    .ap-range { font-size:.9rem; color:var(--text-1); font-weight:700; }
     .ap-range::first-letter { text-transform:uppercase; }
     .ap-tabs { display:flex; gap:4px; padding:4px; background:var(--surface-1);
       border:1px solid var(--line); border-radius:12px; }
@@ -65,7 +74,12 @@
     .ap-bar-g i { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--leaf),var(--gold)); }
     .ap-hint { font-size:.7rem; color:var(--text-3); line-height:1.4; margin-top:7px; }
 
-    .ap-scene { overflow:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface-1); }
+    .ap-scene { overflow:auto; border:1px solid var(--line); border-radius:16px;
+      background:var(--surface-1); min-height:0; }
+    /* La grille occupe toute la hauteur disponible : sans ça, elle s'arrêtait
+       à 22 h et laissait un grand vide sous la dernière heure. */
+    .ap-scene > .ap-weekwrap { display:flex; flex-direction:column; min-height:100%; }
+    .ap-weekbody { flex:1; }
     .ap-empty { padding:40px 20px; text-align:center; color:var(--text-3); font-size:.86rem; line-height:1.7; }
     .ap-empty a { color:var(--leaf); }
 
@@ -204,20 +218,22 @@
   <main class="ap-shell">
     <div class="ap-bar">
       <div class="ap-title">Agenda vivant<small>tout ce qui a une date</small></div>
-      <div class="ap-sp"></div>
       <div class="ap-tabs" id="ap-tabs">
         <button data-v="week" class="on">Semaine</button>
         <button data-v="month">Mois</button>
         <button data-v="river">Rivière</button>
       </div>
-      <button class="ap-b ico" id="ap-prev" aria-label="Période précédente">‹</button>
-      <button class="ap-b" id="ap-today">Aujourd'hui</button>
-      <button class="ap-b ico" id="ap-next" aria-label="Période suivante">›</button>
-      <span class="ap-range" id="ap-range"></span>
       <div class="ap-sp"></div>
       <button class="ap-b" id="ap-print" title="Imprimer la vue affichée">Imprimer</button>
       <button class="ap-b" id="ap-export" title="Télécharger un fichier .ics importable partout">Exporter .ics</button>
       <button class="ap-b primary" id="ap-gsync">Connecter Google Agenda</button>
+    </div>
+
+    <div class="ap-bar2">
+      <button class="ap-b ico" id="ap-prev" aria-label="Période précédente">‹</button>
+      <button class="ap-b" id="ap-today">Aujourd'hui</button>
+      <button class="ap-b ico" id="ap-next" aria-label="Période suivante">›</button>
+      <span class="ap-range" id="ap-range"></span>
     </div>
 
     <div class="ap-body">

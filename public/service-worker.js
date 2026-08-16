@@ -1,5 +1,5 @@
-// service-worker.js - v185 (acces a l agenda vivant depuis Ta journee)
-const CACHE_NAME = 'changeyourlife-v185';
+// service-worker.js - v186 (agenda : barre lisible sous la nav + grille pleine hauteur)
+const CACHE_NAME = 'changeyourlife-v186';
 const urlsToCache = [
   '/',
   '/app/',
