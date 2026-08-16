@@ -1,5 +1,5 @@
-// service-worker.js - v184 (agenda vivant : semaine / mois / riviere + impression)
-const CACHE_NAME = 'changeyourlife-v184';
+// service-worker.js - v185 (acces a l agenda vivant depuis Ta journee)
+const CACHE_NAME = 'changeyourlife-v185';
 const urlsToCache = [
   '/',
   '/app/',
