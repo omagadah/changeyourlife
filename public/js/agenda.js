@@ -143,8 +143,8 @@ function injectCSS() {
       border:1px solid var(--line);border-left:3px solid var(--bc,rgba(111,154,82,0.55));}
     .ag-ev.task{background:rgba(132,194,94,0.05);border-left-color:var(--bc,#84c25e);}
     .ag-ev.late{border-left-color:#e0785f;}
-    .ag-ev.late .ag-ev-t{color:#f0a48d;}
-    .ag-ev-t{font-size:0.72rem;font-weight:800;color:#a7d585;min-width:58px;flex-shrink:0;}
+    .ag-ev.late .ag-ev-t{color:#c0503a;}
+    .ag-ev-t{font-size:0.72rem;font-weight:800;color:var(--leaf-text);min-width:58px;flex-shrink:0;}
     .ag-ev-n{font-size:0.86rem;color:var(--text-1);line-height:1.35;}
     .ag-empty{font-size:0.82rem;color:var(--text-3);padding:8px 4px;}
     .ag-toast{position:fixed;top:22px;left:50%;transform:translate(-50%,-140px);background:rgba(74,122,58,.96);color:var(--text-1);padding:10px 20px;border-radius:10px;font-weight:600;z-index:99999;transition:transform .3s ease;font-size:.86rem;box-shadow:0 8px 28px rgba(0,0,0,.4);max-width:90vw;text-align:center;}

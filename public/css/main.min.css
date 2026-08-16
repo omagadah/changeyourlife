@@ -69,6 +69,14 @@
   --sheet-bg:    rgba(15,23,16,0.98);      /* fond des modales         */
   --veil:        rgba(5,8,4,0.66);         /* voile derrière la modale */
   --panel:       rgba(21,32,19,0.55);      /* fond translucide de bloc */
+  --field-bg:    rgba(8,13,7,0.55);        /* fond des champs de saisie */
+  --stage-bg:    radial-gradient(circle at 50% 26%, rgba(231,177,92,0.10), rgba(10,15,10,0.72));
+  --pill-bg:     rgba(16,21,13,0.78);      /* pastilles flottantes (XP…)   */
+  /* Or LISIBLE en texte : sur fond sombre il peut être clair, sur fond crème
+     il doit être foncé. Sans ce token, tous les libellés dorés deviennent
+     illisibles en mode clair. */
+  --gold-text:   #f1cd92;
+  --leaf-text:   #a7d585;
 
   /* Legacy aliases */
   --background-color: var(--bg);
@@ -93,10 +101,13 @@
    sombre devient illisible sur du clair.
    ═══════════════════════════════════════════════════════════════════ */
 body.light-mode {
-  --bg:           #f4f1e7;
-  --bg-surface:   #faf8f1;
-  --bg-elevated:  #ffffff;
-  --glass-bg:     rgba(250, 248, 241, 0.88);
+  /* Crème franc, pas un blanc cassé : on doit sentir le papier, pas l'écran.
+     Ces valeurs ont été assombries volontairement - le premier essai
+     (#f4f1e7) restait trop lumineux et fatigant. */
+  --bg:           #e8e1cf;
+  --bg-surface:   #f0ead9;
+  --bg-elevated:  #f7f2e4;
+  --glass-bg:     rgba(240, 234, 217, 0.90);
   --glass-border: rgba(74, 62, 30, 0.14);
   --glass-border-hover: rgba(74, 122, 58, 0.45);
 
@@ -127,9 +138,16 @@ body.light-mode {
   --surface-3:   rgba(43, 39, 25, 0.10);
   --line:        rgba(74, 62, 30, 0.16);
   --line-strong: rgba(74, 62, 30, 0.28);
-  --sheet-bg:    #fffdf7;
+  /* Toutes les surfaces restent dans la MÊME famille crème : un panneau blanc
+     pur sur un fond crème « saute » et donne cet effet de module rapporté. */
+  --sheet-bg:    #f4eee0;
   --veil:        rgba(43, 39, 25, 0.42);
-  --panel:       rgba(255, 255, 255, 0.62);
+  --panel:       rgba(245, 240, 226, 0.72);
+  --field-bg:    #f6f1e3;
+  --stage-bg:    radial-gradient(circle at 50% 26%, rgba(231,177,92,0.16), rgba(206,196,170,0.55));
+  --pill-bg:     rgba(255, 253, 246, 0.9);
+  --gold-text:   #8a6220;
+  --leaf-text:   #3f6b30;
 
   --shadow-sm: 0 2px 8px rgba(74,62,30,0.10);
   --shadow:    0 8px 28px rgba(74,62,30,0.14);

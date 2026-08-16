@@ -129,7 +129,7 @@ function injectStyles() {
     .gw-time {
       flex-shrink: 0; font-variant-numeric: tabular-nums; letter-spacing: 0.4px;
       font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
-      font-size: 0.75rem; font-weight: 700; color: #f1cd92;
+      font-size: 0.75rem; font-weight: 700; color: var(--gold-text);
     }
     .gw-cta {
       flex-shrink: 0; margin-left: 2px;
@@ -140,7 +140,7 @@ function injectStyles() {
     }
     .gw-cta:hover { background: rgba(231,177,92,0.3); border-color: rgba(231,177,92,0.7); color: #fff; }
     .gw-cta:disabled { opacity: .6; cursor: default; }
-    .gw-done { flex-shrink: 0; font-size: 0.73rem; font-weight: 700; color: #a7d585; }
+    .gw-done { flex-shrink: 0; font-size: 0.73rem; font-weight: 700; color: var(--leaf-text); }
     .gw-x {
       position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
       width: 24px; height: 24px; border-radius: 6px; border: none; cursor: pointer;

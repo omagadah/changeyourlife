@@ -172,24 +172,24 @@ function injectCSS() {
       background:radial-gradient(circle at 35% 30%,#fbe6b0,#e7b15c 45%,#4a7a3a 100%);
       box-shadow:0 0 18px rgba(231,177,92,0.55), inset 0 0 8px rgba(255,255,255,0.25);}
     .cyl-brief-body{flex:1;min-width:0;}
-    .cyl-brief-name{font-size:0.66rem;text-transform:uppercase;letter-spacing:.9px;color:#f1cd92;font-weight:800;}
+    .cyl-brief-name{font-size:0.66rem;text-transform:uppercase;letter-spacing:.9px;color:var(--gold-text);font-weight:800;}
     .cyl-brief-text{font-size:0.88rem;color:var(--text-1);line-height:1.5;margin-top:3px;}
-    .cyl-brief-cta{font-size:0.78rem;font-weight:800;color:#f1cd92;white-space:nowrap;align-self:center;}
+    .cyl-brief-cta{font-size:0.78rem;font-weight:800;color:var(--gold-text);white-space:nowrap;align-self:center;}
     .cyl-brief.loading .cyl-brief-orb{animation:cylPulse 1.4s ease-in-out infinite;}
     @keyframes cylPulse{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.12);opacity:1}}
     .cyl-brief-focus{display:flex;flex-direction:column;gap:4px;margin-top:9px;}
-    .sbf{display:flex;align-items:baseline;gap:8px;font-size:0.8rem;color:#e6dfc8;line-height:1.4;}
+    .sbf{display:flex;align-items:baseline;gap:8px;font-size:0.8rem;color:var(--text-2);line-height:1.4;}
     .sbf b{flex-shrink:0;width:17px;height:17px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
       font-size:0.62rem;background:rgba(231,177,92,0.28);color:var(--text-1);}
     .cyl-brief-profile{margin-top:10px;font-size:0.78rem;color:var(--text-2);line-height:1.5;
       padding-top:9px;border-top:1px solid rgba(231,177,92,0.18);}
     .cyl-brief-profile span{display:block;font-size:0.6rem;text-transform:uppercase;letter-spacing:.7px;
-      color:#c0a672;font-weight:800;margin-bottom:3px;}
+      color:var(--gold-text);font-weight:800;margin-bottom:3px;}
     .cyl-brief-balance{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
     .sbb{font-size:0.66rem;font-weight:700;padding:3px 9px;border-radius:99px;
       background:var(--surface-2);color:var(--text-2);border:1px solid transparent;}
-    .sbb.up{border-color:rgba(132,194,94,0.4);color:#a7d585;}
-    .sbb.down{border-color:rgba(231,177,92,0.4);color:#f1cd92;}
+    .sbb.up{border-color:rgba(132,194,94,0.4);color:var(--leaf-text);}
+    .sbb.down{border-color:rgba(231,177,92,0.4);color:var(--gold-text);}
     @media (prefers-reduced-motion:reduce){ .cyl-brief.loading .cyl-brief-orb{animation:none;} }
   `;
   document.head.appendChild(s);

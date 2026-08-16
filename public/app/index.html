@@ -67,7 +67,7 @@
         /* Le sélecteur de thème était resté en navy v2 : on le raccorde au
            verre organique des autres contrôles. */
         #cyf-theme-toggle {
-          background: rgba(16,21,13,0.62) !important;
+          background: var(--pill-bg) !important;
           border-color: rgba(221,205,160,0.18) !important;
           color: var(--gold-soft) !important;
         }
@@ -116,7 +116,7 @@
           position:fixed; top:56px; right:20px; z-index:8000;
           display:inline-flex; align-items:center; gap:6px;
           padding:6px 13px; border-radius:999px;
-          background:rgba(16,21,13,0.78); border:1px solid rgba(231,177,92,0.38);
+          background:var(--pill-bg); border:1px solid rgba(231,177,92,0.38);
           backdrop-filter:blur(8px); font-size:0.8rem; font-weight:800; color:var(--gold-soft);
         }
         /* mobile : le logo occupe 12px + 40px -> le badge passe SOUS lui (58px) */
@@ -130,7 +130,7 @@
         }
         #tree-stage.tree-stage:not(.expanded) {
           position:relative; width:100%; height:260px; border-radius:20px; overflow:hidden;
-          background:radial-gradient(circle at 50% 26%, rgba(231,177,92,0.10), rgba(10,15,10,0.72));
+          background:var(--stage-bg);
           border:1px solid var(--line); cursor:grab; touch-action:none;
           margin-bottom:18px;
         }

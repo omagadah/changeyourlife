@@ -1,5 +1,5 @@
-// service-worker.js - v175 (moteur de classification + mode clair par tokens + purge code mort)
-const CACHE_NAME = 'changeyourlife-v175';
+// service-worker.js - v176 (mode clair creme + surfaces alignees + accents lisibles)
+const CACHE_NAME = 'changeyourlife-v176';
 const urlsToCache = [
   '/',
   '/app/',
@@ -77,9 +77,9 @@ const urlsToCache = [
   '/js/ez-tree-build.js',
   '/js/living-tree.js'
   // Bundle vendor three (~733 KB) volontairement omis ici :
-  // - addAll() est atomique, un Ã©chec ferait planter tout l'install
-  // - mis en cache automatiquement par la stratÃ©gie "cache first" du
-  //   fetch handler dÃ¨s la 1re visite de /arbre/.
+  // - addAll() est atomique, un ÃƒÂ©chec ferait planter tout l'install
+  // - mis en cache automatiquement par la stratÃƒÂ©gie "cache first" du
+  //   fetch handler dÃƒÂ¨s la 1re visite de /arbre/.
 ];
 
 self.addEventListener('install', event => {
@@ -96,18 +96,18 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(clients.claim());
-  // NB : on ne force PLUS de rechargement des onglets ici (c'Ã©tait la cause du
-  // "flash"/refresh au chargement Ã  chaque dÃ©ploiement). La stratÃ©gie fetch est
+  // NB : on ne force PLUS de rechargement des onglets ici (c'ÃƒÂ©tait la cause du
+  // "flash"/refresh au chargement ÃƒÂ  chaque dÃƒÂ©ploiement). La stratÃƒÂ©gie fetch est
   // network-first pour HTML/JS/CSS : le contenu frais est servi sans recharger.
 });
 
-// StratÃ©gie de cache :
-//   - HTML / JS / CSS  â†’ network first (toujours servir la derniÃ¨re version
+// StratÃƒÂ©gie de cache :
+//   - HTML / JS / CSS  Ã¢â€ â€™ network first (toujours servir la derniÃƒÂ¨re version
 //     quand on est en ligne, fallback cache hors ligne).
-//   - reste (images, fonts, vendor)  â†’ cache first (rapide).
+//   - reste (images, fonts, vendor)  Ã¢â€ â€™ cache first (rapide).
 self.addEventListener('fetch', event => {
   const { request } = event;
-  // On ne s'occupe pas des requÃªtes non-GET ni des chrome-extension://
+  // On ne s'occupe pas des requÃƒÂªtes non-GET ni des chrome-extension://
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
