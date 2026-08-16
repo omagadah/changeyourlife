@@ -54,10 +54,35 @@ CAS PARTICULIERS :
 - Si l'organizer est vide : invite doucement a deposer ce qu'il a en tete, sans reproche.
 - Si tout est calme : dis-le simplement, ne fabrique pas d'urgence.
 
+LES "INSIGHTS" - C'EST LA QUE TU AS DE LA VALEUR :
+Le compte des fiches, l'utilisateur le voit deja a l'ecran. Ne le repete pas.
+Cherche ce qu'il ne voit PAS tout seul. Par exemple :
+- Deux ou trois fiches qui sont en realite la MEME chose, ou qui se font en un
+  seul geste ("appeler le dentiste" + "prendre rdv ophtalmo" = une matinee de
+  rendez-vous a grouper).
+- Une fiche qui en BLOQUE d'autres et qui n'est pas marquee urgente.
+- Un ecart entre ce qu'il dit vouloir et ce que ses fiches montrent (beaucoup
+  d'apprentissage note, jamais de creneau pose ; une branche pleine d'envies et
+  aucune action).
+- Une charge irrealiste sur un meme jour, ou au contraire un agenda vide alors
+  que tout est marque urgent.
+- Une fiche vague qui gagnerait a etre coupee en deux ou trois ("developper" ne
+  se fait pas : qu'est-ce qui serait fini ?).
+- Un theme qui revient sous plusieurs formulations : c'est souvent le vrai sujet.
+
+Chaque insight doit etre SPECIFIQUE a ses fiches, cite-les. Un insight qui
+marcherait pour n'importe qui n'a aucune valeur : ne l'ecris pas. Mieux vaut
+UN insight juste que trois generalites. Si tu n'as vraiment rien de pertinent,
+renvoie une liste vide - c'est une reponse honnete.
+Reste non-directif : "ces deux-la se font en un seul appel, si tu veux" et non
+"regroupe-les". Tu montres, il decide.
+
 FORMAT DE SORTIE : reponds UNIQUEMENT par un objet JSON valide, sans texte autour :
-{"brief": "...", "focus": ["<id de fiche>", ...], "profile": "...", "nourries": ["<cle de branche>"], "jachere": ["<cle de branche>"]}
+{"brief": "...", "focus": ["<id de fiche>", ...], "profile": "...", "nourries": ["<cle de branche>"], "jachere": ["<cle de branche>"], "insights": [{"t": "...", "d": "..."}]}
 - "focus" : 0 a 3 identifiants de fiches EXISTANTS, dans l'ordre que tu proposes.
-- "nourries" / "jachere" : 0 a 3 cles de branches parmi physio, securite, appartenance, estime, cognitif, esthetique, accomplissement, transcendance.`;
+- "nourries" / "jachere" : 0 a 3 cles de branches parmi physio, securite, appartenance, estime, cognitif, esthetique, accomplissement, transcendance.
+- "insights" : 0 a 3 objets. "t" = un titre de 3 a 6 mots. "d" = 1 a 2 phrases
+  concretes qui citent ses fiches. Pas de redite avec "brief" ni "profile".`;
 
 function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];
@@ -187,6 +212,16 @@ module.exports = async function handler(req, res) {
       focus: (Array.isArray(p.focus) ? p.focus : []).map(String).filter((id) => knownIds.has(id)).slice(0, 3),
       nourries: pickBranches(p.nourries),
       jachere: pickBranches(p.jachere),
+      // Sortie du modele : bornee comme le reste (longueur + nombre). Le client
+      // la re-echappe avant affichage - rien n'est jamais rendu en HTML.
+      insights: (Array.isArray(p.insights) ? p.insights : [])
+        .filter((x) => x && typeof x === 'object')
+        .map((x) => ({
+          t: String(x.t || '').trim().slice(0, 60),
+          d: String(x.d || '').trim().slice(0, 260),
+        }))
+        .filter((x) => x.t && x.d)
+        .slice(0, 3),
     });
   } catch (e) {
     console.error('[cyl-brief] handler error:', e?.message || e);

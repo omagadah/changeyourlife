@@ -34,7 +34,7 @@ function writeCache(data) {
 }
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
-function paint({ text, profile, loading = false, cta = 'Parler a CYL', focus = [], nourries = [], jachere = [] }) {
+function paint({ text, profile, loading = false, cta = 'Parler a CYL', focus = [], nourries = [], jachere = [], insights = [], thinking = false }) {
   const el = host(); if (!el) return;
   el.className = 'cyl-brief' + (loading ? ' loading' : '');
   const focusHtml = focus.length ? `<div class="cyl-brief-focus">${focus.map((t, i) =>
@@ -42,17 +42,40 @@ function paint({ text, profile, loading = false, cta = 'Parler a CYL', focus = [
   const balance = [];
   nourries.forEach((k) => { const b = BRANCH_BY_KEY[k]; if (b) balance.push(`<span class="sbb up" title="Nourrie ces temps-ci">${b.emoji} ${esc(b.label)}</span>`); });
   jachere.forEach((k) => { const b = BRANCH_BY_KEY[k]; if (b) balance.push(`<span class="sbb down" title="En jachere">${b.emoji} ${esc(b.label)}</span>`); });
+  // Ce que CYL a vu et que l'utilisateur ne voit pas seul : c'est la partie
+  // qui a de la valeur. Chaque analyse s'ouvre dans le chat pour creuser.
+  const insHtml = insights.length ? `<div class="cyl-ins">${insights.map((x, i) =>
+    `<button class="cyl-ins-i" data-ins="${i}">
+       <span class="cyl-ins-t">${esc(x.t)}</span>
+       <span class="cyl-ins-d">${esc(x.d)}</span>
+     </button>`).join('')}</div>` : '';
+
   el.innerHTML =
     `<div class="cyl-brief-orb"></div>
      <div class="cyl-brief-body">
-       <div class="cyl-brief-name">CYL${loading ? ' · elle regarde…' : ''}</div>
+       <div class="cyl-brief-name">CYL${loading ? ' · elle regarde…' : thinking ? ' · elle relit tes fiches…' : ''}</div>
        <div class="cyl-brief-text">${esc(text)}</div>
        ${focusHtml}
+       ${insHtml}
        ${profile ? `<div class="cyl-brief-profile"><span>Ton profil, vu d'ici</span>${esc(profile)}</div>` : ''}
        ${balance.length ? `<div class="cyl-brief-balance">${balance.join('')}</div>` : ''}
      </div>
      <div class="cyl-brief-cta">${esc(cta)}</div>`;
-  el.onclick = openCyl;
+
+  el.onclick = (e) => {
+    const b = e.target.closest('[data-ins]');
+    if (b) {
+      e.stopPropagation();
+      const x = insights[Number(b.dataset.ins)];
+      if (x) {
+        document.dispatchEvent(new CustomEvent('cyl:chat-open', {
+          detail: { prefill: `Tu m'as dit : « ${x.t} - ${x.d} »\n\nDéveloppe : qu'est-ce que tu me proposes concrètement, et pourquoi ?` },
+        }));
+      }
+      return;
+    }
+    openCyl();
+  };
 }
 
 function openCyl() {
@@ -124,6 +147,7 @@ function show(data) {
     focus: focusTitles(data.focus),
     nourries: data.nourries || [],
     jachere: data.jachere || [],
+    insights: data.insights || [],
   });
 }
 
@@ -267,6 +291,15 @@ function injectCSS() {
       padding-top:9px;border-top:1px solid rgba(231,177,92,0.18);}
     .cyl-brief-profile span{display:block;font-size:0.6rem;text-transform:uppercase;letter-spacing:.7px;
       color:var(--gold-text);font-weight:800;margin-bottom:3px;}
+    /* Les analyses de CYL : ce qu'elle a vu et qu'on ne voit pas seul */
+    .cyl-ins{display:flex;flex-direction:column;gap:6px;margin-top:11px;}
+    .cyl-ins-i{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;
+      padding:9px 11px;border-radius:11px;cursor:pointer;font:inherit;
+      background:rgba(231,177,92,0.07);border:1px solid rgba(231,177,92,0.22);
+      transition:background .16s,border-color .16s,transform .16s;}
+    .cyl-ins-i:hover{background:rgba(231,177,92,0.14);border-color:rgba(231,177,92,0.45);transform:translateX(2px);}
+    .cyl-ins-t{font-size:0.76rem;font-weight:800;color:var(--gold-text);}
+    .cyl-ins-d{font-size:0.75rem;color:var(--text-2);line-height:1.45;}
     .cyl-brief-balance{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
     .sbb{font-size:0.66rem;font-weight:700;padding:3px 9px;border-radius:99px;
       background:var(--surface-2);color:var(--text-2);border:1px solid transparent;}
@@ -288,10 +321,45 @@ onAuthStateChanged(auth, async (user) => {
 
 // Le hub a change : on rafraichit l'etat local sans rappeler l'IA (le brief
 // reste celui du cache jusqu'a expiration - pas d'appel a chaque clic).
-// L'utilisateur vient d'agir : CYL se remet à jour, TOUJOURS. Le brief de
-// l'IA décrivait l'état d'avant - le garder affiché reviendrait à commenter
-// une photo pendant que la scène a changé.
+// ── Boucle vivante ──────────────────────────────────────────────────────────
+// Deux temps, pour être à la fois instantané et intelligent :
+//  1. L'utilisateur agit -> réponse LOCALE immédiate (0 appel, 0 attente).
+//  2. Il s'arrête -> au bout de 20 s de calme, on redemande une vraie lecture
+//     à Claude, qui voit ce que le moteur local ne peut pas voir.
+// Le délai n'est pas cosmétique : sans lui, déplacer 5 fiches déclencherait 5
+// appels et épuiserait le quota (8/h) en une minute.
+
+const IDLE_MS = 20_000;
+let idleTimer = null;
+let lastSig = '';
+
+// Signature de l'état : évite de rappeler l'IA si rien n'a changé de fond
+// (rouvrir une fiche, la refermer, la reposer au même endroit).
+function signature(s) {
+  return [s.total, s.tri, s.urgent, s.plan, s.quick, s.late, s.dated, s.distress.length].join('|');
+}
+
+async function refreshFromAI() {
+  const s = readState();
+  const sig = signature(s);
+  if (sig === lastSig) return;          // rien de significatif n'a bougé
+  lastSig = sig;
+  try {
+    const data = await fetchBrief();
+    if (!data) return;
+    writeCache(data);
+    show(data);
+  } catch (err) {
+    // Quota atteint ou réseau : on garde la lecture locale, déjà affichée.
+    // Silencieux par choix : l'utilisateur n'a rien demandé, il n'a pas à
+    // recevoir une erreur pour un rafraîchissement d'arrière-plan.
+    if (err && err.status !== 429) console.warn('[cyl-brief] refresh', err.message);
+  }
+}
+
 document.addEventListener('cyl:organizer-changed', (e) => {
   if (e.detail && e.detail.board) board = e.detail.board;
-  localFallback(true);
+  localFallback(true);                   // 1. tout de suite
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(refreshFromAI, IDLE_MS);   // 2. quand ça se calme
 });
