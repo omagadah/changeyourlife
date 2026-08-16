@@ -1,5 +1,5 @@
-// service-worker.js - v177 (detresse en urgent + landing mobile allegee ~118 Ko)
-const CACHE_NAME = 'changeyourlife-v177';
+// service-worker.js - v178 (arbre SVG leger sur mobile + hero epure)
+const CACHE_NAME = 'changeyourlife-v178';
 const urlsToCache = [
   '/',
   '/app/',
@@ -39,6 +39,7 @@ const urlsToCache = [
   '/css/main.min.css',
   '/js/common.js',
   '/js/home-aura.js',
+  '/js/home-tree-lite.js',
   '/js/home-auth-modal.js',
   '/js/home-failsafe.js',
   '/js/userMenu.js',
@@ -77,9 +78,9 @@ const urlsToCache = [
   '/js/ez-tree-build.js',
   '/js/living-tree.js'
   // Bundle vendor three (~733 KB) volontairement omis ici :
-  // - addAll() est atomique, un ÃƒÆ’Ã‚Â©chec ferait planter tout l'install
-  // - mis en cache automatiquement par la stratÃƒÆ’Ã‚Â©gie "cache first" du
-  //   fetch handler dÃƒÆ’Ã‚Â¨s la 1re visite de /arbre/.
+  // - addAll() est atomique, un ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©chec ferait planter tout l'install
+  // - mis en cache automatiquement par la stratÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gie "cache first" du
+  //   fetch handler dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨s la 1re visite de /arbre/.
 ];
 
 self.addEventListener('install', event => {
@@ -96,18 +97,18 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(clients.claim());
-  // NB : on ne force PLUS de rechargement des onglets ici (c'ÃƒÆ’Ã‚Â©tait la cause du
-  // "flash"/refresh au chargement ÃƒÆ’Ã‚Â  chaque dÃƒÆ’Ã‚Â©ploiement). La stratÃƒÆ’Ã‚Â©gie fetch est
+  // NB : on ne force PLUS de rechargement des onglets ici (c'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tait la cause du
+  // "flash"/refresh au chargement ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  chaque dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ploiement). La stratÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gie fetch est
   // network-first pour HTML/JS/CSS : le contenu frais est servi sans recharger.
 });
 
-// StratÃƒÆ’Ã‚Â©gie de cache :
-//   - HTML / JS / CSS  ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ network first (toujours servir la derniÃƒÆ’Ã‚Â¨re version
+// StratÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gie de cache :
+//   - HTML / JS / CSS  ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ network first (toujours servir la derniÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re version
 //     quand on est en ligne, fallback cache hors ligne).
-//   - reste (images, fonts, vendor)  ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ cache first (rapide).
+//   - reste (images, fonts, vendor)  ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ cache first (rapide).
 self.addEventListener('fetch', event => {
   const { request } = event;
-  // On ne s'occupe pas des requÃƒÆ’Ã‚Âªtes non-GET ni des chrome-extension://
+  // On ne s'occupe pas des requÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtes non-GET ni des chrome-extension://
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;

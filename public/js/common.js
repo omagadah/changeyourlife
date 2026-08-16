@@ -1,8 +1,8 @@
 // Fichier : public/js/common.js
 
 /**
- * Applique le thÃƒÆ’Ã‚Â¨me sauvegardÃƒÆ’Ã‚Â© au chargement initial de la page.
- * ÃƒÆ’Ã¢â€šÂ¬ appeler dans une balise <script> dans le <head> pour ÃƒÆ’Ã‚Â©viter le "flash".
+ * Applique le thÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨me sauvegardÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© au chargement initial de la page.
+ * ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ appeler dans une balise <script> dans le <head> pour ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©viter le "flash".
  */
 export function applyInitialTheme() {
     if (localStorage.getItem('theme') === 'light') {
@@ -11,7 +11,7 @@ export function applyInitialTheme() {
 }
 
 /**
- * Initialise les boutons du sÃƒÆ’Ã‚Â©lecteur de thÃƒÆ’Ã‚Â¨me.
+ * Initialise les boutons du sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©lecteur de thÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨me.
  */
 export function setupThemeToggle() {
     const darkBtn = document.getElementById('theme-dark-btn');
@@ -34,32 +34,32 @@ export function setupThemeToggle() {
     darkBtn.addEventListener('click', () => { localStorage.setItem('theme', 'dark'); setTheme('dark'); });
     lightBtn.addEventListener('click', () => { localStorage.setItem('theme', 'light'); setTheme('light'); });
 
-    // Initialise l'ÃƒÆ’Ã‚Â©tat des boutons
+    // Initialise l'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tat des boutons
     setTheme(localStorage.getItem('theme') || 'dark');
 }
 
 /**
- * GÃƒÆ’Ã‚Â¨re l'ouverture/fermeture du panel utilisateur et la dÃƒÆ’Ã‚Â©connexion.
+ * GÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re l'ouverture/fermeture du panel utilisateur et la dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©connexion.
  * @param {object} auth - L'instance d'authentification Firebase.
  */
 // setupUserPanel removed - replaced by public/js/userMenu.js which provides a fresh modern menu.
 
 /**
- * Met ÃƒÆ’Ã‚Â  jour l'icÃƒÆ’Ã‚Â´ne globale de l'utilisateur avec l'avatar sauvegardÃƒÆ’Ã‚Â© ou une initiale.
+ * Met ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  jour l'icÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´ne globale de l'utilisateur avec l'avatar sauvegardÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© ou une initiale.
  * @param {string} initial - La lettre initiale de l'email de l'utilisateur.
  */
 // Jolis emojis (Twemoji) sur toutes les pages qui chargent common.js.
 try { if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); } } catch (_) {}
 
-// i18n SITE-WIDE : sÃƒÆ’Ã‚Â©lecteur de langue + traduction automatique du DOM sur TOUTES
+// i18n SITE-WIDE : sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©lecteur de langue + traduction automatique du DOM sur TOUTES
 // les pages qui chargent common.js (avant, seules ~12 pages avaient i18n.js, donc
-// changer de langue ne traduisait presque rien). Import dÃƒÆ’Ã‚Â©dupliquÃƒÆ’Ã‚Â© par URL : sur
-// les pages qui incluent dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  <script src="/js/i18n.js">, c'est la mÃƒÆ’Ã‚Âªme instance.
+// changer de langue ne traduisait presque rien). Import dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dupliquÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© par URL : sur
+// les pages qui incluent dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  <script src="/js/i18n.js">, c'est la mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªme instance.
 try { import('/js/i18n.js').catch(() => {}); } catch (_) {}
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Couche de POLISH visuel globale (toutes les pages) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Couche de POLISH visuel globale (toutes les pages) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
 // Additive et douce : transitions, survols, focus accessible, halo de champs,
-// lÃƒÆ’Ã‚Â©ger relief des cartes, et scrollbars Ãƒâ€šÃ‚Â« premium Ãƒâ€šÃ‚Â» sombres. Aucun changement
+// lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ger relief des cartes, et scrollbars ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â« premium ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â» sombres. Aucun changement
 // de mise en page -> sans risque.
 try {
   if (!document.getElementById('cyl-polish-css')) {
@@ -149,13 +149,13 @@ export function updateGlobalAvatar(initial) {
         document.head.appendChild(s);
     }
 
-    // Logo unifiÃƒÆ’Ã‚Â© = le favicon SVG propre (identique ÃƒÆ’Ã‚Â  l'accueil), pas l'ancien
-    // SVG 200ÃƒÆ’Ã¢â‚¬â€120 qui s'ÃƒÆ’Ã‚Â©crasait dans le carrÃƒÆ’Ã‚Â© 40ÃƒÆ’Ã¢â‚¬â€40 (aspect Ãƒâ€šÃ‚Â« dÃƒÆ’Ã‚Â©traquÃƒÆ’Ã‚Â© Ãƒâ€šÃ‚Â»).
+    // Logo unifiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© = le favicon SVG propre (identique ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  l'accueil), pas l'ancien
+    // SVG 200ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â120 qui s'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©crasait dans le carrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© 40ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â40 (aspect ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â« dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©traquÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â»).
     const CYF_LOGO_IMG = `<img data-cyf-logo="1" src="/favicon.svg" alt="ChangeYourLife.ai" style="width:100%;height:100%;object-fit:contain;display:block;" />`;
 
-    // Badge personnel : si l'utilisateur a dÃƒÆ’Ã‚Â©fini une photo de profil, son badge
-    // pixel-art (gÃƒÆ’Ã‚Â©nÃƒÆ’Ã‚Â©rÃƒÆ’Ã‚Â© et stockÃƒÆ’Ã‚Â© par /profile) REMPLACE le logo en haut ÃƒÆ’Ã‚Â  droite,
-    // sur tout le site -> l'espace devient le sien. Sinon, logo CYL par dÃƒÆ’Ã‚Â©faut.
+    // Badge personnel : si l'utilisateur a dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©fini une photo de profil, son badge
+    // pixel-art (gÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© et stockÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© par /profile) REMPLACE le logo en haut ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  droite,
+    // sur tout le site -> l'espace devient le sien. Sinon, logo CYL par dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©faut.
     const badgeUrl = localStorage.getItem('userBadgeUrl');
     const BADGE_IMG = badgeUrl ? `<span data-cyf-logo="1" style="display:block;width:100%;height:100%;border-radius:50%;padding:2px;box-sizing:border-box;background:conic-gradient(from 210deg,#e7b15c,#84c25e,#7fd1ff,#e7b15c);">`
         + `<img src="${badgeUrl}" alt="Mon badge" style="width:100%;height:100%;border-radius:50%;display:block;object-fit:cover;image-rendering:pixelated;" /></span>` : null;
@@ -171,7 +171,7 @@ export function updateGlobalAvatar(initial) {
         } catch (_) {}
     }
 
-    // ÃƒÆ’Ã¢â‚¬Â°vite un re-render inutile (flicker) si dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  dans le bon mode.
+    // ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°vite un re-render inutile (flicker) si dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  dans le bon mode.
     const alreadyReady = userPanelTrigger.getAttribute('data-cyf-ready') === '1';
     const existingInline = userPanelTrigger.querySelector('[data-cyf-logo]');
     if (alreadyReady && existingInline && userPanelTrigger.getAttribute('data-cyf-mode') === mode) {
@@ -250,10 +250,10 @@ if (typeof window !== 'undefined') {
 
         // Register service worker once globally, if supported and not already registered
         if ('serviceWorker' in navigator) {
-            // AlignÃƒÆ’Ã‚Â© sur CACHE_NAME du service worker (le fichier est servi en no-store,
-  // la query n'est qu'un repÃƒÆ’Ã‚Â¨re de version - elle ÃƒÆ’Ã‚Â©tait figÃƒÆ’Ã‚Â©e ÃƒÆ’Ã‚Â  68 depuis v68).
-  const swUrl = '/service-worker.js?v=177';
-            const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre ÃƒÆ’Ã‚Â  jour', onClick = () => location.reload()) => {
+            // AlignÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© sur CACHE_NAME du service worker (le fichier est servi en no-store,
+  // la query n'est qu'un repÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re de version - elle ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tait figÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  68 depuis v68).
+  const swUrl = '/service-worker.js?v=178';
+            const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
                 wrap.id = 'cyf-sw-toast';
@@ -261,7 +261,7 @@ if (typeof window !== 'undefined') {
                 const text = document.createElement('span'); text.textContent = msg;
                 const btn = document.createElement('button'); btn.textContent = action; btn.style.cssText = 'margin-left:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#3b82f6;color:#fff;cursor:pointer;font-weight:600';
                 btn.addEventListener('click', () => { try { onClick(); } catch(e) {} document.body.removeChild(wrap); });
-                const close = document.createElement('button'); close.textContent = 'ÃƒÆ’Ã¢â‚¬â€'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
+                const close = document.createElement('button'); close.textContent = 'ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
                 wrap.appendChild(text); wrap.appendChild(btn); wrap.appendChild(close);
                 document.body.appendChild(wrap);
             };
@@ -286,7 +286,7 @@ if (typeof window !== 'undefined') {
                     // If a new worker takes control, prompt the user
                     let prompted = false;
                     navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        if (prompted) return; prompted = true; showUpdateToast('Le site a ÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â© mis ÃƒÆ’Ã‚Â  jour', 'Recharger');
+                        if (prompted) return; prompted = true; showUpdateToast('Le site a ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© mis ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  jour', 'Recharger');
                     });
                 }
             }).catch(() => {/* ignore */});
@@ -294,13 +294,13 @@ if (typeof window !== 'undefined') {
     } catch (e) { /* ignore in non-browser contexts */ }
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Helpers partagÃƒÆ’Ã‚Â©s : escapeHtml Ãƒâ€šÃ‚Â· toast Ãƒâ€šÃ‚Â· saveWithFeedback Ãƒâ€šÃ‚Â· offline ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-// Source unique de vÃƒÆ’Ã‚Â©ritÃƒÆ’Ã‚Â© (avant : ~17 toasts + ~10 escapeHtml recopiÃƒÆ’Ã‚Â©s dans
-// chaque page ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â surface XSS et ÃƒÆ’Ã‚Â©critures Firestore perdues en silence).
+// ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Helpers partagÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s : escapeHtml ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· toast ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· saveWithFeedback ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· offline ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+// Source unique de vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ritÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© (avant : ~17 toasts + ~10 escapeHtml recopiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s dans
+// chaque page ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â surface XSS et ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©critures Firestore perdues en silence).
 // Import : `import { escapeHtml, toast, saveWithFeedback } from '/js/common.js';`
 // Ou via le namespace global (scripts non-module) : `window.cyl.toast(...)`.
 
-/** ÃƒÆ’Ã¢â‚¬Â°chappe le HTML d'une chaÃƒÆ’Ã‚Â®ne (protÃƒÆ’Ã‚Â¨ge contre le XSS sur contenu utilisateur). */
+/** ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°chappe le HTML d'une chaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â®ne (protÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨ge contre le XSS sur contenu utilisateur). */
 export function escapeHtml(str) {
   if (str == null) return '';
   return String(str)
@@ -344,7 +344,7 @@ function _ensureToastHost() {
 }
 
 /**
- * Notification non-bloquante, XSS-safe (le message est posÃƒÆ’Ã‚Â© via textContent).
+ * Notification non-bloquante, XSS-safe (le message est posÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© via textContent).
  * @param {string} message
  * @param {{type?:'info'|'success'|'error', duration?:number, action?:{label:string,onClick:Function}}} [opts]
  */
@@ -381,17 +381,17 @@ export function toast(message, opts = {}) {
 }
 
 /**
- * Enveloppe une ÃƒÆ’Ã‚Â©criture (Firestore ou autre promesse) avec un vrai retour visuel.
+ * Enveloppe une ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©criture (Firestore ou autre promesse) avec un vrai retour visuel.
  * Avant : des `await setDoc(...)` hors try/catch et des `.catch(()=>{})` faisaient
- * perdre des sauvegardes en silence. Ici, l'ÃƒÆ’Ã‚Â©chec est TOUJOURS signalÃƒÆ’Ã‚Â© + rÃƒÆ’Ã‚Â©essayable.
- * @param {() => Promise<any>} run  fonction qui lance l'ÃƒÆ’Ã‚Â©criture (rappelable pour le retry)
+ * perdre des sauvegardes en silence. Ici, l'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©chec est TOUJOURS signalÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© + rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©essayable.
+ * @param {() => Promise<any>} run  fonction qui lance l'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©criture (rappelable pour le retry)
  * @param {{successMsg?:string, errorMsg?:string, retry?:boolean}} [opts]
  * @returns {Promise<{ok:boolean, result?:any, error?:any}>}
  */
 export async function saveWithFeedback(run, opts = {}) {
   const {
     successMsg = null,
-    errorMsg = "Impossible d'enregistrer. VÃƒÆ’Ã‚Â©rifie ta connexion ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ton texte est conservÃƒÆ’Ã‚Â©.",
+    errorMsg = "Impossible d'enregistrer. VÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rifie ta connexion ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ton texte est conservÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.",
     retry = true,
   } = opts;
   try {
@@ -399,17 +399,17 @@ export async function saveWithFeedback(run, opts = {}) {
     if (successMsg) toast(successMsg, { type: 'success' });
     return { ok: true, result };
   } catch (e) {
-    console.warn('[saveWithFeedback] ÃƒÆ’Ã‚Â©chec', (e && e.message) || e);
+    console.warn('[saveWithFeedback] ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©chec', (e && e.message) || e);
     toast(errorMsg, {
       type: 'error',
       duration: 9000,
-      action: retry ? { label: 'RÃƒÆ’Ã‚Â©essayer', onClick: () => saveWithFeedback(run, opts) } : null,
+      action: retry ? { label: 'RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©essayer', onClick: () => saveWithFeedback(run, opts) } : null,
     });
     return { ok: false, error: e };
   }
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ BanniÃƒÆ’Ã‚Â¨re hors-ligne globale ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ BanniÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re hors-ligne globale ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
 if (typeof window !== 'undefined') {
   const initOffline = () => {
     let banner = null;
@@ -417,7 +417,7 @@ if (typeof window !== 'undefined') {
       if (banner) return;
       banner = document.createElement('div');
       banner.id = 'cyl-offline-banner';
-      banner.textContent = 'Tu es hors ligne ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â tes changements ne seront enregistrÃƒÆ’Ã‚Â©s quÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢au retour de la connexion.';
+      banner.textContent = 'Tu es hors ligne ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â tes changements ne seront enregistrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s quÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢au retour de la connexion.';
       banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:29000;padding:9px 16px;'
         + 'text-align:center;font-size:.88rem;color:#1a1206;background:#e7b15c;'
         + 'box-shadow:0 2px 12px rgba(0,0,0,.25);';
@@ -430,22 +430,22 @@ if (typeof window !== 'undefined') {
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initOffline);
   else initOffline();
-  // Namespace global pour les scripts non-module (pratique + rÃƒÆ’Ã‚Â©tro-compat).
+  // Namespace global pour les scripts non-module (pratique + rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tro-compat).
   window.cyl = Object.assign(window.cyl || {}, { escapeHtml, toast, saveWithFeedback });
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ CYL (orbe + chat) - chargÃƒÆ’Ã‚Â©e sur toutes les pages authentifiÃƒÆ’Ã‚Â©es ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ CYL (orbe + chat) - chargÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e sur toutes les pages authentifiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©es ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
 // Pas sur la landing, login, signup, verify-email (pages publiques sans CYL).
 //
 // UNE SEULE IA, UN SEUL MODULE : c'est `cyl-chat.js` (consentement, garde-fous
-// de conformitÃƒÆ’Ã‚Â©, prÃƒÆ’Ã‚Â©remplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
-// chargeait une SECONDE orbe en parallÃƒÆ’Ã‚Â¨le sur /app/ - il n'est plus utilisÃƒÆ’Ã‚Â©.
+// de conformitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©, prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©remplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
+// chargeait une SECONDE orbe en parallÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨le sur /app/ - il n'est plus utilisÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.
 (function maybeLoadCylChat() {
   try {
     var p = location.pathname;
     if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
         || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0) return;
-    // import dynamique : non bloquant si le module ÃƒÆ’Ã‚Â©choue
+    // import dynamique : non bloquant si le module ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©choue
     import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
   } catch (_) { /* ignore */ }
 })();

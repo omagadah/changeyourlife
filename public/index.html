@@ -603,8 +603,15 @@
     html.lite .hud,
     html.lite .timeline,
     html.lite .stream-wrap,
-    html.lite .branch-panel,
-    html.lite .sat-info { display: none !important; }
+    html.lite .sat-info,
+    /* Le bloc CYL et le bouton de voix mangeaient un tiers de l'écran pour un
+       texte qui défile. Sur téléphone, l'espace va au message et à l'arbre. */
+    html.lite .lya-orb,
+    html.lite .lya-body,
+    html.lite .lya-voice { display: none !important; }
+    html.lite .lya { background: none; padding-bottom: 24px; }
+    html.lite .actions { justify-content: center; }
+    html.lite .btn-enter { flex: 0 1 auto; min-width: 240px; }
 
     /* Décor de remplacement : une canopée suggérée, en dégradés.
        ~0 octet, aucun rendu 3D, et le fond reste habité. */
@@ -833,7 +840,14 @@
         var nav = navigator.connection || {};
         var slow = nav.saveData === true || /^(slow-2g|2g|3g)$/.test(nav.effectiveType || '');
         var small = window.matchMedia('(max-width: 820px)').matches;
-        if (small || slow) { document.documentElement.classList.add('lite'); return; }
+        if (small || slow) {
+          document.documentElement.classList.add('lite');
+          // L'arbre reste : version SVG, mêmes 8 branches cliquables, 0 octet.
+          var lt = document.createElement('script');
+          lt.type = 'module'; lt.src = '/js/home-tree-lite.js';
+          document.head.appendChild(lt);
+          return;
+        }
       } catch (e) { /* API absente : on charge la scène normalement */ }
       var s = document.createElement('script');
       s.type = 'module'; s.src = '/js/arbre3d.js';
