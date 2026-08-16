@@ -58,17 +58,21 @@ async function award(branchKey, amount, label) {
 function render() {
   const host = $('#organizer-hub');
   if (!host || !board) return;
-  // Le bandeau ENTIER est un lien vers le board complet : c'est l'onglet
-  // ORGANIZER. Plus de bouton « Ouvrir en grand » - on clique sur le titre.
+  // L'ONGLET ENTIER est cliquable : un lien étendu (position absolue) couvre
+  // toute la bande d'en-tête, bord à bord, jusque dans le padding du bloc.
+  // Le texte est posé PAR-DESSUS mais laisse passer le clic (pointer-events),
+  // et seul le bouton CYL reste interactif de son côté.
   host.innerHTML = `
     <div class="hub-head">
-      <a class="hub-brand" href="/organizer/" title="Ouvrir l'ORGANIZER complet - toutes tes idées, triées ou non">
+      <a class="hub-open" href="/organizer/"
+         aria-label="Ouvrir l'ORGANIZER complet - toutes tes idées, triées ou non"></a>
+      <div class="hub-brand">
         <span class="hub-dot"></span>
         <div class="hub-brand-txt">
           <div class="hub-title">ORGANIZER<span class="hub-go" aria-hidden="true">→</span></div>
           <div class="hub-sub">Tout ce que tu as en tête. Trie, priorise, planifie.</div>
         </div>
-      </a>
+      </div>
       <div class="hub-head-actions">
         <button class="hub-ghost" id="hub-cyl" title="Demander à CYL une proposition de tri">CYL, aide-moi à trier</button>
       </div>
@@ -378,21 +382,30 @@ function injectCSS() {
   #organizer-hub{background:linear-gradient(160deg,rgba(231,177,92,0.09),rgba(21,32,19,0.55));
     border:1px solid rgba(231,177,92,0.28);border-radius:20px;padding:18px 18px 14px;margin-bottom:18px;
     box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset,0 18px 46px rgba(0,0,0,0.35);}
-  .hub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
-  /* Le bandeau est un lien : tout le bloc titre ouvre /organizer/ */
-  .hub-brand{display:flex;align-items:center;gap:11px;min-width:0;text-decoration:none;
-    padding:6px 12px 6px 8px;margin:-6px 0 0 -8px;border-radius:12px;
-    border:1px solid transparent;transition:background .18s,border-color .18s,transform .18s;}
-  .hub-brand:hover{background:rgba(231,177,92,0.10);border-color:rgba(231,177,92,0.32);transform:translateX(2px);}
-  .hub-brand:focus-visible{outline:2px solid rgba(231,177,92,0.7);outline-offset:2px;}
+  /* ── L'ONGLET : toute la bande d'en-tete est une zone de clic ──
+     .hub-open est un lien vide etire sur tout l'en-tete (il deborde dans le
+     padding du bloc pour aller bord a bord). Le contenu passe au-dessus mais
+     est transparent au pointeur, sauf le bouton CYL. */
+  .hub-head{position:relative;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:4px 0 12px;
+    border-bottom:1px solid rgba(231,177,92,0.14);}
+  .hub-open{position:absolute;top:-18px;left:-18px;right:-18px;bottom:0;z-index:0;
+    border-radius:19px 19px 0 0;text-decoration:none;cursor:pointer;
+    transition:background .18s;}
+  .hub-open:hover{background:rgba(231,177,92,0.09);}
+  .hub-open:focus-visible{outline:2px solid rgba(231,177,92,0.75);outline-offset:-3px;}
+  /* le texte est decoratif : il laisse le clic atteindre le lien en dessous */
+  .hub-brand{position:relative;z-index:1;pointer-events:none;
+    display:flex;align-items:center;gap:11px;min-width:0;}
   .hub-brand-txt{min-width:0;}
   .hub-dot{width:10px;height:10px;border-radius:50%;background:#e7b15c;box-shadow:0 0 14px rgba(231,177,92,0.8);flex-shrink:0;}
   .hub-title{font-size:1.02rem;font-weight:900;letter-spacing:1.4px;color:#f4efe1;display:flex;align-items:center;gap:7px;}
-  .hub-go{font-size:0.92rem;font-weight:700;color:#e7b15c;opacity:0;transform:translateX(-4px);
-    transition:opacity .18s,transform .18s;}
-  .hub-brand:hover .hub-go{opacity:1;transform:translateX(0);}
+  .hub-go{font-size:0.92rem;font-weight:700;color:#e7b15c;opacity:0;transform:translateX(-5px);
+    transition:opacity .2s,transform .2s;}
+  .hub-head:hover .hub-go{opacity:1;transform:translateX(0);}
   .hub-sub{font-size:0.78rem;color:#b4ad94;margin-top:1px;}
-  .hub-head-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  /* seul element interactif pose au-dessus du lien */
+  .hub-head-actions{position:relative;z-index:2;display:flex;gap:8px;flex-wrap:wrap;}
   .hub-ghost{display:inline-flex;align-items:center;padding:7px 13px;border-radius:99px;cursor:pointer;
     border:1px solid rgba(221,205,160,0.16);background:rgba(255,255,255,0.04);color:#b4ad94;
     font:inherit;font-size:0.78rem;font-weight:700;text-decoration:none;transition:background .18s,color .18s;}

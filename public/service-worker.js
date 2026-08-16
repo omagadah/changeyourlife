@@ -1,5 +1,5 @@
-// service-worker.js - v172 (SYL -> CYL partout, une seule IA ; bandeau ORGANIZER cliquable)
-const CACHE_NAME = 'changeyourlife-v172';
+// service-worker.js - v173 (onglet ORGANIZER : toute la bande d'en-tete cliquable)
+const CACHE_NAME = 'changeyourlife-v173';
 const urlsToCache = [
   '/',
   '/app/',
