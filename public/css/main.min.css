@@ -57,6 +57,19 @@
   --duration: 200ms;
   --duration-slow: 380ms;
 
+  /* ── Surfaces (cartes, encarts) : pilotent TOUS les modules injectés ──
+     Elles existent pour que le mode clair n'ait qu'un seul point de bascule.
+     Un module qui code une couleur en dur casse le thème : utiliser ces
+     variables, jamais un rgba(255,255,255,…) littéral. */
+  --surface-1:   rgba(255,255,255,0.02);   /* fond de carte au repos   */
+  --surface-2:   rgba(255,255,255,0.05);   /* fond de carte survolée   */
+  --surface-3:   rgba(255,255,255,0.08);   /* pastille, badge          */
+  --line:        rgba(221,205,160,0.12);
+  --line-strong: rgba(221,205,160,0.22);
+  --sheet-bg:    rgba(15,23,16,0.98);      /* fond des modales         */
+  --veil:        rgba(5,8,4,0.66);         /* voile derrière la modale */
+  --panel:       rgba(21,32,19,0.55);      /* fond translucide de bloc */
+
   /* Legacy aliases */
   --background-color: var(--bg);
   --glass-bg: rgba(16, 21, 13, 0.82);
@@ -67,6 +80,75 @@
   --danger-color: var(--red);
   --success-color: var(--green);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODE CLAIR — un seul point de bascule pour tout le site.
+   Le thème ne se bricole plus module par module : on redéfinit les
+   MÊMES variables, et tout ce qui les utilise suit automatiquement.
+
+   Parti pris (standards actuels) : ni blanc pur, ni noir pur.
+   Fond crème chaud (#f4f1e7) plutôt que #fff — moins d'éblouissement.
+   Encre chaude (#2b2719) plutôt que #000 — moins de fatigue visuelle.
+   Les accents sont ASSOMBRIS : un vert feuille conçu pour le fond
+   sombre devient illisible sur du clair.
+   ═══════════════════════════════════════════════════════════════════ */
+body.light-mode {
+  --bg:           #f4f1e7;
+  --bg-surface:   #faf8f1;
+  --bg-elevated:  #ffffff;
+  --glass-bg:     rgba(250, 248, 241, 0.88);
+  --glass-border: rgba(74, 62, 30, 0.14);
+  --glass-border-hover: rgba(74, 122, 58, 0.45);
+
+  --text-1: #2b2719;
+  --text-2: #57503c;
+  --text-3: #6f6754;          /* >= 4.5:1 sur le fond crème */
+
+  --blue:       #4a7a3a;      /* accent = vert feuille, assombri */
+  --blue-light: #3d6630;
+  --blue-glow:  rgba(74,122,58,0.28);
+
+  --leaf:      #40702f;
+  --leaf-deep: #2c5220;
+  --moss:      #4f7238;
+  --gold:      #9a6f22;
+  --gold-soft: #b9873a;
+  --bark:      #8a6234;
+
+  --corps: #0f7c72;
+  --coeur: #b64541;
+  --etre:  #6b4fb0;
+  --ordre: #9a6f22;
+  --green: #2f7d3a;
+  --red:   #b3312c;
+
+  --surface-1:   rgba(43, 39, 25, 0.035);
+  --surface-2:   rgba(43, 39, 25, 0.075);
+  --surface-3:   rgba(43, 39, 25, 0.10);
+  --line:        rgba(74, 62, 30, 0.16);
+  --line-strong: rgba(74, 62, 30, 0.28);
+  --sheet-bg:    #fffdf7;
+  --veil:        rgba(43, 39, 25, 0.42);
+  --panel:       rgba(255, 255, 255, 0.62);
+
+  --shadow-sm: 0 2px 8px rgba(74,62,30,0.10);
+  --shadow:    0 8px 28px rgba(74,62,30,0.14);
+  --shadow-lg: 0 20px 56px rgba(74,62,30,0.18);
+  --shadow-blue: 0 6px 24px rgba(74,122,58,0.22);
+}
+body.light-mode { color: var(--text-1); background: var(--bg); }
+
+/* ── Liens visités : jamais de violet ──
+   Le navigateur repeint en violet tout lien déjà cliqué. Sur une app où les
+   raccourcis de modules sont des <a>, ça donnait des libellés violets au
+   retour sur /app/ pendant que les non-visités restaient clairs : la grille
+   se retrouvait bariolée. Un lien d'application n'est pas un lien de moteur
+   de recherche - il garde sa couleur, visité ou non. */
+a:visited { color: inherit; }
+.qa-btn:visited, .tool-card:visited, .hub-sc:visited,
+.qa-btn:visited .qa-label, .tool-card:visited h3, .hub-sc:visited .hub-sc-t { color: inherit; }
+/* Les images et l'arbre 3D ne doivent PAS être éclaircis par le thème. */
+body.light-mode img, body.light-mode canvas, body.light-mode svg { filter: none; }
 
 /* ── Reset ─────────────────────────────────────────────────── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }

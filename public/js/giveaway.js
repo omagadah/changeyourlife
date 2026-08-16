@@ -120,11 +120,11 @@ function injectStyles() {
     .gw-in {
       display: flex; align-items: center; gap: 10px;
       max-width: 1180px; width: 100%; justify-content: center;
-      font-size: 0.775rem; line-height: 1; color: #ddd3b8; min-width: 0;
+      font-size: 0.775rem; line-height: 1; color: var(--text-2); min-width: 0;
     }
     .gw-ic { font-size: 0.9rem; flex-shrink: 0; }
     .gw-txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .gw-txt b { color: #f4efe1; font-weight: 700; }
+    .gw-txt b { color: var(--text-1); font-weight: 700; }
     .gw-sep { color: rgba(231,177,92,0.45); flex-shrink: 0; }
     .gw-time {
       flex-shrink: 0; font-variant-numeric: tabular-nums; letter-spacing: 0.4px;
@@ -134,7 +134,7 @@ function injectStyles() {
     .gw-cta {
       flex-shrink: 0; margin-left: 2px;
       padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(231,177,92,0.45);
-      background: rgba(231,177,92,0.16); color: #f6e6c4;
+      background: rgba(231,177,92,0.16); color: var(--text-1);
       font-family: inherit; font-size: 0.73rem; font-weight: 700; cursor: pointer;
       transition: background .18s, border-color .18s, color .18s;
     }
@@ -144,10 +144,10 @@ function injectStyles() {
     .gw-x {
       position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
       width: 24px; height: 24px; border-radius: 6px; border: none; cursor: pointer;
-      background: transparent; color: #b4ad94; font-size: 0.82rem; line-height: 1;
+      background: transparent; color: var(--text-2); font-size: 0.82rem; line-height: 1;
       transition: background .18s, color .18s;
     }
-    .gw-x:hover { background: rgba(255,255,255,0.09); color: #f4efe1; }
+    .gw-x:hover { background: var(--surface-3); color: var(--text-1); }
     .gw-bar :focus-visible { outline: 2px solid rgba(231,177,92,0.8); outline-offset: 2px; }
 
     /* En dessous de 720 px : on garde l'essentiel (compte à rebours + action) */
@@ -159,12 +159,7 @@ function injectStyles() {
     @media (max-width: 420px) {
       .gw-txt { display: none; }
     }
-    body.light-mode .gw-bar {
-      background: linear-gradient(90deg, rgba(231,177,92,0.14), rgba(231,177,92,0.22), rgba(231,177,92,0.14));
-      border-bottom-color: rgba(163,120,52,0.3);
-    }
-    body.light-mode .gw-in { color: #4a3510; }
-    body.light-mode .gw-txt b { color: #2c2a1c; }
+    body.light-mode .gw-in { color: var(--text-2); }
     @media (prefers-reduced-motion: reduce) { .gw-bar { animation: none; } }
   `;
   document.head.appendChild(s);

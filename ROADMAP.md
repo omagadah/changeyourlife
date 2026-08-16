@@ -73,7 +73,33 @@ Règles du motif :
   des données (l'ORGANIZER affiche tout, y compris ce qui est déjà planifié).
 - Un module par bandeau, jamais empilés au point de faire défiler l'accueil.
 
-## 3 · CYL propose un tri automatique dans la matrice Eisenhower
+## 3 · CHARTE GRAPHIQUE COMPLÈTE (gros morceau — à faire EN DERNIER)
+
+> La mise en page se fait à la fin. On construit d'abord des modules qui
+> marchent, on habille ensuite. Mais quand on y viendra, ce sera un chantier
+> entier, pas une retouche.
+
+À produire :
+
+- **Charte graphique formelle** : palette figée (rôles, pas juste des teintes),
+  échelle typographique, grille d'espacement, rayons, ombres, états
+  (repos / survol / focus / actif / désactivé). Un document, pas des valeurs
+  éparpillées dans 40 fichiers.
+- **Direction artistique de l'XP** : à quoi ressemble un gain ? une montée de
+  niveau ? un palier ? Aujourd'hui c'est un toast et un nombre — il n'y a
+  aucune *sensation*.
+- **Badges par domaine** : un jeu complet pour les 8 branches Maslow, décliné
+  par niveau (Novice → Légende). Cohérent avec le badge pixel-art déjà créé.
+- **Badges de compétences** : distincts des badges de domaine, liés au module
+  Compétences.
+- **Effets visuels par branche de l'arbre** : chaque branche doit avoir sa
+  signature quand elle reçoit de l'XP (particules, floraison, lumière), et son
+  état de négligence (feuilles qui tombent, teinte qui se ternit).
+- **XP inscrit DANS la branche** : le nombre visible sur la branche elle-même
+  dans la vue 3D, pas seulement dans un anneau à côté.
+- **Cohérence clair / sombre** sur tout ce qui précède.
+
+## 4 · CYL propose un tri automatique dans la matrice Eisenhower
 
 Quand des fiches attendent dans « À trier », CYL propose un rangement -
 **proposition, jamais application automatique** :

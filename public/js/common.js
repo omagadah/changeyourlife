@@ -1,8 +1,8 @@
 // Fichier : public/js/common.js
 
 /**
- * Applique le thème sauvegardé au chargement initial de la page.
- * À appeler dans une balise <script> dans le <head> pour éviter le "flash".
+ * Applique le thÃ¨me sauvegardÃ© au chargement initial de la page.
+ * Ã€ appeler dans une balise <script> dans le <head> pour Ã©viter le "flash".
  */
 export function applyInitialTheme() {
     if (localStorage.getItem('theme') === 'light') {
@@ -11,7 +11,7 @@ export function applyInitialTheme() {
 }
 
 /**
- * Initialise les boutons du sélecteur de thème.
+ * Initialise les boutons du sÃ©lecteur de thÃ¨me.
  */
 export function setupThemeToggle() {
     const darkBtn = document.getElementById('theme-dark-btn');
@@ -34,32 +34,32 @@ export function setupThemeToggle() {
     darkBtn.addEventListener('click', () => { localStorage.setItem('theme', 'dark'); setTheme('dark'); });
     lightBtn.addEventListener('click', () => { localStorage.setItem('theme', 'light'); setTheme('light'); });
 
-    // Initialise l'état des boutons
+    // Initialise l'Ã©tat des boutons
     setTheme(localStorage.getItem('theme') || 'dark');
 }
 
 /**
- * Gère l'ouverture/fermeture du panel utilisateur et la déconnexion.
+ * GÃ¨re l'ouverture/fermeture du panel utilisateur et la dÃ©connexion.
  * @param {object} auth - L'instance d'authentification Firebase.
  */
 // setupUserPanel removed - replaced by public/js/userMenu.js which provides a fresh modern menu.
 
 /**
- * Met à jour l'icône globale de l'utilisateur avec l'avatar sauvegardé ou une initiale.
+ * Met Ã  jour l'icÃ´ne globale de l'utilisateur avec l'avatar sauvegardÃ© ou une initiale.
  * @param {string} initial - La lettre initiale de l'email de l'utilisateur.
  */
 // Jolis emojis (Twemoji) sur toutes les pages qui chargent common.js.
 try { if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); } } catch (_) {}
 
-// i18n SITE-WIDE : sélecteur de langue + traduction automatique du DOM sur TOUTES
+// i18n SITE-WIDE : sÃ©lecteur de langue + traduction automatique du DOM sur TOUTES
 // les pages qui chargent common.js (avant, seules ~12 pages avaient i18n.js, donc
-// changer de langue ne traduisait presque rien). Import dédupliqué par URL : sur
-// les pages qui incluent déjà <script src="/js/i18n.js">, c'est la même instance.
+// changer de langue ne traduisait presque rien). Import dÃ©dupliquÃ© par URL : sur
+// les pages qui incluent dÃ©jÃ  <script src="/js/i18n.js">, c'est la mÃªme instance.
 try { import('/js/i18n.js').catch(() => {}); } catch (_) {}
 
-// ── Couche de POLISH visuel globale (toutes les pages) ──────────────────────
+// â”€â”€ Couche de POLISH visuel globale (toutes les pages) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Additive et douce : transitions, survols, focus accessible, halo de champs,
-// léger relief des cartes, et scrollbars « premium » sombres. Aucun changement
+// lÃ©ger relief des cartes, et scrollbars Â« premium Â» sombres. Aucun changement
 // de mise en page -> sans risque.
 try {
   if (!document.getElementById('cyl-polish-css')) {
@@ -149,13 +149,13 @@ export function updateGlobalAvatar(initial) {
         document.head.appendChild(s);
     }
 
-    // Logo unifié = le favicon SVG propre (identique à l'accueil), pas l'ancien
-    // SVG 200×120 qui s'écrasait dans le carré 40×40 (aspect « détraqué »).
+    // Logo unifiÃ© = le favicon SVG propre (identique Ã  l'accueil), pas l'ancien
+    // SVG 200Ã—120 qui s'Ã©crasait dans le carrÃ© 40Ã—40 (aspect Â« dÃ©traquÃ© Â»).
     const CYF_LOGO_IMG = `<img data-cyf-logo="1" src="/favicon.svg" alt="ChangeYourLife.ai" style="width:100%;height:100%;object-fit:contain;display:block;" />`;
 
-    // Badge personnel : si l'utilisateur a défini une photo de profil, son badge
-    // pixel-art (généré et stocké par /profile) REMPLACE le logo en haut à droite,
-    // sur tout le site -> l'espace devient le sien. Sinon, logo CYL par défaut.
+    // Badge personnel : si l'utilisateur a dÃ©fini une photo de profil, son badge
+    // pixel-art (gÃ©nÃ©rÃ© et stockÃ© par /profile) REMPLACE le logo en haut Ã  droite,
+    // sur tout le site -> l'espace devient le sien. Sinon, logo CYL par dÃ©faut.
     const badgeUrl = localStorage.getItem('userBadgeUrl');
     const BADGE_IMG = badgeUrl ? `<span data-cyf-logo="1" style="display:block;width:100%;height:100%;border-radius:50%;padding:2px;box-sizing:border-box;background:conic-gradient(from 210deg,#e7b15c,#84c25e,#7fd1ff,#e7b15c);">`
         + `<img src="${badgeUrl}" alt="Mon badge" style="width:100%;height:100%;border-radius:50%;display:block;object-fit:cover;image-rendering:pixelated;" /></span>` : null;
@@ -171,7 +171,7 @@ export function updateGlobalAvatar(initial) {
         } catch (_) {}
     }
 
-    // Évite un re-render inutile (flicker) si déjà dans le bon mode.
+    // Ã‰vite un re-render inutile (flicker) si dÃ©jÃ  dans le bon mode.
     const alreadyReady = userPanelTrigger.getAttribute('data-cyf-ready') === '1';
     const existingInline = userPanelTrigger.querySelector('[data-cyf-logo]');
     if (alreadyReady && existingInline && userPanelTrigger.getAttribute('data-cyf-mode') === mode) {
@@ -250,10 +250,10 @@ if (typeof window !== 'undefined') {
 
         // Register service worker once globally, if supported and not already registered
         if ('serviceWorker' in navigator) {
-            // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
-  // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
-  const swUrl = '/service-worker.js?v=174';
-            const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
+            // AlignÃ© sur CACHE_NAME du service worker (le fichier est servi en no-store,
+  // la query n'est qu'un repÃ¨re de version - elle Ã©tait figÃ©e Ã  68 depuis v68).
+  const swUrl = '/service-worker.js?v=175';
+            const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre Ã  jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
                 wrap.id = 'cyf-sw-toast';
@@ -261,7 +261,7 @@ if (typeof window !== 'undefined') {
                 const text = document.createElement('span'); text.textContent = msg;
                 const btn = document.createElement('button'); btn.textContent = action; btn.style.cssText = 'margin-left:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#3b82f6;color:#fff;cursor:pointer;font-weight:600';
                 btn.addEventListener('click', () => { try { onClick(); } catch(e) {} document.body.removeChild(wrap); });
-                const close = document.createElement('button'); close.textContent = '×'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
+                const close = document.createElement('button'); close.textContent = 'Ã—'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
                 wrap.appendChild(text); wrap.appendChild(btn); wrap.appendChild(close);
                 document.body.appendChild(wrap);
             };
@@ -286,7 +286,7 @@ if (typeof window !== 'undefined') {
                     // If a new worker takes control, prompt the user
                     let prompted = false;
                     navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        if (prompted) return; prompted = true; showUpdateToast('Le site a été mis à jour', 'Recharger');
+                        if (prompted) return; prompted = true; showUpdateToast('Le site a Ã©tÃ© mis Ã  jour', 'Recharger');
                     });
                 }
             }).catch(() => {/* ignore */});
@@ -294,13 +294,13 @@ if (typeof window !== 'undefined') {
     } catch (e) { /* ignore in non-browser contexts */ }
 }
 
-// ── Helpers partagés : escapeHtml · toast · saveWithFeedback · offline ───────
-// Source unique de vérité (avant : ~17 toasts + ~10 escapeHtml recopiés dans
-// chaque page — surface XSS et écritures Firestore perdues en silence).
+// â”€â”€ Helpers partagÃ©s : escapeHtml Â· toast Â· saveWithFeedback Â· offline â”€â”€â”€â”€â”€â”€â”€
+// Source unique de vÃ©ritÃ© (avant : ~17 toasts + ~10 escapeHtml recopiÃ©s dans
+// chaque page â€” surface XSS et Ã©critures Firestore perdues en silence).
 // Import : `import { escapeHtml, toast, saveWithFeedback } from '/js/common.js';`
 // Ou via le namespace global (scripts non-module) : `window.cyl.toast(...)`.
 
-/** Échappe le HTML d'une chaîne (protège contre le XSS sur contenu utilisateur). */
+/** Ã‰chappe le HTML d'une chaÃ®ne (protÃ¨ge contre le XSS sur contenu utilisateur). */
 export function escapeHtml(str) {
   if (str == null) return '';
   return String(str)
@@ -344,7 +344,7 @@ function _ensureToastHost() {
 }
 
 /**
- * Notification non-bloquante, XSS-safe (le message est posé via textContent).
+ * Notification non-bloquante, XSS-safe (le message est posÃ© via textContent).
  * @param {string} message
  * @param {{type?:'info'|'success'|'error', duration?:number, action?:{label:string,onClick:Function}}} [opts]
  */
@@ -381,17 +381,17 @@ export function toast(message, opts = {}) {
 }
 
 /**
- * Enveloppe une écriture (Firestore ou autre promesse) avec un vrai retour visuel.
+ * Enveloppe une Ã©criture (Firestore ou autre promesse) avec un vrai retour visuel.
  * Avant : des `await setDoc(...)` hors try/catch et des `.catch(()=>{})` faisaient
- * perdre des sauvegardes en silence. Ici, l'échec est TOUJOURS signalé + réessayable.
- * @param {() => Promise<any>} run  fonction qui lance l'écriture (rappelable pour le retry)
+ * perdre des sauvegardes en silence. Ici, l'Ã©chec est TOUJOURS signalÃ© + rÃ©essayable.
+ * @param {() => Promise<any>} run  fonction qui lance l'Ã©criture (rappelable pour le retry)
  * @param {{successMsg?:string, errorMsg?:string, retry?:boolean}} [opts]
  * @returns {Promise<{ok:boolean, result?:any, error?:any}>}
  */
 export async function saveWithFeedback(run, opts = {}) {
   const {
     successMsg = null,
-    errorMsg = "Impossible d'enregistrer. Vérifie ta connexion — ton texte est conservé.",
+    errorMsg = "Impossible d'enregistrer. VÃ©rifie ta connexion â€” ton texte est conservÃ©.",
     retry = true,
   } = opts;
   try {
@@ -399,17 +399,17 @@ export async function saveWithFeedback(run, opts = {}) {
     if (successMsg) toast(successMsg, { type: 'success' });
     return { ok: true, result };
   } catch (e) {
-    console.warn('[saveWithFeedback] échec', (e && e.message) || e);
+    console.warn('[saveWithFeedback] Ã©chec', (e && e.message) || e);
     toast(errorMsg, {
       type: 'error',
       duration: 9000,
-      action: retry ? { label: 'Réessayer', onClick: () => saveWithFeedback(run, opts) } : null,
+      action: retry ? { label: 'RÃ©essayer', onClick: () => saveWithFeedback(run, opts) } : null,
     });
     return { ok: false, error: e };
   }
 }
 
-// ── Bannière hors-ligne globale ─────────────────────────────────────────────
+// â”€â”€ BanniÃ¨re hors-ligne globale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if (typeof window !== 'undefined') {
   const initOffline = () => {
     let banner = null;
@@ -417,7 +417,7 @@ if (typeof window !== 'undefined') {
       if (banner) return;
       banner = document.createElement('div');
       banner.id = 'cyl-offline-banner';
-      banner.textContent = 'Tu es hors ligne — tes changements ne seront enregistrés qu’au retour de la connexion.';
+      banner.textContent = 'Tu es hors ligne â€” tes changements ne seront enregistrÃ©s quâ€™au retour de la connexion.';
       banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:29000;padding:9px 16px;'
         + 'text-align:center;font-size:.88rem;color:#1a1206;background:#e7b15c;'
         + 'box-shadow:0 2px 12px rgba(0,0,0,.25);';
@@ -430,22 +430,22 @@ if (typeof window !== 'undefined') {
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initOffline);
   else initOffline();
-  // Namespace global pour les scripts non-module (pratique + rétro-compat).
+  // Namespace global pour les scripts non-module (pratique + rÃ©tro-compat).
   window.cyl = Object.assign(window.cyl || {}, { escapeHtml, toast, saveWithFeedback });
 }
 
-// ── CYL (orbe + chat) - chargée sur toutes les pages authentifiées ──────────
+// â”€â”€ CYL (orbe + chat) - chargÃ©e sur toutes les pages authentifiÃ©es â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Pas sur la landing, login, signup, verify-email (pages publiques sans CYL).
 //
 // UNE SEULE IA, UN SEUL MODULE : c'est `cyl-chat.js` (consentement, garde-fous
-// de conformité, préremplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
-// chargeait une SECONDE orbe en parallèle sur /app/ - il n'est plus utilisé.
+// de conformitÃ©, prÃ©remplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
+// chargeait une SECONDE orbe en parallÃ¨le sur /app/ - il n'est plus utilisÃ©.
 (function maybeLoadCylChat() {
   try {
     var p = location.pathname;
     if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
         || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0) return;
-    // import dynamique : non bloquant si le module échoue
+    // import dynamique : non bloquant si le module Ã©choue
     import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
   } catch (_) { /* ignore */ }
 })();

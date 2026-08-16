@@ -9,7 +9,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/f
 import {
   loadBoard, saveBoard, getCol, findCard, moveCard, addCard, logCard,
   allCards, dueToday, topPriorities, stripEmoji,
-  BRANCHES, BRANCH_BY_KEY, TRI_ID, FINISH_ID, FINISH_XP,
+  BRANCHES, BRANCH_BY_KEY, SUBS, TRI_ID, FINISH_ID, FINISH_XP,
 } from '/js/organizer-data.js';
 import * as gcal from '/js/gcal.js';
 
@@ -25,7 +25,7 @@ const HUB_COLS = [TRI_ID, 'ui', 'ni', 'up'];
 
 // Couleurs des colonnes COTE HUB : palette organique (les couleurs stockees
 // dans le board datent de la palette navy v2 - override purement visuel ici).
-const HUB_COLORS = { [TRI_ID]: '#b4ad94', ui: '#e0785f', ni: '#e7b15c', up: '#6f9a52', nn: '#7c7660' };
+const HUB_COLORS = { [TRI_ID]: 'var(--text-2)', ui: '#e0785f', ni: '#e7b15c', up: '#6f9a52', nn: 'var(--text-3)' };
 
 const $ = (s, r = document) => r.querySelector(s);
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -117,7 +117,7 @@ function renderCols() {
     const c = getCol(board, id); if (!c) return;
     const el = document.createElement('div');
     el.className = 'hub-col' + (id === TRI_ID ? ' hub-col-tri' : '');
-    el.style.setProperty('--cc', HUB_COLORS[c.id] || c.color || '#b4ad94');
+    el.style.setProperty('--cc', HUB_COLORS[c.id] || c.color || 'var(--text-2)');
     el.dataset.col = c.id;
     el.innerHTML =
       `<div class="hub-col-head"><span class="hub-col-dot"></span>` +
@@ -125,7 +125,7 @@ function renderCols() {
       `<span class="hub-col-count">${c.cards.length}</span></div>` +
       `<div class="hub-cards" data-col="${esc(c.id)}"></div>`;
     const cards = el.querySelector('.hub-cards');
-    c.cards.slice(0, 40).forEach((card) => cards.appendChild(renderCard(card)));
+    c.cards.slice(0, 40).forEach((card) => cards.appendChild(renderCard(card, c)));
     if (!c.cards.length) {
       const e = document.createElement('div');
       e.className = 'hub-empty';
@@ -140,7 +140,7 @@ function renderCols() {
 const SHORT = { [TRI_ID]: 'À trier', ui: 'Urgent · Important', ni: 'À planifier', up: 'Vite fait / déléguer', nn: 'Plus tard' };
 function shortTitle(c) { return SHORT[c.id] || stripEmoji(c.title); }
 
-function renderCard(card) {
+function renderCard(card, col) {
   const el = document.createElement('div');
   el.className = 'hub-card' + (card.done ? ' done' : '');
   el.dataset.id = card.id;
@@ -155,20 +155,68 @@ function renderCard(card) {
   if (card.gcalId) badges.push('<span class="hub-badge cal" title="Dans ton Google Agenda">agenda</span>');
   const total = (card.checklist || []).length;
   if (total) badges.push(`<span class="hub-badge">${(card.checklist || []).filter((s) => s.done).length}/${total}</span>`);
+  // sous-categorie (Sommeil, Finances, Projets…) : le rangement fin
+  if (card.sub) badges.push(`<span class="hub-badge sub">${esc(card.sub)}</span>`);
+  // ampleur : un geste ou un chantier ? (ne s'affiche que si ce n'est pas anodin)
+  if (card.complexity === 'complexe') badges.push('<span class="hub-badge big" title="Chantier : plusieurs étapes, à déplier">chantier</span>');
+  else if (card.complexity === 'moyen') badges.push('<span class="hub-badge mid" title="Demande un vrai créneau">à caler</span>');
+
+  // Rangement propose : un clic suffit, rien n'est applique d'office.
+  const suggest = (col && col.id === TRI_ID && card.suggestCol && card.suggestCol !== TRI_ID)
+    ? `<button class="hub-sugg" data-sugg="${esc(card.suggestCol)}" title="Ranger dans « ${esc(SHORT[card.suggestCol] || card.suggestCol)} »">→ ${esc(SHORT[card.suggestCol] || card.suggestCol)}</button>`
+    : '';
+  // Main tendue de CYL : elle ne sait pas trancher, ou la pensee merite d'etre
+  // depliee. L'utilisateur peut refuser - et revenir vers elle plus tard.
+  const needs = (card.confidence < 0.5 || card.complexity === 'complexe' || card.altBranch);
+  const hand = (needs && !card.cylDismissed)
+    ? `<button class="hub-cylhand" data-cyl="1" title="${esc(card.cylReason || 'CYL peut t\'aider à situer cette note')}">CYL peut t'aider ✦</button>`
+    : '';
+
   el.innerHTML =
-    (b ? `<span class="hub-card-branch" title="${esc(b.label)}">${b.emoji}</span>` : '') +
+    (b ? `<span class="hub-card-branch" title="${esc(b.label)}${card.sub ? ' · ' + esc(card.sub) : ''}">${b.emoji}</span>` : '') +
     `<span class="hub-card-title">${esc(card.title)}</span>` +
-    (badges.length ? `<span class="hub-card-badges">${badges.join('')}</span>` : '');
+    (badges.length ? `<span class="hub-card-badges">${badges.join('')}</span>` : '') +
+    (suggest || hand ? `<span class="hub-card-actions">${suggest}${hand}</span>` : '');
   // Accessible au clavier : la fiche s'ouvre a Entree/Espace, et la modale
   // permet ensuite priorite/echeance/branche sans souris (drag&drop non requis).
   el.tabIndex = 0;
   el.setAttribute('role', 'button');
   el.setAttribute('aria-label', card.title);
-  el.addEventListener('click', () => openSheet(card.id));
+  el.addEventListener('click', (e) => {
+    // Les deux boutons posés sur la fiche agissent sans ouvrir le panneau.
+    const s = e.target.closest('[data-sugg]');
+    if (s) {
+      e.stopPropagation();
+      const to = s.dataset.sugg;
+      moveCard(board, card.id, to);
+      persist(); renderCols(); renderFoot(); initDnd();
+      toast(`Rangée dans « ${SHORT[to] || to} »`);
+      return;
+    }
+    if (e.target.closest('[data-cyl]')) { e.stopPropagation(); askCylAbout(card); return; }
+    openSheet(card.id);
+  });
   el.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSheet(card.id); }
   });
   return el;
+}
+
+// CYL se penche sur UNE note précise. Elle demande des précisions, elle ne
+// décide pas : l'utilisateur relit et valide avant tout envoi.
+function askCylAbout(card) {
+  const b = card.branch && BRANCH_BY_KEY[card.branch];
+  const lines = [
+    `J'ai noté ceci : « ${card.title} »`,
+    '',
+    card.cylReason ? `Ce que tu en dis : ${card.cylReason}` : '',
+    b ? `Tu l'as rattachée à ${b.label}${card.sub ? ' / ' + card.sub : ''}.` : "Tu n'as pas su la rattacher à une part de ma vie.",
+    '',
+    "Aide-moi à y voir clair : qu'est-ce qu'il y a vraiment derrière, et comment je pourrais la découper ? Pose-moi des questions si tu as besoin d'en savoir plus.",
+  ].filter((l) => l !== '');
+  try {
+    document.dispatchEvent(new CustomEvent('cyl:chat-open', { detail: { prefill: lines.join('\n') } }));
+  } catch (_) {}
 }
 
 function renderFoot() {
@@ -222,6 +270,30 @@ function onDragEnd(evt) {
   persist(); renderCols(); renderFoot(); initDnd();
 }
 
+// Bloc « CYL » de la fiche. Deux états :
+//  - elle propose son aide (confiance faible, ou pensée trop large)
+//  - l'aide a été refusée : elle s'efface, mais reste joignable en un clic.
+// Dans tous les cas l'utilisateur garde la main : c'est lui qui décide.
+function cylBlock(card) {
+  const needs = (card.confidence < 0.5 || card.complexity === 'complexe' || card.altBranch);
+  if (needs && !card.cylDismissed) {
+    return `<div class="hub-cyl">
+      <div class="hub-cyl-orb"></div>
+      <div class="hub-cyl-body">
+        <div class="hub-cyl-t">CYL a besoin d'en savoir plus</div>
+        <div class="hub-cyl-r">${esc(card.cylReason || "Je n'arrive pas à situer cette note avec certitude.")}</div>
+        <div class="hub-cyl-acts">
+          <button class="hub-cyl-go" id="hs-cyl">En parler à CYL</button>
+          <button class="hub-cyl-no" id="hs-cyl-no">Non, c'est bon</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  return `<div class="hub-cyl-quiet">
+    <button class="hub-cyl-link" id="hs-cyl">Demander l'avis de CYL sur cette note</button>
+  </div>`;
+}
+
 // ── Fiche : panneau d'action rapide ──────────────────────────────────────────
 function openSheet(cardId) {
   const f = findCard(board, cardId); if (!f) return;
@@ -234,10 +306,18 @@ function openSheet(cardId) {
       <button class="hub-sheet-x" id="hs-x" aria-label="Fermer">✕</button>
       <textarea class="hub-sheet-title" id="hs-title" rows="1">${esc(card.title)}</textarea>
 
+      ${cylBlock(card)}
+
       <div class="hub-l">Quelle part de ta vie ça nourrit</div>
       <div class="hub-branches" id="hs-branches">
         ${BRANCHES.map((b) => `<button class="hub-br${card.branch === b.key ? ' on' : ''}" data-b="${b.key}" style="--bc:${b.color}" title="${esc(b.label)}">${b.emoji}<span>${esc(b.label)}</span></button>`).join('')}
       </div>
+
+      ${card.branch && SUBS[card.branch] ? `
+      <div class="hub-l">Plus précisément</div>
+      <div class="hub-when" id="hs-subs">
+        ${SUBS[card.branch].map((sname) => `<button class="hub-chip${card.sub === sname ? ' on' : ''}" data-sub="${esc(sname)}">${esc(sname)}</button>`).join('')}
+      </div>` : ''}
 
       <div class="hub-l">Quand</div>
       <div class="hub-when">
@@ -283,10 +363,31 @@ function openSheet(cardId) {
     btn.onclick = () => {
       const k = btn.dataset.b;
       card.branch = card.branch === k ? null : k;
+      // changer de branche invalide la sous-categorie precedente
+      if (!card.branch || !(SUBS[card.branch] || []).includes(card.sub)) card.sub = null;
       logCard(card, card.branch ? 'Branche : ' + BRANCH_BY_KEY[k].label : 'Branche retirée');
       persist(); openSheet(cardId); renderCols();
     };
   });
+
+  s.querySelectorAll('#hs-subs .hub-chip').forEach((btn) => {
+    btn.onclick = () => {
+      const v = btn.dataset.sub;
+      card.sub = card.sub === v ? null : v;
+      logCard(card, card.sub ? 'Précision : ' + card.sub : 'Précision retirée');
+      persist(); openSheet(cardId); renderCols();
+    };
+  });
+
+  const cylGo = $('#hs-cyl');
+  if (cylGo) cylGo.onclick = () => { close(); askCylAbout(card); };
+  const cylNo = $('#hs-cyl-no');
+  if (cylNo) cylNo.onclick = () => {
+    // « Non, c'est bon » : CYL se retire de CETTE fiche, mais reste joignable.
+    card.cylDismissed = true;
+    logCard(card, 'Aide de CYL déclinée');
+    persist(); openSheet(cardId); renderCols();
+  };
 
   const setDue = (ts) => {
     card.due = ts;
@@ -379,9 +480,9 @@ function injectCSS() {
   if (document.getElementById('cyl-hub-css')) return;
   const s = document.createElement('style'); s.id = 'cyl-hub-css';
   s.textContent = `
-  #organizer-hub{background:linear-gradient(160deg,rgba(231,177,92,0.09),rgba(21,32,19,0.55));
+  #organizer-hub{background:linear-gradient(160deg,rgba(231,177,92,0.09),var(--panel));
     border:1px solid rgba(231,177,92,0.28);border-radius:20px;padding:18px 18px 14px;margin-bottom:18px;
-    box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset,0 18px 46px rgba(0,0,0,0.35);}
+    box-shadow:0 0 0 1px var(--surface-1) inset,0 18px 46px rgba(0,0,0,0.35);}
   /* ── L'ONGLET : toute la bande d'en-tete est une zone de clic ──
      .hub-open est un lien vide etire sur tout l'en-tete (il deborde dans le
      padding du bloc pour aller bord a bord). Le contenu passe au-dessus mais
@@ -399,83 +500,117 @@ function injectCSS() {
     display:flex;align-items:center;gap:11px;min-width:0;}
   .hub-brand-txt{min-width:0;}
   .hub-dot{width:10px;height:10px;border-radius:50%;background:#e7b15c;box-shadow:0 0 14px rgba(231,177,92,0.8);flex-shrink:0;}
-  .hub-title{font-size:1.02rem;font-weight:900;letter-spacing:1.4px;color:#f4efe1;display:flex;align-items:center;gap:7px;}
+  .hub-title{font-size:1.02rem;font-weight:900;letter-spacing:1.4px;color:var(--text-1);display:flex;align-items:center;gap:7px;}
   .hub-go{font-size:0.92rem;font-weight:700;color:#e7b15c;opacity:0;transform:translateX(-5px);
     transition:opacity .2s,transform .2s;}
   .hub-head:hover .hub-go{opacity:1;transform:translateX(0);}
-  .hub-sub{font-size:0.78rem;color:#b4ad94;margin-top:1px;}
+  .hub-sub{font-size:0.78rem;color:var(--text-2);margin-top:1px;}
   /* seul element interactif pose au-dessus du lien */
   .hub-head-actions{position:relative;z-index:2;display:flex;gap:8px;flex-wrap:wrap;}
   .hub-ghost{display:inline-flex;align-items:center;padding:7px 13px;border-radius:99px;cursor:pointer;
-    border:1px solid rgba(221,205,160,0.16);background:rgba(255,255,255,0.04);color:#b4ad94;
+    border:1px solid var(--line-strong);background:var(--surface-2);color:var(--text-2);
     font:inherit;font-size:0.78rem;font-weight:700;text-decoration:none;transition:background .18s,color .18s;}
-  .hub-ghost:hover{background:rgba(231,177,92,0.14);color:#f4efe1;}
+  .hub-ghost:hover{background:rgba(231,177,92,0.14);color:var(--text-1);}
 
   .hub-capture{display:flex;gap:8px;margin-bottom:14px;}
   .hub-capture input{flex:1;min-width:0;padding:13px 16px;border-radius:13px;font:inherit;font-size:0.92rem;
-    color:#f4efe1;background:rgba(8,13,7,0.55);border:1px solid rgba(231,177,92,0.26);outline:none;transition:border-color .18s,box-shadow .18s;}
-  .hub-capture input::placeholder{color:#7c7660;}
+    color:var(--text-1);background:rgba(8,13,7,0.55);border:1px solid rgba(231,177,92,0.26);outline:none;transition:border-color .18s,box-shadow .18s;}
+  .hub-capture input::placeholder{color:var(--text-3);}
   .hub-capture input:focus{border-color:rgba(231,177,92,0.65);box-shadow:0 0 0 3px rgba(231,177,92,0.13);}
   .hub-add{padding:0 20px;border-radius:13px;border:none;cursor:pointer;font:inherit;font-weight:800;font-size:0.86rem;
     background:linear-gradient(135deg,#84c25e,#4a7a3a);color:#08130a;transition:filter .18s,transform .18s;}
   .hub-add:hover{filter:brightness(1.1);transform:translateY(-1px);}
 
   .hub-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-  .hub-col{background:rgba(255,255,255,0.02);border:1px solid rgba(221,205,160,0.10);border-radius:14px;
+  .hub-col{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;
     padding:10px 9px 8px;display:flex;flex-direction:column;min-width:0;}
   .hub-col-tri{background:linear-gradient(180deg,rgba(180,173,148,0.12),rgba(180,173,148,0.03));border-color:rgba(180,173,148,0.30);}
   .hub-col-head{display:flex;align-items:center;gap:7px;padding:0 3px 8px;}
-  .hub-col-dot{width:7px;height:7px;border-radius:50%;background:var(--cc,#b4ad94);box-shadow:0 0 8px var(--cc,#b4ad94);flex-shrink:0;}
-  .hub-col-title{flex:1;min-width:0;font-size:0.7rem;font-weight:800;color:#d8d2bd;text-transform:uppercase;letter-spacing:.4px;
+  .hub-col-dot{width:7px;height:7px;border-radius:50%;background:var(--cc,var(--text-2));box-shadow:0 0 8px var(--cc,var(--text-2));flex-shrink:0;}
+  .hub-col-title{flex:1;min-width:0;font-size:0.7rem;font-weight:800;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .hub-col-count{font-size:0.68rem;font-weight:800;color:#b4ad94;background:rgba(255,255,255,0.06);padding:1px 7px;border-radius:99px;}
+  .hub-col-count{font-size:0.68rem;font-weight:800;color:var(--text-2);background:var(--surface-2);padding:1px 7px;border-radius:99px;}
   .hub-cards{display:flex;flex-direction:column;gap:6px;min-height:46px;max-height:230px;overflow-y:auto;padding:1px;}
   .hub-card{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;cursor:pointer;
-    background:rgba(255,255,255,0.04);border:1px solid rgba(221,205,160,0.09);
-    border-left:3px solid var(--bc,rgba(221,205,160,0.14));transition:background .15s,transform .12s;}
+    background:var(--surface-2);border:1px solid var(--line);
+    border-left:3px solid var(--bc,var(--line));transition:background .15s,transform .12s;}
   .hub-card:hover{background:rgba(231,177,92,0.08);transform:translateX(2px);}
   .hub-card.done .hub-card-title{text-decoration:line-through;opacity:.6;}
   .hub-card-branch{font-size:0.86rem;flex-shrink:0;line-height:1;}
-  .hub-card-title{flex:1;min-width:0;font-size:0.8rem;color:#efe9d6;line-height:1.35;word-break:break-word;}
+  .hub-card-title{flex:1;min-width:0;font-size:0.8rem;color:var(--text-1);line-height:1.35;word-break:break-word;}
   .hub-card-badges{display:flex;gap:4px;flex-wrap:wrap;width:100%;}
-  .hub-badge{font-size:0.62rem;font-weight:800;padding:1px 6px;border-radius:99px;background:rgba(255,255,255,0.07);color:#b4ad94;}
+  .hub-badge{font-size:0.62rem;font-weight:800;padding:1px 6px;border-radius:99px;background:var(--surface-3);color:var(--text-2);}
   .hub-badge.soon{background:rgba(231,177,92,0.16);color:#f1cd92;}
   .hub-badge.late{background:rgba(224,120,95,0.18);color:#f0a48d;}
   .hub-badge.cal{background:rgba(132,194,94,0.16);color:#a7d585;}
-  .hub-empty{font-size:0.72rem;color:#7c7660;padding:6px 4px;}
+  .hub-badge.sub{background:var(--surface-2);color:var(--text-3);font-weight:700;}
+  .hub-badge.mid{background:rgba(231,177,92,0.13);color:#e0c48a;}
+  .hub-badge.big{background:rgba(195,154,107,0.20);color:#dcbb92;}
+
+  /* Rangement propose + main tendue de CYL, poses au pied de la fiche */
+  .hub-card-actions{display:flex;gap:5px;flex-wrap:wrap;width:100%;margin-top:1px;}
+  .hub-sugg,.hub-cylhand{border:none;cursor:pointer;font:inherit;font-size:0.63rem;font-weight:800;
+    padding:3px 8px;border-radius:99px;transition:filter .15s,background .15s;}
+  .hub-sugg{background:rgba(231,177,92,0.18);color:#f1cd92;border:1px solid rgba(231,177,92,0.32);}
+  .hub-sugg:hover{background:rgba(231,177,92,0.34);color:#fff;}
+  .hub-cylhand{background:transparent;color:var(--text-2);border:1px dashed var(--line-strong);}
+  .hub-cylhand:hover{color:#f1cd92;border-color:rgba(231,177,92,0.5);background:rgba(231,177,92,0.08);}
+
+  /* Bloc CYL dans le panneau de la fiche */
+  .hub-cyl{display:flex;gap:12px;align-items:flex-start;margin:16px 0 2px;padding:13px 14px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(231,177,92,0.10),rgba(132,194,94,0.05));
+    border:1px solid rgba(231,177,92,0.28);}
+  .hub-cyl-orb{width:26px;height:26px;border-radius:50%;flex-shrink:0;margin-top:1px;
+    background:radial-gradient(circle at 35% 30%,#fbe6b0,#e7b15c 45%,#4a7a3a 100%);
+    box-shadow:0 0 12px rgba(231,177,92,0.45);}
+  .hub-cyl-body{flex:1;min-width:0;}
+  .hub-cyl-t{font-size:0.78rem;font-weight:800;color:#f1cd92;}
+  .hub-cyl-r{font-size:0.76rem;color:var(--text-2);line-height:1.45;margin-top:3px;}
+  .hub-cyl-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+  .hub-cyl-go,.hub-cyl-no{border:none;cursor:pointer;font:inherit;font-size:0.74rem;font-weight:800;
+    padding:7px 13px;border-radius:99px;transition:filter .16s,background .16s;}
+  .hub-cyl-go{background:linear-gradient(135deg,#f1cd92,#e7b15c);color:#231803;}
+  .hub-cyl-go:hover{filter:brightness(1.07);}
+  .hub-cyl-no{background:var(--surface-2);color:var(--text-2);border:1px solid var(--line-strong);}
+  .hub-cyl-no:hover{background:var(--surface-3);color:var(--text-1);}
+  .hub-cyl-quiet{margin:14px 0 2px;}
+  .hub-cyl-link{background:none;border:none;padding:0;cursor:pointer;font:inherit;font-size:0.74rem;
+    color:var(--text-3);text-decoration:underline;text-underline-offset:3px;transition:color .16s;}
+  .hub-cyl-link:hover{color:#f1cd92;}
+  .hub-empty{font-size:0.72rem;color:var(--text-3);padding:6px 4px;}
   .hub-ghost-card{opacity:.35;}
   .hub-drag{transform:rotate(2deg);box-shadow:0 14px 30px rgba(0,0,0,.5)!important;}
 
-  .hub-foot{margin-top:11px;font-size:0.76rem;color:#b4ad94;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .hub-foot b{color:#f4efe1;font-weight:800;} .hub-foot b.late{color:#f0a48d;}
+  .hub-foot{margin-top:11px;font-size:0.76rem;color:var(--text-2);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .hub-foot b{color:var(--text-1);font-weight:800;} .hub-foot b.late{color:#f0a48d;}
   .hub-foot .sep{opacity:.4;}
 
   /* z-index > 10000 : le logo (.header) et les toasts sont forces a 10000 en
      !important dans main.min.css et passaient au-dessus du voile de la modale. */
   .hub-sheet{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:18px;
-    background:rgba(5,8,4,0.66);backdrop-filter:blur(8px);}
+    background:var(--veil);backdrop-filter:blur(8px);}
   .hub-sheet.hidden{display:none;}
   .hub-sheet-in{position:relative;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:22px;
-    background:rgba(15,23,16,0.98);border:1px solid rgba(221,205,160,0.13);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.6);}
+    background:var(--sheet-bg);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.6);}
   .hub-sheet-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;cursor:pointer;
-    border:1px solid rgba(221,205,160,0.14);background:rgba(255,255,255,0.05);color:#b4ad94;font-size:0.9rem;}
-  .hub-sheet-x:hover{background:rgba(255,255,255,0.12);color:#f4efe1;}
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);font-size:0.9rem;}
+  .hub-sheet-x:hover{background:rgba(255,255,255,0.12);color:var(--text-1);}
   .hub-sheet-title{width:100%;resize:none;overflow:hidden;border:none;outline:none;background:transparent;
-    color:#f4efe1;font:inherit;font-size:1.08rem;font-weight:800;line-height:1.4;padding:0 34px 6px 0;}
-  .hub-l{font-size:0.66rem;text-transform:uppercase;letter-spacing:.7px;color:#7c7660;font-weight:800;margin:16px 0 8px;}
+    color:var(--text-1);font:inherit;font-size:1.08rem;font-weight:800;line-height:1.4;padding:0 34px 6px 0;}
+  .hub-l{font-size:0.66rem;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);font-weight:800;margin:16px 0 8px;}
   .hub-branches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
   .hub-br{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:11px;cursor:pointer;
-    border:1px solid rgba(221,205,160,0.10);background:rgba(255,255,255,0.03);color:#b4ad94;font:inherit;font-size:1rem;transition:all .16s;}
+    border:1px solid var(--line);background:var(--surface-1);color:var(--text-2);font:inherit;font-size:1rem;transition:all .16s;}
   .hub-br span{font-size:0.56rem;font-weight:700;text-align:center;line-height:1.1;}
-  .hub-br:hover{background:rgba(255,255,255,0.07);}
+  .hub-br:hover{background:var(--surface-3);}
   .hub-br.on{border-color:var(--bc);background:color-mix(in srgb,var(--bc) 18%,transparent);color:#fff;}
   .hub-when{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
   .hub-chip{padding:7px 13px;border-radius:99px;cursor:pointer;font:inherit;font-size:0.76rem;font-weight:700;
-    border:1px solid rgba(221,205,160,0.14);background:rgba(255,255,255,0.04);color:#b4ad94;transition:all .16s;}
-  .hub-chip:hover{background:rgba(231,177,92,0.14);color:#f4efe1;}
-  .hub-chip.on{border-color:rgba(231,177,92,0.55);background:rgba(231,177,92,0.16);color:#f4efe1;}
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);transition:all .16s;}
+  .hub-chip:hover{background:rgba(231,177,92,0.14);color:var(--text-1);}
+  .hub-chip.on{border-color:rgba(231,177,92,0.55);background:rgba(231,177,92,0.16);color:var(--text-1);}
   .hub-when input[type=date]{padding:6px 10px;border-radius:9px;font:inherit;font-size:0.76rem;
-    border:1px solid rgba(221,205,160,0.14);background:rgba(255,255,255,0.04);color:#b4ad94;color-scheme:dark;}
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);color-scheme:dark;}
   .hub-sheet-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
   .hub-b{flex:1;min-width:130px;padding:11px 14px;border-radius:11px;border:none;cursor:pointer;font:inherit;font-weight:800;font-size:0.8rem;transition:filter .18s;}
   .hub-b:disabled{opacity:.6;cursor:default;}
@@ -485,7 +620,7 @@ function injectCSS() {
   .hub-b:hover{filter:brightness(1.1);}
 
   .hub-toast{position:fixed;top:22px;left:50%;transform:translate(-50%,-140px);z-index:99999;
-    background:rgba(74,122,58,.96);color:#f4efe1;padding:10px 20px;border-radius:10px;font-weight:700;font-size:.86rem;
+    background:rgba(74,122,58,.96);color:var(--text-1);padding:10px 20px;border-radius:10px;font-weight:700;font-size:.86rem;
     transition:transform .3s ease;box-shadow:0 8px 28px rgba(0,0,0,.45);max-width:90vw;text-align:center;}
   .hub-toast.show{transform:translate(-50%,0);}
   .hub-toast.xp{background:rgba(231,177,92,.96);color:#231803;} .hub-toast.err{background:rgba(190,60,45,.96);}
@@ -497,9 +632,6 @@ function injectCSS() {
     .hub-branches{grid-template-columns:repeat(4,1fr);}
     .hub-capture{flex-direction:column;} .hub-add{padding:12px;}
   }
-  body.light-mode #organizer-hub{background:linear-gradient(160deg,rgba(231,177,92,0.10),rgba(255,255,255,0.6));border-color:rgba(163,120,52,0.28);}
-  body.light-mode .hub-title,body.light-mode .hub-card-title{color:#2c2a1c;}
-  body.light-mode .hub-capture input{background:rgba(255,255,255,0.8);color:#2c2a1c;}
   `;
   document.head.appendChild(s);
 }
