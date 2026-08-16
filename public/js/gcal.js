@@ -192,7 +192,23 @@ function icsStamp(d) {
   return d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0') +
     'T' + String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0') + String(d.getUTCSeconds()).padStart(2, '0') + 'Z';
 }
-// items : [{ title, day? }] -> telecharge un .ics importable partout.
+// Identifiant STABLE d'un evenement exporte.
+// Avant, un crypto.randomUUID() etait tire a chaque export : reimporter deux
+// fois le meme fichier creait deux fois les memes evenements dans l'agenda de
+// l'utilisateur. Un UID derive du contenu rend l'export idempotent - le meme
+// element garde le meme identifiant, quel que soit le nombre d'imports.
+function icsUid(it, start) {
+  const seed = `${it.id || ''}|${it.title || ''}|${icsDay(start)}`;
+  let h1 = 0x811c9dc5, h2 = 0x01000193;
+  for (let i = 0; i < seed.length; i++) {
+    const c = seed.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 16777619) >>> 0;
+    h2 = Math.imul(h2 + c, 2654435761) >>> 0;
+  }
+  return `cyl-${h1.toString(36)}${h2.toString(36)}@changeyourlife.ai`;
+}
+
+// items : [{ title, day?, id? }] -> telecharge un .ics importable partout.
 export function downloadIcs(items, filename = 'taches-changeyourlife.ics') {
   if (!items || !items.length) return 0;
   const stamp = icsStamp(new Date());
@@ -200,8 +216,7 @@ export function downloadIcs(items, filename = 'taches-changeyourlife.ics') {
   for (const it of items) {
     const start = it.day ? new Date(it.day) : new Date(); start.setHours(0, 0, 0, 0);
     const end = new Date(start.getTime() + 86400000);
-    const id = (crypto.randomUUID ? crypto.randomUUID() : stamp + '-' + L.length) + '@changeyourlife.ai';
-    L.push('BEGIN:VEVENT', 'UID:' + id, 'DTSTAMP:' + stamp,
+    L.push('BEGIN:VEVENT', 'UID:' + icsUid(it, start), 'DTSTAMP:' + stamp,
       'DTSTART;VALUE=DATE:' + icsDay(start), 'DTEND;VALUE=DATE:' + icsDay(end),
       'SUMMARY:' + icsEsc(it.title || 'Tache'),
       'DESCRIPTION:' + icsEsc('ChangeYourLife.ai'), 'END:VEVENT');

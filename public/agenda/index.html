@@ -3,90 +3,254 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mon Agenda - Change Your Life</title>
-  <meta name="description" content="Ton Google Agenda en grand : toute ta semaine, et l'envoi de tes tâches du jour. Tes données restent entre toi et Google." />
+  <title>Agenda vivant - Change Your Life</title>
+  <meta name="description" content="La projection temporelle de tout le reste : tes événements Google, tes fiches datées et les jalons de tes objectifs, en semaine, en mois ou en rivière." />
   <link rel="stylesheet" href="/css/main.min.css" />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="theme-color" content="#0070f3">
+  <meta name="theme-color" content="#0a0f0a">
   <meta name="robots" content="noindex" />
   <style>
-    body { color:var(--text-1,#e5eef8); }
-    .page-shell { position:fixed; inset:20px; background:var(--glass-bg); backdrop-filter:blur(15px); border-radius:20px; border:1px solid var(--glass-border); padding:18px 18px 14px; display:grid; grid-template-rows:auto 1fr; gap:14px; overflow:hidden; }
-    .ag-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .ag-head h1 { font-size:1.45rem; letter-spacing:-.4px; }
-    .ag-sub { font-size:0.84rem; color:var(--text-2,#aab7cf); margin-top:3px; max-width:46rem; }
-    #agenda-root { overflow:auto; display:flex; flex-direction:column; gap:14px; }
+    /* ════════════════════════════════════════════════════════════
+       AGENDA VIVANT
+       L'agenda n'est pas un module de plus : c'est la projection
+       temporelle de tout le reste. Trois vues sur une même source.
+       ════════════════════════════════════════════════════════════ */
+    body { color:var(--text-1); }
+    .ap-shell {
+      position:fixed; inset:16px; background:var(--glass-bg);
+      backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
+      padding:16px 18px 12px; display:grid; grid-template-rows:auto 1fr;
+      gap:12px; overflow:hidden; box-shadow:var(--shadow-lg);
+    }
 
-    /* connexion */
-    .ap-connect { max-width:30rem; margin:6vh auto 0; text-align:center; }
-    .ap-connect-ic { font-size:3rem; }
-    .ap-connect h2 { font-size:1.3rem; margin:10px 0 8px; }
-    .ap-connect p { font-size:0.9rem; color:var(--text-2,#aab7cf); line-height:1.55; margin-bottom:18px; }
-
-    .ap-btn { padding:10px 16px; border-radius:99px; border:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:0.85rem; transition:filter .2s, transform .2s, background .2s; }
-    .ap-primary { background:linear-gradient(135deg,#4285f4,#1a73e8); color:#fff; }
-    .ap-primary:hover { filter:brightness(1.08); transform:translateY(-1px); }
-    .ap-ghost { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); color:var(--text-2,#aab7cf); }
-    .ap-ghost:hover { background:rgba(255,255,255,0.1); color:#fff; }
-    .ap-x { background:transparent; border:1px solid rgba(255,255,255,0.12); color:var(--text-3,#7e9ab5); }
-    .ap-x:hover { color:#f87171; border-color:rgba(239,68,68,0.4); }
-    .ap-btn:disabled { opacity:.6; cursor:default; transform:none; }
-
-    /* barre de navigation semaine */
-    .ap-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .ap-nav { display:flex; align-items:center; gap:6px; }
-    .ap-arrow { width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.04); color:#cdd9ec; font-size:1.2rem; cursor:pointer; line-height:1; }
-    .ap-arrow:hover { background:rgba(255,255,255,0.1); color:#fff; }
-    .ap-today { padding:7px 14px; border-radius:99px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.04); color:#cdd9ec; font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; }
-    .ap-today:hover { background:rgba(255,255,255,0.1); color:#fff; }
-    .ap-range { font-weight:800; font-size:0.95rem; color:#eef4ff; }
+    /* ── Barre de commande ── */
+    .ap-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .ap-title { font-size:1.05rem; font-weight:800; letter-spacing:-.3px; }
+    .ap-title small { display:block; font-size:.68rem; font-weight:500; color:var(--text-3);
+      letter-spacing:.06em; text-transform:uppercase; margin-top:1px; }
+    .ap-sp { flex:1; }
+    .ap-range { font-size:.86rem; color:var(--text-2); font-weight:600; }
     .ap-range::first-letter { text-transform:uppercase; }
-    .ap-tools { display:flex; gap:8px; flex-wrap:wrap; }
+    .ap-tabs { display:flex; gap:4px; padding:4px; background:var(--surface-1);
+      border:1px solid var(--line); border-radius:12px; }
+    .ap-tabs button { padding:6px 13px; border:none; background:none; border-radius:9px; cursor:pointer;
+      font:inherit; font-size:.82rem; font-weight:700; color:var(--text-2); transition:all .18s var(--ease); }
+    .ap-tabs button:hover { color:var(--text-1); }
+    .ap-tabs button.on { background:rgba(132,194,94,.18); color:var(--leaf);
+      box-shadow:inset 0 0 0 1px rgba(132,194,94,.3); }
+    .ap-b { padding:7px 13px; border-radius:11px; cursor:pointer; font:inherit; font-size:.8rem;
+      font-weight:700; color:var(--text-2); background:var(--surface-1);
+      border:1px solid var(--line); transition:all .18s var(--ease); }
+    .ap-b:hover { color:var(--text-1); border-color:var(--line-hov,rgba(132,194,94,.4)); transform:translateY(-1px); }
+    .ap-b.primary { background:linear-gradient(160deg,#84c25e,#4a7a3a); color:#08130a; border-color:transparent; }
+    .ap-b.ico { width:34px; padding:7px 0; text-align:center; }
 
-    /* grille semaine */
-    .ap-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
-    .ap-day { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:10px 9px; min-height:140px; display:flex; flex-direction:column; gap:8px; }
-    .ap-day.is-today { border-color:rgba(66,133,244,0.55); background:rgba(66,133,244,0.08); }
-    .ap-day-h { display:flex; align-items:baseline; gap:7px; }
-    .ap-dow { font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3,#7e9ab5); }
-    .ap-day.is-today .ap-dow { color:#8ab4f8; }
-    .ap-dnum { font-size:1.1rem; font-weight:800; color:#eef4ff; }
-    .ap-evs { display:flex; flex-direction:column; gap:6px; }
-    .ap-ev { display:flex; flex-direction:column; gap:2px; padding:7px 9px; border-radius:9px; background:rgba(255,255,255,0.05); border-left:3px solid #4285f4; }
-    .ap-ev.all-day { border-left-color:#34a853; }
-    .ap-ev-t { font-size:0.68rem; font-weight:800; color:#8ab4f8; }
-    .ap-ev.all-day .ap-ev-t { color:#6ee7a0; }
-    .ap-ev-n { font-size:0.8rem; color:#e5eef8; line-height:1.3; }
-    .ap-loading, .ap-empty { font-size:0.8rem; color:#56708c; text-align:center; padding:6px 0; }
+    /* ── Corps : rail + scène ── */
+    .ap-body { display:grid; grid-template-columns:210px minmax(0,1fr); gap:14px; overflow:hidden; }
+    @media (max-width:1000px){ .ap-body { grid-template-columns:minmax(0,1fr); } .ap-rail { display:none; } }
+    .ap-rail { overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
+    .ap-card { background:var(--surface-1); border:1px solid var(--line); border-radius:14px; padding:12px; }
+    .ap-card h3 { font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--text-3); font-weight:800; margin-bottom:8px; }
+    .ap-brow { display:flex; align-items:center; gap:8px; padding:6px 7px; border-radius:9px; width:100%;
+      border:none; background:none; cursor:pointer; font:inherit; font-size:.8rem; color:var(--text-2);
+      transition:all .15s var(--ease); }
+    .ap-brow:hover { background:var(--surface-2); color:var(--text-1); }
+    .ap-brow.off { opacity:.34; }
+    .ap-brow .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+    .ap-brow .n { margin-left:auto; font-size:.7rem; color:var(--text-3); font-variant-numeric:tabular-nums; }
+    .ap-lbl { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-3); margin-bottom:5px; }
+    .ap-bar-g { height:6px; border-radius:99px; background:var(--surface-2); overflow:hidden; }
+    .ap-bar-g i { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--leaf),var(--gold)); }
+    .ap-hint { font-size:.7rem; color:var(--text-3); line-height:1.4; margin-top:7px; }
 
-    .ap-toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(26,115,232,.95); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; box-shadow:0 8px 28px rgba(0,0,0,.4); }
+    .ap-scene { overflow:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface-1); }
+    .ap-empty { padding:40px 20px; text-align:center; color:var(--text-3); font-size:.86rem; line-height:1.7; }
+    .ap-empty a { color:var(--leaf); }
+
+    /* ── Vue SEMAINE ── */
+    .ap-weekhd { display:grid; grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr));
+      border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg-surface); z-index:5; }
+    .ap-weekhd .dh { padding:8px 4px; text-align:center; }
+    .ap-weekhd .dow { font-size:.64rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); }
+    .ap-weekhd .dnum { font-size:1rem; font-weight:800; margin-top:1px; }
+    .ap-weekhd .dh.today .dnum { color:#08130a; background:var(--leaf); width:26px; height:26px;
+      line-height:26px; border-radius:50%; margin:1px auto 0; }
+    .ap-weekhd .cap { font-size:.6rem; color:var(--text-3); margin-top:2px; }
+    .ap-allday { display:grid; grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr));
+      border-bottom:1px solid var(--line); background:var(--surface-1); }
+    .ap-allday .lb { font-size:.56rem; color:var(--text-3); text-align:right; padding:5px 7px 5px 0;
+      letter-spacing:.05em; text-transform:uppercase; }
+    .ap-allday .cell { border-left:1px solid var(--line); padding:3px; min-height:26px;
+      display:flex; flex-direction:column; gap:2px; }
+    .ap-jal { font-size:.64rem; font-weight:700; padding:2px 5px; border-radius:5px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:3px solid currentColor; }
+    .ap-jal.done { opacity:.5; text-decoration:line-through; }
+    .ap-weekbody { position:relative; display:grid;
+      grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr)); }
+    .ap-hours .h { height:52px; font-size:.63rem; color:var(--text-3); text-align:right;
+      padding-right:7px; transform:translateY(-6px); }
+    .ap-col { position:relative; border-left:1px solid var(--line); }
+    .ap-col .slot { height:52px; border-bottom:1px solid rgba(221,205,160,.05); }
+    .ap-col.weekend { background:var(--surface-1); }
+    .ap-now { position:absolute; left:0; right:0; height:2px; background:var(--gold); z-index:6;
+      pointer-events:none; box-shadow:0 0 12px rgba(231,177,92,.6); }
+    .ap-now::before { content:''; position:absolute; left:-4px; top:-3px; width:8px; height:8px;
+      border-radius:50%; background:var(--gold); }
+    .ap-ev { position:absolute; border-radius:8px; padding:4px 6px; overflow:hidden; font-size:.7rem;
+      line-height:1.2; cursor:default; border-left:3px solid currentColor; }
+    .ap-ev .t { font-weight:700; color:var(--text-1); display:block; white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; }
+    .ap-ev .s { color:var(--text-3); font-size:.62rem; }
+    .ap-ev.gcal { background:var(--surface-2); border-left-color:var(--text-3); }
+    .ap-ev.done { opacity:.5; } .ap-ev.done .t { text-decoration:line-through; }
+    .ap-ev.late { border-left-color:#e0785f; }
+
+    /* ── Vue MOIS : la canopée ── */
+    .ap-month { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; padding:8px; }
+    .mdow { font-size:.64rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3);
+      text-align:center; padding:3px 0; }
+    .ap-mday { position:relative; min-height:86px; border-radius:11px; padding:6px 7px;
+      border:1px solid var(--line); background:var(--surface-1); cursor:pointer; overflow:hidden;
+      transition:all .18s var(--ease); }
+    .ap-mday:hover { border-color:rgba(132,194,94,.4); transform:translateY(-2px); }
+    .ap-mday.out { opacity:.3; }
+    .ap-mday.today { border-color:var(--leaf); box-shadow:inset 0 0 0 1px rgba(132,194,94,.3); }
+    .ap-mday .n { font-size:.78rem; font-weight:700; color:var(--text-2); }
+    .ap-mday .leaf { position:absolute; right:-14px; top:-14px; width:54px; height:54px;
+      border-radius:0 60% 0 60%; filter:blur(1px); transform:rotate(18deg); }
+    .ap-mday .chips { margin-top:5px; display:flex; flex-direction:column; gap:2px; }
+    .ap-mday .chip { font-size:.61rem; padding:1px 5px; border-radius:5px; background:rgba(0,0,0,.25);
+      border-left:2px solid currentColor; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ap-mday .chip.more { color:var(--text-3); border-left-color:transparent; }
+    .ap-mday .chip b { color:var(--text-1); font-weight:700; }
+    .ap-mday .fruit { position:absolute; bottom:5px; right:7px; font-size:.78rem; }
+
+    /* ── Vue RIVIÈRE : la signature ── */
+    .ap-river { padding:10px 4px 14px; }
+    .ap-rscale { display:grid; grid-template-columns:120px minmax(0,1fr); gap:10px; padding:0 12px 6px; }
+    .ap-rticks { position:relative; height:16px; }
+    .ap-rticks span { position:absolute; font-size:.62rem; color:var(--text-3); transform:translateX(-50%); }
+    .ap-rlane { display:grid; grid-template-columns:120px minmax(0,1fr); align-items:center;
+      gap:10px; padding:6px 12px; }
+    .ap-rlane .name { font-size:.74rem; font-weight:600; color:var(--text-2);
+      display:flex; align-items:center; gap:6px; }
+    .ap-rlane .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+    .ap-rtrack { position:relative; height:36px; border-radius:10px;
+      background:var(--surface-1); border:1px solid var(--line); }
+    .ap-ribbon { position:absolute; top:7px; height:22px; border-radius:99px; display:flex;
+      align-items:center; padding:0 10px; font-size:.67rem; font-weight:700; white-space:nowrap;
+      overflow:hidden; color:#08130a; }
+    .ap-ribbon .fill { position:absolute; left:0; top:0; bottom:0; background:rgba(255,255,255,.35);
+      border-radius:99px; }
+    .ap-ribbon span { position:relative; z-index:2; }
+    .ap-jalon { position:absolute; top:11px; width:13px; height:13px;
+      transform:rotate(45deg) translateX(-6px); border-radius:3px; border:2px solid; z-index:3; }
+    .ap-rnow { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold); z-index:4;
+      box-shadow:0 0 10px var(--gold); }
+    .ap-rroots { padding:12px 14px 0; font-size:.7rem; color:var(--text-3);
+      border-top:1px dashed var(--line); margin-top:8px; }
+
+    .ap-toast { position:fixed; top:20px; left:50%; transform:translate(-50%,-130px);
+      background:rgba(74,122,58,.96); color:var(--text-1); padding:10px 20px; border-radius:10px;
+      font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.85rem; }
     .ap-toast.show { transform:translate(-50%,0); }
 
-    @media (max-width:880px){
-      .page-shell { inset:8px; padding:14px 12px 10px; }
-      .ap-grid { grid-template-columns:1fr; }
-      .ap-day { min-height:auto; }
+    @media (max-width:700px){
+      .ap-shell { inset:8px; padding:12px 10px 8px; }
+      .ap-title small { display:none; }
+      .ap-month { gap:3px; padding:5px; }
+      .ap-mday { min-height:62px; }
+      .ap-mday .chips { display:none; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       IMPRESSION — on imprime la VUE COURANTE, sur fond blanc, sans
+       les commandes. Le but est un planning qu'on affiche au mur,
+       pas une capture d'écran sombre qui vide une cartouche d'encre.
+       ════════════════════════════════════════════════════════════ */
+    @media print {
+      @page { margin: 12mm; size: landscape; }
+      body { background:#fff !important; color:#111 !important; }
+      .site-nav, .ap-tabs, .ap-b, .ap-rail, .ap-toast, .user-panel-trigger,
+      #cyf-theme-toggle, .lang-switch--floating, .cyl-fab, .cyl-panel { display:none !important; }
+      .ap-shell { position:static; inset:auto; background:#fff !important; border:none;
+        box-shadow:none; padding:0; display:block; }
+      .ap-body { display:block; }
+      .ap-scene { overflow:visible; border:1px solid #ccc; background:#fff !important; }
+      .ap-bar { margin-bottom:8mm; }
+      .ap-title { color:#111 !important; font-size:1.2rem; }
+      .ap-range { color:#444 !important; }
+      .ap-weekhd { position:static; background:#fff !important; border-color:#ccc; }
+      .ap-weekhd .dnum, .ap-mday .n, .ap-ev .t, .ap-rlane .name { color:#111 !important; }
+      .ap-weekhd .dow, .ap-weekhd .cap, .ap-hours .h, .ap-ev .s { color:#555 !important; }
+      .ap-col, .ap-col .slot, .ap-allday, .ap-allday .cell, .ap-mday { border-color:#ddd !important; }
+      .ap-col.weekend, .ap-mday { background:#fafafa !important; }
+      .ap-ev, .ap-jal, .ap-mday .chip { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .ap-ev { background:#f4f4f4 !important; }
+      .ap-mday .leaf, .ap-now { display:none !important; }
+      .ap-ribbon, .ap-jalon, .ap-bar-g i { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .ap-weekbody { page-break-inside:avoid; }
     }
   </style>
 </head>
 <body>
-  <div id="vanta-birds-bg"></div>
   <nav class="site-nav">
     <a href="/app/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
   </nav>
 
-  <main class="page-shell page-shell-nav">
-    <div class="ag-head">
-      <div>
-        <h1>Mon Agenda</h1>
-        <div class="ag-sub">Toute ta semaine en un coup d'oeil. Tes événements sont lus directement depuis Google, dans ton navigateur - rien ne passe par nos serveurs.</div>
+  <main class="ap-shell">
+    <div class="ap-bar">
+      <div class="ap-title">Agenda vivant<small>tout ce qui a une date</small></div>
+      <div class="ap-sp"></div>
+      <div class="ap-tabs" id="ap-tabs">
+        <button data-v="week" class="on">Semaine</button>
+        <button data-v="month">Mois</button>
+        <button data-v="river">Rivière</button>
       </div>
+      <button class="ap-b ico" id="ap-prev" aria-label="Période précédente">‹</button>
+      <button class="ap-b" id="ap-today">Aujourd'hui</button>
+      <button class="ap-b ico" id="ap-next" aria-label="Période suivante">›</button>
+      <span class="ap-range" id="ap-range"></span>
+      <div class="ap-sp"></div>
+      <button class="ap-b" id="ap-print" title="Imprimer la vue affichée">Imprimer</button>
+      <button class="ap-b" id="ap-export" title="Télécharger un fichier .ics importable partout">Exporter .ics</button>
+      <button class="ap-b primary" id="ap-gsync">Connecter Google Agenda</button>
     </div>
-    <div id="agenda-root"></div>
+
+    <div class="ap-body">
+      <aside class="ap-rail">
+        <div class="ap-card">
+          <h3>Branches</h3>
+          <div id="ap-branches"></div>
+        </div>
+        <div class="ap-card">
+          <h3>Charge de la semaine</h3>
+          <div class="ap-lbl"><span>Engagé</span><span id="ap-load-txt">-</span></div>
+          <div class="ap-bar-g"><i id="ap-load-bar" style="width:0%"></i></div>
+          <div class="ap-hint" id="ap-load-hint"></div>
+        </div>
+        <div class="ap-card">
+          <h3>Sortie vers tes appareils</h3>
+          <div class="ap-hint">
+            <b style="color:var(--text-2)">Google Agenda</b> - une fiche planifiée depuis
+            l'ORGANIZER devient un vrai événement.<br><br>
+            <b style="color:var(--text-2)">Export .ics</b> - un fichier importable dans
+            Apple Calendrier, Outlook, Thunderbird. Réimporter le même fichier ne crée
+            plus de doublons.<br><br>
+            <b style="color:var(--text-2)">Impression</b> - la vue affichée, sur fond
+            blanc, prête à afficher au mur.
+          </div>
+        </div>
+      </aside>
+
+      <section class="ap-scene" id="ap-view"></section>
+    </div>
   </main>
 
+  <div class="ap-toast" id="ap-toast" role="status" aria-live="polite"></div>
   <script type="module" src="/js/agenda-page.js"></script>
 </body>
 </html>
