@@ -39,36 +39,21 @@
            et le menu utilisateur. Un seul nombre à changer : --gw-h.
            Ces règles sont scopées à /app/ : les autres pages ne bougent pas. */
         :root { --gw-h: 34px; }
-        body.has-gw-bar .app-container      { top: calc(15px + var(--gw-h)); }
-        body.has-gw-bar .header             { top: calc(16px + var(--gw-h)); }
-        body.has-gw-bar #cyf-theme-toggle   { top: calc(18px + var(--gw-h)); }
-        body.has-gw-bar .lang-switch--floating { top: calc(17px + var(--gw-h)); }
-        body.has-gw-bar .xp-corner          { top: calc(56px + var(--gw-h)); }
-        body.has-gw-bar #cyf-user-menu      { top: calc(66px + var(--gw-h)); }
-        @media (max-width:600px) {
-          body.has-gw-bar #cyf-theme-toggle    { top: calc(14px + var(--gw-h)); }
-          body.has-gw-bar .lang-switch--floating { top: calc(12px + var(--gw-h)); }
-          body.has-gw-bar .xp-corner           { top: calc(58px + var(--gw-h)); }
-        }
-        /* La descente accompagne l'apparition du bandeau, sans à-coup. */
-        .app-container, .header, #cyf-theme-toggle, .lang-switch--floating, .xp-corner {
-          transition: top .35s cubic-bezier(.4,0,.2,1);
-        }
+        /* Le bandeau d'annonce pousse l'espace de travail ET la barre latérale
+           vers le bas. Un seul nombre à changer : --gw-h. */
+        body.has-gw-bar .app-container { top: calc(15px + var(--gw-h)); }
+        body.has-gw-bar .cyl-sb        { top: var(--gw-h); }
+        body.has-gw-bar #cyf-user-menu { top: calc(66px + var(--gw-h)); }
+        .app-container, .cyl-sb { transition: top .35s cubic-bezier(.4,0,.2,1); }
         @media (prefers-reduced-motion: reduce) {
-          .app-container, .header, #cyf-theme-toggle, .lang-switch--floating, .xp-corner { transition: none; }
+          .app-container, .cyl-sb { transition: none; }
         }
-
-        /* Alignement : les 3 contrôles partagent le même axe vertical (centre
-           à 36 px). Leurs hauteurs diffèrent (40 / 36 / ~34), donc leurs `top`
-           aussi - ils étaient approximatifs (16 / 18 / 17). */
-        .lang-switch--floating { top:19px; }
-        body.has-gw-bar .lang-switch--floating { top: calc(19px + var(--gw-h)); }
 
         /* Le sélecteur de thème était resté en navy v2 : on le raccorde au
-           verre organique des autres contrôles. */
+           verre organique, maintenant qu'il vit dans le pied de la barre. */
         #cyf-theme-toggle {
-          background: var(--pill-bg) !important;
-          border-color: rgba(221,205,160,0.18) !important;
+          background: var(--surface-2) !important;
+          border-color: var(--line) !important;
           color: var(--gold-soft) !important;
         }
         #cyf-theme-toggle:hover {
@@ -111,16 +96,10 @@
         .welcome-sub-text::before { content:'·'; margin-right:8px; opacity:.6; }
         .welcome-right { display:none; }
 
-        /* XP total : pastille or fixe, sous le logo */
-        .xp-corner {
-          position:fixed; top:56px; right:20px; z-index:8000;
-          display:inline-flex; align-items:center; gap:6px;
-          padding:6px 13px; border-radius:999px;
-          background:var(--pill-bg); border:1px solid rgba(231,177,92,0.38);
-          backdrop-filter:blur(8px); font-size:0.8rem; font-weight:800; color:var(--gold-soft);
-        }
-        /* mobile : le logo occupe 12px + 40px -> le badge passe SOUS lui (58px) */
-        @media (max-width:600px){ .xp-corner{ top:58px; right:14px; font-size:0.74rem; padding:5px 10px; } }
+        /* L'XP vit désormais dans le pied de la barre latérale. Cette pastille
+           reste dans le DOM (app.js l'alimente, la barre la recopie) mais ne
+           s'affiche plus : deux compteurs identiques à l'écran, c'est un de trop. */
+        .xp-corner { display:none; }
         .total-xp-badge { display:none; }
 
         /* ── Arbre : le reflet de ce que tu fais ── */

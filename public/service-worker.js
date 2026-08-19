@@ -1,5 +1,5 @@
-// service-worker.js - v187 (agenda : creation par glissement + bandeau si rien de date)
-const CACHE_NAME = 'changeyourlife-v187';
+// service-worker.js - v188 (barre de navigation verticale, facon Vercel)
+const CACHE_NAME = 'changeyourlife-v188';
 const urlsToCache = [
   '/',
   '/app/',
@@ -43,6 +43,7 @@ const urlsToCache = [
   '/js/home-aura.js',
   '/js/home-auth-modal.js',
   '/js/home-failsafe.js',
+  '/js/sidebar.js',
   '/js/userMenu.js',
   '/js/notifications.js',
   '/js/inscription.js',

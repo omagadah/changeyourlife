@@ -252,7 +252,7 @@ if (typeof window !== 'undefined') {
         if ('serviceWorker' in navigator) {
             // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
   // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
-  const swUrl = '/service-worker.js?v=187';
+  const swUrl = '/service-worker.js?v=188';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
@@ -445,6 +445,11 @@ if (typeof window !== 'undefined') {
     var p = location.pathname;
     if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
         || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0) return;
+    // Barre de navigation verticale : sur les mêmes pages que le chat, c'est
+    // à dire partout où l'utilisateur est chez lui.
+    import('/js/sidebar.js')
+      .then(function (m) { m.initSidebar(); })
+      .catch(function (e) { try { console.warn('[sidebar]', e && e.message || e); } catch (_) {} });
     // import dynamique : non bloquant si le module échoue
     import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
   } catch (_) { /* ignore */ }
