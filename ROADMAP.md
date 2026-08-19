@@ -73,7 +73,42 @@ Règles du motif :
   des données (l'ORGANIZER affiche tout, y compris ce qui est déjà planifié).
 - Un module par bandeau, jamais empilés au point de faire défiler l'accueil.
 
-## 3 · CHARTE GRAPHIQUE COMPLÈTE (gros morceau — à faire EN DERNIER)
+## 3 · « Où j'en suis » — la pyramide devient une CONCLUSION
+
+> Décidé le 2026-08-19. `/yourlife/` est aujourd'hui un module qu'on **modifie**
+> (on coche des compétences à la main). Ce n'est pas sa place : la pyramide doit
+> être **ce que le site conclut de toi**, pas un formulaire de plus.
+
+Ce qui change :
+
+- **On ne s'y modifie plus, on s'y lit.** Le titre devient « Où j'en suis ».
+- **C'est CYL qui situe**, à partir de tout ce que le site sait déjà : les
+  branches nourries et en jachère, la régularité, les fiches déposées, les
+  objectifs tenus ou abandonnés, l'agenda réellement rempli, l'humeur, le
+  sommeil, la frise.
+- **Ça bouge tout seul.** Chaque action déplace le curseur, sans rien cocher.
+- **Les données de contexte manquent** et il faudra les obtenir *sans
+  questionnaire* : âge, lieu de vie, situation, d'où l'on vient, où l'on va.
+  Elles doivent venir de la conversation avec CYL et être **ancrées avec
+  accord explicite**, jamais extorquées par un formulaire à l'inscription.
+
+Garde-fous non négociables :
+
+- **Aucune note globale sur une vie.** On situe des besoins, on ne donne pas
+  un score de réussite personnelle.
+- **Aucune comparaison** avec d'autres personnes, jamais.
+- Formulé comme une **hypothèse relisible** (« on dirait que… »), et
+  l'utilisateur peut toujours dire que c'est faux - et que ça reste corrigé.
+
+## 4 · Frise chronologique (mémoire longue)
+
+Page créée le 2026-08-19 (`/frise/`), pour l'instant une ossature.
+Reste à faire : le modèle d'événement de vie, l'ancrage depuis les jalons
+franchis, l'ancrage depuis les échanges avec CYL (avec accord), et la
+détection de motifs (cycles, ruptures, périodes qui se ressemblent).
+C'est le prolongement des racines de l'arbre et de la vue Rivière de l'agenda.
+
+## 5 · CHARTE GRAPHIQUE COMPLÈTE (gros morceau — à faire EN DERNIER)
 
 > La mise en page se fait à la fin. On construit d'abord des modules qui
 > marchent, on habille ensuite. Mais quand on y viendra, ce sera un chantier

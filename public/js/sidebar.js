@@ -11,13 +11,21 @@
 // deplace dans son pied de page quand ils apparaissent. Aucun doublon, aucune
 // logique dupliquee, et les autres pages continuent de fonctionner sans elle.
 
+// La navigation suit le PARCOURS, pas l'ordre de construction des modules :
+//   ce que j'ai en tete -> quand -> ou je vais -> ce que ca donne de moi.
 const NAV = [
   { href: '/app/',          icon: '🌳', label: 'Mon espace',   note: 'Vue d\'ensemble' },
   { href: '/organizer/',    icon: '🗂️', label: 'ORGANIZER',    note: 'Tes idées, triées' },
   { href: '/agenda/',       icon: '🗓️', label: 'Agenda',       note: 'Ce qui a une date' },
   { href: '/plan/',         icon: '🌅', label: "Aujourd'hui",  note: 'Rythme du jour' },
   { href: '/objectifs/',    icon: '🎯', label: 'Objectifs',    note: 'Où tu vas' },
-  { href: '/competences/',  icon: '🧗', label: 'Compétences',  note: 'Ce que tu sais faire' },
+];
+// Ce que le site conclut de toi. On ne s'y modifie pas : on s'y lit.
+const NAV_LECTURE = [
+  { href: '/yourlife/',    icon: '🪜', label: 'Où j\'en suis', note: 'Ta position, vue par CYL' },
+  { href: '/frise/',       icon: '🌊', label: 'Frise chronologique', note: 'D\'où tu viens, où tu vas' },
+  { href: '/competences/', icon: '🧗', label: 'Compétences',  note: 'Ce que tu sais faire' },
+  { href: '/bilan/',       icon: '📊', label: 'Bilan',        note: 'Ta semaine, résumée' },
 ];
 const NAV_MORE = [
   { href: '/journal/',        icon: '📔', label: 'Journal' },
@@ -28,8 +36,6 @@ const NAV_MORE = [
   { href: '/gratitude/',      icon: '🌟', label: 'Gratitude' },
   { href: '/codex/',          icon: '📚', label: 'Codex' },
   { href: '/autoevaluation/', icon: '🎡', label: 'Roue de vie' },
-  { href: '/bilan/',          icon: '📊', label: 'Bilan' },
-  { href: '/yourlife/',       icon: '🪜', label: 'Ma pyramide' },
 ];
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -113,6 +119,22 @@ function injectCSS() {
      qu'une seule navigation, et on rend aux pages la hauteur liberee. */
   body.has-sb { padding-left:var(--sb-w); }
   body.has-sb .site-nav, body.has-sb .header { display:none !important; }
+  /* Le menu deroulant historique s'ancrait en haut a droite : sans declencheur
+     visible, il ne peut plus s'ouvrir, mais on le neutralise explicitement. */
+  body.has-sb #cyf-user-menu { display:none !important; }
+
+  /* Compte : avatar, identite, parametres, deconnexion - a plat, pas dans un menu */
+  .cyl-sb-me { display:flex; align-items:center; gap:10px; padding:7px 9px; border-radius:10px;
+    text-decoration:none; color:var(--text-2,#b4ad94); transition:background .16s,color .16s; }
+  .cyl-sb-me:hover { background:var(--surface-2,rgba(255,255,255,.05)); color:var(--text-1,#f4efe1); }
+  .cyl-sb-me.on { background:rgba(132,194,94,.14); color:var(--leaf,#84c25e); }
+  .cyl-sb-av { width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.76rem; font-weight:800; color:#08130a;
+    background:linear-gradient(140deg,#f1cd92,#84c25e); background-size:cover; background-position:center; }
+  .cyl-sb-av.img { color:transparent; }
+  .cyl-sb-out { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
+  .cyl-sb-out:hover { background:rgba(224,120,95,.12); color:#e58e73; }
   body.has-sb .app-container { left:calc(var(--sb-w) + 15px) !important; }
   body.has-sb .ap-shell {
     inset:16px 16px 16px calc(var(--sb-w) + 16px) !important;
@@ -158,8 +180,13 @@ function item(o, path, withNote) {
 
 // Les contrôles sont créés par d'autres modules, à des moments qu'on ne
 // maîtrise pas. On les récupère dès qu'ils apparaissent, puis on arrête.
+// On N'ADOPTE PAS `.user-panel-trigger` : ce bouton ouvrait un menu déroulant
+// ancré en haut à droite, à l'opposé de l'écran par rapport à l'avatar, ce qui
+// n'avait plus aucun sens une fois l'avatar descendu à gauche. Le pied de la
+// barre expose directement les trois actions que ce menu contenait : profil,
+// paramètres, déconnexion. Un clic de moins, et on voit où l'on va.
 function adopt(host) {
-  const SEL = ['.lang-switch--floating', '#cyf-theme-toggle', '.user-panel-trigger'];
+  const SEL = ['.lang-switch--floating', '#cyf-theme-toggle'];
   let left = SEL.length;
   const grab = () => {
     SEL.forEach((sel) => {
@@ -172,6 +199,40 @@ function adopt(host) {
   const obs = new MutationObserver(() => { if (grab()) obs.disconnect(); });
   obs.observe(document.body, { childList: true, subtree: true });
   setTimeout(() => obs.disconnect(), 15000);   // filet : on n'observe pas indéfiniment
+}
+
+// Avatar + identite + deconnexion, directement dans le pied.
+async function initAccount(sb) {
+  const av = sb.querySelector('#cyl-sb-av');
+  const nm = sb.querySelector('#cyl-sb-me-n');
+  const out = sb.querySelector('#cyl-sb-out');
+
+  // L'avatar enregistre localement s'affiche tout de suite, sans attendre Firebase.
+  try {
+    const url = localStorage.getItem('userAvatarUrl');
+    if (url && av) { av.style.backgroundImage = `url("${CSS.escape ? url.replace(/"/g, '%22') : url}")`; av.classList.add('img'); }
+  } catch (_) {}
+
+  let auth = null;
+  try {
+    if (window._cyfFirebase) ({ auth } = window._cyfFirebase);
+    else { await import('/js/firebase.js'); ({ auth } = window._cyfFirebase); }
+  } catch (_) { return; }
+  if (!auth) return;
+
+  const { onAuthStateChanged, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  onAuthStateChanged(auth, (user) => {
+    if (!user) return;
+    const label = user.displayName || (user.email || '').split('@')[0] || 'Mon profil';
+    if (nm) nm.textContent = label;
+    if (av && !av.classList.contains('img')) av.textContent = label.charAt(0).toUpperCase();
+  });
+
+  if (out) out.onclick = async () => {
+    if (!window.confirm('Se déconnecter de ChangeYourLife ?')) return;
+    try { await signOut(auth); } catch (_) {}
+    window.location.href = '/login';
+  };
 }
 
 export function initSidebar() {
@@ -189,11 +250,26 @@ export function initSidebar() {
     </a>
     <div class="cyl-sb-nav">
       ${NAV.map((o) => item(o, path, true)).join('')}
+      <div class="cyl-sb-sec">Ce que ça dit de toi</div>
+      ${NAV_LECTURE.map((o) => item(o, path, true)).join('')}
       <div class="cyl-sb-sec">Modules</div>
       ${NAV_MORE.map((o) => item(o, path, false)).join('')}
     </div>
     <div class="cyl-sb-foot">
       <div class="cyl-sb-xp">⚡ <span id="cyl-sb-xp">0 XP</span><small>total</small></div>
+      <a class="cyl-sb-me${path === '/profile/' ? ' on' : ''}" href="/profile/">
+        <span class="cyl-sb-av" id="cyl-sb-av" aria-hidden="true"></span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l" id="cyl-sb-me-n">Mon profil</span>
+          <span class="cyl-sb-n">Voir et modifier</span></span>
+      </a>
+      <a class="cyl-sb-i${path === '/settings/' ? ' on' : ''}" href="/settings/">
+        <span class="cyl-sb-ic" aria-hidden="true">⚙️</span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l">PARAMÈTRES</span></span>
+      </a>
+      <button class="cyl-sb-i cyl-sb-out" id="cyl-sb-out" type="button">
+        <span class="cyl-sb-ic" aria-hidden="true">↪</span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l">Se déconnecter</span></span>
+      </button>
       <div class="cyl-sb-ctl" id="cyl-sb-ctl"></div>
     </div>`;
 
@@ -217,6 +293,7 @@ export function initSidebar() {
   sb.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
 
   adopt(sb.querySelector('#cyl-sb-ctl'));
+  initAccount(sb);
 
   // L'XP est calculé par app.js sur /app/ ; ailleurs on le lit sur le document
   // s'il existe. La barre ne recalcule rien, elle reflète.

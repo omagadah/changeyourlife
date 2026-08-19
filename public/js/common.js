@@ -252,7 +252,7 @@ if (typeof window !== 'undefined') {
         if ('serviceWorker' in navigator) {
             // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
   // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
-  const swUrl = '/service-worker.js?v=189';
+  const swUrl = '/service-worker.js?v=190';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');

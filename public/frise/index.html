@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frise chronologique - Change Your Life</title>
+  <meta name="description" content="La mémoire longue de ta vie : de ta naissance à aujourd'hui, les événements qui t'ont construit et les motifs qui s'en dégagent." />
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#0a0f0a">
+  <meta name="robots" content="noindex" />
+  <style>
+    /* ════════════════════════════════════════════════════════════
+       FRISE CHRONOLOGIQUE
+       La mémoire longue : la rivière de l'agenda, remontée jusqu'à
+       la naissance. C'est ce qu'aucune app ne propose (VISION §7).
+       Page de structure : la mise en forme finale viendra avec la
+       charte graphique, mais l'ossature et le vocabulaire sont posés.
+       ════════════════════════════════════════════════════════════ */
+    body { color:var(--text-1); }
+    .fr-shell {
+      position:fixed; inset:16px; background:var(--glass-bg);
+      backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
+      padding:18px 20px 14px; overflow-y:auto; box-shadow:var(--shadow-lg);
+    }
+    .fr-hd { margin-bottom:16px; }
+    .fr-hd h1 { font-size:1.3rem; letter-spacing:-.4px; }
+    .fr-hd p { font-size:.86rem; color:var(--text-2); line-height:1.6; max-width:44rem; margin-top:5px; }
+
+    .fr-soon { display:flex; align-items:flex-start; gap:13px; padding:13px 15px; border-radius:14px;
+      background:rgba(231,177,92,.08); border:1px solid rgba(231,177,92,.26); margin-bottom:18px; }
+    .fr-soon .ic { font-size:1.3rem; flex-shrink:0; }
+    .fr-soon b { display:block; font-size:.86rem; color:var(--gold-text); }
+    .fr-soon small { display:block; font-size:.78rem; color:var(--text-2); line-height:1.5; margin-top:3px; }
+
+    /* La rivière : un axe, des époques, des événements */
+    .fr-axis { position:relative; padding:26px 0 8px; margin:6px 0 20px; }
+    .fr-line { position:absolute; left:0; right:0; top:52px; height:2px;
+      background:linear-gradient(90deg, transparent, var(--line-strong) 8%, var(--line-strong) 92%, transparent); }
+    .fr-eras { display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:4px; }
+    .fr-era { position:relative; text-align:center; padding-top:34px; }
+    .fr-era::before { content:''; position:absolute; top:16px; left:50%; width:9px; height:9px;
+      margin-left:-4.5px; border-radius:50%; background:var(--leaf);
+      box-shadow:0 0 12px rgba(132,194,94,.5); }
+    .fr-era b { display:block; font-size:.8rem; color:var(--text-1); }
+    .fr-era small { display:block; font-size:.68rem; color:var(--text-3); margin-top:2px; line-height:1.4; }
+
+    .fr-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
+    .fr-card { background:var(--surface-1); border:1px solid var(--line); border-radius:15px; padding:14px 15px; }
+    .fr-card h2 { font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--text-3); font-weight:800; margin-bottom:8px; }
+    .fr-card p { font-size:.8rem; color:var(--text-2); line-height:1.6; }
+    .fr-card ul { margin:8px 0 0; padding-left:17px; }
+    .fr-card li { font-size:.78rem; color:var(--text-2); line-height:1.6; margin-bottom:4px; }
+    .fr-card li b { color:var(--text-1); }
+    .fr-cta { display:inline-flex; align-items:center; gap:7px; margin-top:11px; padding:8px 14px;
+      border-radius:99px; text-decoration:none; font-size:.79rem; font-weight:700;
+      background:rgba(132,194,94,.13); border:1px solid rgba(132,194,94,.34); color:var(--leaf-text); }
+    .fr-cta:hover { background:rgba(132,194,94,.24); }
+
+    @media (max-width:700px){ .fr-shell { inset:8px; padding:14px 12px 10px; } }
+  </style>
+</head>
+<body>
+  <main class="fr-shell">
+    <div class="fr-hd">
+      <h1>Frise chronologique</h1>
+      <p>La mémoire longue de ta vie. L'agenda montre tes semaines ; la frise
+         montre tes décennies - de ta naissance à aujourd'hui, et vers où tu vas.
+         C'est là que les motifs deviennent visibles : les cycles, les ruptures,
+         les périodes qui se ressemblent.</p>
+    </div>
+
+    <div class="fr-soon">
+      <span class="ic">🌱</span>
+      <div>
+        <b>Cette page est une ossature, pas encore la frise</b>
+        <small>La structure et le vocabulaire sont posés. Ce qui manque, c'est
+        la matière : tes événements de vie. Ils viendront de ce que tu déposes
+        au fil du temps et de ce que CYL retient de vos échanges - pas d'un
+        formulaire de 60 questions à remplir un dimanche.</small>
+      </div>
+    </div>
+
+    <div class="fr-axis">
+      <div class="fr-line" aria-hidden="true"></div>
+      <div class="fr-eras">
+        <div class="fr-era"><b>Racines</b><small>D'où tu viens</small></div>
+        <div class="fr-era"><b>Formation</b><small>Ce qui t'a construit</small></div>
+        <div class="fr-era"><b>Bascules</b><small>Ce qui a tout changé</small></div>
+        <div class="fr-era"><b>Aujourd'hui</b><small>Où tu en es</small></div>
+        <div class="fr-era"><b>Horizon</b><small>Où tu vas</small></div>
+      </div>
+    </div>
+
+    <div class="fr-grid">
+      <section class="fr-card">
+        <h2>Ce que la frise fera</h2>
+        <ul>
+          <li><b>Ancrer les événements</b> qui comptent, avec leur date et la
+              branche de vie qu'ils ont touchée.</li>
+          <li><b>Faire émerger les motifs</b> : les cycles de joie, d'épuisement,
+              de reconstruction. Ce qui revient tous les deux ans.</li>
+          <li><b>Relier au présent</b> : « la dernière fois que tu t'es senti
+              comme ça, voilà ce qui avait aidé ».</li>
+          <li><b>Prolonger l'arbre</b> : la frise, ce sont ses racines. Même
+              rivière que l'agenda, remontée bien plus loin.</li>
+        </ul>
+      </section>
+
+      <section class="fr-card">
+        <h2>D'où viendra la matière</h2>
+        <p>Rien ne te sera demandé d'un bloc. La frise se remplit de trois façons,
+           toutes passives ou volontaires :</p>
+        <ul>
+          <li>Les <b>jalons franchis</b> de tes objectifs s'y déposent seuls.</li>
+          <li>Ce que tu racontes à CYL peut y être <b>ancré, avec ton accord</b>.</li>
+          <li>Tu peux ajouter un événement <b>quand tu y penses</b>, sans ordre imposé.</li>
+        </ul>
+        <a class="fr-cta" href="/objectifs/">Poser un premier jalon →</a>
+      </section>
+
+      <section class="fr-card">
+        <h2>Ce qui n'y sera jamais</h2>
+        <p>Pas de note globale sur ta vie. Pas de comparaison avec d'autres
+           personnes. Pas de jugement sur ce que tu as traversé.
+           La frise <b>montre</b> - elle ne classe pas, elle ne conclut pas à ta
+           place. Tu restes le seul à décider de ce que ton histoire veut dire.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/frise.js"></script>
+</body>
+</html>

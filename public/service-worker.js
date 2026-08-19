@@ -1,5 +1,5 @@
-// service-worker.js - v189 (fix tremblement au defilement des fiches)
-const CACHE_NAME = 'changeyourlife-v189';
+// service-worker.js - v190 (frise chronologique + compte a plat dans la navigation)
+const CACHE_NAME = 'changeyourlife-v190';
 const urlsToCache = [
   '/',
   '/app/',
@@ -7,6 +7,7 @@ const urlsToCache = [
   '/competences/',
   '/organizer/',
   '/agenda/',
+  '/frise/',
   '/physio/',
   '/securite/',
   '/appartenance/',
@@ -44,6 +45,7 @@ const urlsToCache = [
   '/js/home-auth-modal.js',
   '/js/home-failsafe.js',
   '/js/sidebar.js',
+  '/js/frise.js',
   '/js/userMenu.js',
   '/js/notifications.js',
   '/js/inscription.js',
