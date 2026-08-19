@@ -322,7 +322,11 @@ function injectCSS() {
       padding:9px 11px;border-radius:11px;cursor:pointer;font:inherit;
       background:rgba(231,177,92,0.07);border:1px solid rgba(231,177,92,0.22);
       transition:background .16s,border-color .16s,transform .16s;}
-    .cyl-ins-i:hover{background:rgba(231,177,92,0.14);border-color:rgba(231,177,92,0.45);transform:translateX(2px);}
+    /* Pas de déplacement au survol : un effet géométrique peut déclencher une
+       barre de défilement dans un conteneur contraint, et le tremblement qui
+       va avec. Une ombre ne touche pas à la mise en page. */
+    .cyl-ins-i:hover{background:rgba(231,177,92,0.14);border-color:rgba(231,177,92,0.45);
+      box-shadow:0 2px 12px rgba(0,0,0,0.22);}
     .cyl-ins-t{font-size:0.76rem;font-weight:800;color:var(--gold-text);}
     .cyl-ins-d{font-size:0.75rem;color:var(--text-2);line-height:1.45;}
     .cyl-brief-balance{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}

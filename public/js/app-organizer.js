@@ -547,11 +547,23 @@ function injectCSS() {
   .hub-col-title{flex:1;min-width:0;font-size:0.7rem;font-weight:800;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .hub-col-count{font-size:0.68rem;font-weight:800;color:var(--text-2);background:var(--surface-2);padding:1px 7px;border-radius:99px;}
-  .hub-cards{display:flex;flex-direction:column;gap:6px;min-height:46px;max-height:230px;overflow-y:auto;padding:1px;}
+  /* overflow-x:hidden est INDISPENSABLE : avec overflow-y:auto seul, l'axe X
+     passe implicitement en auto. Le moindre debordement horizontal (le survol
+     decalait la fiche de 2 px) faisait apparaitre une barre horizontale, ce
+     qui reduisait la hauteur, decalait le contenu, faisait perdre le survol,
+     donc disparaitre la barre... et le texte tremblait a l'infini.
+     scrollbar-gutter:stable evite le meme saut sur l'axe vertical. */
+  .hub-cards{display:flex;flex-direction:column;gap:6px;min-height:46px;max-height:230px;
+    overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:1px;}
   .hub-card{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;cursor:pointer;
     background:var(--surface-2);border:1px solid var(--line);
     border-left:3px solid var(--bc,var(--line));transition:background .15s,transform .12s;}
-  .hub-card:hover{background:rgba(231,177,92,0.08);transform:translateX(2px);}
+  /* Le survol ne DEPLACE plus la fiche et ne change AUCUNE dimension : il
+     l'eclaire. Une ombre ne participe pas a la mise en page, donc elle ne peut
+     pas declencher de barre de defilement - contrairement a un transform ou a
+     une bordure qui s'epaissit. */
+  .hub-card:hover{background:rgba(231,177,92,0.10);
+    box-shadow:inset 0 0 0 1px rgba(231,177,92,0.28), 0 2px 10px rgba(0,0,0,0.25);}
   .hub-card.done .hub-card-title{text-decoration:line-through;opacity:.6;}
   .hub-card-branch{font-size:0.86rem;flex-shrink:0;line-height:1;}
   .hub-card-title{flex:1;min-width:0;font-size:0.8rem;color:var(--text-1);line-height:1.35;word-break:break-word;}

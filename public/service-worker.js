@@ -1,5 +1,5 @@
-// service-worker.js - v188 (barre de navigation verticale, facon Vercel)
-const CACHE_NAME = 'changeyourlife-v188';
+// service-worker.js - v189 (fix tremblement au defilement des fiches)
+const CACHE_NAME = 'changeyourlife-v189';
 const urlsToCache = [
   '/',
   '/app/',

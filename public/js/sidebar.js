@@ -70,7 +70,10 @@ function injectCSS() {
   .cyl-sb-name small { display:block; font-size:.62rem; font-weight:600; letter-spacing:.07em;
     text-transform:uppercase; color:var(--text-3,#7c7660); margin-top:2px; }
 
-  .cyl-sb-nav { flex:1; overflow-y:auto; padding:4px 8px 8px; }
+  /* overflow-x:hidden : sans lui, un libellé un peu long ferait apparaître une
+     barre horizontale et le même tremblement que dans l'ORGANIZER. */
+  .cyl-sb-nav { flex:1; overflow-y:auto; overflow-x:hidden;
+    overscroll-behavior:contain; scrollbar-gutter:stable; padding:4px 8px 8px; }
   .cyl-sb-sec { font-size:.6rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
     color:var(--text-3,#7c7660); padding:12px 8px 5px; }
   .cyl-sb-i { display:flex; align-items:center; gap:10px; padding:8px 9px; border-radius:10px;
