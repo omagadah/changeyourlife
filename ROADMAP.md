@@ -134,7 +134,7 @@ C'est le prolongement des racines de l'arbre et de la vue Rivière de l'agenda.
   dans la vue 3D, pas seulement dans un anneau à côté.
 - **Cohérence clair / sombre** sur tout ce qui précède.
 
-## 4 · CYL propose un tri automatique dans la matrice Eisenhower
+## 6 · CYL propose un tri automatique dans la matrice Eisenhower
 
 Quand des fiches attendent dans « À trier », CYL propose un rangement -
 **proposition, jamais application automatique** :
