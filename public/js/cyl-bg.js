@@ -44,14 +44,20 @@ function injectCSS() {
   const s = document.createElement('style');
   s.id = 'cyl-bg-css';
   s.textContent = `
+    /* NE JAMAIS TOUCHER AUX ENFANTS DU BODY ICI.
+       Une version de ce fichier ajoutait body > *:not(#cyl-bg) en
+       position:relative, pour garantir que le contenu passe devant. La barre
+       laterale, la bulle de CYL et le cadre de chaque page sont en
+       position:FIXED : les basculer en relative les a jetes dans le flux
+       normal. La barre a disparu, la bulle est remontee en haut a droite et
+       toute la mise en page s est effondree.
+       Le fond n a besoin de rien de tel : en z-index 0 il est peint avant les
+       elements positionnes, et tous les cadres de page du site en sont
+       (.app-container, .page-shell, .ap-shell, .layout, .fr-shell). C est
+       exactement ce que faisait deja le Codex, seule page ou ca marchait. */
     /* z-index 0 et non -1 : a -1 le fond passe DERRIERE la couleur de fond du
        body, qui est opaque sur la plupart des pages, et redevient invisible. */
     #${HOST_ID}{position:fixed;inset:0;z-index:0;pointer-events:none;}
-    /* Le contenu repasse devant. Sans cette ligne, le fond recouvrirait les
-       pages dont le conteneur n'a pas de z-index propre. */
-    body > *:not(#${HOST_ID}){position:relative;z-index:1;}
-    /* La barre laterale et le chat gardent leurs propres plans. */
-    .cyl-sb,.cyl-panel,.cyl-fab{z-index:9800;}
     @media print { #${HOST_ID}{display:none !important;} }`;
   document.head.appendChild(s);
 }

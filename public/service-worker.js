@@ -1,5 +1,5 @@
-// service-worker.js - v199 (le fond anime, partout et de la meme facon)
-const CACHE_NAME = 'changeyourlife-v199';
+// service-worker.js - v200 (mise en page reparee)
+const CACHE_NAME = 'changeyourlife-v200';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
