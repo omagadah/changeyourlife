@@ -1,5 +1,5 @@
-// service-worker.js - v198 (couleurs harmonisees, bords gauches, menu des langues)
-const CACHE_NAME = 'changeyourlife-v198';
+// service-worker.js - v199 (le fond anime, partout et de la meme facon)
+const CACHE_NAME = 'changeyourlife-v199';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
@@ -40,6 +40,7 @@ const urlsToCache = [
   '/manifest.json',
   '/css/main.min.css',
   '/js/common.js',
+  '/js/cyl-bg.js',
   '/js/home-boot.js',
   '/js/home-tree-lite.js',
   '/js/home-aura.js',

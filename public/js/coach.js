@@ -8,17 +8,6 @@ import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/
 try { updateGlobalAvatar(); } catch(e) {}
 try { initUserMenu(); } catch(e) {}
 
-// ── Vanta (waits until VANTA is loaded) ──────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:true, touchControls:true, backgroundColor:0x07192f, quantity:2.0, birdSize:1.2, wingSpan:20 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
-bootVanta();
 
 // ── Firebase ──
 let auth, db, uid;

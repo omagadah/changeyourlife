@@ -18,18 +18,7 @@ if (window._cyfFirebase) {
 
 try { initUserMenu(); } catch(e) {}
 
-// ── Vanta bootstrap (waits for VANTA to be loaded) ───────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor:0x07192f, quantity:4.0 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
 window.addEventListener('DOMContentLoaded', () => {
-  bootVanta();
   try { updateGlobalAvatar(); } catch(e){}
 });
 

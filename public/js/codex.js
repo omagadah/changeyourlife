@@ -5,17 +5,6 @@ import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'http
 import { updateGlobalAvatar, toast } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 
-// ── Vanta bootstrap ──────────────────────────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({el:"#vanta-bg",mouseControls:true,touchControls:true,backgroundColor:0x07192f,color1:0x7192ff,color2:0xd1ff,colorMode:"varianceGradient",quantity:3});
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
-bootVanta();
 
 if(!window._cyfFirebase){await import('/js/firebase.js');}
 let {app,auth,db}=window._cyfFirebase;

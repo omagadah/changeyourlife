@@ -5,17 +5,6 @@ import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-// ── Vanta bootstrap ──────────────────────────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:true, touchControls:true, backgroundColor:0x07192f, quantity:2.0 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
-bootVanta();
 
 try { updateGlobalAvatar(); } catch(e) {}
 try { initUserMenu(); } catch(e) {}

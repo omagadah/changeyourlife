@@ -5,18 +5,6 @@
     import { doc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { initUserMenu } from '/js/userMenu.js';
 
-    // ── Vanta bootstrap ──
-    function bootVanta() {
-      try {
-        if (window.VANTA && window.VANTA.BIRDS) {
-          window.VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
-            backgroundColor:0x07192f, color1:0x2a1a5a, color2:0xaaaacc, quantity:2 });
-        } else {
-          setTimeout(bootVanta, 80);
-        }
-      } catch (e) { /* ignore */ }
-    }
-    window.addEventListener('DOMContentLoaded', () => { bootVanta(); });
 
     window.CYF_NAV_LINKS = [
       { href: '/sommeil/',   label: '😴 Sommeil' },
@@ -221,34 +209,4 @@
       setTimeout(() => t.classList.remove('show'), 2800);
     }
 
-// ── Vanta birds (extrait du bootstrap inline) ──────────────────────────
-// Wrapper qui attend que VANTA soit chargé (script CDN).
-function bootVanta_sommeil() {
-  if (window.VANTA && window.VANTA.BIRDS) {
-    try {     window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
-        backgroundColor:0x07192f, color1:0x2a1a5a, color2:0xaaaacc, quantity:2 });
-    }); } catch(e) {}
-  } else {
-    setTimeout(bootVanta_sommeil, 80);
-  }
-}
-window.addEventListener('DOMContentLoaded', bootVanta_sommeil);
 
-// ── Vanta birds (extrait du bootstrap inline) ──
-function bootVantaSommeil() {
-  if (window.VANTA && window.VANTA.BIRDS) {
-    try {
-      window.VANTA.BIRDS({
-        el: '#vanta-bg',
-        mouseControls: false, touchControls: false,
-        backgroundColor: 0x07192f,
-        color1: 0x2a1a5a, color2: 0xaaaacc,
-        quantity: 2,
-      });
-    } catch (e) {}
-  } else {
-    setTimeout(bootVantaSommeil, 80);
-  }
-}
-window.addEventListener('DOMContentLoaded', bootVantaSommeil);

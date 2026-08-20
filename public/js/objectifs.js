@@ -6,16 +6,6 @@ import { showXpFloat } from '/js/xp.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-// ── Vanta bootstrap ──────────────────────────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:true, touchControls:true, backgroundColor:0x07192f, quantity:4.0 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
 
 // ── Firebase ──────────────────────────────────────────────────────────────
 let auth, db, uid, goals = [], editingId = null, activeFilter = 'all';
@@ -42,7 +32,6 @@ if (window._cyfFirebase) {
 
 try { initUserMenu(); } catch(e) {}
 window.addEventListener('DOMContentLoaded', () => {
-  bootVanta();
   injectMilestoneCss();
   try { updateGlobalAvatar(); } catch(e) {}
 });

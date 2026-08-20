@@ -3,23 +3,6 @@
 import { updateGlobalAvatar } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 
-// ── Vanta birds ──
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({
-        el: '#vanta-birds-bg',
-        mouseControls: true, touchControls: true, gyroControls: false,
-        backgroundColor: 0x060e1a,
-        color1: 0x4a3a3a, color2: 0xcccccc,
-        quantity: 3.0,
-      });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
-bootVanta();
 
 // ── Tabs (Identité / Niveaux / Préférences) ──
 document.querySelectorAll('.tab').forEach((btn) => {

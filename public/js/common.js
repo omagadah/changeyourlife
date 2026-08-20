@@ -190,109 +190,28 @@ export function updateGlobalAvatar(initial) {
 }
 
 /**
- * Normalize Vanta background and header stacking so the animated background is always
- * full-viewport, behind UI, and never captures pointer events. Also raises header/menu z-index.
+ * Remonte les menus au-dessus du reste. Anciennement « normalizeVantaAndHeader » :
+ * elle recalait aussi a la main la position du fond anime et surveillait tout le
+ * document pour guetter son canvas. Le fond a desormais son propre module
+ * (/js/cyl-bg.js) qui pose tout en CSS, une fois - cette surveillance
+ * permanente ne servait plus qu'a couter du temps sur chaque page.
+ * Le nom est conserve : userMenu.js l'appelle.
  */
 export function normalizeVantaAndHeader() {
     try {
-        const vbg = document.getElementById('vanta-birds-bg');
-        if (vbg) {
-            // apply important rules so inline page CSS won't accidentally float the canvas above the UI
-            vbg.style.setProperty('position', 'fixed', 'important');
-            vbg.style.setProperty('top', '0', 'important');
-            vbg.style.setProperty('left', '0', 'important');
-            vbg.style.setProperty('width', '100%', 'important');
-            vbg.style.setProperty('height', '100vh', 'important');
-            vbg.style.setProperty('z-index', '-1', 'important');
-            vbg.style.setProperty('pointer-events', 'none', 'important');
-        }
-        const c = document.querySelector('#vanta-birds-bg canvas');
-        if (c) {
-            c.style.setProperty('position', 'absolute', 'important');
-            c.style.setProperty('top', '0', 'important');
-            c.style.setProperty('left', '0', 'important');
-            c.style.setProperty('width', '100%', 'important');
-            c.style.setProperty('height', '100%', 'important');
-            c.style.setProperty('pointer-events', 'none', 'important');
-            c.style.setProperty('z-index', '-1', 'important');
-        }
-        // Ensure header and panels are above Vanta
         const header = document.querySelector('.header');
         if (header) header.style.setProperty('z-index', '15000', 'important');
         const userPanel = document.querySelector('.user-panel');
         if (userPanel) userPanel.style.setProperty('z-index', '15001', 'important');
-        // Also ensure new lightweight menu stays above everything
         const newMenu = document.getElementById('cyf-user-menu');
         if (newMenu) newMenu.style.setProperty('z-index', '20000', 'important');
         const toast = document.querySelector('.toast-notification');
         if (toast) toast.style.setProperty('z-index', '16000', 'important');
     } catch (e) {
-        // don't break pages if normalization fails
         console.warn('normalizeVantaAndHeader failed', e);
     }
 }
 
-// If running in the browser, proactively normalize Vanta and observe for canvas insertion
-if (typeof window !== 'undefined') {
-    try {
-        // A short delay to let pages that initialize Vanta immediately finish
-        setTimeout(() => { try { normalizeVantaAndHeader(); } catch (e) {} }, 80);
-
-        // Observe DOM changes and normalize when the Vanta canvas appears (some pages create it after load)
-        const observer = new MutationObserver((mutations) => {
-            for (const m of mutations) {
-                if (m.addedNodes && m.addedNodes.length) {
-                    if (document.querySelector('#vanta-birds-bg canvas')) { normalizeVantaAndHeader(); break; }
-                }
-            }
-        });
-        observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
-
-        // Register service worker once globally, if supported and not already registered
-        if ('serviceWorker' in navigator) {
-            // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
-  // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
-  const swUrl = '/service-worker.js?v=198';
-            const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
-                if (document.getElementById('cyf-sw-toast')) return;
-                const wrap = document.createElement('div');
-                wrap.id = 'cyf-sw-toast';
-                wrap.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:12003;background:rgba(30,30,30,0.9);backdrop-filter:blur(10px);color:#fff;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);display:flex;gap:10px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)';
-                const text = document.createElement('span'); text.textContent = msg;
-                const btn = document.createElement('button'); btn.textContent = action; btn.style.cssText = 'margin-left:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#8dca67;color:#fff;cursor:pointer;font-weight:600';
-                btn.addEventListener('click', () => { try { onClick(); } catch(e) {} document.body.removeChild(wrap); });
-                const close = document.createElement('button'); close.textContent = '×'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
-                wrap.appendChild(text); wrap.appendChild(btn); wrap.appendChild(close);
-                document.body.appendChild(wrap);
-            };
-
-            navigator.serviceWorker.getRegistration().then((reg) => {
-                if (!reg) {
-                    navigator.serviceWorker.register(swUrl).then((registration) => {
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            if (!newWorker) return;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // Inform user a new version is available
-                                    showUpdateToast();
-                                }
-                            });
-                        });
-                    }).catch(() => {/* silent */});
-                } else {
-                    // Proactively check for an update
-                    reg.update().catch(() => {/* ignore */});
-                    // If a new worker takes control, prompt the user
-                    let prompted = false;
-                    navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        if (prompted) return; prompted = true; showUpdateToast('Le site a été mis à jour', 'Recharger');
-                    });
-                }
-            }).catch(() => {/* ignore */});
-        }
-    } catch (e) { /* ignore in non-browser contexts */ }
-}
 
 // ── Helpers partagés : escapeHtml · toast · saveWithFeedback · offline ───────
 // Source unique de vérité (avant : ~17 toasts + ~10 escapeHtml recopiés dans
@@ -454,6 +373,13 @@ if (typeof window !== 'undefined') {
       // .app-container n'existe que sur l'espace, jamais sur la vitrine.
       if (p === '/' || p === '') isPublic = !document.querySelector('.app-container');
       if (isPublic) return;
+
+      // Fond anime : le meme sur toutes les pages ou l'utilisateur est chez
+      // lui. Charge apres le contenu, et seulement si l'ecran et la connexion
+      // s'y pretent (cf. cyl-bg.js).
+      import('/js/cyl-bg.js')
+        .then(function (m) { m.scheduleBackground(); })
+        .catch(function (e) { try { console.warn('[cyl-bg]', e && e.message || e); } catch (_) {} });
 
       // Barre de navigation verticale : sur les mêmes pages que le chat, c'est
       // à dire partout où l'utilisateur est chez lui.

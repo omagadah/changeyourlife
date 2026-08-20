@@ -2,17 +2,6 @@
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged, signOut, reload } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
-// ── Vanta bootstrap ──────────────────────────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el: '#vanta-birds-bg', mouseControls: true, touchControls: true, backgroundColor: 0x07192f, color1: 0x7192ff, color2: 0xd1ff, quantity: 3.0 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
-bootVanta();
 
 if (!window._cyfFirebase) { await import('/js/firebase.js'); }
 const { app, auth } = window._cyfFirebase;

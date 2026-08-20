@@ -250,33 +250,4 @@
       _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
-// ── Vanta birds (extrait du bootstrap inline) ──────────────────────────
-// Wrapper qui attend que VANTA soit chargé (script CDN).
-function bootVanta_habitudes() {
-  if (window.VANTA && window.VANTA.BIRDS) {
-    try {     window.addEventListener('DOMContentLoaded', () => {
-      VANTA.BIRDS({ el:'#vanta-birds-bg', mouseControls:false, touchControls:false, backgroundColor:0x07192f, color1:0x2d4a3e, color2:0xaaaaaa, quantity:3 });
-    }); } catch(e) {}
-  } else {
-    setTimeout(bootVanta_habitudes, 80);
-  }
-}
-window.addEventListener('DOMContentLoaded', bootVanta_habitudes);
 
-// ── Vanta birds (extrait du bootstrap inline) ──
-function bootVantaHabitudes() {
-  if (window.VANTA && window.VANTA.BIRDS) {
-    try {
-      window.VANTA.BIRDS({
-        el: '#vanta-birds-bg',
-        mouseControls: false, touchControls: false,
-        backgroundColor: 0x07192f,
-        color1: 0x2d4a3e, color2: 0xaaaaaa,
-        quantity: 3,
-      });
-    } catch (e) {}
-  } else {
-    setTimeout(bootVantaHabitudes, 80);
-  }
-}
-window.addEventListener('DOMContentLoaded', bootVantaHabitudes);

@@ -6,19 +6,7 @@ import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, update
 import { initUserMenu } from '/js/userMenu.js';
 import { showXpFloat } from '/js/xp.js';
 
-// ── Vanta bootstrap ──────────────────────────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
-        backgroundColor:0x07192f, color1:0x3a2a4a, color2:0xcccccc, quantity:3 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
 window.addEventListener('DOMContentLoaded', () => {
-  bootVanta();
 });
 
 window.CYF_NAV_LINKS = [

@@ -408,20 +408,6 @@ window.addEventListener("DOMContentLoaded", () => {
   try { updateGlobalAvatar(); } catch (e) {} 
   try { initUserMenu(); } catch (e) {} 
   try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({
-        el: '#vanta-birds-bg',
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.0,
-        minWidth: 200.0,
-        scale: 1.0,
-        scaleMobile: 1.0,
-        quantity: 4.0,
-        backgroundColor: 0x07192f
-      });
-    }
   } catch (e) { console.log('Vanta init error:', e); }
 });
 

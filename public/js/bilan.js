@@ -5,19 +5,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initUserMenu } from '/js/userMenu.js';
 
-// ── Vanta bootstrap ──────────────────────────────────────────────────────────
-function bootVanta() {
-  try {
-    if (window.VANTA && window.VANTA.BIRDS) {
-      window.VANTA.BIRDS({ el:'#vanta-bg', mouseControls:false, touchControls:false,
-        backgroundColor:0x07192f, color1:0x2a3a5a, color2:0xcccccc, quantity:3 });
-    } else {
-      setTimeout(bootVanta, 80);
-    }
-  } catch (e) { /* ignore */ }
-}
 window.addEventListener('DOMContentLoaded', () => {
-  bootVanta();
 });
 
 window.CYF_NAV_LINKS = [
