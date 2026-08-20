@@ -10,8 +10,8 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
     body { color:var(--text-1); }
@@ -39,7 +39,7 @@
     }
     .sleep-entry-card::before {
       content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
-      background:linear-gradient(180deg,#818cf8,#6366f1); border-radius:16px 0 0 16px;
+      background:linear-gradient(180deg,#b5dc9d,#a0d381); border-radius:16px 0 0 16px;
     }
 
     .time-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
@@ -58,13 +58,13 @@
       text-align:center; padding:10px; background:rgba(99,102,241,0.08);
       border:1px solid rgba(99,102,241,0.2); border-radius:10px; margin-bottom:16px;
     }
-    .duration-value { font-size:1.6rem; font-weight:800; color:#a5b4fc; }
+    .duration-value { font-size:1.6rem; font-weight:800; color:#cbe7ba; }
     .duration-label { font-size:0.7rem; color:var(--text-3); margin-top:2px; }
 
     /* ── Quality slider ── */
     .quality-row { margin-bottom:16px; }
     .quality-labels { display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-3); margin-top:4px; }
-    .quality-slider { width:100%; accent-color:#6366f1; cursor:pointer; margin-top:6px; }
+    .quality-slider { width:100%; accent-color:#a0d381; cursor:pointer; margin-top:6px; }
     .quality-emojis { display:flex; justify-content:space-between; font-size:1.1rem; margin-top:6px; }
 
     /* ── Note ── */
@@ -80,7 +80,7 @@
 
     .save-sleep-btn {
       width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#4f46e5,#6366f1); color:#fff;
+      background:linear-gradient(135deg,#8ac863,#a0d381); color:#fff;
       font-size:0.9rem; font-weight:700; font-family:inherit;
       transition:filter .2s, transform .1s;
     }
@@ -100,13 +100,13 @@
     .bar-chart { display:flex; gap:4px; align-items:flex-end; height:80px; }
     .bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
     .bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:4px 4px 0 0; overflow:hidden; flex:1; position:relative; display:flex; align-items:flex-end; }
-    .bar-fill { width:100%; background:linear-gradient(180deg,#6366f1,#4f46e5); border-radius:4px 4px 0 0; transition:height .8s cubic-bezier(.4,0,.2,1); }
+    .bar-fill { width:100%; background:linear-gradient(180deg,#a0d381,#8ac863); border-radius:4px 4px 0 0; transition:height .8s cubic-bezier(.4,0,.2,1); }
     .bar-day { font-size:0.58rem; color:var(--text-3); white-space:nowrap; }
 
     /* ── Log ── */
     .log-list { display:flex; flex-direction:column; gap:8px; }
     .log-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:11px; padding:11px 14px; position:relative; overflow:hidden; }
-    .log-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--qi-color, #6366f1); border-radius:11px 0 0 11px; }
+    .log-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--qi-color, #a0d381); border-radius:11px 0 0 11px; }
     .log-date { font-size:0.72rem; color:var(--text-3); font-weight:600; width:60px; flex-shrink:0; }
     .log-hours { font-size:1rem; font-weight:800; color:var(--text-1); flex-shrink:0; width:48px; }
     .log-quality { font-size:1.1rem; flex-shrink:0; }
@@ -128,7 +128,7 @@
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
       <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
         <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
           <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
           <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
           <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
@@ -143,7 +143,7 @@
         <h1>Suivi du Sommeil</h1>
         <div class="header-sub">Enregistre tes heures et la qualité de ton sommeil</div>
       </div>
-      <div id="streak-badge" style="display:none;padding:6px 14px;border-radius:999px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);font-size:0.78rem;font-weight:700;color:#a5b4fc">
+      <div id="streak-badge" style="display:none;padding:6px 14px;border-radius:999px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);font-size:0.78rem;font-weight:700;color:#cbe7ba">
         🌙 <span id="streak-val">0</span> nuits de suite
       </div>
     </div>
@@ -152,7 +152,7 @@
 
       <!-- Entry form -->
       <div class="sleep-entry-card" id="entry-card">
-        <div style="font-size:0.9rem;font-weight:700;color:#eef4ff;margin-bottom:14px" id="entry-title">Ajouter une nuit</div>
+        <div style="font-size:0.9rem;font-weight:700;color:#f8f7f5;margin-bottom:14px" id="entry-title">Ajouter une nuit</div>
         <div class="time-row">
           <div class="time-field">
             <div class="time-label">🌙 Coucher</div>
@@ -188,12 +188,12 @@
       <div>
         <div class="sec-label">Cette semaine</div>
         <div class="stats-grid">
-          <div class="stat-block" style="--sb-color:#6366f1">
+          <div class="stat-block" style="--sb-color:#a0d381">
             <div class="stat-block-icon">⏱</div>
             <div class="stat-block-value" id="stat-avg">-</div>
             <div class="stat-block-label">Moy. / nuit</div>
           </div>
-          <div class="stat-block" style="--sb-color:#a78bfa">
+          <div class="stat-block" style="--sb-color:#bdafd6">
             <div class="stat-block-icon">⭐</div>
             <div class="stat-block-value" id="stat-quality">-</div>
             <div class="stat-block-label">Qualité moy.</div>
@@ -216,7 +216,7 @@
       <div>
         <div class="sec-label">Historique</div>
         <div class="log-list" id="log-list">
-          <div style="text-align:center;padding:24px;color:#4a6a8a;font-size:0.85rem">Aucune nuit enregistrée - commence ce soir !</div>
+          <div style="text-align:center;padding:24px;color:#78705c;font-size:0.85rem">Aucune nuit enregistrée - commence ce soir !</div>
         </div>
       </div>
 

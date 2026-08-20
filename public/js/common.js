@@ -115,7 +115,7 @@ export function updateGlobalAvatar(initial) {
     const CYF_INLINE_LOGO = `
 <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <g stroke-width="3">
-    <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+    <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
     <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
     <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
     <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
@@ -157,7 +157,7 @@ export function updateGlobalAvatar(initial) {
     // pixel-art (généré et stocké par /profile) REMPLACE le logo en haut à droite,
     // sur tout le site -> l'espace devient le sien. Sinon, logo CYL par défaut.
     const badgeUrl = localStorage.getItem('userBadgeUrl');
-    const BADGE_IMG = badgeUrl ? `<span data-cyf-logo="1" style="display:block;width:100%;height:100%;border-radius:50%;padding:2px;box-sizing:border-box;background:conic-gradient(from 210deg,#e7b15c,#84c25e,#7fd1ff,#e7b15c);">`
+    const BADGE_IMG = badgeUrl ? `<span data-cyf-logo="1" style="display:block;width:100%;height:100%;border-radius:50%;padding:2px;box-sizing:border-box;background:conic-gradient(from 210deg,#e7b15c,#84c25e,#b8dea0,#e7b15c);">`
         + `<img src="${badgeUrl}" alt="Mon badge" style="width:100%;height:100%;border-radius:50%;display:block;object-fit:cover;image-rendering:pixelated;" /></span>` : null;
     const desired = BADGE_IMG || CYF_LOGO_IMG;
     const mode = badgeUrl ? 'badge' : 'logo';
@@ -252,14 +252,14 @@ if (typeof window !== 'undefined') {
         if ('serviceWorker' in navigator) {
             // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
   // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
-  const swUrl = '/service-worker.js?v=197';
+  const swUrl = '/service-worker.js?v=198';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
                 wrap.id = 'cyf-sw-toast';
                 wrap.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:12003;background:rgba(30,30,30,0.9);backdrop-filter:blur(10px);color:#fff;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);display:flex;gap:10px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)';
                 const text = document.createElement('span'); text.textContent = msg;
-                const btn = document.createElement('button'); btn.textContent = action; btn.style.cssText = 'margin-left:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#3b82f6;color:#fff;cursor:pointer;font-weight:600';
+                const btn = document.createElement('button'); btn.textContent = action; btn.style.cssText = 'margin-left:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#8dca67;color:#fff;cursor:pointer;font-weight:600';
                 btn.addEventListener('click', () => { try { onClick(); } catch(e) {} document.body.removeChild(wrap); });
                 const close = document.createElement('button'); close.textContent = '×'; close.ariaLabel = 'Fermer'; close.style.cssText = 'margin-left:6px;padding:0 8px;border:none;background:transparent;color:#ccc;font-size:18px;cursor:pointer'; close.addEventListener('click', () => { document.body.removeChild(wrap); });
                 wrap.appendChild(text); wrap.appendChild(btn); wrap.appendChild(close);

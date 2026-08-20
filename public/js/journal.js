@@ -48,7 +48,7 @@ const DOMAINS = [
   { key:'order', label:'Ordre' },
 ];
 const EMOTION_MAP = Object.fromEntries(EMOTIONS.map(e => [e.key, e]));
-const DOMAIN_COLORS = { body:'#2dd4bf', heart:'#ef4444', etre:'#9ca3ff', order:'#f59e0b', none:'#6b7280' };
+const DOMAIN_COLORS = { body:'#44bd48', heart:'#ef4444', etre:'#c8e5b6', order:'#f59e0b', none:'#807a6b' };
 const MOOD_SCORE = { joy:9, grateful:8, calm:7, neutral:5, worried:4, sad:3, angry:2 };
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -190,7 +190,7 @@ function renderList() {
     // Title or preview
     if (e.title) {
       const titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:0.85rem;font-weight:700;color:#d4e4f7;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      titleEl.style.cssText = 'font-size:0.85rem;font-weight:700;color:#e9e7e2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
       titleEl.textContent = e.title;
       item.appendChild(titleEl);
       if (e.content) {
@@ -228,7 +228,7 @@ function renderMoodChart() {
     const bg = document.createElement('div'); bg.className = 'mood-bar-bg';
     const fill = document.createElement('div'); fill.className = 'mood-bar-fill';
     fill.style.height = `${h}px`;
-    fill.style.background = avg >= 7 ? '#10b981' : avg >= 5 ? '#3b82f6' : avg > 0 ? '#f59e0b' : 'rgba(255,255,255,.06)';
+    fill.style.background = avg >= 7 ? '#59a862' : avg >= 5 ? '#8dca67' : avg > 0 ? '#f59e0b' : 'rgba(255,255,255,.06)';
     bg.appendChild(fill); bwrap.appendChild(bg);
     const ll = document.createElement('div'); ll.className = 'mood-bar-label'; ll.textContent = lbl;
     bwrap.appendChild(ll); chart.appendChild(bwrap);
@@ -276,7 +276,7 @@ function renderStatsView() {
   const content = document.getElementById('stats-content');
   const sub     = document.getElementById('stats-sub');
   if (!entries.length) {
-    content.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#4a6a8a">Aucune entrée pour analyser</div>';
+    content.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#78705c">Aucune entrée pour analyser</div>';
     return;
   }
   sub.textContent = `Analyse de ${entries.length} entrée${entries.length>1?'s':''}`;
@@ -312,7 +312,7 @@ function renderStatsView() {
   const domCount = {};
   entries.forEach(e => { const k=e.domain||'none'; domCount[k]=(domCount[k]||0)+1; });
 
-  const domColors  = { body:'#2dd4bf', heart:'#f87171', etre:'#a78bfa', order:'#fbbf24', none:'#6b7280' };
+  const domColors  = { body:'#44bd48', heart:'#f87171', etre:'#bdafd6', order:'#fbbf24', none:'#807a6b' };
   const domLabels  = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre', none:'Général' };
 
   content.innerHTML = `
@@ -365,7 +365,7 @@ function renderStatsView() {
       <div class="domain-stat-list">
         ${Object.entries(domCount).sort((a,b)=>b[1]-a[1]).map(([k,cnt])=>`
           <div class="domain-stat-pill">
-            <div class="domain-stat-dot" style="background:${domColors[k]||'#6b7280'}"></div>
+            <div class="domain-stat-dot" style="background:${domColors[k]||'#807a6b'}"></div>
             <span class="domain-stat-name">${domLabels[k]||k}</span>
             <span class="domain-stat-cnt">${cnt}</span>
           </div>

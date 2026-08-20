@@ -164,9 +164,9 @@
         // ── Roue de Vie widget ──────────────────────────────────────────────────
         async function loadWheelWidget(db, uid) {
           const WHEEL_DOMAINS = [
-            {key:'corps', label:'Corps', color:'#2dd4bf', emoji:'💪'},
+            {key:'corps', label:'Corps', color:'#44bd48', emoji:'💪'},
             {key:'coeur', label:'Cœur',  color:'#f87171', emoji:'❤️'},
-            {key:'etre',  label:'Être',  color:'#a78bfa', emoji:'✨'},
+            {key:'etre',  label:'Être',  color:'#bdafd6', emoji:'✨'},
             {key:'ordre', label:'Ordre', color:'#fbbf24', emoji:'⚡'}
           ];
           try {
@@ -316,7 +316,7 @@
           setTimeout(() => {
             grid.querySelectorAll('.ring-wrap').forEach(r => {
               const pct = parseInt(r.dataset.pct) || 0;
-              const col = r.dataset.color || '#3b82f6';
+              const col = r.dataset.color || '#8dca67';
               r.style.background = `conic-gradient(${col} ${pct}%, rgba(255,255,255,0.05) 0%)`;
             });
           }, 200);

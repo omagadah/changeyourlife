@@ -31,9 +31,9 @@
   --bark:      #c39a6b;
 
   /* ── Domain colors ── */
-  --corps: #2dd4bf;
+  --corps: #44bd48;
   --coeur: #f87171;
-  --etre:  #a78bfa;
+  --etre:  #bdafd6;
   --ordre: #fbbf24;
   --green: #22c55e;
   --red:   #ef4444;
@@ -126,9 +126,9 @@ body.light-mode {
   --gold-soft: #b9873a;
   --bark:      #8a6234;
 
-  --corps: #0f7c72;
+  --corps: #246726;
   --coeur: #b64541;
-  --etre:  #6b4fb0;
+  --etre:  #7557a8;
   --ordre: #9a6f22;
   --green: #2f7d3a;
   --red:   #b3312c;
@@ -297,7 +297,7 @@ html, body {
 .toast-notification::after {
   content:''; position:absolute; bottom:0; left:0;
   height:3px; width:100%; border-radius:0 0 14px 14px;
-  background:linear-gradient(90deg, var(--green), #10b981);
+  background:linear-gradient(90deg, var(--green), #59a862);
   animation:_progress 3s linear forwards;
 }
 @keyframes _progress { from{width:100%} to{width:0} }
@@ -313,7 +313,7 @@ html, body {
   letter-spacing:-0.1px;
 }
 .btn-primary:hover {
-  background:#0080ff; transform:translateY(-1px);
+  background:#71bd42; transform:translateY(-1px);
   box-shadow:0 6px 20px rgba(0,112,243,0.45);
 }
 .btn-primary:active { transform:translateY(0) scale(0.98); }

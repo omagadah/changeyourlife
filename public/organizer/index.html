@@ -8,19 +8,19 @@
   <link rel="stylesheet" href="/css/main.min.css" />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="theme-color" content="#0070f3">
+  <meta name="theme-color" content="#6cb43f">
   <meta name="robots" content="noindex" />
   <style>
-    body { color:var(--text-1,#e5eef8); }
+    body { color:var(--text-1,#f1efec); }
     .page-shell { position:fixed; inset:20px; background:var(--glass-bg); backdrop-filter:blur(15px); border-radius:20px; border:1px solid var(--glass-border); padding:18px 18px 10px; display:grid; grid-template-rows:auto 1fr; gap:14px; overflow:hidden; }
     .org-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     .org-head h1 { font-size:1.45rem; letter-spacing:-.4px; }
-    .org-sub { font-size:0.84rem; color:var(--text-2,#aab7cf); margin-top:3px; max-width:46rem; }
-    .org-addcol { padding:9px 16px; border-radius:99px; border:1px dashed rgba(255,255,255,0.25); background:rgba(255,255,255,0.04); color:var(--text-2,#aab7cf); font-weight:700; font-size:0.84rem; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .org-sub { font-size:0.84rem; color:var(--text-2,#c5c0b4); margin-top:3px; max-width:46rem; }
+    .org-addcol { padding:9px 16px; border-radius:99px; border:1px dashed rgba(255,255,255,0.25); background:rgba(255,255,255,0.04); color:var(--text-2,#c5c0b4); font-weight:700; font-size:0.84rem; cursor:pointer; font-family:inherit; white-space:nowrap; }
     .org-addcol:hover { background:rgba(255,255,255,0.09); color:#fff; }
     .org-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .org-lock { display:inline-flex; align-items:center; gap:6px; padding:9px 14px; border-radius:99px;
-      border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.04); color:var(--text-2,#aab7cf);
+      border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.04); color:var(--text-2,#c5c0b4);
       font-weight:700; font-size:0.82rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .18s; }
     .org-lock .org-lock-ic { font-size:0.95rem; line-height:1; }
     .org-lock:hover { background:rgba(255,255,255,0.09); color:#fff; }
@@ -39,26 +39,26 @@
     .org-tri { flex:0 0 296px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
       background:linear-gradient(180deg,rgba(138,160,191,0.12),rgba(138,160,191,0.04)); border:1px solid rgba(138,160,191,0.32);
       box-shadow:0 0 0 1px rgba(138,160,191,0.08) inset; }
-    .org-col.drag-over, .org-tri.drag-over { border-color:var(--cc,#60a5fa); background:rgba(96,165,250,0.08); }
+    .org-col.drag-over, .org-tri.drag-over { border-color:var(--cc,#a4d486); background:rgba(96,165,250,0.08); }
     /* SortableJS : fiche fantôme + fiche en mouvement */
     .org-ghost { opacity:0.35; background:rgba(96,165,250,0.12) !important; border:1px dashed rgba(96,165,250,0.6) !important; }
     .org-drag { transform:rotate(2deg); box-shadow:0 14px 34px rgba(0,0,0,0.5) !important; cursor:grabbing; }
     .org-col-ghost { opacity:0.4; }
     .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
-    .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#8aa0bf); flex-shrink:0; box-shadow:0 0 8px var(--cc,#8aa0bf); }
-    .org-col-title { flex:1; font-size:0.82rem; font-weight:800; color:#e5eef8; line-height:1.25; cursor:text; }
-    .org-col-count { font-size:0.72rem; font-weight:700; color:var(--text-3,#7e9ab5); background:rgba(255,255,255,0.06); padding:1px 8px; border-radius:99px; }
-    .org-col-menu { border:none; background:none; color:var(--text-3,#7e9ab5); cursor:pointer; font-size:1rem; padding:0 4px; border-radius:6px; }
+    .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#b0a999); flex-shrink:0; box-shadow:0 0 8px var(--cc,#b0a999); }
+    .org-col-title { flex:1; font-size:0.82rem; font-weight:800; color:#f1efec; line-height:1.25; cursor:text; }
+    .org-col-count { font-size:0.72rem; font-weight:700; color:var(--text-3,#a79f8c); background:rgba(255,255,255,0.06); padding:1px 8px; border-radius:99px; }
+    .org-col-menu { border:none; background:none; color:var(--text-3,#a79f8c); cursor:pointer; font-size:1rem; padding:0 4px; border-radius:6px; }
     .org-col-menu:hover { color:#fff; background:rgba(255,255,255,0.08); }
     .org-cards { flex:1; overflow-y:auto; padding:4px 10px; display:flex; flex-direction:column; gap:8px; min-height:24px; }
-    .org-add { margin:8px 10px 12px; padding:9px 12px; border-radius:10px; border:1px dashed rgba(255,255,255,0.15); background:transparent; color:var(--text-3,#7e9ab5); font-size:0.82rem; cursor:pointer; text-align:left; font-family:inherit; }
-    .org-add:hover { background:rgba(255,255,255,0.05); color:#cdd9ec; }
+    .org-add { margin:8px 10px 12px; padding:9px 12px; border-radius:10px; border:1px dashed rgba(255,255,255,0.15); background:transparent; color:var(--text-3,#a79f8c); font-size:0.82rem; cursor:pointer; text-align:left; font-family:inherit; }
+    .org-add:hover { background:rgba(255,255,255,0.05); color:#e1ded8; }
     .org-add-input { margin:6px 10px 12px; }
-    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:10px; border:1px solid rgba(96,165,250,0.4); background:rgba(255,255,255,0.06); color:#e5eef8; font-family:inherit; font-size:0.85rem; padding:9px 11px; outline:none; }
+    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:10px; border:1px solid rgba(96,165,250,0.4); background:rgba(255,255,255,0.06); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; outline:none; }
     .org-add-row { display:flex; gap:8px; margin-top:6px; }
     .org-add-row button { padding:7px 14px; border-radius:9px; border:none; cursor:pointer; font-weight:700; font-size:0.8rem; font-family:inherit; }
-    .org-add-ok { background:#3b82f6; color:#fff; } .org-add-ok:hover{ filter:brightness(1.1); }
-    .org-add-cancel { background:rgba(255,255,255,0.06); color:var(--text-2,#aab7cf); }
+    .org-add-ok { background:#8dca67; color:#fff; } .org-add-ok:hover{ filter:brightness(1.1); }
+    .org-add-cancel { background:rgba(255,255,255,0.06); color:var(--text-2,#c5c0b4); }
 
     /* ── Card ── */
     .org-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:11px 12px; cursor:grab;
@@ -67,9 +67,9 @@
     .org-card:active { cursor:grabbing; }
     .org-card.dragging { opacity:0.45; }
     .org-card.done .org-card-title { text-decoration:line-through; opacity:0.7; }
-    .org-card-title { font-size:0.88rem; color:#e9f0fa; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
+    .org-card-title { font-size:0.88rem; color:#f3f2f0; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
     .org-card-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-    .org-badge { display:inline-flex; align-items:center; gap:4px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,0.07); color:#9db8d8; }
+    .org-badge { display:inline-flex; align-items:center; gap:4px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,0.07); color:#c3beb2; }
     .org-badge.due-soon { background:rgba(251,191,36,0.15); color:#fcd34d; }
     .org-badge.due-late { background:rgba(239,68,68,0.16); color:#fca5a5; }
 
@@ -79,45 +79,45 @@
     .org-modal.hidden { display:none; }
     .org-card-detail { width:100%; max-width:540px; max-height:90vh; overflow-y:auto; background:rgba(12,22,40,0.98); border:1px solid rgba(255,255,255,0.1);
       border-radius:18px; padding:22px; box-shadow:0 30px 80px rgba(0,0,0,0.6); }
-    .org-d-title { width:100%; font-size:1.1rem; font-weight:800; color:#eef4ff; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    .org-d-title { width:100%; font-size:1.1rem; font-weight:800; color:#f8f7f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
       border-radius:10px; padding:10px 12px; font-family:inherit; resize:vertical; min-height:44px; outline:none; }
-    .org-d-label { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3,#7e9ab5); margin:18px 0 8px; }
-    .org-d-input { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#e5eef8; font-family:inherit; font-size:0.9rem; padding:9px 11px; outline:none; }
+    .org-d-label { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3,#a79f8c); margin:18px 0 8px; }
+    .org-d-input { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1efec; font-family:inherit; font-size:0.9rem; padding:9px 11px; outline:none; }
     .org-d-input:focus { border-color:rgba(96,165,250,0.5); }
     textarea.org-d-input { resize:vertical; min-height:70px; }
     /* Rattachement d'une fiche à une branche Maslow (elle nourrit cette part de vie) */
     .org-d-branches { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
     .org-d-br { display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 4px; border-radius:11px; cursor:pointer;
-      border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#9db8d8; font-family:inherit; font-size:1rem; transition:all .16s; }
+      border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#c3beb2; font-family:inherit; font-size:1rem; transition:all .16s; }
     .org-d-br span { font-size:0.56rem; font-weight:700; text-align:center; line-height:1.1; }
     .org-d-br:hover { background:rgba(255,255,255,0.08); }
     .org-d-br.on { border-color:var(--bc); background:color-mix(in srgb, var(--bc) 18%, transparent); color:#fff; }
     .org-check { display:flex; align-items:center; gap:9px; padding:5px 0; }
     .org-check input[type=checkbox] { width:17px; height:17px; accent-color:#22c55e; cursor:pointer; flex-shrink:0; }
-    .org-check span { flex:1; font-size:0.88rem; color:#dbe6f5; }
-    .org-check span.done { text-decoration:line-through; color:#7e9ab5; }
-    .org-check .del { cursor:pointer; color:#7e9ab5; border:none; background:none; font-size:0.8rem; }
+    .org-check span { flex:1; font-size:0.88rem; color:#ebe9e5; }
+    .org-check span.done { text-decoration:line-through; color:#a79f8c; }
+    .org-check .del { cursor:pointer; color:#a79f8c; border:none; background:none; font-size:0.8rem; }
     .org-check .del:hover { color:#f87171; }
     .org-prog { height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; margin:4px 0 8px; }
     .org-prog div { height:100%; background:#22c55e; border-radius:4px; transition:width .4s; }
     .org-logs { display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; }
-    .org-log { font-size:0.76rem; color:#8ea6c4; display:flex; gap:8px; }
-    .org-log .t { color:#5b738f; white-space:nowrap; flex-shrink:0; }
+    .org-log { font-size:0.76rem; color:#b4ad9e; display:flex; gap:8px; }
+    .org-log .t { color:#847b66; white-space:nowrap; flex-shrink:0; }
     .org-d-actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
     .org-btn { padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:0.85rem; font-family:inherit; }
-    .org-btn.move { background:rgba(255,255,255,0.06); color:#cdd9ec; }
-    .org-btn.cal { background:rgba(66,133,244,0.16); color:#8ab4f8; border:1px solid rgba(66,133,244,0.4); }
+    .org-btn.move { background:rgba(255,255,255,0.06); color:#e1ded8; }
+    .org-btn.cal { background:rgba(66,133,244,0.16); color:#badfa3; border:1px solid rgba(66,133,244,0.4); }
     .org-btn.del { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.3); margin-left:auto; }
-    .org-btn.close { background:#3b82f6; color:#fff; }
-    .org-d-move { border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#e5eef8; font-family:inherit; font-size:0.85rem; padding:9px 11px; }
-    .org-d-move option { background:#0c1628; }
+    .org-btn.close { background:#8dca67; color:#fff; }
+    .org-d-move { border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; }
+    .org-d-move option { background:#1d1b17; }
 
     @media (max-width:600px){ .page-shell{ inset:8px; padding:12px 10px 6px; border-radius:16px; } .org-col{ flex-basis:80vw; } }
 
     /* ── Bascule de vue Board / Canvas ── */
     .org-viewtoggle { display:inline-flex; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:99px; padding:3px; }
-    .org-viewtoggle button { border:none; background:none; color:var(--text-2,#aab7cf); font-weight:700; font-size:0.82rem; padding:6px 14px; border-radius:99px; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }
-    .org-viewtoggle button.active { background:#3b82f6; color:#fff; box-shadow:0 4px 12px rgba(59,130,246,0.4); }
+    .org-viewtoggle button { border:none; background:none; color:var(--text-2,#c5c0b4); font-weight:700; font-size:0.82rem; padding:6px 14px; border-radius:99px; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }
+    .org-viewtoggle button.active { background:#8dca67; color:#fff; box-shadow:0 4px 12px rgba(59,130,246,0.4); }
 
     /* ── Scène (contient les 2 vues) ── */
     .org-stage { position:relative; height:100%; min-height:0; overflow:hidden; }
@@ -132,33 +132,33 @@
     .org-canvas-wrap.panning { cursor:grabbing; }
     .org-canvas-world { position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
     .org-node { position:absolute; width:210px; box-sizing:border-box; background:rgba(16,26,46,0.92);
-      border:1px solid rgba(255,255,255,0.10); border-left:3px solid var(--nc,#8aa0bf); border-radius:13px;
+      border:1px solid rgba(255,255,255,0.10); border-left:3px solid var(--nc,#b0a999); border-radius:13px;
       padding:11px 13px; cursor:grab; box-shadow:0 8px 24px rgba(0,0,0,0.34); backdrop-filter:blur(4px);
       transition:box-shadow .15s, border-color .15s; user-select:none; }
-    .org-node:hover { box-shadow:0 12px 30px rgba(0,0,0,0.5), 0 0 0 1px var(--nc,#8aa0bf); }
+    .org-node:hover { box-shadow:0 12px 30px rgba(0,0,0,0.5), 0 0 0 1px var(--nc,#b0a999); }
     .org-node.done { opacity:0.68; }
     .org-node.done .org-node-title { text-decoration:line-through; }
     .org-node-col { display:inline-flex; align-items:center; gap:5px; font-size:0.63rem; font-weight:800;
-      text-transform:uppercase; letter-spacing:.4px; color:var(--nc,#8aa0bf); margin-bottom:5px; }
-    .org-node-col i { width:7px; height:7px; border-radius:50%; background:var(--nc,#8aa0bf); box-shadow:0 0 7px var(--nc,#8aa0bf); }
-    .org-node-title { font-size:0.86rem; color:#e9f0fa; line-height:1.38; word-break:break-word; }
+      text-transform:uppercase; letter-spacing:.4px; color:var(--nc,#b0a999); margin-bottom:5px; }
+    .org-node-col i { width:7px; height:7px; border-radius:50%; background:var(--nc,#b0a999); box-shadow:0 0 7px var(--nc,#b0a999); }
+    .org-node-title { font-size:0.86rem; color:#f3f2f0; line-height:1.38; word-break:break-word; }
     .org-node-badges { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
     .org-canvas-toolbar { position:absolute; top:12px; right:12px; z-index:5; display:flex; gap:8px; }
     .org-canvas-toolbar button { display:inline-flex; align-items:center; gap:6px; padding:8px 13px; border-radius:99px;
-      border:1px solid rgba(255,255,255,0.16); background:rgba(12,22,40,0.85); color:var(--text-2,#aab7cf);
+      border:1px solid rgba(255,255,255,0.16); background:rgba(12,22,40,0.85); color:var(--text-2,#c5c0b4);
       font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .15s; backdrop-filter:blur(6px); }
     .org-canvas-toolbar button:hover { background:rgba(255,255,255,0.1); color:#fff; }
-    .org-canvas-hint { position:absolute; bottom:10px; left:14px; font-size:0.72rem; color:var(--text-3,#7e9ab5); pointer-events:none; user-select:none; }
+    .org-canvas-hint { position:absolute; bottom:10px; left:14px; font-size:0.72rem; color:var(--text-3,#a79f8c); pointer-events:none; user-select:none; }
 
     /* ── Connecteurs (flèches entre fiches, façon workflow IA) ── */
     .org-links { position:absolute; left:0; top:0; overflow:visible; pointer-events:none; }
     .org-link { fill:none; stroke:rgba(159,197,255,0.5); stroke-width:2.4; }
     .org-link-hit { fill:none; stroke:transparent; stroke-width:16; pointer-events:stroke; cursor:pointer; }
-    .org-link-g:hover .org-link { stroke:#7fd1ff; }
+    .org-link-g:hover .org-link { stroke:#b8dea0; }
     .org-link.temp { stroke:rgba(127,209,255,0.85); stroke-dasharray:6 6; }
     .org-node-port { position:absolute; right:-7px; top:50%; transform:translateY(-50%); width:15px; height:15px;
-      border-radius:50%; background:var(--nc,#8aa0bf); border:2px solid rgba(16,26,46,0.95); cursor:crosshair;
-      opacity:0; transition:opacity .15s; box-shadow:0 0 9px var(--nc,#8aa0bf); z-index:2; }
+      border-radius:50%; background:var(--nc,#b0a999); border:2px solid rgba(16,26,46,0.95); cursor:crosshair;
+      opacity:0; transition:opacity .15s; box-shadow:0 0 9px var(--nc,#b0a999); z-index:2; }
     .org-node:hover .org-node-port, .org-canvas-wrap.linking .org-node-port { opacity:1; }
     .org-canvas-wrap.linking .org-node { cursor:crosshair; }
 

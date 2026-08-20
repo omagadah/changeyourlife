@@ -23,7 +23,7 @@ let currentUser=null;
 try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 onAuthStateChanged(auth,u=>{currentUser=u;if(u)loadUserNotes();});
 
-const COLORS={corps:'#2dd4bf',coeur:'#f87171',etre:'#a78bfa',ordre:'#fbbf24',gen:'#60aeff'};
+const COLORS={corps:'#44bd48',coeur:'#f87171',etre:'#bdafd6',ordre:'#fbbf24',gen:'#a7d689'};
 const CAT_LABELS={corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
 const HTML_ESCAPES={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
 const esc=(s)=>String(s==null?'':s).replace(/[&<>"']/g,ch=>HTML_ESCAPES[ch]);
@@ -200,7 +200,7 @@ function renderCards(){
       </div>
       <h3>${title}</h3>
       <p>${summary}</p>
-      <div class="ccard-tags">${tags}${item.isUser?'<span class="tag" style="color:#60aeff;border-color:#60aeff33;">Ma note</span>':''}</div>
+      <div class="ccard-tags">${tags}${item.isUser?'<span class="tag" style="color:#a7d689;border-color:#60aeff33;">Ma note</span>':''}</div>
     </div>`;
   }).join('');
 

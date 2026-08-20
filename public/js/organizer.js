@@ -199,7 +199,7 @@ function buildNode(card, c) {
   const el = document.createElement('div');
   el.className = 'org-node' + (card.done ? ' done' : '');
   el.dataset.id = card.id;
-  el.style.setProperty('--nc', c.color || '#8aa0bf');
+  el.style.setProperty('--nc', c.color || '#b0a999');
   el.style.left = card.cx + 'px'; el.style.top = card.cy + 'px';
   const badges = badgesHtml(card);
   el.innerHTML =
@@ -452,7 +452,7 @@ function deleteColumn(c) {
 }
 function addColumn() {
   if (board.lockCols) return;
-  const colors = ['#a78bfa', '#34d399', '#f472b6', '#22d3ee', '#fb923c'];
+  const colors = ['#bdafd6', '#34d399', '#f472b6', '#4fc153', '#fb923c'];
   const c = { id: uid6('col'), title: 'Nouvelle colonne', color: colors[board.columns.length % colors.length], cards: [] };
   // insère avant 'Terminé' si présent, sinon à la fin
   const fi = board.columns.findIndex((x) => x.id === FINISH_ID);

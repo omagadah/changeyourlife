@@ -27,7 +27,7 @@
 
     const QUALITY_EMOJI = { 1:'😩', 2:'😴', 3:'😐', 4:'😊', 5:'🌟' };
     const QUALITY_LABEL = { 1:'Mauvaise', 2:'Passable', 3:'Bonne', 4:'Excellente', 5:'Parfaite' };
-    const QUALITY_COLOR = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#6366f1' };
+    const QUALITY_COLOR = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#a0d381' };
 
     function escapeHtml(s) {
       return String(s ?? '').replace(/[&<>"']/g, c =>
@@ -58,7 +58,7 @@
     function updateDuration() {
       const mins = calcDuration(document.getElementById('bedtime').value, document.getElementById('waketime').value);
       document.getElementById('duration-val').textContent = fmtDuration(mins);
-      const color = mins === null ? '#4a6a8a' : mins >= 480 ? '#22c55e' : mins >= 360 ? '#eab308' : '#ef4444';
+      const color = mins === null ? '#78705c' : mins >= 480 ? '#22c55e' : mins >= 360 ? '#eab308' : '#ef4444';
       document.getElementById('duration-val').style.color = color;
     }
     document.getElementById('bedtime').addEventListener('input', updateDuration);
@@ -153,7 +153,7 @@
         document.getElementById('stat-avg').style.color = avgColor;
         const avgQ = (last7.reduce((s,l) => s + (l.quality||3), 0) / last7.length).toFixed(1);
         document.getElementById('stat-quality').textContent = avgQ + '/5';
-        document.getElementById('stat-quality').style.color = QUALITY_COLOR[Math.round(parseFloat(avgQ))] || '#eef4ff';
+        document.getElementById('stat-quality').style.color = QUALITY_COLOR[Math.round(parseFloat(avgQ))] || '#f8f7f5';
       }
 
       // Streak badge

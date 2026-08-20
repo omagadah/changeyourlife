@@ -31,9 +31,9 @@ if (window._cyfFirebase) {
 
 // ── Levels definition ─────────────────────────────────────────────────────
 const LEVELS = [
-  { id:'self-actualization', label:'Réalisation de Soi',    emoji:'✨', color:'#6366f1',
+  { id:'self-actualization', label:'Réalisation de Soi',    emoji:'✨', color:'#a0d381',
     defaults:['Créativité','Croissance personnelle','Spiritualité','Contribution','Vision de vie'] },
-  { id:'esteem',             label:'Estime de Soi',         emoji:'⭐', color:'#8b5cf6',
+  { id:'esteem',             label:'Estime de Soi',         emoji:'⭐', color:'#a28dc5',
     defaults:['Confiance en soi','Compétences','Réussite','Reconnaissance','Fierté'] },
   { id:'love',               label:'Amour & Appartenance',  emoji:'❤️', color:'#ec4899',
     defaults:['Famille','Amis proches','Relations amoureuses','Communauté','Empathie'] },
@@ -126,7 +126,7 @@ function renderGlobalScore() {
   document.getElementById('gsb-ring-fill').style.strokeDashoffset = C * (1 - pct / 100);
 
   // Color by progress
-  const color = pct >= 80 ? '#10b981' : pct >= 50 ? '#3b82f6' : pct >= 25 ? '#f59e0b' : '#6366f1';
+  const color = pct >= 80 ? '#59a862' : pct >= 50 ? '#8dca67' : pct >= 25 ? '#f59e0b' : '#a0d381';
   document.getElementById('gsb-ring-fill').style.stroke = color;
 
   // Title
@@ -285,8 +285,8 @@ function renderMindmap() {
   svgParts.push(`<defs>
     <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.7"/>
+      <stop offset="0%" stop-color="#8dca67" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#6db540" stop-opacity="0.7"/>
     </radialGradient>
     ${LEVELS.map(l => `<radialGradient id="grad-${l.id}" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="${l.color}" stop-opacity="0.85"/>
@@ -325,7 +325,7 @@ function renderMindmap() {
         const fill = skill.done ? `url(#grad-${lvl.id})` : 'rgba(255,255,255,0.04)';
         const stroke = skill.done ? lvl.color : 'rgba(255,255,255,0.18)';
         const sw = skill.done ? 2 : 1;
-        const textFill = skill.done ? '#ffffff' : '#7a9ab8';
+        const textFill = skill.done ? '#ffffff' : '#a69e8c';
         const truncated = esc(truncateStr(skill.label, 9));
 
         svgParts.push(`<g class="mm-skill" data-level="${lvl.id}" data-skill="${skill.id}" style="cursor:pointer">
@@ -450,8 +450,8 @@ function renderStats(rowId, progId) {
   statsRow.innerHTML = '';
   const cards = [
     { icon:'🎯', value:`${pct}%`,      label:'Progression globale', fill:lvlColor(pct), pct },
-    { icon:'✅', value: totalDone,       label:'Compétences cochées',  fill:'#10b981', pct: total ? totalDone/total*100 : 0 },
-    { icon:'📋', value: total,           label:'Compétences totales',  fill:'#3b82f6', pct: 100 },
+    { icon:'✅', value: totalDone,       label:'Compétences cochées',  fill:'#59a862', pct: total ? totalDone/total*100 : 0 },
+    { icon:'📋', value: total,           label:'Compétences totales',  fill:'#8dca67', pct: 100 },
     { icon:'🏆', value: countComplete(), label:'Niveaux complets',     fill:'#f59e0b', pct: countComplete()/LEVELS.length*100 },
   ];
   cards.forEach(c => {
@@ -492,8 +492,8 @@ function countComplete() {
 }
 
 function lvlColor(pct) {
-  if (pct >= 80) return '#10b981';
-  if (pct >= 50) return '#3b82f6';
+  if (pct >= 80) return '#59a862';
+  if (pct >= 50) return '#8dca67';
   if (pct >= 20) return '#f59e0b';
   return '#ef4444';
 }

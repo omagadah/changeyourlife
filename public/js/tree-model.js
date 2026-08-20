@@ -120,7 +120,7 @@ function makeEarthTexture(THREE) {
   const ctx = cv.getContext('2d');
   // océan
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, '#0b2e5c'); g.addColorStop(0.5, '#0e4f93'); g.addColorStop(1, '#0b2e5c');
+  g.addColorStop(0, '#2e4c1b'); g.addColorStop(0.5, '#47772a'); g.addColorStop(1, '#2e4c1b');
   ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
   // continents : amas de blobs organiques
   const land = ['#3d7a3a', '#4a8a3f', '#71873b', '#8a7a4a', '#356a33'];
@@ -173,7 +173,7 @@ export function buildTree(THREE, model, opts) {
   const ezTree = !!opts.ezTree;
 
   // Tronc en chêne clair plutôt qu'en chocolat sombre : se voit nettement sur
-  // fond marine #060e1a, et la grille ESP blanche par-dessus ne « grille » plus
+  // fond marine #12110e, et la grille ESP blanche par-dessus ne « grille » plus
   // le tronc par contraste - on lit enfin l'arbre comme un arbre.
   const barkActive = new THREE.MeshStandardMaterial({ color: 0xa67c52, roughness: 0.7, metalness: 0.05 });
   const barkDormant = new THREE.MeshStandardMaterial({ color: 0x5d6677, roughness: 0.95 });
@@ -463,7 +463,7 @@ export function buildTree(THREE, model, opts) {
   function makeNebulaTexture() {
     const c = document.createElement('canvas'); c.width = 2048; c.height = 1024;
     const g = c.getContext('2d');
-    g.fillStyle = '#04060c'; g.fillRect(0, 0, 2048, 1024);
+    g.fillStyle = '#090807'; g.fillRect(0, 0, 2048, 1024);
     const blobs = [
       [430, 360, 380, 'rgba(70,46,130,0.22)'], [1320, 300, 430, 'rgba(28,64,128,0.18)'],
       [950, 720, 410, 'rgba(96,34,104,0.16)'], [1700, 780, 350, 'rgba(40,78,120,0.16)'],

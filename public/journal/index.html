@@ -10,11 +10,11 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    body { color: #e5eef8; }
+    body { color: #f1efec; }
 
     .layout {
       position: fixed; top: 56px; bottom: 20px; left: 20px; right: 20px;
@@ -42,24 +42,24 @@
     .panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
 
     .sidebar-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
-    .sidebar-sub { font-size: 0.78rem; color: #7e9ab5; }
+    .sidebar-sub { font-size: 0.78rem; color: #a79f8c; }
     .sidebar-stats-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
     .sidebar-stat-pill {
       display:inline-flex; align-items:center; gap:4px;
       padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:600;
-      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#7e9ab5;
+      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#a79f8c;
     }
     .sidebar-stat-pill.streak { background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.2); color:#fbbf24; }
-    .sidebar-stat-pill.mood { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.2); color:#c4b5fd; }
+    .sidebar-stat-pill.mood { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.2); color:#d6cde5; }
 
     .btn-new {
       display: flex; align-items: center; justify-content: center; gap: 6px;
       width: 100%; margin-top: 10px; padding: 9px;
       border-radius: 10px; border: 1px dashed rgba(59,130,246,0.45);
-      background: rgba(59,130,246,0.07); color: #9fb5ff;
+      background: rgba(59,130,246,0.07); color: #cae6b8;
       font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
     }
-    .btn-new:hover { background: rgba(59,130,246,0.18); border-color: #3b82f6; }
+    .btn-new:hover { background: rgba(59,130,246,0.18); border-color: #8dca67; }
 
     .entry-item {
       padding: 11px 13px 11px 17px; border-radius: 13px;
@@ -86,54 +86,54 @@
       letter-spacing: 0.2px; flex-shrink: 0;
     }
     .search-bar { margin-top: 8px; position: relative; }
-    .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#e5eef8; font-size:0.82rem; outline:none; transition:border-color .2s; }
+    .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#f1efec; font-size:0.82rem; outline:none; transition:border-color .2s; }
     .search-bar input:focus { border-color:rgba(59,130,246,.5); }
-    .search-bar input::placeholder { color:#4a6278; }
-    .search-clear { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#7e9ab5; cursor:pointer; font-size:1rem; padding:0; display:none; }
+    .search-bar input::placeholder { color:#6e6654; }
+    .search-clear { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#a79f8c; cursor:pointer; font-size:1rem; padding:0; display:none; }
     .filter-pills { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
-    .filter-pill { padding:3px 8px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#7e9ab5; cursor:pointer; font-size:0.75rem; transition:all .15s; }
+    .filter-pill { padding:3px 8px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#a79f8c; cursor:pointer; font-size:0.75rem; transition:all .15s; }
     .filter-pill:hover { background:rgba(255,255,255,0.08); }
-    .filter-pill.active { background:rgba(59,130,246,0.2); border-color:#3b82f6; color:#9fb5ff; }
+    .filter-pill.active { background:rgba(59,130,246,0.2); border-color:#8dca67; color:#cae6b8; }
     .filter-pill.clear-btn { border-color:rgba(239,68,68,.3); color:#ef4444; }
-    .edited-badge { font-size:0.72rem; color:#7e9ab5; font-style:italic; margin-left:6px; }
+    .edited-badge { font-size:0.72rem; color:#a79f8c; font-style:italic; margin-left:6px; }
     .entry-item-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
     .entry-emoji { font-size: 1.1rem; }
-    .entry-date { font-size: 0.72rem; color: #7e9ab5; flex: 1; }
+    .entry-date { font-size: 0.72rem; color: #a79f8c; flex: 1; }
     .entry-domain-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .entry-preview { font-size: 0.8rem; color: #9fb5ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .entry-preview { font-size: 0.8rem; color: #cae6b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .empty-list { text-align: center; padding: 36px 16px; color: #7e9ab5; font-size: 0.88rem; }
+    .empty-list { text-align: center; padding: 36px 16px; color: #a79f8c; font-size: 0.88rem; }
     .empty-list-icon { font-size: 2.2rem; margin-bottom: 8px; }
 
     .mood-chart-wrap { margin-top: 10px; }
     .mood-chart { display: flex; gap: 5px; align-items: flex-end; height: 44px; padding: 0 2px; }
     .mood-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .mood-bar-bg { width: 14px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 32px; display: flex; align-items: flex-end; }
-    .mood-bar-fill { width: 100%; background: #3b82f6; border-radius: 4px; }
-    .mood-bar-label { font-size: 0.7rem; color: #7e9ab5; }
+    .mood-bar-fill { width: 100%; background: #8dca67; border-radius: 4px; }
+    .mood-bar-label { font-size: 0.7rem; color: #a79f8c; }
 
     .emotions { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
     .emotion-btn {
       padding: 5px 10px; border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04); color: #e5eef8;
+      background: rgba(255,255,255,0.04); color: #f1efec;
       cursor: pointer; font-size: 0.8rem; transition: all 0.15s;
       display: flex; align-items: center; gap: 4px;
     }
     .emotion-btn:hover { background: rgba(255,255,255,0.1); }
-    .emotion-btn.selected { background: rgba(59,130,246,0.22); border-color: #3b82f6; color: #fff; }
+    .emotion-btn.selected { background: rgba(59,130,246,0.22); border-color: #8dca67; color: #fff; }
 
     .domains { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
     .domain-btn {
       padding: 4px 10px; border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.1);
-      background: transparent; color: #9ca3af;
+      background: transparent; color: #afa99c;
       cursor: pointer; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; transition: all 0.15s;
     }
-    .domain-btn.sel-none  { border-color: #6b7280; color: #9ca3af; background: rgba(107,114,128,0.15); }
-    .domain-btn.sel-body  { border-color: #2dd4bf; color: #2dd4bf; background: rgba(45,212,191,0.15); }
+    .domain-btn.sel-none  { border-color: #807a6b; color: #afa99c; background: rgba(107,114,128,0.15); }
+    .domain-btn.sel-body  { border-color: #44bd48; color: #44bd48; background: rgba(45,212,191,0.15); }
     .domain-btn.sel-heart { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.15); }
-    .domain-btn.sel-etre  { border-color: #9ca3ff; color: #9ca3ff; background: rgba(156,163,255,0.15); }
+    .domain-btn.sel-etre  { border-color: #c8e5b6; color: #c8e5b6; background: rgba(156,163,255,0.15); }
     .domain-btn.sel-order { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
 
     .editor-date {
@@ -149,7 +149,7 @@
     .editor-title-input::placeholder { color: rgba(229,238,248,0.2); }
     .editor-content-input {
       width: 100%; flex: 1; min-height: 180px;
-      background: transparent; border: none; color: #c8d9f0; outline: none;
+      background: transparent; border: none; color: #e1ded7; outline: none;
       resize: none; font-size: 0.96rem; line-height: 1.85; font-family: inherit;
     }
     .editor-content-input::placeholder { color: rgba(229,238,248,0.18); }
@@ -166,23 +166,23 @@
       background: rgba(255,255,255,0.08); overflow: hidden; vertical-align: middle;
     }
     .word-count-bar-fill {
-      height: 100%; background: linear-gradient(90deg, var(--blue), #60a5fa);
+      height: 100%; background: linear-gradient(90deg, var(--blue), #a4d486);
       border-radius: 3px; transition: width 0.3s ease; min-width: 0;
     }
 
     .read-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; color: var(--text-1); }
     .read-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-2); }
-    .read-content { font-size: 0.96rem; line-height: 1.85; color: #b8cce0; white-space: pre-wrap; margin-top: 16px; }
+    .read-content { font-size: 0.96rem; line-height: 1.85; color: #d3cfc5; white-space: pre-wrap; margin-top: 16px; }
     .read-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 14px; }
 
-    .empty-editor { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #7e9ab5; padding: 40px; }
+    .empty-editor { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #a79f8c; padding: 40px; }
     .empty-editor-icon { font-size: 3rem; margin-bottom: 14px; }
-    .empty-editor-title { font-size: 1rem; font-weight: 600; color: #9fb5ff; margin-bottom: 6px; }
+    .empty-editor-title { font-size: 1rem; font-weight: 600; color: #cae6b8; margin-bottom: 6px; }
     .empty-editor-sub { font-size: 0.85rem; line-height: 1.5; }
 
-    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
+    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
     .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: linear-gradient(135deg,#3b82f6,#2563eb); border-color: transparent; box-shadow: 0 4px 14px rgba(59,130,246,.3); }
+    .btn.primary { background: linear-gradient(135deg,#8dca67,#7bc14f); border-color: transparent; box-shadow: 0 4px 14px rgba(59,130,246,.3); }
     .btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,.4); }
     .btn.danger { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
     .btn.danger:hover { background: rgba(239,68,68,0.25); }
@@ -192,13 +192,13 @@
     .toast.error { background: rgba(239,68,68,0.92); }
 
     /* ── Domain filter pills ── */
-    .filter-section-label { font-size:0.66rem; color:#3a5570; text-transform:uppercase; letter-spacing:.5px; margin: 7px 0 3px; font-weight:700; }
-    .filter-pill.dom-body   { border-color:rgba(45,212,191,.4); color:#2dd4bf; }
-    .filter-pill.dom-body.active   { background:rgba(45,212,191,.15);   border-color:#2dd4bf; }
+    .filter-section-label { font-size:0.66rem; color:#60594a; text-transform:uppercase; letter-spacing:.5px; margin: 7px 0 3px; font-weight:700; }
+    .filter-pill.dom-body   { border-color:rgba(45,212,191,.4); color:#44bd48; }
+    .filter-pill.dom-body.active   { background:rgba(45,212,191,.15);   border-color:#44bd48; }
     .filter-pill.dom-heart  { border-color:rgba(239,68,68,.4);   color:#f87171; }
     .filter-pill.dom-heart.active  { background:rgba(239,68,68,.15);    border-color:#f87171; }
-    .filter-pill.dom-etre   { border-color:rgba(167,139,250,.4); color:#a78bfa; }
-    .filter-pill.dom-etre.active   { background:rgba(167,139,250,.15);  border-color:#a78bfa; }
+    .filter-pill.dom-etre   { border-color:rgba(167,139,250,.4); color:#bdafd6; }
+    .filter-pill.dom-etre.active   { background:rgba(167,139,250,.15);  border-color:#bdafd6; }
     .filter-pill.dom-order  { border-color:rgba(251,191,36,.4);  color:#fbbf24; }
     .filter-pill.dom-order.active  { background:rgba(251,191,36,.15);   border-color:#fbbf24; }
 
@@ -206,26 +206,26 @@
     .stats-panel { display:none; flex-direction:column; height:100%; overflow:hidden; }
     .stats-panel.active { display:flex; }
     .stats-scroll { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:20px; }
-    .stats-section-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:.6px; color:#4a6a8a; font-weight:700; margin-bottom:10px; }
+    .stats-section-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:.6px; color:#78705c; font-weight:700; margin-bottom:10px; }
 
     .stats-kpi-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
     .kpi-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; }
     .kpi-val { font-size:1.6rem; font-weight:800; color:#fff; line-height:1; }
-    .kpi-label { font-size:0.72rem; color:#7e9ab5; margin-top:3px; }
+    .kpi-label { font-size:0.72rem; color:#a79f8c; margin-top:3px; }
 
     .months-chart { display:flex; gap:6px; align-items:flex-end; height:80px; }
     .month-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
     .month-bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:6px; overflow:hidden; flex:1; display:flex; align-items:flex-end; min-height:8px; }
-    .month-bar-fill { width:100%; background:linear-gradient(180deg,#3b82f6,#1d4ed8); border-radius:6px; transition:height .4s; }
-    .month-label { font-size:0.65rem; color:#4a6a8a; font-weight:700; }
-    .month-count { font-size:0.65rem; color:#7e9ab5; }
+    .month-bar-fill { width:100%; background:linear-gradient(180deg,#8dca67,#6db540); border-radius:6px; transition:height .4s; }
+    .month-label { font-size:0.65rem; color:#78705c; font-weight:700; }
+    .month-count { font-size:0.65rem; color:#a79f8c; }
 
     .emo-stat-list { display:flex; flex-direction:column; gap:7px; }
     .emo-stat-row { display:flex; align-items:center; gap:8px; }
     .emo-stat-bar-bg { flex:1; height:6px; background:rgba(255,255,255,0.07); border-radius:10px; overflow:hidden; }
-    .emo-stat-bar-fill { height:100%; border-radius:10px; background:#3b82f6; transition:width .4s; }
+    .emo-stat-bar-fill { height:100%; border-radius:10px; background:#8dca67; transition:width .4s; }
     .emo-stat-label { font-size:0.8rem; min-width:80px; }
-    .emo-stat-count { font-size:0.75rem; color:#7e9ab5; min-width:22px; text-align:right; }
+    .emo-stat-count { font-size:0.75rem; color:#a79f8c; min-width:22px; text-align:right; }
 
     .domain-stat-list { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .domain-stat-pill {
@@ -234,18 +234,18 @@
       border-radius:10px; padding:8px 12px;
     }
     .domain-stat-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .domain-stat-name { font-size:0.8rem; color:#c8d9f0; flex:1; }
+    .domain-stat-name { font-size:0.8rem; color:#e1ded7; flex:1; }
     .domain-stat-cnt { font-size:0.8rem; font-weight:700; color:#fff; }
 
     /* ── Stats toggle btn ── */
     .btn-stats-toggle {
       margin-top:6px; width:100%; padding:6px; border-radius:8px;
       border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03);
-      color:#4a6a8a; font-size:0.72rem; font-weight:600; cursor:pointer;
+      color:#78705c; font-size:0.72rem; font-weight:600; cursor:pointer;
       transition:all .15s; text-align:center;
     }
-    .btn-stats-toggle:hover { background:rgba(255,255,255,0.07); color:#9fb5ff; }
-    .btn-stats-toggle.active { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:#93c5fd; }
+    .btn-stats-toggle:hover { background:rgba(255,255,255,0.07); color:#cae6b8; }
+    .btn-stats-toggle.active { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:#c2e2ae; }
   </style>
 </head>
 <body>
@@ -255,11 +255,11 @@
   <nav class="site-nav">
     <a href="/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
     </button>
   </nav>
 
-  <div class="layout">
+  <div class="layout" data-cyl-shift>
     <!-- ── Sidebar ── -->
     <aside class="panel">
       <div class="panel-header">
@@ -276,10 +276,10 @@
         <div class="filter-section-label" id="domain-filter-label">Domaine</div>
         <div class="filter-pills" id="domain-filter-pills"></div>
         <div class="mood-chart-wrap" id="mood-chart-wrap" style="display:none">
-          <div style="font-size:0.7rem;color:#7e9ab5;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
+          <div style="font-size:0.7rem;color:#a79f8c;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
           <div class="mood-chart" id="mood-chart"></div>
         </div>
-        <button id="btn-export" title="Exporter toutes les entrées en JSON" style="margin-top:8px;width:100%;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:#4a6a8a;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center">Exporter (.json)</button>
+        <button id="btn-export" title="Exporter toutes les entrées en JSON" style="margin-top:8px;width:100%;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:#78705c;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center">Exporter (.json)</button>
         <button class="btn-stats-toggle" id="btn-stats-toggle">Statistiques</button>
       </div>
       <div class="panel-body" id="entry-list"></div>
@@ -309,7 +309,7 @@
               <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.7px;color:var(--blue-light);font-weight:700">Prompt du jour</span>
               <span style="font-size:0.72rem;color:var(--text-3)">Cliquer →</span>
             </div>
-            <div id="prompt-text" style="font-size:0.9rem;color:#d0e4ff;line-height:1.6;font-style:italic"></div>
+            <div id="prompt-text" style="font-size:0.9rem;color:#ebe9e4;line-height:1.6;font-style:italic"></div>
           </div>
           <textarea class="editor-content-input" id="editor-content" placeholder="Commence à écrire… Que s'est-il passé aujourd'hui ? Comment te sens-tu ? Quelles pensées traversent ton esprit ?"></textarea>
           <div class="editor-footer">
@@ -329,7 +329,7 @@
       <div class="stats-panel" id="view-stats">
         <div class="panel-header" style="flex-shrink:0">
           <div style="font-size:1.05rem;font-weight:700">Statistiques du journal</div>
-          <div style="font-size:0.78rem;color:#7e9ab5;margin-top:2px" id="stats-sub">Analyse de tes entrées</div>
+          <div style="font-size:0.78rem;color:#a79f8c;margin-top:2px" id="stats-sub">Analyse de tes entrées</div>
         </div>
         <div class="stats-scroll" id="stats-content"></div>
       </div>

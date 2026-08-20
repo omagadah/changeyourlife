@@ -1,5 +1,5 @@
-// service-worker.js - v197 (la barre et CYL reviennent sur la racine)
-const CACHE_NAME = 'changeyourlife-v197';
+// service-worker.js - v198 (couleurs harmonisees, bords gauches, menu des langues)
+const CACHE_NAME = 'changeyourlife-v198';
 const urlsToCache = [
   '/',
   '/bienvenue.html',

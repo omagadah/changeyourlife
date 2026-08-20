@@ -5,14 +5,14 @@
 // carte qui glisse, à la couleur de la branche Maslow nourrie.
 
 const BRANCH_META = {
-  physio:          { label: 'Physiologique',   color: '#2dd4bf', emoji: '🌱' },
+  physio:          { label: 'Physiologique',   color: '#44bd48', emoji: '🌱' },
   securite:        { label: 'Sécurité',        color: '#fbbf24', emoji: '🛡️' },
   appartenance:    { label: 'Appartenance',    color: '#f87171', emoji: '❤️' },
   estime:          { label: 'Estime',          color: '#fb923c', emoji: '⭐' },
-  cognitif:        { label: 'Cognitif',        color: '#a78bfa', emoji: '🧠' },
-  esthetique:      { label: 'Esthétique',      color: '#e879c7', emoji: '🎨' },
-  accomplissement: { label: 'Accomplissement', color: '#38bdf8', emoji: '🚀' },
-  transcendance:   { label: 'Transcendance',   color: '#c4b5fd', emoji: '✨' },
+  cognitif:        { label: 'Cognitif',        color: '#bdafd6', emoji: '🧠' },
+  esthetique:      { label: 'Esthétique',      color: '#d98cae', emoji: '🎨' },
+  accomplissement: { label: 'Accomplissement', color: '#67c96a', emoji: '🚀' },
+  transcendance:   { label: 'Transcendance',   color: '#d6cde5', emoji: '✨' },
 };
 
 let ready = false;
@@ -29,9 +29,9 @@ function ensure() {
     .xpr-card{display:flex;align-items:center;gap:12px;min-width:212px;
       padding:12px 16px 12px 13px;border-radius:14px;
       background:rgba(11,24,41,0.97);
-      border:1px solid var(--xpr-color,#0070f3);
-      border-left:4px solid var(--xpr-color,#0070f3);
-      box-shadow:0 12px 34px rgba(0,0,0,0.5),0 0 22px -8px var(--xpr-color,#0070f3);
+      border:1px solid var(--xpr-color,#6cb43f);
+      border-left:4px solid var(--xpr-color,#6cb43f);
+      box-shadow:0 12px 34px rgba(0,0,0,0.5),0 0 22px -8px var(--xpr-color,#6cb43f);
       transform:translateX(135%);opacity:0;
       animation:xprIn .5s cubic-bezier(.22,1,.36,1) forwards;}
     .xpr-card.xpr-out{animation:xprOut .42s ease forwards;}
@@ -42,8 +42,8 @@ function ensure() {
     @keyframes xprPop{0%{transform:scale(0);}60%{transform:scale(1.32);}100%{transform:scale(1);}}
     .xpr-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
     .xpr-branch{font:700 0.68rem -apple-system,Segoe UI,Roboto,sans-serif;
-      letter-spacing:.6px;text-transform:uppercase;color:var(--xpr-color,#0070f3);}
-    .xpr-xp{font:800 1.02rem -apple-system,Segoe UI,Roboto,sans-serif;color:#eef4ff;}
+      letter-spacing:.6px;text-transform:uppercase;color:var(--xpr-color,#6cb43f);}
+    .xpr-xp{font:800 1.02rem -apple-system,Segoe UI,Roboto,sans-serif;color:#f8f7f5;}
     .xpr-leaf{font-size:1.1rem;flex-shrink:0;transform-origin:bottom center;
       animation:xprLeaf 2.4s ease-in-out infinite;}
     @keyframes xprLeaf{0%,100%{transform:rotate(-9deg);}50%{transform:rotate(9deg);}}

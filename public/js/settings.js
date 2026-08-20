@@ -22,8 +22,8 @@ function showAdminInfo(user) {
         infoDiv.style.display = 'block';
         
         // Log l'UID dans la console pour faciliter la configuration
-        console.log(`%c🔧 ADMIN UID: ${user.uid}`, 'background: #3b82f6; color: white; padding: 8px; border-radius: 4px; font-weight: bold;');
-        console.log(`%c📧 ADMIN EMAIL: ${user.email}`, 'background: #10b981; color: white; padding: 8px; border-radius: 4px;');
+        console.log(`%c🔧 ADMIN UID: ${user.uid}`, 'background: #8dca67; color: white; padding: 8px; border-radius: 4px; font-weight: bold;');
+        console.log(`%c📧 ADMIN EMAIL: ${user.email}`, 'background: #59a862; color: white; padding: 8px; border-radius: 4px;');
     }
 }
 
@@ -33,7 +33,7 @@ function showAdminFeedback(message, success = true) {
     if (feedbackDiv) {
         feedbackDiv.textContent = message;
         feedbackDiv.style.backgroundColor = success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-        feedbackDiv.style.color = success ? '#10b981' : '#ef4444';
+        feedbackDiv.style.color = success ? '#59a862' : '#ef4444';
         feedbackDiv.style.border = success ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)';
         feedbackDiv.style.display = 'block';
         setTimeout(() => { feedbackDiv.style.display = 'none'; }, 3500);
@@ -241,14 +241,14 @@ function initChart() {
             datasets: [{
                 label: "Score ChangeYourLife.ai",
                 data: chartDataSets[defaultPeriod].data,
-                borderColor: "#3b82f6",
+                borderColor: "#8dca67",
                 backgroundColor: "rgba(59, 130, 246, 0.1)",
                 borderWidth: 3,
                 tension: 0.4,
                 fill: true,
                 pointRadius: 5,
                 pointHoverRadius: 7,
-                pointBackgroundColor: "#3b82f6",
+                pointBackgroundColor: "#8dca67",
                 pointBorderColor: "#fff",
                 pointBorderWidth: 2
             }]
@@ -270,11 +270,11 @@ function initChart() {
                     beginAtZero: true,
                     min: 0,
                     max: 10,
-                    ticks: { color: "#9ca3af" },
+                    ticks: { color: "#afa99c" },
                     grid: { color: "rgba(255, 255, 255, 0.05)" }
                 },
                 x: {
-                    ticks: { color: "#9ca3af" },
+                    ticks: { color: "#afa99c" },
                     grid: { color: "rgba(255, 255, 255, 0.05)" }
                 }
             }
@@ -306,7 +306,7 @@ function setSecurityFeedback(msg, ok = true) {
     el.style.display = 'block';
     el.style.background = ok ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
     el.style.border = ok ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(239,68,68,0.35)';
-    el.style.color = ok ? '#10b981' : '#ef4444';
+    el.style.color = ok ? '#59a862' : '#ef4444';
     setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
@@ -626,7 +626,7 @@ function bindAdminHandlers() {
                     const strong = document.createElement('strong');
                     strong.textContent = u.displayName || '(sans nom)';
                     const emailSpan = document.createElement('span');
-                    emailSpan.style.color = '#6b7280';
+                    emailSpan.style.color = '#807a6b';
                     emailSpan.textContent = u.email || '';
                     const uidSmall = document.createElement('small');
                     uidSmall.textContent = 'UID: ' + uid;
@@ -684,7 +684,7 @@ function ensureModalRoot() {
         el = document.createElement('div');
         el.id = 'admin-modal-root';
         el.style.position = 'fixed'; el.style.inset = '0'; el.style.display = 'none'; el.style.alignItems = 'center'; el.style.justifyContent = 'center'; el.style.background = 'rgba(0,0,0,0.5)'; el.style.zIndex = '99999';
-        el.innerHTML = `<div id="admin-modal" style="max-width:640px;width:92%;background:rgba(31,41,55,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:18px;color:#e5eef8">
+        el.innerHTML = `<div id="admin-modal" style="max-width:640px;width:92%;background:rgba(31,41,55,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:18px;color:#f1efec">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3>Détail utilisateur</h3><button id="admin-modal-close" class="btn btn-secondary">Fermer</button></div>
             <div id="admin-modal-content" style="max-height:60vh;overflow:auto"></div>
         </div>`;
@@ -769,7 +769,7 @@ async function openUserDetailModal(uid) {
     const remBtn = document.getElementById('remove-mod-btn');
     const uidInput = document.getElementById('mod-uid');
     const fb = document.getElementById('admin-roles-feedback');
-    function setFB(msg, ok=true){ if(!fb) return; fb.style.display='block'; fb.textContent=msg; fb.style.background= ok? 'rgba(16,185,129,0.12)':'rgba(239,68,68,0.12)'; fb.style.border= ok? '1px solid rgba(16,185,129,0.35)':'1px solid rgba(239,68,68,0.35)'; fb.style.color= ok? '#10b981':'#ef4444'; setTimeout(()=>{fb.style.display='none';},3500); }
+    function setFB(msg, ok=true){ if(!fb) return; fb.style.display='block'; fb.textContent=msg; fb.style.background= ok? 'rgba(16,185,129,0.12)':'rgba(239,68,68,0.12)'; fb.style.border= ok? '1px solid rgba(16,185,129,0.35)':'1px solid rgba(239,68,68,0.35)'; fb.style.color= ok? '#59a862':'#ef4444'; setTimeout(()=>{fb.style.display='none';},3500); }
     if (addBtn && uidInput) addBtn.addEventListener('click', async () => {
         const target=(uidInput.value||'').trim(); if(!target) return;
         try { const setUserRole = httpsCallable(functions, 'setUserRole'); await setUserRole({ uid: target, role: 'mod' }); setFB('Modérateur promu.'); }

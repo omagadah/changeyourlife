@@ -10,8 +10,8 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
     body { color:var(--text-1); }
@@ -97,7 +97,7 @@
 
     .save-mood-btn {
       width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#1a56a4,var(--blue)); color:#fff;
+      background:linear-gradient(135deg,#548d31,var(--blue)); color:#fff;
       font-size:0.9rem; font-weight:700; font-family:inherit;
       transition:filter .2s, transform .1s;
     }
@@ -126,7 +126,7 @@
     .heatmap-cell[data-mood="2"] { background:#f97316; opacity:.8; }
     .heatmap-cell[data-mood="3"] { background:#eab308; opacity:.8; }
     .heatmap-cell[data-mood="4"] { background:#22c55e; opacity:.8; }
-    .heatmap-cell[data-mood="5"] { background:#2dd4bf; opacity:.8; }
+    .heatmap-cell[data-mood="5"] { background:#44bd48; opacity:.8; }
     .heatmap-cell .cell-tooltip {
       display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
       background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
@@ -165,7 +165,7 @@
     .entry-emoji { font-size:1.5rem; flex-shrink:0; }
     .entry-meta { flex:1; min-width:0; }
     .entry-date { font-size:0.7rem; color:var(--text-3); font-weight:600; margin-bottom:2px; }
-    .entry-note { font-size:0.83rem; color:#c8d8ee; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .entry-note { font-size:0.83rem; color:#e0ddd6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .entry-domain { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:999px; flex-shrink:0; background:rgba(255,255,255,0.06); color:var(--text-2); }
 
     /* ── Empty state ── */
@@ -191,7 +191,7 @@
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
       <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
         <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
           <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
           <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
           <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
@@ -233,7 +233,7 @@
             <span class="mood-emoji">🙂</span>
             <span class="mood-label">Bien</span>
           </div>
-          <div class="mood-btn" data-mood="5" style="--mbcolor:#2dd4bf">
+          <div class="mood-btn" data-mood="5" style="--mbcolor:#44bd48">
             <span class="mood-emoji">😄</span>
             <span class="mood-label">Excellent</span>
           </div>
@@ -244,9 +244,9 @@
         </div>
 
         <div class="domain-row" id="domain-row">
-          <div class="domain-pill" data-domain="corps" style="--dpcolor:#2dd4bf">Corps</div>
+          <div class="domain-pill" data-domain="corps" style="--dpcolor:#44bd48">Corps</div>
           <div class="domain-pill" data-domain="coeur" style="--dpcolor:#f87171">Cœur</div>
-          <div class="domain-pill" data-domain="etre" style="--dpcolor:#a78bfa">Être</div>
+          <div class="domain-pill" data-domain="etre" style="--dpcolor:#bdafd6">Être</div>
           <div class="domain-pill" data-domain="ordre" style="--dpcolor:#fbbf24">Ordre</div>
         </div>
 
@@ -267,7 +267,7 @@
             <div class="stat-block-value" id="stat-avg">-</div>
             <div class="stat-block-label">Moyenne (7j)</div>
           </div>
-          <div class="stat-block" style="--sb-color:#60a5fa">
+          <div class="stat-block" style="--sb-color:#a4d486">
             <div class="stat-block-icon">📅</div>
             <div class="stat-block-value" id="stat-total">0</div>
             <div class="stat-block-label">Entrées totales</div>
@@ -280,13 +280,13 @@
         <div class="section-title" style="margin-bottom:8px;">
           30 derniers jours
           <span style="margin-left:auto;display:flex;align-items:center;gap:5px;">
-            <span style="font-size:0.65rem;color:#4a6a8a;font-weight:400;text-transform:none;letter-spacing:0">😞</span>
+            <span style="font-size:0.65rem;color:#78705c;font-weight:400;text-transform:none;letter-spacing:0">😞</span>
             <div class="legend-dot" style="background:#ef4444"></div>
             <div class="legend-dot" style="background:#f97316"></div>
             <div class="legend-dot" style="background:#eab308"></div>
             <div class="legend-dot" style="background:#22c55e"></div>
-            <div class="legend-dot" style="background:#2dd4bf"></div>
-            <span style="font-size:0.65rem;color:#4a6a8a;font-weight:400;text-transform:none;letter-spacing:0">😄</span>
+            <div class="legend-dot" style="background:#44bd48"></div>
+            <span style="font-size:0.65rem;color:#78705c;font-weight:400;text-transform:none;letter-spacing:0">😄</span>
           </span>
         </div>
         <div class="heatmap-grid" id="heatmap-grid"></div>

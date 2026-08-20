@@ -34,16 +34,16 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 const sessions = [
-  { id:'calm',      title:'Calme & Sérénité',       desc:'Apaise ton esprit, relâche les tensions',       duration:5,  icon:'🌊', type:'guided',    color:'#2dd4bf' },
-  { id:'focus',     title:'Focus & Concentration',   desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', type:'guided',    color:'#0070f3' },
-  { id:'sleep',     title:'Sommeil profond',          desc:'Prépare-toi à une nuit réparatrice',           duration:15, icon:'🌙', type:'guided',    color:'#a78bfa' },
+  { id:'calm',      title:'Calme & Sérénité',       desc:'Apaise ton esprit, relâche les tensions',       duration:5,  icon:'🌊', type:'guided',    color:'#44bd48' },
+  { id:'focus',     title:'Focus & Concentration',   desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', type:'guided',    color:'#6cb43f' },
+  { id:'sleep',     title:'Sommeil profond',          desc:'Prépare-toi à une nuit réparatrice',           duration:15, icon:'🌙', type:'guided',    color:'#bdafd6' },
   { id:'gratitude', title:'Gratitude & Positivité',  desc:'Cultive la reconnaissance et la joie',          duration:7,  icon:'✨', type:'guided',    color:'#fbbf24' },
-  { id:'breathing', title:'Respiration 4-7-8',       desc:'Technique rapide pour réduire le stress',       duration:5,  icon:'💨', type:'breathing', color:'#60a5fa' },
-  { id:'coherence', title:'Cohérence cardiaque',      desc:'5 s inspire, 5 s expire - apaise le système nerveux', duration:5, icon:'🫁', type:'breathing', color:'#22d3ee',
+  { id:'breathing', title:'Respiration 4-7-8',       desc:'Technique rapide pour réduire le stress',       duration:5,  icon:'💨', type:'breathing', color:'#a4d486' },
+  { id:'coherence', title:'Cohérence cardiaque',      desc:'5 s inspire, 5 s expire - apaise le système nerveux', duration:5, icon:'🫁', type:'breathing', color:'#4fc153',
     pattern:[ { text:'Inspire doucement…', label:'Inspiration', cls:'inhale', duration:5000, dot:0 }, { text:'Expire doucement…', label:'Expiration', cls:'exhale', duration:5000, dot:2 } ] },
   { id:'sos',       title:'SOS stress',               desc:'3 minutes pour redescendre, tout de suite',     duration:3,  icon:'🆘', type:'breathing', color:'#fb7185' },
   { id:'body-scan', title:'Scan corporel',            desc:'Relâche chaque partie de ton corps',            duration:12, icon:'🧘', type:'guided',    color:'#f87171' },
-  { id:'philo',     title:'Réflexion philosophique',  desc:'Une question à contempler en silence',          duration:8,  icon:'🌌', type:'reflection',color:'#c4b5fd' },
+  { id:'philo',     title:'Réflexion philosophique',  desc:'Une question à contempler en silence',          duration:8,  icon:'🌌', type:'reflection',color:'#d6cde5' },
   { id:'nature',    title:'Évasion nature',           desc:'Laisse un paysage t\'emporter au calme',        duration:10, icon:'🏞️', type:'guided',    color:'#34d399' },
   { id:'custom',    title:'Durée personnalisée',      desc:'Choisis ton propre rythme',                     duration:20, icon:'⏱️', type:'guided',    color:'#34d399' },
 ];

@@ -333,11 +333,11 @@ function renderBadges(badgeIds) {
         item.style.cssText = `background:rgba(255,255,255,${earned?'0.06':'0.02'});border:1px solid rgba(255,255,255,${earned?'0.12':'0.05'});border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;opacity:${earned?'1':'0.4'};transition:opacity .2s;`;
         item.title = def.desc;
         const icon = document.createElement('div');
-        icon.style.cssText = `width:36px;height:36px;border-radius:8px;background:${earned?'linear-gradient(135deg,#3b82f6,#8b5cf6)':'rgba(255,255,255,0.06)'};display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;`;
+        icon.style.cssText = `width:36px;height:36px;border-radius:8px;background:${earned?'linear-gradient(135deg,#8dca67,#a28dc5)':'rgba(255,255,255,0.06)'};display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;`;
         icon.textContent = def.emoji;
         const text = document.createElement('div');
         const title = document.createElement('div'); title.style.cssText = 'font-weight:700;font-size:.82rem;'; title.textContent = def.name;
-        const subtitle = document.createElement('div'); subtitle.style.cssText = 'font-size:.72rem;color:#7e9ab5;margin-top:2px;'; subtitle.textContent = def.desc;
+        const subtitle = document.createElement('div'); subtitle.style.cssText = 'font-size:.72rem;color:#a79f8c;margin-top:2px;'; subtitle.textContent = def.desc;
         text.appendChild(title); text.appendChild(subtitle);
         item.appendChild(icon); item.appendChild(text);
         badgesGrid.appendChild(item);
@@ -395,7 +395,7 @@ function renderTitles(unlockedNames, selectedTitle, uid) {
         pill.className = 'title-pill' + (isUnlocked ? '' : ' locked');
         pill.title = def.desc;
         pill.innerHTML = `<span style="margin-right:6px">${def.emoji}</span>${def.name}`;
-        pill.style.cssText = 'border:1px solid rgba(255,255,255,0.14);padding:8px 13px;border-radius:999px;background:transparent;color:#e5eef8;cursor:pointer;font-weight:600;font-size:.84rem;transition:background .15s,border-color .15s,opacity .15s;';
+        pill.style.cssText = 'border:1px solid rgba(255,255,255,0.14);padding:8px 13px;border-radius:999px;background:transparent;color:#f1efec;cursor:pointer;font-weight:600;font-size:.84rem;transition:background .15s,border-color .15s,opacity .15s;';
         if (!isUnlocked) { pill.style.opacity = '0.38'; pill.style.cursor = 'default'; }
         if (def.id === 'fondateur' && isUnlocked) { pill.style.borderColor = 'rgba(231,177,92,0.6)'; pill.style.color = '#f1cd92'; }
         if (selectedTitle === def.name) { pill.style.background = 'rgba(59,130,246,0.2)'; pill.style.borderColor = 'rgba(59,130,246,0.5)'; }

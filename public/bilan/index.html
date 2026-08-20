@@ -10,8 +10,8 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
     body { color:var(--text-1); }
@@ -107,7 +107,7 @@
     }
     .question-block:last-child { border-bottom:none; }
     .question-num { font-size:0.65rem; font-weight:800; color:rgba(0,112,243,0.5); letter-spacing:1px; margin-bottom:6px; }
-    .question-text { font-size:0.88rem; color:#c8d8ee; margin-bottom:10px; line-height:1.5; font-weight:600; }
+    .question-text { font-size:0.88rem; color:#e0ddd6; margin-bottom:10px; line-height:1.5; font-weight:600; }
     .question-textarea {
       width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.07); border-radius:9px;
@@ -130,13 +130,13 @@
       background:var(--hl-color, rgba(59,130,246,0.5)); border-radius:11px 0 0 11px;
     }
     .highlight-icon { font-size:1.3rem; flex-shrink:0; }
-    .highlight-text { font-size:0.85rem; color:#c8d8ee; flex:1; }
+    .highlight-text { font-size:0.85rem; color:#e0ddd6; flex:1; }
     .highlight-val { font-size:0.9rem; font-weight:800; color:var(--text-1); flex-shrink:0; }
 
     /* ── Save button ── */
     .save-btn {
       width:100%; padding:12px; border-radius:12px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#1a56a4,var(--blue)); color:#fff;
+      background:linear-gradient(135deg,#548d31,var(--blue)); color:#fff;
       font-size:0.92rem; font-weight:700; font-family:inherit;
       transition:filter .2s, transform .1s;
     }
@@ -172,7 +172,7 @@
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
       <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
         <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+          <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
           <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
           <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
           <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
@@ -200,19 +200,19 @@
       <div>
         <div class="sec-label">En chiffres</div>
         <div class="stats-grid">
-          <div class="stat-card" style="--sc-color:#a78bfa">
+          <div class="stat-card" style="--sc-color:#bdafd6">
             <div class="stat-card-icon">⭐</div>
             <div class="stat-card-value" id="stat-xp">-</div>
             <div class="stat-card-label">XP gagnés</div>
             <div class="stat-card-delta" id="stat-xp-delta"></div>
           </div>
-          <div class="stat-card" style="--sc-color:#60a5fa">
+          <div class="stat-card" style="--sc-color:#a4d486">
             <div class="stat-card-icon">📔</div>
             <div class="stat-card-value" id="stat-journal">-</div>
             <div class="stat-card-label">Entrées journal</div>
             <div class="stat-card-delta" id="stat-journal-delta"></div>
           </div>
-          <div class="stat-card" style="--sc-color:#2dd4bf">
+          <div class="stat-card" style="--sc-color:#44bd48">
             <div class="stat-card-icon">🧘</div>
             <div class="stat-card-value" id="stat-meditation">-</div>
             <div class="stat-card-label">Séances méd.</div>
@@ -232,9 +232,9 @@
         <div class="sec-label">XP par domaine cette semaine</div>
         <div class="xp-domains-card" id="xp-domains-card">
           <div class="xp-domain-row">
-            <span class="xp-domain-label" style="color:#2dd4bf">Corps</span>
-            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-corps" style="background:#2dd4bf"></div></div>
-            <span class="xp-domain-val" style="color:#2dd4bf" id="xp-val-corps">0</span>
+            <span class="xp-domain-label" style="color:#44bd48">Corps</span>
+            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-corps" style="background:#44bd48"></div></div>
+            <span class="xp-domain-val" style="color:#44bd48" id="xp-val-corps">0</span>
           </div>
           <div class="xp-domain-row">
             <span class="xp-domain-label" style="color:#f87171">Cœur</span>
@@ -242,9 +242,9 @@
             <span class="xp-domain-val" style="color:#f87171" id="xp-val-coeur">0</span>
           </div>
           <div class="xp-domain-row">
-            <span class="xp-domain-label" style="color:#a78bfa">Être</span>
-            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-etre" style="background:#a78bfa"></div></div>
-            <span class="xp-domain-val" style="color:#a78bfa" id="xp-val-etre">0</span>
+            <span class="xp-domain-label" style="color:#bdafd6">Être</span>
+            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-etre" style="background:#bdafd6"></div></div>
+            <span class="xp-domain-val" style="color:#bdafd6" id="xp-val-etre">0</span>
           </div>
           <div class="xp-domain-row">
             <span class="xp-domain-label" style="color:#fbbf24">Ordre</span>

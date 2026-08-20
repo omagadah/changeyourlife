@@ -19,9 +19,9 @@
     try { initUserMenu(); } catch(e) {}
 
     const DOMAINS = [
-      {key:'body',  label:'Corps', emoji:'💪', color:'#2dd4bf'},
+      {key:'body',  label:'Corps', emoji:'💪', color:'#44bd48'},
       {key:'heart', label:'Cœur',  emoji:'❤️', color:'#f87171'},
-      {key:'etre',  label:'Être',  emoji:'✨', color:'#a78bfa'},
+      {key:'etre',  label:'Être',  emoji:'✨', color:'#bdafd6'},
       {key:'order', label:'Ordre', emoji:'⚡', color:'#fbbf24'},
     ];
 
@@ -125,7 +125,7 @@
       });
     }
 
-    const HABIT_DOMAIN_COLORS = { corps:'#2dd4bf', coeur:'#f87171', etre:'#a78bfa', ordre:'#fbbf24' };
+    const HABIT_DOMAIN_COLORS = { corps:'#44bd48', coeur:'#f87171', etre:'#bdafd6', ordre:'#fbbf24' };
 
     function renderHabitCard(h, idx) {
       const done = isDoneToday(h);

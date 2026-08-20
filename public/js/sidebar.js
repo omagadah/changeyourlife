@@ -110,8 +110,20 @@ function injectCSS() {
      la barre, ils redeviennent des elements de flux normal. */
   .cyl-sb-ctl > * { position:static !important; top:auto !important; right:auto !important;
     left:auto !important; margin:0 !important; }
+  /* LE SELECTEUR DOIT RESTER UN POINT D ANCRAGE.
+     La regle ci-dessus met tous les elements adoptes en position:static, ce
+     qui a emporte .lang-switch avec eux : son menu, en position:absolute, se
+     calait alors sur le document et partait hors de l ecran - la liste des
+     langues etait la, mais invisible. On lui rend son ancrage. */
+  .cyl-sb-ctl .lang-switch { position:relative !important; }
   .cyl-sb-ctl .lang-pop { position:absolute !important; bottom:calc(100% + 10px); top:auto !important;
-    left:0 !important; right:auto !important; }
+    left:0 !important; right:auto !important; z-index:50;
+    /* Le selecteur est en BAS de la barre : le menu s ouvre vers le haut, et
+       son animation part donc du bas, pas du haut. */
+    transform-origin:bottom left; transform:translateY(8px) scale(0.97);
+    /* La barre fait 232px : un menu de 264px deborderait sur le contenu. */
+    width:auto !important; min-width:196px; max-width:calc(var(--sb-w) - 24px); }
+  .cyl-sb-ctl .lang-pop.open { transform:none !important; }
 
   /* Le contenu des pages se decale d'autant.
      La barre horizontale des pages internes (.site-nav) et le logo flottant
@@ -149,6 +161,13 @@ function injectCSS() {
   body.has-sb .page-shell, body.has-sb .page-shell-nav {
     inset:20px 20px 20px calc(var(--sb-w) + 20px) !important;
   }
+  /* DECALAGE NON DESTRUCTIF.
+     Les regles ci-dessus reecrivent inset, ce qui suppose de connaitre la
+     mise en page de la page visee. data-cyl-shift ne touche a rien : une
+     marge gauche pousse l element hors de la barre en laissant intacts ses
+     top/bottom/left/right et sa grille interne. C'est la forme a preferer
+     pour toute page qui pose son propre cadre. */
+  body.has-sb [data-cyl-shift] { margin-left:var(--sb-w) !important; }
 
   /* Bouton d'ouverture sur petit ecran */
   .cyl-sb-burger { position:fixed; top:12px; left:12px; z-index:9900; width:38px; height:38px;
@@ -169,6 +188,7 @@ function injectCSS() {
     body.has-sb .ap-shell,
     body.has-sb [data-cyl-shell] { inset:60px 8px 8px !important; }
     body.has-sb .page-shell, body.has-sb .page-shell-nav { inset:60px 8px 8px !important; }
+    body.has-sb [data-cyl-shift] { margin-left:0 !important; }
     /* la ligne d'accueil laisse la place au bouton d'ouverture */
     body.has-sb .welcome-row { padding-left:46px; }
   }

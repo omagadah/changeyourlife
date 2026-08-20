@@ -10,11 +10,11 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
-    body { color: #e5eef8; }
+    body { color: #f1efec; }
 
     .page-wrap {
       min-height: 100vh;
@@ -25,7 +25,7 @@
 
     .page-header { margin-bottom: 24px; }
     .page-title { font-size: 1.7rem; font-weight: 800; margin-bottom: 4px; }
-    .page-sub { color: #7e9ab5; font-size: 0.88rem; }
+    .page-sub { color: #a79f8c; font-size: 0.88rem; }
 
     /* ── View switcher ── */
     .view-switcher {
@@ -89,7 +89,7 @@
       padding: 6px 13px; border-radius: 999px;
       border: 1.5px solid rgba(255,255,255,0.13);
       background: rgba(255,255,255,0.05);
-      color: #c8d9ec; cursor: pointer;
+      color: #dfdcd5; cursor: pointer;
       font-size: 0.81rem; font-weight: 500;
       transition: all 0.18s; user-select: none; position: relative;
     }
@@ -107,7 +107,7 @@
     .skill-edit { color: rgba(255,255,255,0.35); }
     .skill-pill:hover .skill-del, .skill-pill:hover .skill-edit { opacity: 1; }
     .skill-del:hover { color: #ef4444 !important; }
-    .skill-edit:hover { color: #3b82f6 !important; }
+    .skill-edit:hover { color: #8dca67 !important; }
 
     .btn-add-skill {
       display: inline-flex; align-items: center; gap: 4px;
@@ -123,17 +123,17 @@
       padding: 4px 11px; border-radius: 999px;
       border: 1.5px solid rgba(255,255,255,0.28);
       background: rgba(255,255,255,0.08);
-      color: #e5eef8; font-size: 0.8rem; outline: none; width: 140px;
+      color: #f1efec; font-size: 0.8rem; outline: none; width: 140px;
     }
-    .add-skill-input:focus { border-color: #3b82f6; }
+    .add-skill-input:focus { border-color: #8dca67; }
     .add-confirm-btn {
       width: 24px; height: 24px; border-radius: 50%;
-      background: #3b82f6; border: none; color: #fff;
+      background: #8dca67; border: none; color: #fff;
       cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
     }
     .add-cancel-btn {
       width: 24px; height: 24px; border-radius: 50%;
-      background: rgba(255,255,255,0.08); border: none; color: #e5eef8;
+      background: rgba(255,255,255,0.08); border: none; color: #f1efec;
       cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
     }
 
@@ -149,8 +149,8 @@
       border-radius: 14px; padding: 16px;
     }
     .stat-card-icon { font-size: 1.3rem; margin-bottom: 6px; }
-    .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #e5eef8; }
-    .stat-card-label { font-size: 0.72rem; color: #7e9ab5; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+    .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #f1efec; }
+    .stat-card-label { font-size: 0.72rem; color: #a79f8c; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
     .mini-bar { height: 4px; background: rgba(255,255,255,0.09); border-radius: 10px; overflow: hidden; margin-top: 8px; }
     .mini-bar-fill { height: 100%; border-radius: 10px; transition: width .7s ease; }
 
@@ -163,7 +163,7 @@
       border-radius: 10px;
     }
     .level-prog-emoji { font-size: 1rem; width: 22px; text-align: center; }
-    .level-prog-label { font-size: 0.81rem; color: #9fb5ff; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .level-prog-label { font-size: 0.81rem; color: #cae6b8; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .level-prog-pct { font-size: 0.79rem; font-weight: 700; min-width: 36px; text-align: right; }
     .level-prog-bar { width: 70px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
     .level-prog-bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
@@ -179,19 +179,19 @@
     .mindmap-container svg { display: block; }
     .mindmap-hint {
       text-align: center; padding: 12px 0 4px;
-      font-size: 0.75rem; color: #4a6a8a;
+      font-size: 0.75rem; color: #78705c;
     }
 
     /* ── Timeline ── */
     .timeline-wrap { max-width: 680px; margin: 0 auto; }
     .timeline-empty {
       text-align: center; padding: 60px 20px;
-      color: #4a6a8a; font-size: 0.9rem;
+      color: #78705c; font-size: 0.9rem;
     }
     .tl-group { margin-bottom: 32px; }
     .tl-date {
       font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; color: #4a7aaa;
+      letter-spacing: 1px; color: #6faa4a;
       margin-bottom: 12px; padding-left: 24px;
     }
     .tl-items { position: relative; padding-left: 24px; }
@@ -215,9 +215,9 @@
       background: rgba(0,0,0,0.4);
       position: absolute; left: -21px; top: 50%; transform: translateY(-50%);
     }
-    .tl-level { font-size: 0.73rem; color: #7e9ab5; margin-bottom: 2px; }
-    .tl-skill { font-size: 0.88rem; font-weight: 600; color: #e5eef8; }
-    .tl-time { margin-left: auto; font-size: 0.72rem; color: #4a6a8a; white-space: nowrap; }
+    .tl-level { font-size: 0.73rem; color: #a79f8c; margin-bottom: 2px; }
+    .tl-skill { font-size: 0.88rem; font-weight: 600; color: #f1efec; }
+    .tl-time { margin-left: auto; font-size: 0.72rem; color: #78705c; white-space: nowrap; }
 
     /* ── Toast ── */
     .toast {
@@ -243,21 +243,21 @@
     }
     .gsb-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
     .gsb-ring-bg  { stroke: rgba(255,255,255,0.07); fill: none; stroke-width: 5; }
-    .gsb-ring-fill { stroke: #3b82f6; fill: none; stroke-width: 5; stroke-linecap: round;
+    .gsb-ring-fill { stroke: #8dca67; fill: none; stroke-width: 5; stroke-linecap: round;
                      stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset .8s ease; }
     .gsb-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .gsb-pct { font-size: 1.1rem; font-weight: 800; color: #fff; line-height: 1; }
     .gsb-details { flex: 1; min-width: 140px; }
-    .gsb-title { font-size: 1rem; font-weight: 700; color: #e5eef8; margin-bottom: 4px; }
-    .gsb-sub { font-size: 0.8rem; color: #7e9ab5; line-height: 1.4; }
+    .gsb-title { font-size: 1rem; font-weight: 700; color: #f1efec; margin-bottom: 4px; }
+    .gsb-sub { font-size: 0.8rem; color: #a79f8c; line-height: 1.4; }
     .gsb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .gsb-btn {
       padding: 8px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05); color: #c8d9f0; font-size: 0.8rem; font-weight: 600;
+      background: rgba(255,255,255,0.05); color: #e1ded7; font-size: 0.8rem; font-weight: 600;
       cursor: pointer; transition: all .18s;
     }
     .gsb-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-    .gsb-btn.primary { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #93c5fd; }
+    .gsb-btn.primary { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #c2e2ae; }
     .gsb-btn.primary:hover { background: rgba(59,130,246,0.25); }
 
     @media (max-width: 720px) {
@@ -277,7 +277,7 @@
     <a href="/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
       <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;">
-        <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/>
+        <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
         <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
         <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
         <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>

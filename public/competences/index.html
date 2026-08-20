@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="theme-color" content="#0070f3">
+  <meta name="theme-color" content="#6cb43f">
   <link rel="stylesheet" href="/css/main.min.css" />
   <meta name="robots" content="noindex" />
   <style>
@@ -21,26 +21,26 @@
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; box-shadow:0 8px 28px rgba(0,0,0,.35); }
     .toast.show { transform:translate(-50%,0); }
     .toast.xp { background:rgba(59,130,246,.92); }
-    .toast.up { background:linear-gradient(135deg,#7c3aed,#a855f7); }
+    .toast.up { background:linear-gradient(135deg,#8a71b6,#9e8ac2); }
 
     .lya-bar { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:16px;
       background:linear-gradient(135deg,rgba(124,58,237,0.16),rgba(45,212,191,0.06)); border:1px solid rgba(124,58,237,0.24); }
     .lya-orb { width:42px; height:42px; flex-shrink:0; border-radius:50%;
       background:radial-gradient(circle at 36% 32%,#fbe6b0,#e7b15c 40%,#4a7a3a 100%);
       box-shadow:0 0 18px rgba(231,177,92,.5), inset 0 0 10px rgba(255,255,255,.25); }
-    .lya-name { font-size:0.64rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#c4b5fd; }
+    .lya-name { font-size:0.64rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#d6cde5; }
     .lya-line { font-size:0.92rem; color:var(--text-1); line-height:1.45; margin-top:2px; }
 
     .rf-input, .rf-select { padding:9px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
       background:rgba(255,255,255,0.05); color:var(--text-1); font-size:0.88rem; font-family:inherit; transition:border-color .2s; }
     .rf-input:focus, .rf-select:focus { outline:none; border-color:rgba(124,58,237,0.5); }
     .rf-select { color-scheme: dark; }
-    .rf-select option { background:#0b1829; color:#eef4ff; }
+    .rf-select option { background:#1d1b17; color:#f8f7f5; }
 
     .add-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .add-row .rf-input { flex:1; min-width:170px; }
     .btn-primary { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius:99px; border:none;
-      background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font-weight:800; font-size:0.86rem; cursor:pointer; transition:transform .2s, filter .2s; white-space:nowrap; }
+      background:linear-gradient(135deg,#9e8ac2,#8a71b6); color:#fff; font-weight:800; font-size:0.86rem; cursor:pointer; transition:transform .2s, filter .2s; white-space:nowrap; }
     .btn-primary:hover { transform:translateY(-2px); filter:brightness(1.08); }
 
     .sec-head { display:flex; align-items:center; gap:8px; margin:4px 0 4px; }
@@ -50,7 +50,7 @@
     .skill-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
     .skill-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:16px 18px;
       position:relative; overflow:hidden; transition:transform .18s, background .18s, border-color .18s; }
-    .skill-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--bc,#a855f7); opacity:.8; }
+    .skill-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--bc,#9e8ac2); opacity:.8; }
     .skill-card:hover { transform:translateY(-3px); background:rgba(255,255,255,0.045); }
     .sk-top { display:flex; align-items:center; gap:11px; }
     .sk-emoji { font-size:1.7rem; }
@@ -62,21 +62,21 @@
     .skill-card:hover .sk-del { opacity:1; }
     .sk-del:hover { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.3); color:#f87171; }
     .sk-lvl { display:flex; align-items:baseline; justify-content:space-between; margin:13px 0 6px; }
-    .sk-lvl-name { font-size:0.82rem; font-weight:800; color:var(--bc,#a855f7); }
+    .sk-lvl-name { font-size:0.82rem; font-weight:800; color:var(--bc,#9e8ac2); }
     .sk-lvl-xp { font-size:0.72rem; color:var(--text-3); }
     .sk-bar-bg { height:6px; background:rgba(255,255,255,0.07); border-radius:6px; overflow:hidden; }
-    .sk-bar { height:100%; background:var(--bc,#a855f7); border-radius:6px; width:0%; transition:width .8s cubic-bezier(.4,0,.2,1); }
+    .sk-bar { height:100%; background:var(--bc,#9e8ac2); border-radius:6px; width:0%; transition:width .8s cubic-bezier(.4,0,.2,1); }
     .sk-foot { display:flex; align-items:center; justify-content:space-between; margin-top:13px; gap:8px; }
     .sk-last { font-size:0.7rem; color:var(--text-3); }
     .btn-practice { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:99px; cursor:pointer;
-      border:1px solid rgba(124,58,237,0.4); background:rgba(124,58,237,0.1); color:#c4b5fd; font-size:0.78rem; font-weight:700; transition:all .18s; }
+      border:1px solid rgba(124,58,237,0.4); background:rgba(124,58,237,0.1); color:#d6cde5; font-size:0.78rem; font-weight:700; transition:all .18s; }
     .btn-practice:hover { background:rgba(124,58,237,0.2); transform:translateY(-1px); }
 
     .empty { text-align:center; padding:34px 20px; color:var(--text-3); }
     .empty .ic { font-size:2.6rem; margin-bottom:10px; }
     .suggest { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:14px; }
     .sug-chip { padding:7px 13px; border-radius:99px; border:1px dashed rgba(124,58,237,0.4); background:rgba(124,58,237,0.06);
-      color:#c4b5fd; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all .15s; }
+      color:#d6cde5; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all .15s; }
     .sug-chip:hover { background:rgba(124,58,237,0.14); border-style:solid; }
 
     @media (max-width:600px){ .page-shell{ inset:8px; padding:14px 12px; border-radius:16px; } .add-row .rf-select{ flex:1; } }
@@ -87,7 +87,7 @@
   <nav class="site-nav">
     <a href="/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/></g></svg>
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/></g></svg>
     </button>
   </nav>
 

@@ -43,11 +43,11 @@ const state = {
 
 // Branch config
 const BRANCHES = {
-  serenite:   { color:'#2dd4bf', emoji:'🌊', angle:-140, label:'Sérénité' },
+  serenite:   { color:'#44bd48', emoji:'🌊', angle:-140, label:'Sérénité' },
   vitalite:   { color:'#4ade80', emoji:'💪', angle:-100, label:'Vitalité' },
   ambition:   { color:'#f97316', emoji:'🎯', angle: -60, label:'Ambition' },
   liens:      { color:'#f87171', emoji:'❤️', angle: -20, label:'Liens' },
-  conscience: { color:'#a78bfa', emoji:'📔', angle:-170, label:'Conscience' },
+  conscience: { color:'#bdafd6', emoji:'📔', angle:-170, label:'Conscience' },
   discipline: { color:'#fbbf24', emoji:'⚡', angle: -10, label:'Discipline' },
 };
 
@@ -93,10 +93,10 @@ function drawTree() {
   // ── XP node at trunk tip ──
   ctx.beginPath(); ctx.arc(cx, trunkTop, 14, 0, Math.PI*2);
   const nodeGrd = ctx.createRadialGradient(cx, trunkTop, 0, cx, trunkTop, 14);
-  nodeGrd.addColorStop(0, '#6366f1');
-  nodeGrd.addColorStop(1, '#3b82f6');
+  nodeGrd.addColorStop(0, '#a0d381');
+  nodeGrd.addColorStop(1, '#8dca67');
   ctx.fillStyle = nodeGrd;
-  ctx.shadowColor = '#6366f1'; ctx.shadowBlur = 14;
+  ctx.shadowColor = '#a0d381'; ctx.shadowBlur = 14;
   ctx.fill();
   ctx.shadowBlur = 0;
 
@@ -341,7 +341,7 @@ function updateChips(modules) {
     const link = document.createElement('a');
     link.href = firstCfg.href;
     link.className = 'prompt-chip';
-    link.style.borderColor = 'rgba(59,130,246,.4)'; link.style.color = '#93c5fd';
+    link.style.borderColor = 'rgba(59,130,246,.4)'; link.style.color = '#c2e2ae';
     link.textContent = `→ Ouvrir ${firstCfg.label}`;
     row.appendChild(link);
   }

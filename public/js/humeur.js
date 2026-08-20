@@ -29,10 +29,10 @@ window.CYF_NAV_LINKS = [
 ];
 try { initUserMenu(); } catch(e) {}
 
-const MOOD_COLORS = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#2dd4bf' };
+const MOOD_COLORS = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#44bd48' };
 const MOOD_EMOJIS = { 1:'😞', 2:'😟', 3:'😐', 4:'🙂', 5:'😄' };
 const MOOD_LABELS = { 1:'Difficile', 2:'Bas', 3:'Neutre', 4:'Bien', 5:'Excellent' };
-const DOMAIN_COLORS = { corps:'#2dd4bf', coeur:'#f87171', etre:'#a78bfa', ordre:'#fbbf24' };
+const DOMAIN_COLORS = { corps:'#44bd48', coeur:'#f87171', etre:'#bdafd6', ordre:'#fbbf24' };
 const DOMAIN_LABELS = { corps:'Corps', coeur:'Cœur', etre:'Être', ordre:'Ordre' };
 
 function escapeHtml(s) {

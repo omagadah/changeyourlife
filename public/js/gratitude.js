@@ -164,7 +164,7 @@
       const list = document.getElementById('history-list');
       const sorted = Object.keys(entries).sort().reverse().slice(0, 14);
       if (!sorted.length) {
-        list.innerHTML = '<div style="color:#3a4a5a;font-size:.85rem;padding:12px 0;">Aucune entrée pour l\'instant.</div>';
+        list.innerHTML = '<div style="color:#544e40;font-size:.85rem;padding:12px 0;">Aucune entrée pour l\'instant.</div>';
         return;
       }
       list.innerHTML = '';

@@ -17,7 +17,7 @@ function injectStyles() {
     .idb-strap {
       width: 26px; height: 118px; margin: 0 auto;
       background:
-        repeating-linear-gradient(180deg, #7c3aed 0 9px, #6d28d9 9px 18px);
+        repeating-linear-gradient(180deg, #8a71b6 0 9px, #7658a9 9px 18px);
       border-radius: 4px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.4);
       position: relative;
@@ -29,16 +29,16 @@ function injectStyles() {
     }
     /* Attache métallique */
     .idb-clip { width: 40px; height: 20px; margin: -3px auto 0; border-radius: 5px;
-      background: linear-gradient(180deg, #e8e8ee, #9a9aa4 60%, #6e6e78);
+      background: linear-gradient(180deg, #eeece8, #a4a19a 60%, #78756e);
       box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6); position: relative; z-index: 2; }
-    .idb-hole { width: 34px; height: 9px; margin: 4px auto -4px; border-radius: 999px; background: #0b0e14;
+    .idb-hole { width: 34px; height: 9px; margin: 4px auto -4px; border-radius: 999px; background: #12100d;
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.8); position: relative; z-index: 3; }
 
     /* Carte */
     .idb-card {
       width: 250px; margin: 6px auto 0; padding: 18px 18px 16px;
       border-radius: 16px; cursor: grab; position: relative; overflow: hidden;
-      background: linear-gradient(160deg, #14121f 0%, #1c1830 55%, #241a3d 100%);
+      background: linear-gradient(160deg, #1c1a15 0%, #29261f 55%, #312e26 100%);
       border: 1px solid rgba(168,85,247,0.4);
       box-shadow: 0 22px 46px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
       transform-style: preserve-3d;
@@ -50,30 +50,30 @@ function injectStyles() {
       mix-blend-mode: screen; transition: background .05s linear;
     }
     .idb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .idb-brand { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.4px; color: #d8b4fe; }
+    .idb-brand { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.4px; color: #d6cde5; }
     .idb-brand b { color: #fff; }
     .idb-live { font-size: 0.56rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: #86efac;
       display: inline-flex; align-items: center; gap: 4px; }
     .idb-live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px #22c55e; }
     .idb-photo {
       width: 96px; height: 96px; border-radius: 14px; margin: 0 auto 12px;
-      background: #2a2340 center/cover no-repeat;
+      background: #38342b center/cover no-repeat;
       display: flex; align-items: center; justify-content: center;
-      font-size: 2.4rem; font-weight: 800; color: #e9d5ff;
+      font-size: 2.4rem; font-weight: 800; color: #edebe7;
       border: 2px solid rgba(230,230,235,0.45);
       box-shadow: 0 8px 20px rgba(0,0,0,0.45);
     }
-    .idb-name { text-align: center; font-size: 1.12rem; font-weight: 800; color: #f5ecff; letter-spacing: -0.3px; line-height: 1.15; }
-    .idb-title { text-align: center; font-size: 0.76rem; color: #c4b5fd; font-style: italic; margin-top: 2px; min-height: 14px; }
+    .idb-name { text-align: center; font-size: 1.12rem; font-weight: 800; color: #f7f6f4; letter-spacing: -0.3px; line-height: 1.15; }
+    .idb-title { text-align: center; font-size: 0.76rem; color: #d6cde5; font-style: italic; margin-top: 2px; min-height: 14px; }
     .idb-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 13px; padding-top: 12px; border-top: 1px dashed rgba(168,85,247,0.28); }
     .idb-meta-i { text-align: left; }
-    .idb-meta-l { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.7px; color: #9a86c4; font-weight: 700; }
-    .idb-meta-v { font-size: 0.86rem; font-weight: 800; color: #ede9fe; font-variant-numeric: tabular-nums; margin-top: 1px; }
+    .idb-meta-l { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.7px; color: #b1aa99; font-weight: 700; }
+    .idb-meta-v { font-size: 0.86rem; font-weight: 800; color: #f5f4f2; font-variant-numeric: tabular-nums; margin-top: 1px; }
     .idb-barcode { margin-top: 13px; height: 30px; border-radius: 5px;
-      background-image: repeating-linear-gradient(90deg, #e9e6f2 0 2px, transparent 2px 4px, #e9e6f2 4px 5px, transparent 5px 9px, #e9e6f2 9px 12px, transparent 12px 14px);
+      background-image: repeating-linear-gradient(90deg, #eeedea 0 2px, transparent 2px 4px, #eeedea 4px 5px, transparent 5px 9px, #eeedea 9px 12px, transparent 12px 14px);
       background-color: transparent; opacity: 0.85; }
-    .idb-hint { text-align: center; font-size: 0.68rem; color: #7c6ba0; margin-top: 12px; }
-    body.light-mode .idb-hint { color: #8b7bb0; }
+    .idb-hint { text-align: center; font-size: 0.68rem; color: #958c76; margin-top: 12px; }
+    body.light-mode .idb-hint { color: #a39b88; }
     @media (max-width: 420px) { .idb-card { width: 220px; } }
   `;
   document.head.appendChild(s);

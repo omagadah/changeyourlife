@@ -23,14 +23,14 @@ if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElemen
 
 // ── Métadonnées ──────────────────────────────────────────────────────────────
 const BRANCHES = [
-  { key: 'physio',          label: 'Physiologique',   emoji: '🌱', color: '#2dd4bf' },
+  { key: 'physio',          label: 'Physiologique',   emoji: '🌱', color: '#44bd48' },
   { key: 'securite',        label: 'Sécurité',        emoji: '🛡️', color: '#fbbf24' },
   { key: 'appartenance',    label: 'Appartenance',    emoji: '🤝', color: '#f87171' },
   { key: 'estime',          label: 'Estime',          emoji: '🏆', color: '#fb923c' },
-  { key: 'cognitif',        label: 'Cognitif',        emoji: '📚', color: '#a78bfa' },
-  { key: 'esthetique',      label: 'Esthétique',      emoji: '🎨', color: '#e879c7' },
-  { key: 'accomplissement', label: 'Accomplissement', emoji: '🚀', color: '#38bdf8' },
-  { key: 'transcendance',   label: 'Transcendance',   emoji: '✨', color: '#c4b5fd' },
+  { key: 'cognitif',        label: 'Cognitif',        emoji: '📚', color: '#bdafd6' },
+  { key: 'esthetique',      label: 'Esthétique',      emoji: '🎨', color: '#d98cae' },
+  { key: 'accomplissement', label: 'Accomplissement', emoji: '🚀', color: '#67c96a' },
+  { key: 'transcendance',   label: 'Transcendance',   emoji: '✨', color: '#d6cde5' },
 ];
 const BRANCH_BY_KEY = Object.fromEntries(BRANCHES.map((b) => [b.key, b]));
 const VITALS = [

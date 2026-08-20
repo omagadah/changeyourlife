@@ -70,8 +70,8 @@ export function avatarSVG({ size = 44, ring = true, thinking = false } = {}) {
       <!-- Lunettes : deux ronds et un pont. C'est la forme qui porte tout le
            reste - sans elles, ce n'est plus un professeur. -->
       <g fill="none" stroke="#2b3340" stroke-width="2.4">
-        <circle cx="42" cy="41" r="7.6" fill="#cfe4f2" fill-opacity=".26"/>
-        <circle cx="60" cy="41" r="7.6" fill="#cfe4f2" fill-opacity=".26"/>
+        <circle cx="42" cy="41" r="7.6" fill="#e4e2dd" fill-opacity=".26"/>
+        <circle cx="60" cy="41" r="7.6" fill="#e4e2dd" fill-opacity=".26"/>
         <path d="M49.6 41 q2.4-2 4.8 0"/>
         <path d="M34.4 40 l-3.6-1.6"/>
         <path d="M67.6 40 l3.6-1.6"/>

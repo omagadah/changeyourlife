@@ -14,36 +14,36 @@
   .urg-ov.on{display:flex;}
   .urg-card{width:100%;max-width:460px;max-height:90vh;overflow-y:auto;border-radius:20px;padding:26px 24px;
     background:linear-gradient(180deg,rgba(14,24,42,0.98),rgba(10,18,32,0.98));border:1px solid rgba(127,209,255,0.22);
-    box-shadow:0 30px 90px rgba(0,0,0,0.6);animation:urgIn .35s cubic-bezier(.2,.9,.25,1) both;color:#e8f0fb;}
+    box-shadow:0 30px 90px rgba(0,0,0,0.6);animation:urgIn .35s cubic-bezier(.2,.9,.25,1) both;color:#f3f2f0;}
   @keyframes urgIn{from{opacity:0;transform:translateY(16px) scale(.98);}to{opacity:1;transform:none;}}
-  .urg-x{position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#8ea6c4;background:none;border:none;cursor:pointer;}
+  .urg-x{position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#b4ad9e;background:none;border:none;cursor:pointer;}
   .urg-x:hover{color:#fff;}
   .urg-h{font:800 1.32rem Segoe UI,sans-serif;letter-spacing:-.3px;margin:0 0 8px;}
-  .urg-p{font:500 0.94rem/1.5 Segoe UI,sans-serif;color:#aebfd6;margin:0 0 18px;}
+  .urg-p{font:500 0.94rem/1.5 Segoe UI,sans-serif;color:#cac5ba;margin:0 0 18px;}
   .urg-opt{display:flex;flex-direction:column;gap:10px;}
   .urg-b{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:14px 16px;border-radius:13px;
     font:700 0.95rem Segoe UI,sans-serif;cursor:pointer;border:1px solid rgba(255,255,255,0.12);
-    background:rgba(255,255,255,0.05);color:#eaf2ff;transition:transform .12s,background .15s,border-color .15s;text-decoration:none;}
+    background:rgba(255,255,255,0.05);color:#f6f5f3;transition:transform .12s,background .15s,border-color .15s;text-decoration:none;}
   .urg-b:hover{background:rgba(255,255,255,0.09);transform:translateY(-1px);}
   .urg-b .ic{font-size:1.25rem;flex-shrink:0;}
-  .urg-b small{display:block;font-weight:500;color:#9fb2cb;font-size:0.78rem;margin-top:2px;}
+  .urg-b small{display:block;font-weight:500;color:#bfb9ab;font-size:0.78rem;margin-top:2px;}
   .urg-b.danger{border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.12);}
   .urg-b.danger:hover{background:rgba(239,68,68,0.2);}
   .urg-b.warn{border-color:rgba(251,191,36,0.45);background:rgba(251,191,36,0.1);}
   .urg-b.calm{border-color:rgba(45,212,191,0.45);background:rgba(45,212,191,0.1);}
   .urg-b.call{border-color:rgba(127,209,255,0.5);background:rgba(127,209,255,0.12);font-size:1.02rem;}
   .urg-b.call:hover{background:rgba(127,209,255,0.2);}
-  .urg-b.call .num{margin-left:auto;font-weight:800;color:#bfe6ff;font-size:1.1rem;}
-  .urg-ghost{background:none;border:none;color:#8ea6c4;font:600 0.86rem Segoe UI,sans-serif;cursor:pointer;
+  .urg-b.call .num{margin-left:auto;font-weight:800;color:#e3e1db;font-size:1.1rem;}
+  .urg-ghost{background:none;border:none;color:#b4ad9e;font:600 0.86rem Segoe UI,sans-serif;cursor:pointer;
     margin-top:14px;text-decoration:underline;text-underline-offset:3px;}
-  .urg-ghost:hover{color:#cfe0ff;}
-  .urg-note{font:500 0.82rem/1.45 Segoe UI,sans-serif;color:#9fb2cb;margin:14px 2px 0;}
+  .urg-ghost:hover{color:#eae8e4;}
+  .urg-note{font:500 0.82rem/1.45 Segoe UI,sans-serif;color:#bfb9ab;margin:14px 2px 0;}
   /* respiration */
   .urg-breath{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 4px;}
   .urg-breath .ball{width:120px;height:120px;border-radius:50%;
-    background:radial-gradient(circle at 40% 35%,#7fd1ff,#2dd4bf 70%);box-shadow:0 0 40px rgba(127,209,255,0.5);
+    background:radial-gradient(circle at 40% 35%,#b8dea0,#44bd48 70%);box-shadow:0 0 40px rgba(127,209,255,0.5);
     animation:urgBreath 8s ease-in-out infinite;}
-  .urg-breath .lab{font:700 1rem Segoe UI,sans-serif;color:#cfe0ff;min-height:1.2em;}
+  .urg-breath .lab{font:700 1rem Segoe UI,sans-serif;color:#eae8e4;min-height:1.2em;}
   @keyframes urgBreath{0%,100%{transform:scale(.62);}45%{transform:scale(1);}55%{transform:scale(1);}}
   @media (prefers-reduced-motion:reduce){.urg-breath .ball{animation:none;}}
   `;

@@ -12,10 +12,10 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <style>
-    body { color:#e5eef8; }
+    body { color:#f1efec; }
 
     .page-shell {
       position: fixed; inset: 20px;
@@ -38,7 +38,7 @@
       display: inline-flex; align-items: center; gap: 6px;
       padding: 6px 14px; border-radius: 12px;
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      font-size: 0.78rem; font-weight: 600; color: #9fb5ff;
+      font-size: 0.78rem; font-weight: 600; color: #cae6b8;
       transition: all .2s;
     }
     .stat-pill .sp-val { font-size: 1rem; font-weight: 800; color: #fff; }
@@ -62,8 +62,8 @@
     .domain-tab:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
     .domain-tab.active {
       color: #fff;
-      background: color-mix(in srgb, var(--tab-color, #3b82f6) 18%, transparent);
-      border-color: color-mix(in srgb, var(--tab-color, #3b82f6) 55%, transparent);
+      background: color-mix(in srgb, var(--tab-color, #8dca67) 18%, transparent);
+      border-color: color-mix(in srgb, var(--tab-color, #8dca67) 55%, transparent);
     }
 
     /* ── Goals grid ── */
@@ -114,16 +114,16 @@
     .progress-slider {
       flex: 1; -webkit-appearance: none; appearance: none;
       height: 4px; border-radius: 4px; outline: none; cursor: pointer;
-      background: linear-gradient(90deg, var(--goal-color, #3b82f6) var(--pct, 0%), rgba(255,255,255,0.12) var(--pct, 0%));
+      background: linear-gradient(90deg, var(--goal-color, #8dca67) var(--pct, 0%), rgba(255,255,255,0.12) var(--pct, 0%));
     }
     .progress-slider::-webkit-slider-thumb {
       -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
-      background: var(--goal-color, #3b82f6); cursor: pointer;
+      background: var(--goal-color, #8dca67); cursor: pointer;
       box-shadow: 0 0 0 3px rgba(0,0,0,0.4);
     }
     .progress-slider::-moz-range-thumb {
       width: 16px; height: 16px; border-radius: 50%; border: none;
-      background: var(--goal-color, #3b82f6); cursor: pointer;
+      background: var(--goal-color, #8dca67); cursor: pointer;
     }
     .slider-pct-label { font-size:0.8rem; font-weight:700; min-width:36px; text-align:right; color: var(--goal-color); }
 
@@ -131,11 +131,11 @@
     .subtasks-section { margin: 8px 0 12px; }
     .subtasks-toggle {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size:0.75rem; font-weight:700; color:#7e9ab5;
+      font-size:0.75rem; font-weight:700; color:#a79f8c;
       background:none; border:none; cursor:pointer; padding:0;
       transition: color .15s;
     }
-    .subtasks-toggle:hover { color:#9fb5ff; }
+    .subtasks-toggle:hover { color:#cae6b8; }
     .subtasks-toggle .arrow { transition: transform .2s; display:inline-block; }
     .subtasks-toggle.open .arrow { transform: rotate(90deg); }
 
@@ -156,40 +156,40 @@
       transition: all .15s;
     }
     .subtask-check.done {
-      background: var(--goal-color, #3b82f6);
-      border-color: var(--goal-color, #3b82f6);
+      background: var(--goal-color, #8dca67);
+      border-color: var(--goal-color, #8dca67);
     }
     .subtask-check.done::after { content: '✓'; color: #fff; font-size: 10px; font-weight:800; }
-    .subtask-label { flex: 1; font-size: 0.83rem; color: #c8d9f0; cursor: pointer; }
-    .subtask-label.done { text-decoration: line-through; color: #5a7a9a; }
+    .subtask-label { flex: 1; font-size: 0.83rem; color: #e1ded7; cursor: pointer; }
+    .subtask-label.done { text-decoration: line-through; color: #8a806a; }
     .subtask-del { background:none; border:none; color:rgba(255,255,255,0.2); cursor:pointer; font-size:1rem; padding:0 2px; transition:color .15s; }
     .subtask-del:hover { color: #ef4444; }
 
     .subtask-add-row { display:flex; gap:6px; margin-top:4px; }
     .subtask-add-input {
       flex:1; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.15);
-      border-radius: 7px; padding: 5px 10px; color: #e5eef8; font-size:0.82rem;
+      border-radius: 7px; padding: 5px 10px; color: #f1efec; font-size:0.82rem;
       outline:none; transition:border-color .2s;
     }
     .subtask-add-input:focus { border-color: rgba(59,130,246,.5); }
-    .subtask-add-input::placeholder { color:#3a5570; }
+    .subtask-add-input::placeholder { color:#60594a; }
     .subtask-add-btn {
       padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.06); color: #e5eef8; cursor:pointer; font-size:0.82rem;
+      background: rgba(255,255,255,0.06); color: #f1efec; cursor:pointer; font-size:0.82rem;
       transition: all .15s;
     }
     .subtask-add-btn:hover { background: rgba(255,255,255,0.12); }
 
     /* ── Actions ── */
     .goal-actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
-    .btn-icon { padding: 7px 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-size: 0.82rem; transition: all 0.2s; font-weight:600; }
+    .btn-icon { padding: 7px 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-size: 0.82rem; transition: all 0.2s; font-weight:600; }
     .btn-icon:hover { background: rgba(255,255,255,0.12); transform: scale(1.03); }
     .btn-icon.danger-confirm { background:rgba(239,68,68,.15); border-color:#ef4444; color:#ef4444; }
-    .btn-icon.active-slider { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.5); color:#93c5fd; }
+    .btn-icon.active-slider { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.5); color:#c2e2ae; }
 
     /* ── Templates ── */
     .templates-section { margin-bottom: 0; }
-    .templates-section-title { font-size:0.78rem; color:#7e9ab5; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
+    .templates-section-title { font-size:0.78rem; color:#a79f8c; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
     .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
     .template-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; cursor: pointer; text-align: center; transition: all 0.2s; }
     .template-card:hover { background: rgba(255,255,255,0.1); transform: scale(1.03); }
@@ -197,10 +197,10 @@
     .template-name { font-size: 0.82rem; font-weight: 600; }
 
     /* ── Shared btns ── */
-    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #e5eef8; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size:0.88rem; }
+    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size:0.88rem; }
     .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: #3b82f6; border-color: #2c60b8; box-shadow:0 4px 14px rgba(59,130,246,.3); }
-    .btn.primary:hover { background: #2563eb; }
+    .btn.primary { background: #8dca67; border-color: #65a93b; box-shadow:0 4px 14px rgba(59,130,246,.3); }
+    .btn.primary:hover { background: #7bc14f; }
 
     /* ── Modal ── */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000; }
@@ -208,10 +208,10 @@
     .modal-content { background: rgba(18,26,40,0.98); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 26px; max-width: 520px; width: 94%; max-height: 90vh; overflow-y:auto; }
     .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
     .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.85rem; color: #aab7cf; margin-bottom: 5px; font-weight:600; }
+    .form-group label { display: block; font-size: 0.85rem; color: #c5c0b4; margin-bottom: 5px; font-weight:600; }
     .form-group input, .form-group textarea, .form-group select {
       width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 9px; padding: 10px 12px; color: #e5eef8; font-family: inherit; font-size:0.9rem;
+      border-radius: 9px; padding: 10px 12px; color: #f1efec; font-family: inherit; font-size:0.9rem;
       outline:none; transition:border-color .2s;
     }
     .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: rgba(59,130,246,.5); }
@@ -219,7 +219,7 @@
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 
     /* ── Empty state ── */
-    #empty-state { text-align:center; padding:60px 20px; color:#aab7cf; display:none; }
+    #empty-state { text-align:center; padding:60px 20px; color:#c5c0b4; display:none; }
 
     /* ── Toast ── */
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
@@ -243,7 +243,7 @@
   <nav class="site-nav">
     <a href="/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
     </button>
   </nav>
 
@@ -253,7 +253,7 @@
     <div class="header-bar">
       <div>
         <h1>Objectifs & Progrès</h1>
-        <div style="font-size:0.82rem;color:#7e9ab5;margin-top:2px">Transforme tes intentions en actions concrètes</div>
+        <div style="font-size:0.82rem;color:#a79f8c;margin-top:2px">Transforme tes intentions en actions concrètes</div>
       </div>
       <button class="btn primary" id="btn-new-goal">+ Nouvel objectif</button>
     </div>

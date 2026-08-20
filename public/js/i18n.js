@@ -16,20 +16,20 @@ if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElemen
 // ── Drapeaux (SVG inline → s'affichent partout, y compris Windows où les
 //    emojis drapeaux 🇫🇷 ne sont pas rendus). ──────────────────────────────
 const FLAGS = {
-  fr: '<svg viewBox="0 0 3 2"><rect width="3" height="2" fill="#fff"/><rect width="1" height="2" fill="#002654"/><rect x="2" width="1" height="2" fill="#ce1126"/></svg>',
-  en: '<svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#012169"/><path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="8"/><path d="M0,0 60,40" stroke="#C8102E" stroke-width="4"/><path d="M60,0 0,40" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V40 M0,20 H60" stroke="#fff" stroke-width="12"/><path d="M30,0 V40 M0,20 H60" stroke="#C8102E" stroke-width="7"/></svg>',
+  fr: '<svg viewBox="0 0 3 2"><rect width="3" height="2" fill="#fff"/><rect width="1" height="2" fill="#283321"/><rect x="2" width="1" height="2" fill="#ce1126"/></svg>',
+  en: '<svg viewBox="0 0 60 40"><rect width="60" height="40" fill="#2F4E1C"/><path d="M0,0 60,40 M60,0 0,40" stroke="#fff" stroke-width="8"/><path d="M0,0 60,40" stroke="#C8102E" stroke-width="4"/><path d="M60,0 0,40" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V40 M0,20 H60" stroke="#fff" stroke-width="12"/><path d="M30,0 V40 M0,20 H60" stroke="#C8102E" stroke-width="7"/></svg>',
   es: '<svg viewBox="0 0 3 2"><rect width="3" height="2" fill="#AA151B"/><rect y="0.5" width="3" height="1" fill="#F1BF00"/></svg>',
   de: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#000"/><rect y="1" width="3" height="1" fill="#DD0000"/><rect y="2" width="3" height="1" fill="#FFCE00"/></svg>',
   it: '<svg viewBox="0 0 3 2"><rect width="3" height="2" fill="#fff"/><rect width="1" height="2" fill="#009246"/><rect x="2" width="1" height="2" fill="#CE2B37"/></svg>',
   pt: '<svg viewBox="0 0 5 3"><rect width="5" height="3" fill="#DA291C"/><rect width="2" height="3" fill="#046A38"/><circle cx="2" cy="1.5" r="0.5" fill="#FFE000" stroke="#DA291C" stroke-width="0.12"/></svg>',
-  nl: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect width="3" height="1" fill="#AE1C28"/><rect y="2" width="3" height="1" fill="#21468B"/></svg>',
+  nl: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect width="3" height="1" fill="#AE1C28"/><rect y="2" width="3" height="1" fill="#4C7F2D"/></svg>',
   pl: '<svg viewBox="0 0 5 3"><rect width="5" height="3" fill="#fff"/><rect y="1.5" width="5" height="1.5" fill="#DC143C"/></svg>',
-  ru: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect y="1" width="3" height="1" fill="#0039A6"/><rect y="2" width="3" height="1" fill="#D52B1E"/></svg>',
-  sv: '<svg viewBox="0 0 16 10"><rect width="16" height="10" fill="#006AA7"/><rect x="5" width="2" height="10" fill="#FECC00"/><rect y="4" width="16" height="2" fill="#FECC00"/></svg>',
+  ru: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect y="1" width="3" height="1" fill="#4A7B2B"/><rect y="2" width="3" height="1" fill="#D52B1E"/></svg>',
+  sv: '<svg viewBox="0 0 16 10"><rect width="16" height="10" fill="#4A7C2B"/><rect x="5" width="2" height="10" fill="#FECC00"/><rect y="4" width="16" height="2" fill="#FECC00"/></svg>',
   tr: '<svg viewBox="0 0 6 4"><rect width="6" height="4" fill="#E30A17"/><circle cx="2.35" cy="2" r="0.95" fill="#fff"/><circle cx="2.62" cy="2" r="0.76" fill="#E30A17"/></svg>',
   ja: '<svg viewBox="0 0 5 3"><rect width="5" height="3" fill="#fff"/><circle cx="2.5" cy="1.5" r="0.9" fill="#BC002D"/></svg>',
   zh: '<svg viewBox="0 0 6 4"><rect width="6" height="4" fill="#DE2910"/><circle cx="1.2" cy="1.1" r="0.55" fill="#FFDE00"/></svg>',
-  hi: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect width="3" height="1" fill="#FF9933"/><rect y="2" width="3" height="1" fill="#138808"/><circle cx="1.5" cy="1.5" r="0.27" fill="none" stroke="#0a3a8c" stroke-width="0.07"/></svg>',
+  hi: '<svg viewBox="0 0 3 3"><rect width="3" height="3" fill="#fff"/><rect width="3" height="1" fill="#FF9933"/><rect y="2" width="3" height="1" fill="#138808"/><circle cx="1.5" cy="1.5" r="0.27" fill="none" stroke="#436f27" stroke-width="0.07"/></svg>',
 };
 
 // ── Registre des langues proposées (ordre = ordre d'affichage). ─────────────

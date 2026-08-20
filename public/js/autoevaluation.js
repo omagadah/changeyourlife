@@ -22,7 +22,7 @@ let {app,auth,db}=window._cyfFirebase;
 try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 
 const DOMAINS=[
-  {key:'corps',label:'Corps',color:'#2dd4bf',emoji:'💪',questions:[
+  {key:'corps',label:'Corps',color:'#44bd48',emoji:'💪',questions:[
     "Comment évalues-tu ton niveau d'énergie physique au quotidien ?",
     "Es-tu satisfait(e) de la qualité de ton sommeil (durée, récupération) ?",
     "Pratiques-tu une activité physique régulière (sport, marche, etc.) ?",
@@ -36,7 +36,7 @@ const DOMAINS=[
     "As-tu un réseau de soutien solide sur qui tu peux compter ?",
     "Exprimes-tu facilement tes émotions et besoins à tes proches ?"
   ]},
-  {key:'etre',label:'Être',color:'#a78bfa',emoji:'✨',questions:[
+  {key:'etre',label:'Être',color:'#bdafd6',emoji:'✨',questions:[
     "As-tu un sentiment clair de tes valeurs profondes et de ton identité ?",
     "Te sens-tu aligné(e) avec ton but ou ta mission de vie ?",
     "Consacres-tu du temps régulier à ton développement personnel ?",
@@ -154,14 +154,14 @@ function showResults(){
       labels:DOMAINS.map(d=>d.emoji+' '+d.label),
       datasets:[{
         label:'Score',data:DOMAINS.map(d=>scores[d.key]),
-        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#0070f3',borderWidth:2,
+        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#6cb43f',borderWidth:2,
         pointBackgroundColor:DOMAINS.map(d=>d.color),pointBorderColor:'transparent',pointRadius:6,pointHoverRadius:8
       }]
     },
     options:{responsive:true,scales:{r:{
       min:0,max:10,ticks:{stepSize:2,color:'rgba(155,179,208,0.5)',backdropColor:'transparent',font:{size:9}},
       grid:{color:'rgba(255,255,255,0.05)'},angleLines:{color:'rgba(255,255,255,0.05)'},
-      pointLabels:{color:'#9bb3d0',font:{size:12,weight:'600'}}
+      pointLabels:{color:'#bfb9ac',font:{size:12,weight:'600'}}
     }},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}/10`}}}}
   });
 
@@ -191,7 +191,7 @@ function showResults(){
   } else if(allSame){
     insightsHtml=`
       <div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);">
-        <h4><span style="color:#60aeff">Équilibre parfait</span></h4>
+        <h4><span style="color:#a7d689">Équilibre parfait</span></h4>
         <p>Tous tes domaines sont au même niveau (${scores[low.key]}/10). C'est rare - choisis le domaine qui te tient le plus à cœur pour commencer à progresser.</p>
       </div>`;
   } else {
@@ -215,9 +215,9 @@ function showResults(){
       const domainLabels = {corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
       actionEl.innerHTML=`
         <div style="margin-top:16px;padding:16px 18px;background:rgba(0,112,243,0.06);border:1px solid rgba(0,112,243,0.2);border-radius:12px">
-          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#60aeff;font-weight:700;margin-bottom:8px">Passe à l'action maintenant</div>
-          <p style="font-size:0.85rem;color:#9bb3d0;margin-bottom:12px">Ton domaine <strong style="color:${target.color}">${target.emoji} ${target.label}</strong> a le plus besoin d'attention. Crée un objectif concret cette semaine.</p>
-          <a href="/objectifs/?domain=${target.key}" data-action="hover-shadow" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0070f3,#0056cc);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s">
+          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#a7d689;font-weight:700;margin-bottom:8px">Passe à l'action maintenant</div>
+          <p style="font-size:0.85rem;color:#bfb9ac;margin-bottom:12px">Ton domaine <strong style="color:${target.color}">${target.emoji} ${target.label}</strong> a le plus besoin d'attention. Crée un objectif concret cette semaine.</p>
+          <a href="/objectifs/?domain=${target.key}" data-action="hover-shadow" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#6cb43f,#5b9735);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s">
             Créer un objectif ${target.label} →
           </a>
         </div>`;
@@ -263,12 +263,12 @@ window.showHistDetail=(i)=>{
     data:{
       labels:DOMAINS.map(d=>d.emoji+' '+d.label),
       datasets:[{label:'Score',data:DOMAINS.map(d=>scores[d.key]??0),
-        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#0070f3',borderWidth:2,
+        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#6cb43f',borderWidth:2,
         pointBackgroundColor:DOMAINS.map(d=>d.color),pointBorderColor:'transparent',pointRadius:6,pointHoverRadius:8}]
     },
     options:{responsive:true,scales:{r:{min:0,max:10,ticks:{stepSize:2,color:'rgba(155,179,208,0.5)',backdropColor:'transparent',font:{size:9}},
       grid:{color:'rgba(255,255,255,0.05)'},angleLines:{color:'rgba(255,255,255,0.05)'},
-      pointLabels:{color:'#9bb3d0',font:{size:12,weight:'600'}}}},
+      pointLabels:{color:'#bfb9ac',font:{size:12,weight:'600'}}}},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}/10`}}}}
   });
 
@@ -287,7 +287,7 @@ window.showHistDetail=(i)=>{
   document.getElementById('detail-insights').innerHTML= numericGlobal>=9
     ?`<div class="insight" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);"><h4><span style="color:#fbbf24">Score très élevé</span></h4><p>Score global de ${global}/10. Si ces réponses reflètent ta réalité, c'est excellent !</p></div>`
     : allSame
-    ?`<div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);"><h4><span style="color:#60aeff">Équilibre parfait</span></h4><p>Tous les domaines à ${scores[low.key]}/10.</p></div>`
+    ?`<div class="insight" style="background:rgba(96,174,255,0.07);border:1px solid rgba(96,174,255,0.2);"><h4><span style="color:#a7d689">Équilibre parfait</span></h4><p>Tous les domaines à ${scores[low.key]}/10.</p></div>`
     :`<div class="insight" style="background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);">
         <h4><span style="color:${low.color}">${low.emoji} Priorité - ${low.label}</span></h4>
         <p>Score <strong>${scores[low.key]}/10</strong> - domaine le plus à travailler.</p>

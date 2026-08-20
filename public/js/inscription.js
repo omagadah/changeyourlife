@@ -154,14 +154,14 @@ function showNotification(msg, color = '#28a745') {
 function setHint(el, msg, ok = false) {
   if (!el) return;
   el.textContent = msg;
-  el.style.color = ok ? '#10b981' : '#ff6b6b';
+  el.style.color = ok ? '#59a862' : '#ff6b6b';
 }
 
 // ─── Real-time password requirements visual feedback ─────────────────────────
 function updateReqItem(id, satisfied) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.style.color = satisfied ? '#10b981' : '#bbb';
+  el.style.color = satisfied ? '#59a862' : '#bbb';
   el.style.textDecoration = satisfied ? 'line-through' : 'none';
 }
 
@@ -227,7 +227,7 @@ if (form) {
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         // OTP sent automatically by /verify-email page on first load (via /api/send-verification)
-        showNotification('Compte créé ! Vérifiez votre boîte mail 📧', '#0070f3');
+        showNotification('Compte créé ! Vérifiez votre boîte mail 📧', '#6cb43f');
         setTimeout(() => window.location.replace('/verify-email'), 1800);
       }
     } catch (err) {
@@ -324,7 +324,7 @@ if (forgotLink) {
     if (fmtErr) { setHint(emailHint, fmtErr); return; }
     try {
       await sendPasswordResetEmail(auth, email);
-      showNotification(`Email de réinitialisation envoyé à ${email} 📧`, '#0070f3');
+      showNotification(`Email de réinitialisation envoyé à ${email} 📧`, '#6cb43f');
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/user-not-found') { showError('Aucun compte trouvé avec cet email.'); }

@@ -554,7 +554,7 @@ function initBranchPanel(onClose) {
   function openInfo(opt) {
     if (!panel) return;
     lastOpen = null;
-    const col = opt.color || '#7fd1ff';
+    const col = opt.color || '#b8dea0';
     if (dot) dot.style.background = col;
     if (title) { title.textContent = opt.title || ''; title.style.color = col; }
     if (desc) desc.textContent = opt.body || '';
@@ -700,12 +700,12 @@ function initSatInfo(infoSats) {
         border-radius:10px;padding:9px 11px;backdrop-filter:blur(6px);pointer-events:auto;}
       .sat-info-card.primordial{width:250px;padding:12px 14px;border-color:rgba(127,209,255,0.55);
         box-shadow:0 0 26px rgba(127,209,255,0.28);background:rgba(6,16,30,0.9);}
-      .sat-info-title{font:800 11px Segoe UI,Roboto,sans-serif;letter-spacing:.4px;color:#cfe0ff;
+      .sat-info-title{font:800 11px Segoe UI,Roboto,sans-serif;letter-spacing:.4px;color:#eae8e4;
         display:flex;align-items:center;gap:6px;margin-bottom:4px;}
-      .sat-info-card.primordial .sat-info-title{font-size:13px;color:#bfe6ff;}
-      .sat-info-card p{font:500 10.5px Segoe UI,Roboto,sans-serif;line-height:1.45;color:#b9c7dc;margin:0 0 6px;}
+      .sat-info-card.primordial .sat-info-title{font-size:13px;color:#e3e1db;}
+      .sat-info-card p{font:500 10.5px Segoe UI,Roboto,sans-serif;line-height:1.45;color:#d1cdc4;margin:0 0 6px;}
       .sat-info-card.primordial p{font-size:11.5px;}
-      .sat-info-card a{font:700 10.5px Segoe UI,Roboto,sans-serif;color:#7fd1ff;text-decoration:none;}
+      .sat-info-card a{font:700 10.5px Segoe UI,Roboto,sans-serif;color:#b8dea0;text-decoration:none;}
       .sat-info-card a:hover{text-decoration:underline;}
       @media (max-width:880px){ .sat-info{display:none;} }
     `;
@@ -983,7 +983,7 @@ function initTree3D(canvas) {
       branchPanel.openInfo({
         title: '🛸 La plaque de Pioneer',
         body: "Gravée et envoyée dans l'espace en 1972 sur les sondes Pioneer : un message d'humanité aux étoiles. Elle dit qui nous sommes (un homme, une femme), où se trouve la Terre (carte de 14 pulsars) et notre système solaire. Comme cet arbre : une trace de ce que tu es, lancée vers l'avenir.",
-        color: '#bcd0ff', link: { label: 'En savoir plus (Wikipédia) ↗', href: 'https://fr.wikipedia.org/wiki/Plaque_de_Pioneer' },
+        color: '#daeecd', link: { label: 'En savoir plus (Wikipédia) ↗', href: 'https://fr.wikipedia.org/wiki/Plaque_de_Pioneer' },
       });
       return;
     }
@@ -991,7 +991,7 @@ function initTree3D(canvas) {
     const sat = nearestSat(e.clientX, e.clientY);
     if (sat) {
       const info = SAT_INFO[sat.userData.info];
-      if (info) { branchPanel.openInfo({ title: info.title, body: info.body, color: '#7fd1ff', link: info.link }); return; }
+      if (info) { branchPanel.openInfo({ title: info.title, body: info.body, color: '#b8dea0', link: info.link }); return; }
     }
     // 2) sinon, clic sur une branche
     const hit = nearestNode(e.clientX, e.clientY);

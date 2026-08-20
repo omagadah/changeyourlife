@@ -62,7 +62,7 @@ export function initLivingTree(userData) {
     `<button data-t="chene">Chêne</button><button data-t="frene">Frêne</button>`;
   toggle.querySelectorAll('button').forEach((b) => {
     b.style.cssText = 'font:700 0.72rem Segoe UI,sans-serif;cursor:pointer;border-radius:99px;padding:5px 11px;' +
-      'border:1px solid rgba(255,255,255,0.16);background:rgba(8,16,28,0.7);color:#cdd9ec;backdrop-filter:blur(6px);';
+      'border:1px solid rgba(255,255,255,0.16);background:rgba(8,16,28,0.7);color:#e1ded8;backdrop-filter:blur(6px);';
     if (b.dataset.t === type) { b.style.background = 'linear-gradient(135deg,#84c25e,#4a7a3a)'; b.style.color = '#06140a'; }
     b.onclick = () => { type = b.dataset.t; try { localStorage.setItem('cyl_treeType', type); } catch (_) {} buildFn = (g) => _ezMod && _ezMod.buildEzTree(type, { growth: g }); rebuild(); paintToggle(); };
   });
@@ -70,7 +70,7 @@ export function initLivingTree(userData) {
     toggle.querySelectorAll('button').forEach((b) => {
       const on = b.dataset.t === type;
       b.style.background = on ? 'linear-gradient(135deg,#84c25e,#4a7a3a)' : 'rgba(8,16,28,0.7)';
-      b.style.color = on ? '#06140a' : '#cdd9ec';
+      b.style.color = on ? '#06140a' : '#e1ded8';
     });
   }
   if (universe === 'arbre') stage.appendChild(toggle);   // l'essence ne concerne que l'arbre
@@ -214,7 +214,7 @@ export function initLivingTree(userData) {
   let hovered = null;
   const tip = document.createElement('div');
   tip.style.cssText = 'position:absolute;pointer-events:none;z-index:5;display:none;padding:6px 11px;border-radius:10px;' +
-    'background:rgba(8,16,28,0.92);border:1px solid rgba(255,255,255,0.16);color:#e5eef8;font:600 0.76rem Segoe UI,sans-serif;' +
+    'background:rgba(8,16,28,0.92);border:1px solid rgba(255,255,255,0.16);color:#f1efec;font:600 0.76rem Segoe UI,sans-serif;' +
     'backdrop-filter:blur(6px);white-space:nowrap;transform:translate(-50%,-130%);box-shadow:0 8px 24px rgba(0,0,0,0.4);';
   stage.appendChild(tip);
   function pickNode(e) {

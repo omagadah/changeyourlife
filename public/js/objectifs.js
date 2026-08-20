@@ -20,7 +20,7 @@ function bootVanta() {
 // ── Firebase ──────────────────────────────────────────────────────────────
 let auth, db, uid, goals = [], editingId = null, activeFilter = 'all';
 
-const DOMAIN_COLORS = { body:'#2dd4bf', heart:'#f87171', etre:'#a78bfa', order:'#fbbf24' };
+const DOMAIN_COLORS = { body:'#44bd48', heart:'#f87171', etre:'#bdafd6', order:'#fbbf24' };
 const DOMAIN_LABELS = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre' };
 const DOMAIN_ICONS  = { body:'🏃', heart:'❤️', etre:'✨', order:'📋' };
 
@@ -55,22 +55,22 @@ function injectMilestoneCss() {
   css.textContent = `
     .subtask-date{font-size:0.72rem;font-weight:600;margin-left:auto;
       padding:2px 7px;border-radius:6px;background:rgba(255,255,255,0.06);
-      color:#9bb3d0;flex-shrink:0;letter-spacing:.2px;white-space:nowrap;}
+      color:#bfb9ac;flex-shrink:0;letter-spacing:.2px;white-space:nowrap;}
     .subtask-date.overdue{color:#fca5a5;background:rgba(248,113,113,0.15);}
     .subtask-date.soon{color:#fde68a;background:rgba(251,191,36,0.15);}
     .subtask-add-row.has-date{flex-wrap:wrap;}
     .subtask-add-date{padding:7px 9px;border-radius:8px;
       background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-      color:#cdd9ea;font:500 0.78rem inherit;width:142px;flex-shrink:0;
+      color:#e0ddd7;font:500 0.78rem inherit;width:142px;flex-shrink:0;
       color-scheme:dark;outline:none;transition:border-color .15s;}
     .subtask-add-date:focus{border-color:rgba(0,112,243,0.4);}
     .next-milestone{display:flex;align-items:center;gap:10px;padding:9px 13px;
       border-radius:10px;margin:10px 0 4px;
       background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.22);}
     .next-milestone-emoji{font-size:1.05rem;flex-shrink:0;}
-    .next-milestone-label{flex:1;min-width:0;font-size:0.84rem;font-weight:600;color:#e0eaf6;
+    .next-milestone-label{flex:1;min-width:0;font-size:0.84rem;font-weight:600;color:#eeece8;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .next-milestone-date{font-size:0.74rem;color:#7bbfff;font-weight:700;flex-shrink:0;}
+    .next-milestone-date{font-size:0.74rem;color:#b6dd9d;font-weight:700;flex-shrink:0;}
     .next-milestone.overdue{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.25);}
     .next-milestone.overdue .next-milestone-date{color:#fca5a5;}
     .next-milestone.soon{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.28);}
@@ -157,7 +157,7 @@ function renderDomainTabs() {
   const tabs = document.getElementById('domain-tabs');
   const allCount = goals.length;
   const filters = [
-    { key:'all', label:`Tous (${allCount})`, color:'#3b82f6' },
+    { key:'all', label:`Tous (${allCount})`, color:'#8dca67' },
     ...Object.entries(DOMAIN_LABELS).map(([k,l]) => ({
       key:k, label:`${DOMAIN_ICONS[k]} ${l} (${goals.filter(g=>g.domain===k).length})`, color:DOMAIN_COLORS[k]
     }))
@@ -228,7 +228,7 @@ function renderGoals() {
 
 function buildGoalCard(g, idx) {
   const card = document.createElement('div');
-  const goalColor = DOMAIN_COLORS[g.domain] || '#6b7280';
+  const goalColor = DOMAIN_COLORS[g.domain] || '#807a6b';
   card.className = `goal-card${g.completed?' completed':''}`;
   card.style.setProperty('--goal-color', goalColor);
   if (!g.completed && g.deadline && new Date(g.deadline) < new Date()) card.classList.add('overdue');
@@ -322,7 +322,7 @@ function buildGoalCard(g, idx) {
 
   const stToggle = document.createElement('button'); stToggle.className = 'subtasks-toggle';
   const doneCount = subtasks.filter(s=>s.done).length;
-  stToggle.innerHTML = `<span class="arrow">▶</span> Jalons <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${subtasks.length ? `${doneCount}/${subtasks.length}` : '+ ajouter'}</span>`;
+  stToggle.innerHTML = `<span class="arrow">▶</span> Jalons <span style="color:#78705c;font-weight:600;margin-left:2px">${subtasks.length ? `${doneCount}/${subtasks.length}` : '+ ajouter'}</span>`;
   stToggle.addEventListener('click', () => {
     stToggle.classList.toggle('open');
     stList.classList.toggle('open');
@@ -443,7 +443,7 @@ function buildSubtaskItem(g, goalIdx, st, stIdx, card, toggle, goalColor) {
     // Update toggle badge (libellé « Jalons »)
     const doneCount = (g.subtasks||[]).filter(s=>s.done).length;
     const total = (g.subtasks||[]).length;
-    toggle.innerHTML = `<span class="arrow${toggle.classList.contains('open')?'':''}" style="transition:transform .2s;display:inline-block${toggle.classList.contains('open')?';transform:rotate(90deg)':''}">▶</span> Jalons <span style="color:#4a6a8a;font-weight:600;margin-left:2px">${total?`${doneCount}/${total}`:' + ajouter'}</span>`;
+    toggle.innerHTML = `<span class="arrow${toggle.classList.contains('open')?'':''}" style="transition:transform .2s;display:inline-block${toggle.classList.contains('open')?';transform:rotate(90deg)':''}">▶</span> Jalons <span style="color:#78705c;font-weight:600;margin-left:2px">${total?`${doneCount}/${total}`:' + ajouter'}</span>`;
     // Auto-update goal progress from milestones
     if (total > 0) {
       g.progress = Math.round(doneCount / total * 100);

@@ -50,12 +50,12 @@ if (window.__cylChat) { /* déjà chargé */ } else {
       .cyl-head-name{font:800 13px Segoe UI,Roboto,sans-serif;letter-spacing:1px;color:#fff;}
       .cyl-head-sub{font:500 10.5px Segoe UI,Roboto,sans-serif;color:#8fb3a0;margin-top:1px;}
       .cyl-x{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);
-        color:#aab7cf;cursor:pointer;font-size:1rem;line-height:1;}
+        color:#c5c0b4;cursor:pointer;font-size:1rem;line-height:1;}
       .cyl-x:hover{background:rgba(255,255,255,0.1);color:#fff;}
       .cyl-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
       .cyl-msg{max-width:84%;padding:9px 12px;border-radius:14px;font:500 13.5px Segoe UI,Roboto,sans-serif;line-height:1.5;white-space:pre-wrap;}
-      .cyl-msg.user{align-self:flex-end;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border-bottom-right-radius:5px;}
-      .cyl-msg.cyl{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e8eef7;border:1px solid rgba(255,255,255,0.07);border-bottom-left-radius:5px;}
+      .cyl-msg.user{align-self:flex-end;background:linear-gradient(135deg,#7bc14f,#6db540);color:#fff;border-bottom-right-radius:5px;}
+      .cyl-msg.cyl{align-self:flex-start;background:rgba(255,255,255,0.06);color:#f2f0ed;border:1px solid rgba(255,255,255,0.07);border-bottom-left-radius:5px;}
       .cyl-msg.typing{color:#8fb3a0;font-style:italic;}
       .cyl-mods{display:flex;flex-wrap:wrap;gap:6px;align-self:flex-start;max-width:84%;margin-top:-3px;}
       .cyl-mod{font:700 11.5px Segoe UI,Roboto,sans-serif;text-decoration:none;padding:6px 11px;border-radius:99px;
@@ -63,15 +63,15 @@ if (window.__cylChat) { /* déjà chargé */ } else {
       .cyl-mod:hover{background:rgba(132,194,94,0.22);}
       .cyl-form{display:flex;gap:8px;padding:11px;border-top:1px solid rgba(255,255,255,0.08);}
       .cyl-input{flex:1;resize:none;max-height:90px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);
-        background:rgba(255,255,255,0.05);color:#eef4ff;font:500 13.5px Segoe UI,Roboto,sans-serif;font-family:inherit;}
+        background:rgba(255,255,255,0.05);color:#f8f7f5;font:500 13.5px Segoe UI,Roboto,sans-serif;font-family:inherit;}
       .cyl-input:focus{outline:none;border-color:rgba(231,177,92,0.5);}
       .cyl-send{width:42px;flex-shrink:0;border:none;border-radius:12px;cursor:pointer;color:#0c130a;font-size:1.1rem;
         background:linear-gradient(135deg,#f1cd92,#e7b15c);transition:filter .2s;}
       .cyl-send:hover{filter:brightness(1.08);}
       .cyl-send:disabled{opacity:.5;cursor:default;}
-      .cyl-disc{padding:7px 12px 9px;font:500 10px Segoe UI,Roboto,sans-serif;color:#7e9ab5;text-align:center;
+      .cyl-disc{padding:7px 12px 9px;font:500 10px Segoe UI,Roboto,sans-serif;color:#a79f8c;text-align:center;
         border-top:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.18);line-height:1.4;}
-      .cyl-disc b{color:#9fb2cb;}
+      .cyl-disc b{color:#bfb9ab;}
       /* Écran de consentement (1re ouverture) */
       .cyl-consent{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;padding:22px 20px;gap:14px;
         background:rgba(8,16,28,0.98);overflow-y:auto;}
@@ -79,11 +79,11 @@ if (window.__cylChat) { /* déjà chargé */ } else {
       .cyl-consent-orb{width:52px;height:52px;border-radius:50%;align-self:center;flex-shrink:0;
         background:radial-gradient(circle at 36% 32%,#fbe6b0,#e7b15c 40%,#4a7a3a 100%);box-shadow:0 0 18px rgba(231,177,92,.45);}
       .cyl-consent-title{font:800 16px Segoe UI,Roboto,sans-serif;color:#fff;text-align:center;}
-      .cyl-consent-body{font:500 12.7px Segoe UI,Roboto,sans-serif;color:#c3d2e6;line-height:1.55;}
+      .cyl-consent-body{font:500 12.7px Segoe UI,Roboto,sans-serif;color:#dad7cf;line-height:1.55;}
       .cyl-consent-body ul{margin:8px 0 0;padding-left:18px;}
       .cyl-consent-body li{margin-bottom:5px;}
       .cyl-consent-body b{color:#fbe6b0;}
-      .cyl-consent-check{display:flex;gap:9px;align-items:flex-start;font:500 12px Segoe UI,Roboto,sans-serif;color:#c3d2e6;cursor:pointer;}
+      .cyl-consent-check{display:flex;gap:9px;align-items:flex-start;font:500 12px Segoe UI,Roboto,sans-serif;color:#dad7cf;cursor:pointer;}
       .cyl-consent-check input{margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#84c25e;cursor:pointer;}
       .cyl-consent-ok{margin-top:2px;padding:11px;border:none;border-radius:12px;cursor:pointer;font:800 13.5px Segoe UI,Roboto,sans-serif;
         color:#0c130a;background:linear-gradient(135deg,#f1cd92,#e7b15c);transition:filter .2s,opacity .2s;}
@@ -104,7 +104,7 @@ if (window.__cylChat) { /* déjà chargé */ } else {
 
       /* ── Reglages ── */
       .cyl-tool{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);
-        background:rgba(255,255,255,0.05);color:#aab7cf;cursor:pointer;font-size:.9rem;line-height:1;
+        background:rgba(255,255,255,0.05);color:#c5c0b4;cursor:pointer;font-size:.9rem;line-height:1;
         display:flex;align-items:center;justify-content:center;flex-shrink:0;}
       .cyl-tool:hover{background:rgba(255,255,255,0.1);color:#fff;}
       .cyl-tool.on{background:rgba(231,177,92,.18);border-color:rgba(231,177,92,.5);color:#f1cd92;}
@@ -115,11 +115,11 @@ if (window.__cylChat) { /* déjà chargé */ } else {
         box-shadow:0 14px 38px rgba(0,0,0,.6);display:none;}
       .cyl-set.show{display:block;}
       .cyl-set-lb{font:800 9.5px Segoe UI,Roboto,sans-serif;letter-spacing:.08em;text-transform:uppercase;
-        color:#7d8ea6;margin:0 0 6px;}
+        color:#a09783;margin:0 0 6px;}
       .cyl-set-row{display:flex;gap:5px;margin-bottom:11px;}
       .cyl-set-row:last-child{margin-bottom:0;}
       .cyl-set-b{flex:1;padding:6px 4px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
-        background:rgba(255,255,255,.04);color:#aab7cf;cursor:pointer;
+        background:rgba(255,255,255,.04);color:#c5c0b4;cursor:pointer;
         font:700 11px Segoe UI,Roboto,sans-serif;}
       .cyl-set-b:hover{background:rgba(255,255,255,.1);color:#fff;}
       .cyl-set-b.on{background:rgba(132,194,94,.2);border-color:rgba(132,194,94,.5);color:#bfe3a6;}

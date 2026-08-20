@@ -15,14 +15,14 @@ try { initUserMenu(); } catch (e) {}
 if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); }
 
 const BRANCHES = [
-  { key: 'physio',          label: 'Physiologique',   color: '#2dd4bf' },
+  { key: 'physio',          label: 'Physiologique',   color: '#44bd48' },
   { key: 'securite',        label: 'Sécurité',        color: '#fbbf24' },
   { key: 'appartenance',    label: 'Appartenance',    color: '#f87171' },
   { key: 'estime',          label: 'Estime',          color: '#fb923c' },
-  { key: 'cognitif',        label: 'Cognitif',        color: '#a78bfa' },
-  { key: 'esthetique',      label: 'Esthétique',      color: '#e879c7' },
-  { key: 'accomplissement', label: 'Accomplissement', color: '#38bdf8' },
-  { key: 'transcendance',   label: 'Transcendance',   color: '#c4b5fd' },
+  { key: 'cognitif',        label: 'Cognitif',        color: '#bdafd6' },
+  { key: 'esthetique',      label: 'Esthétique',      color: '#d98cae' },
+  { key: 'accomplissement', label: 'Accomplissement', color: '#67c96a' },
+  { key: 'transcendance',   label: 'Transcendance',   color: '#d6cde5' },
 ];
 const BRANCH_BY = Object.fromEntries(BRANCHES.map((b) => [b.key, b]));
 const EMOJIS = ['🍳','💻','🏋️','🗣️','🎸','✍️','💰','🎨','📷','🧠','🛠️','📚','🌱','🎯','🧗','🎤','🚗','🌍','♟️','🧩'];

@@ -229,8 +229,8 @@ function setBar(barId, valId, val, max) {
 
 function buildHighlights(journal, med, habits, moods, totalHabits) {
   const list = [];
-  if (journal > 0) list.push({ icon:'📔', text:`${journal} entrée${journal>1?'s':''} de journal écrite${journal>1?'s':''}`, val:journal, color:'#a78bfa' });
-  if (med > 0) list.push({ icon:'🧘', text:`${med} séance${med>1?'s':''} de méditation`, val:med, color:'#2dd4bf' });
+  if (journal > 0) list.push({ icon:'📔', text:`${journal} entrée${journal>1?'s':''} de journal écrite${journal>1?'s':''}`, val:journal, color:'#bdafd6' });
+  if (med > 0) list.push({ icon:'🧘', text:`${med} séance${med>1?'s':''} de méditation`, val:med, color:'#44bd48' });
   if (habits > 0) list.push({ icon:'✅', text:`${habits} habitude${habits>1?'s':''} complétée${habits>1?'s':''}`, val:`${habits}${totalHabits ? '/'+totalHabits : ''}`, color:'#22c55e' });
   if (moods.length > 0) {
     const avg = (moods.reduce((a,b) => a + b.mood, 0) / moods.length).toFixed(1);

@@ -21,7 +21,7 @@
       var hasMain = !!document.querySelector('link[href*="main.min.css"]');
       if (!hasMain) {
         var s = document.createElement('style');
-        s.textContent = 'html,body{background:#f0f3f5;color:#121212}';
+        s.textContent = 'html,body{background:#f4f3f1;color:#121212}';
         (document.head || document.documentElement).appendChild(s);
       }
     };

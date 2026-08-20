@@ -581,7 +581,7 @@ function injectCSS() {
     border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);color-scheme:dark;}
   .hub-b{flex:1;min-width:130px;padding:11px 14px;border-radius:11px;border:none;cursor:pointer;font:inherit;font-weight:800;font-size:0.8rem;transition:filter .18s;}
   .hub-b:disabled{opacity:.6;cursor:default;}
-  .hub-b.cal{background:linear-gradient(135deg,#4285f4,#1a73e8);color:#fff;}
+  .hub-b.cal{background:linear-gradient(135deg,#90cb6b,#73bd45);color:#fff;}
   .hub-b.ok{background:linear-gradient(135deg,#84c25e,#4a7a3a);color:#08130a;}
   .hub-b.del{background:rgba(224,120,95,0.12);color:#c0503a;border:1px solid rgba(224,120,95,0.3);flex:0 0 auto;min-width:0;}
   .hub-b:hover{filter:brightness(1.1);}

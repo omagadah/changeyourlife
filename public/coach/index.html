@@ -10,8 +10,8 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0070f3">
-  <meta name="msapplication-TileColor" content="#07192f">
+  <meta name="theme-color" content="#6cb43f">
+  <meta name="msapplication-TileColor" content="#1f1c17">
   <link rel="stylesheet" href="/css/main.min.css" />
   <style>
     body { color: var(--text-1); overflow: hidden; }
@@ -49,7 +49,7 @@
     .chat-header-top { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
     .coach-avatar {
       width:36px; height:36px; border-radius:50%;
-      background: linear-gradient(135deg,var(--blue),#8b5cf6);
+      background: linear-gradient(135deg,var(--blue),#a28dc5);
       display:flex; align-items:center; justify-content:center;
       font-size:1.1rem; flex-shrink:0;
       box-shadow: 0 0 0 2px rgba(59,130,246,.3);
@@ -64,7 +64,7 @@
       font-size:0.75rem; color:var(--text-2); font-style:italic;
       min-height:18px; transition: color .3s;
     }
-    .insight-bar.fresh { color:#93c5fd; }
+    .insight-bar.fresh { color:#c2e2ae; }
 
     /* Messages */
     .chat-messages {
@@ -81,7 +81,7 @@
       align-self: flex-start;
       background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25);
       border-radius: 4px 14px 14px 14px;
-      color: #d0e8ff;
+      color: #ebe9e4;
     }
     .msg.user {
       align-self: flex-end;
@@ -105,7 +105,7 @@
       border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
       color:var(--text-2); cursor:pointer; transition:all .15s; white-space:nowrap;
     }
-    .prompt-chip:hover { background:rgba(59,130,246,.15); border-color:var(--blue); color:#bfdbfe; }
+    .prompt-chip:hover { background:rgba(59,130,246,.15); border-color:var(--blue); color:#e3e0da; }
 
     /* Input */
     .chat-input-row {
@@ -118,10 +118,10 @@
       outline:none; resize:none; line-height:1.4; max-height:100px; transition:border-color .2s;
     }
     .chat-input:focus { border-color:rgba(59,130,246,.5); }
-    .chat-input::placeholder { color:#3a5570; }
+    .chat-input::placeholder { color:#60594a; }
     .btn-send {
       width:42px; height:42px; border-radius:12px; border:none; flex-shrink:0;
-      background:linear-gradient(135deg,var(--blue),#6366f1);
+      background:linear-gradient(135deg,var(--blue),#a0d381);
       color:#fff; font-size:1.1rem; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
       transition:all .2s; box-shadow:0 4px 14px rgba(59,130,246,.3);
@@ -151,7 +151,7 @@
     .tree-xp-badge {
       display:inline-flex; align-items:center; gap:5px;
       background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,.35);
-      padding:4px 11px; border-radius:20px; font-size:0.78rem; font-weight:700; color:#a5b4fc;
+      padding:4px 11px; border-radius:20px; font-size:0.78rem; font-weight:700; color:#cbe7ba;
     }
     #tree-canvas { width:100%; height:100%; display:block; }
 
@@ -191,7 +191,7 @@
     .onboard-sub { font-size:0.85rem; color:var(--text-2); line-height:1.5; margin-bottom:22px; }
     .onboard-btn {
       padding:11px 28px; border-radius:12px; border:none;
-      background:linear-gradient(135deg,var(--blue),#6366f1);
+      background:linear-gradient(135deg,var(--blue),#a0d381);
       color:#fff; font-weight:700; font-size:0.9rem; cursor:pointer;
       box-shadow:0 6px 20px rgba(59,130,246,.35); transition:all .2s;
     }
@@ -204,11 +204,11 @@
   <nav class="site-nav">
     <a href="/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#3399ff" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
+      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
     </button>
   </nav>
 
-  <div class="coach-layout">
+  <div class="coach-layout" data-cyl-shift>
 
     <!-- ── LEFT : Chat ── -->
     <div class="panel" style="position:relative">
@@ -263,16 +263,16 @@
       <!-- Stats -->
       <div class="stats-strip">
         <div class="stat-block">
-          <div class="stat-block-bg" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)"></div>
+          <div class="stat-block-bg" style="background:linear-gradient(135deg,#a0d381,#a28dc5)"></div>
           <div class="stat-label">Mental</div>
           <div class="stat-value" id="stat-mental">0</div>
-          <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-mental" style="width:0%;background:#6366f1"></div></div>
+          <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-mental" style="width:0%;background:#a0d381"></div></div>
         </div>
         <div class="stat-block">
-          <div class="stat-block-bg" style="background:linear-gradient(135deg,#2dd4bf,#0ea5e9)"></div>
+          <div class="stat-block-bg" style="background:linear-gradient(135deg,#44bd48,#40b744)"></div>
           <div class="stat-label">Corps</div>
           <div class="stat-value" id="stat-corps">0</div>
-          <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-corps" style="width:0%;background:#2dd4bf"></div></div>
+          <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-corps" style="width:0%;background:#44bd48"></div></div>
         </div>
         <div class="stat-block">
           <div class="stat-block-bg" style="background:linear-gradient(135deg,#f87171,#ec4899)"></div>

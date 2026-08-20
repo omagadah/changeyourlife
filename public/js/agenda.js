@@ -167,7 +167,7 @@ function injectCSS() {
     .ag-x{position:relative;z-index:2;margin-left:auto;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);cursor:pointer;flex-shrink:0;}
     .ag-x:hover{background:var(--surface-3);color:var(--text-1);}
     .ag-btn{width:100%;padding:11px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:0.88rem;
-      background:linear-gradient(135deg,#4285f4,#1a73e8);color:#fff;transition:filter .2s,transform .2s;}
+      background:linear-gradient(135deg,#90cb6b,#73bd45);color:#fff;transition:filter .2s,transform .2s;}
     .ag-btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
     .ag-btn:disabled{opacity:.6;cursor:default;transform:none;}
     .ag-note{font-size:0.72rem;color:var(--text-3);margin-top:8px;line-height:1.45;}
