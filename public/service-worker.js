@@ -1,5 +1,5 @@
-// service-worker.js - v190 (frise chronologique + compte a plat dans la navigation)
-const CACHE_NAME = 'changeyourlife-v190';
+// service-worker.js - v191 (frise : cadre decale de la barre laterale)
+const CACHE_NAME = 'changeyourlife-v191';
 const urlsToCache = [
   '/',
   '/app/',

@@ -22,7 +22,8 @@
     .fr-shell {
       position:fixed; inset:16px; background:var(--glass-bg);
       backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
-      padding:18px 20px 14px; overflow-y:auto; box-shadow:var(--shadow-lg);
+      padding:18px 20px 16px; overflow-y:auto; box-shadow:var(--shadow-lg);
+      display:flex; flex-direction:column;
     }
     .fr-hd { margin-bottom:16px; }
     .fr-hd h1 { font-size:1.3rem; letter-spacing:-.4px; }
@@ -35,10 +36,12 @@
     .fr-soon small { display:block; font-size:.78rem; color:var(--text-2); line-height:1.5; margin-top:3px; }
 
     /* La rivière : un axe, des époques, des événements */
-    .fr-axis { position:relative; padding:26px 0 8px; margin:6px 0 20px; }
-    .fr-line { position:absolute; left:0; right:0; top:52px; height:2px;
+    .fr-axis { position:relative; flex:1; min-height:150px; margin:10px 0 20px;
+      display:flex; flex-direction:column; justify-content:center; }
+    .fr-line { position:absolute; left:0; right:0; top:20px; height:2px;
       background:linear-gradient(90deg, transparent, var(--line-strong) 8%, var(--line-strong) 92%, transparent); }
-    .fr-eras { display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:4px; }
+    .fr-eras { position:relative; display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:4px; }
     .fr-era { position:relative; text-align:center; padding-top:34px; }
     .fr-era::before { content:''; position:absolute; top:16px; left:50%; width:9px; height:9px;
       margin-left:-4.5px; border-radius:50%; background:var(--leaf);
@@ -59,11 +62,16 @@
       background:rgba(132,194,94,.13); border:1px solid rgba(132,194,94,.34); color:var(--leaf-text); }
     .fr-cta:hover { background:rgba(132,194,94,.24); }
 
+    /* Sous 900px la colonne etouffe : on rend l'axe a sa hauteur naturelle
+       et le cadre redevient une page qui defile normalement. */
+    @media (max-width:900px){
+      .fr-axis { flex:0 0 auto; min-height:0; padding:22px 0 6px; }
+    }
     @media (max-width:700px){ .fr-shell { inset:8px; padding:14px 12px 10px; } }
   </style>
 </head>
 <body>
-  <main class="fr-shell">
+  <main class="fr-shell" data-cyl-shell>
     <div class="fr-hd">
       <h1>Frise chronologique</h1>
       <p>La mémoire longue de ta vie. L'agenda montre tes semaines ; la frise
@@ -84,8 +92,8 @@
     </div>
 
     <div class="fr-axis">
-      <div class="fr-line" aria-hidden="true"></div>
       <div class="fr-eras">
+        <div class="fr-line" aria-hidden="true"></div>
         <div class="fr-era"><b>Racines</b><small>D'où tu viens</small></div>
         <div class="fr-era"><b>Formation</b><small>Ce qui t'a construit</small></div>
         <div class="fr-era"><b>Bascules</b><small>Ce qui a tout changé</small></div>

@@ -135,8 +135,15 @@ function injectCSS() {
   .cyl-sb-av.img { color:transparent; }
   .cyl-sb-out { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
   .cyl-sb-out:hover { background:rgba(224,120,95,.12); color:#e58e73; }
+  /* DECALAGE DES CONTENEURS PLEIN ECRAN
+     Les pages posent leur cadre en position:fixed : padding-left sur le body
+     ne les touche pas, il faut nommer chaque conteneur. Une page qui invente sa
+     propre classe passe donc SOUS la barre - c'est arrive a /frise/.
+     [data-cyl-shell] est la porte de sortie : toute nouvelle page pose cet
+     attribut sur son cadre et herite du decalage sans toucher a ce fichier. */
   body.has-sb .app-container { left:calc(var(--sb-w) + 15px) !important; }
-  body.has-sb .ap-shell {
+  body.has-sb .ap-shell,
+  body.has-sb [data-cyl-shell] {
     inset:16px 16px 16px calc(var(--sb-w) + 16px) !important;
   }
   body.has-sb .page-shell, body.has-sb .page-shell-nav {
@@ -159,7 +166,8 @@ function injectCSS() {
     .cyl-sb-burger { display:flex; }
     body.has-sb { padding-left:0; }
     body.has-sb .app-container { left:15px !important; }
-    body.has-sb .ap-shell { inset:60px 8px 8px !important; }
+    body.has-sb .ap-shell,
+    body.has-sb [data-cyl-shell] { inset:60px 8px 8px !important; }
     body.has-sb .page-shell, body.has-sb .page-shell-nav { inset:60px 8px 8px !important; }
     /* la ligne d'accueil laisse la place au bouton d'ouverture */
     body.has-sb .welcome-row { padding-left:46px; }
