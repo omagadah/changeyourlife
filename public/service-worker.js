@@ -1,5 +1,5 @@
-// service-worker.js - v193 (meditation guidee + bulle agenda + emoji dans les menus)
-const CACHE_NAME = 'changeyourlife-v193';
+// service-worker.js - v194 (la meditation lit l humeur du jour)
+const CACHE_NAME = 'changeyourlife-v194';
 const urlsToCache = [
   '/',
   '/app/',

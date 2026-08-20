@@ -6,6 +6,7 @@ import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { SCRIPTS, reflectionScript, createVoice, createGuide } from '/js/meditation-guide.js';
+import { classify } from '/js/organizer-data.js';
 
 let auth, db;
 if (window._cyfFirebase) {
@@ -174,7 +175,60 @@ onAuthStateChanged(auth, async (user) => {
   renderSessions();
   initCylWelcome();
   await loadStats();
+  await initFromMood();
 });
+
+
+// ── CE QUE LE SITE SAIT DEJA ────────────────────────────────────────────────
+// Le module demandait « comment te sens-tu ? » alors que /humeur/ avait la
+// reponse depuis le matin. C'est le defaut de fond du site : treize modules
+// qui ne se lisent pas entre eux. Ici on lit l'humeur du jour, et CYL part de
+// la - une proposition, jamais une prescription (regle non-directif).
+const MOOD_BY_SCORE = {
+  1: { id: 'sos',       line: 'Tu as noté une journée dure ce matin. Si tu veux, trois minutes pour faire redescendre la pression.' },
+  2: { id: 'gratitude', line: 'Ce matin, ça n’allait pas fort. Une parenthèse de gratitude, si le cœur t’en dit.' },
+  3: { id: 'calm',      line: 'Journée moyenne, d’après ce que tu as noté. Une séance calme peut aider à y voir clair.' },
+  4: { id: 'focus',     line: 'Tu allais plutôt bien ce matin. C’est un bon moment pour travailler ton attention.' },
+  5: { id: 'calm',      line: 'Belle journée, d’après toi. Autant ancrer ce calme pendant qu’il est là.' },
+};
+
+async function readTodayMood() {
+  try {
+    // MEME construction que /humeur/ (humeur.js, todayDateStr) : la cle du
+    // document EST la date, une divergence d'un caractere et on ne lirait
+    // jamais rien, en silence. Pas de toISOString ici - il bascule en UTC et
+    // ferait lire la veille en soiree.
+    const n = new Date();
+    const key = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+    const snap = await getDoc(doc(db, 'users', uid, 'moods', key));
+    return snap.exists() ? snap.data() : null;
+  } catch (_) { return null; }
+}
+
+async function initFromMood() {
+  const m = await readTodayMood();
+  if (!m) return;                       // rien note aujourd'hui : on ne suppose rien
+  const line = document.getElementById('la-line');
+
+  // La note ecrite passe avant le score : « 8/10 mais j'en peux plus » doit
+  // etre entendu comme de la detresse, pas comme une bonne journee.
+  let reco = MOOD_BY_SCORE[Number(m.mood)] || null;
+  if (m.note) {
+    try {
+      const r = classify(String(m.note));
+      if (r.crisis || r.distress) {
+        reco = { id: 'sos', line: 'J’ai lu ce que tu as écrit ce matin. On peut commencer par respirer, simplement. Trois minutes.' };
+      }
+    } catch (_) {}
+  }
+  if (!reco) return;
+
+  const s = sessions.find((x) => x.id === reco.id);
+  if (!s) return;
+  if (line) line.textContent = reco.line;
+  // Pre-selectionnee, PAS lancee : c'est une porte ouverte, pas une poussee.
+  selectSession(s);
+}
 
 // Accueil CYL : selon l'humeur, recommande un mode et le pré-charge.
 const MOOD_RECO = {
