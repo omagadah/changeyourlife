@@ -213,6 +213,10 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ translations: out, provider });
   }
 
+  // Sert au diagnostic quand tout echoue : sans lui, une panne de cle et une
+  // panne de quota donnent le meme message et rien n est actionnable.
+  let groqStatus = process.env.GROQ_API_KEY ? 0 : 'absente';
+
   // ── Groq (préféré) ──────────────────────────────────────────────────────────
   if (process.env.GROQ_API_KEY) {
     try {
@@ -239,6 +243,7 @@ module.exports = async function handler(req, res) {
         const parsed = safeParse(text);
         if (parsed) return await respond(parsed, 'groq');
       } else {
+        groqStatus = r.status;
         console.error('[translate] Groq error', r.status, (await r.text()).slice(0, 200));
       }
     } catch (e) {
@@ -250,7 +255,7 @@ module.exports = async function handler(req, res) {
   // ── Gemini (repli) ──────────────────────────────────────────────────────────
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'Aucun provider IA configuré (GROQ_API_KEY ou GEMINI_API_KEY)' });
+    return res.status(500).json({ error: 'Aucun provider IA configuré (GROQ_API_KEY ou GEMINI_API_KEY)', detail: { groq: groqStatus } });
   }
   try {
     const r = await fetch(GEMINI_URL, {
@@ -265,7 +270,7 @@ module.exports = async function handler(req, res) {
     if (!r.ok) {
       const errText = await r.text();
       console.error('[translate] Gemini error', r.status, errText.slice(0, 200));
-      return res.status(502).json({ error: 'Service de traduction indisponible' });
+      return res.status(502).json({ error: 'Service de traduction indisponible', detail: { groq: groqStatus, gemini: r.status } });
     }
     const data = await r.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
