@@ -233,8 +233,15 @@ function initDragCreate(H0, PX, days) {
         col.removeEventListener('pointercancel', up);
         try { col.releasePointerCapture(ev.pointerId); } catch (_) {}
         const a = Math.min(startH, endH), b = Math.max(startH, endH);
-        ghost.remove();
-        await createAt(days[di], a, Math.max(15, Math.round((b - a) * 60)));
+        // Le creneau NE DISPARAIT PAS : il reste sous la bulle pendant la
+        // saisie, comme dans Google Agenda. C'est lui qui dit ou l'on ecrit.
+        ghost.classList.add('pending');
+        openQuick({
+          day: days[di], hour: a, minutes: Math.max(15, Math.round((b - a) * 60)),
+          anchor: ghost,
+          onCancel: () => ghost.remove(),
+          onSave: async (title, branch) => { ghost.remove(); await createAt(days[di], a, Math.max(15, Math.round((b - a) * 60)), title, branch); },
+        });
       };
       try { col.setPointerCapture(e.pointerId); } catch (_) {}
       col.addEventListener('pointermove', move);
@@ -244,11 +251,157 @@ function initDragCreate(H0, PX, days) {
   });
 }
 
-async function createAt(day, hour, minutes) {
-  const label = window.prompt(
-    `Nouvelle fiche le ${day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${fmtH(hour)} (${minutes} min)\n\nQu'est-ce que tu poses là ?`,
-  );
-  const title = (label || '').trim();
+// ── CREATION RAPIDE : la bulle ancree au creneau ─────────────────────────────
+// Remplace window.prompt(), qui arrachait le regard au centre de l ecran et
+// n acceptait qu une ligne de texte. Ici la reponse nait A COTE du geste, et
+// elle peut porter une branche - ce qu aucun agenda generaliste ne propose.
+//
+// Trois facons d en sortir, toutes rendues : Entree ou « Enregistrer » valide,
+// Echap ou un clic hors de la bulle annule.
+let quickPop = null;
+
+function closeQuick(reason) {
+  if (!quickPop) return;
+  const { el, onCancel, off } = quickPop;
+  quickPop = null;
+  off();
+  el.classList.remove('in');
+  // On attend la fin de la transition pour retirer le noeud, sinon la
+  // fermeture est seche alors que l ouverture est douce.
+  setTimeout(() => el.remove(), 220);
+  if (reason === 'cancel' && onCancel) onCancel();
+}
+
+function placeQuick(el, anchor) {
+  const a = anchor.getBoundingClientRect();
+  const w = el.offsetWidth, h = el.offsetHeight;
+  const M = 10;
+  let side = 'right', left = a.right + M;
+  if (left + w > window.innerWidth - M) {
+    left = a.left - w - M;
+    side = 'left';
+    // Ni a droite ni a gauche : on passe dessous, centre sur le creneau.
+    if (left < M) { left = Math.max(M, Math.min(window.innerWidth - w - M, a.left + a.width / 2 - w / 2)); side = 'below'; }
+  }
+  let top = side === 'below' ? a.bottom + M : a.top + a.height / 2 - h / 2;
+  if (top + h > window.innerHeight - M) {
+    top = side === 'below' ? a.top - h - M : window.innerHeight - h - M;
+    if (side === 'below') side = 'above';
+  }
+  if (top < M) top = M;
+  el.style.left = Math.round(left) + 'px';
+  el.style.top = Math.round(top) + 'px';
+  el.classList.add(side);
+}
+
+function openQuick({ day, hour, minutes, anchor, onSave, onCancel }) {
+  closeQuick('cancel');
+  const end = hour + minutes / 60;
+  const el = document.createElement('div');
+  el.className = 'qc-pop';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', 'Nouvelle fiche');
+
+  const when = document.createElement('div');
+  when.className = 'qc-when';
+  const wb = document.createElement('b');
+  wb.textContent = day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const ws = document.createElement('span');
+  ws.textContent = fmtH(hour) + ' - ' + fmtH(end) + '  ·  ' + minutes + ' min';
+  const x = document.createElement('button');
+  x.className = 'qc-x'; x.type = 'button'; x.textContent = '✕';
+  x.setAttribute('aria-label', 'Fermer');
+  when.append(wb, ws, x);
+
+  const t = document.createElement('input');
+  t.className = 'qc-t'; t.type = 'text'; t.maxLength = 120;
+  t.placeholder = 'Qu est-ce que tu poses la ?';
+  t.setAttribute('aria-label', 'Titre de la fiche');
+
+  const lb = document.createElement('span');
+  lb.className = 'qc-lb'; lb.textContent = 'Quelle branche ça nourrit ?';
+  const br = document.createElement('div');
+  br.className = 'qc-br';
+  let branch = null;
+  for (const b of BRANCHES) {
+    const btn = document.createElement('button');
+    btn.className = 'qc-b'; btn.type = 'button';
+    btn.style.setProperty('--ac', b.color);
+    btn.style.setProperty('--acs', b.color + '2e');
+    btn.textContent = b.emoji + ' ' + b.label;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.addEventListener('click', () => {
+      // Re-cliquer la branche active la retire : rien n oblige a en choisir une.
+      branch = branch === b.key ? null : b.key;
+      br.querySelectorAll('.qc-b').forEach((o) => { o.classList.remove('on'); o.setAttribute('aria-pressed', 'false'); });
+      if (branch) { btn.classList.add('on'); btn.setAttribute('aria-pressed', 'true'); }
+      t.focus();
+    });
+    br.appendChild(btn);
+  }
+
+  const acts = document.createElement('div');
+  acts.className = 'qc-acts';
+  const hint = document.createElement('span');
+  hint.className = 'qc-hint'; hint.textContent = 'Entrée pour poser · Échap pour annuler';
+  const save = document.createElement('button');
+  save.className = 'qc-save'; save.type = 'button'; save.textContent = 'Poser';
+  save.disabled = true;
+  acts.append(hint, save);
+
+  el.append(when, t, lb, br, acts);
+  document.body.appendChild(el);
+  placeQuick(el, anchor);
+  requestAnimationFrame(() => el.classList.add('in'));
+  t.focus();
+
+  t.addEventListener('input', () => { save.disabled = !t.value.trim(); });
+  const commit = () => {
+    const v = t.value.trim();
+    if (!v) { t.focus(); return; }
+    const fn = onSave; const b = branch;
+    quickPop.onCancel = null;   // on valide : ne pas rejouer l annulation
+    closeQuick('save');
+    fn(v, b);
+  };
+  save.addEventListener('click', commit);
+  x.addEventListener('click', () => closeQuick('cancel'));
+  t.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    else if (e.key === 'Escape') { e.preventDefault(); closeQuick('cancel'); }
+  });
+
+  // Fermeture au clic exterieur. En CAPTURE, pour repondre avant que la grille
+  // ne demarre un nouveau trace - sinon un clic a cote creait un second creneau.
+  const outside = (ev) => { if (!ev.target.closest('.qc-pop')) { ev.preventDefault(); ev.stopPropagation(); closeQuick('cancel'); } };
+  const esc = (ev) => { if (ev.key === 'Escape') closeQuick('cancel'); };
+  // Si la grille est reconstruite (changement de semaine, de vue), le creneau
+  // qui sert d ancre quitte le document : la bulle n a plus de point d appui
+  // et se recollerait en haut a gauche. On la ferme plutot que de la laisser
+  // flotter au-dessus de rien.
+  const reflow = () => {
+    if (!quickPop) return;
+    if (!anchor.isConnected) { closeQuick('cancel'); return; }
+    placeQuick(el, anchor);
+  };
+  const off = () => {
+    document.removeEventListener('pointerdown', outside, true);
+    document.removeEventListener('keydown', esc);
+    window.removeEventListener('resize', reflow);
+    window.removeEventListener('scroll', reflow, true);
+  };
+  quickPop = { el, onCancel, off };
+  // Au tick suivant : le pointerup qui vient d ouvrir la bulle ne doit pas la fermer.
+  setTimeout(() => {
+    if (!quickPop) return;
+    document.addEventListener('pointerdown', outside, true);
+    document.addEventListener('keydown', esc);
+    window.addEventListener('resize', reflow);
+    window.addEventListener('scroll', reflow, true);
+  }, 0);
+}
+async function createAt(day, hour, minutes, rawTitle, branch) {
+  const title = String(rawTitle || '').trim();
   if (!title) return;
   if (!board) { toast('Board indisponible - réessaie dans un instant.'); return; }
 
@@ -256,7 +409,12 @@ async function createAt(day, hour, minutes) {
   when.setHours(Math.floor(hour), Math.round((hour % 1) * 60), 0, 0);
   // La fiche rejoint l'ORGANIZER (source unique) dans « À trier », avec son
   // échéance. Le badge « non triée » disparaîtra dès qu'elle sera rangée.
-  const card = addCard(board, TRI_ID, title, { due: when.getTime(), dur: minutes });
+  // La branche n'est transmise QUE si elle a ete choisie : newCard etale son
+  // `extra` en dernier, donc un `branch: null` ecraserait le classement
+  // automatique de CYL au lieu de le laisser faire.
+  const opts = { due: when.getTime(), dur: minutes };
+  if (branch) opts.branch = branch;
+  const card = addCard(board, TRI_ID, title, opts);
   if (card) logCard(card, 'Posée depuis l\'agenda');
   saveBoard(db, uid, board, { onError: () => toast('Sauvegarde impossible - vérifie ta connexion.') });
   try { document.dispatchEvent(new CustomEvent('cyl:organizer-changed', { detail: { board } })); } catch (_) {}

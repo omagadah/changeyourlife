@@ -176,6 +176,26 @@
       .breathing-rings { width:180px; height:180px; }
       .amb-btns { flex-wrap:wrap; }
     }
+
+    /* ══ GUIDAGE ══
+       La phrase occupe le centre de l attention pendant la seance. Elle entre
+       en fondu montant : une apparition seche casserait le calme qu on vient
+       justement d installer. */
+    .guide-wrap { min-height:64px; display:flex; align-items:center; justify-content:center;
+      padding:6px 12px; margin:6px 0 2px; }
+    .guide-line { font-size:1.02rem; line-height:1.55; text-align:center; max-width:30rem;
+      color:var(--text-1); font-weight:500; margin:0;
+      opacity:0; transform:translateY(6px);
+      transition:opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+    .guide-line.in { opacity:1; transform:none; }
+    .btn-voice.off { opacity:.55; }
+
+    /* Le confort de lecture prime sur la densite : une phrase de meditation
+       lue sur un telephone doit rester lisible sans plisser les yeux. */
+    @media (max-width:600px){
+      .guide-wrap { min-height:76px; }
+      .guide-line { font-size:.97rem; }
+    }
   </style>
   <meta name="robots" content="index,follow" />
   <meta name="description" content="Méditation guidée avec sessions personnalisées, exercices de respiration et sons d'ambiance pour progresser dans votre bien-être." />
@@ -239,6 +259,13 @@
             </div>
           </div>
         </div>
+        <!-- ── Guidage : la phrase en cours ──
+             Le texte est affiche MEME quand la voix parle : on peut couper le
+             son (transports, bureau, quelqu un qui dort a cote) et suivre la
+             seance en entier. La voix est un confort, pas une condition. -->
+        <div class="guide-wrap" id="guide-wrap">
+          <p class="guide-line" id="guide-line"></p>
+        </div>
         <div class="breathing-guide" id="breathing-guide">
           <div class="breathing-rings" id="breathing-rings">
             <div class="b-ring b-ring-3"></div>
@@ -273,6 +300,7 @@
           <button class="btn primary" id="btn-start">Démarrer</button>
           <button class="btn" id="btn-pause" style="display:none">Pause</button>
           <button class="btn" id="btn-stop">Arrêter</button>
+          <button class="btn btn-voice" id="btn-voice" aria-pressed="true" title="Couper ou remettre la voix">🔊 Voix</button>
         </div>
       </div>
       <div class="sessions-grid" id="sessions-grid"></div>

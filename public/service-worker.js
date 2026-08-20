@@ -1,5 +1,5 @@
-// service-worker.js - v192 (frise : axe, carte mentale, piliers)
-const CACHE_NAME = 'changeyourlife-v192';
+// service-worker.js - v193 (meditation guidee + bulle agenda + emoji dans les menus)
+const CACHE_NAME = 'changeyourlife-v193';
 const urlsToCache = [
   '/',
   '/app/',

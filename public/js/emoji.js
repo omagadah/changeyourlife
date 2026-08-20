@@ -41,6 +41,35 @@
     })();
   }
 
+  // LA OU UNE IMAGE NE S'AFFICHE PAS.
+  // Un <option>, un <optgroup>, un <textarea> ou un <title> ne rendent aucun
+  // element : le navigateur n'y affiche que du texte brut. twemoji y remplacait
+  // pourtant l'emoji par un <img>, donc invisible - le selecteur d'icone de
+  // /competences/ affichait vingt options VIDES, et les branches de /plan/
+  // perdaient leur puce. On y restitue le caractere d'origine, que twemoji a
+  // conserve dans l'attribut alt. L'emoji y reste celui du systeme : c'est le
+  // seul rendu possible dans un menu natif, et un emoji « cheap » vaut
+  // infiniment mieux qu'une ligne blanche.
+  var NO_IMG = 'option, optgroup, textarea, title';
+  function unwrap(root) {
+    if (!root || root.nodeType !== 1) return;
+    var hosts = [];
+    try {
+      if (root.matches && root.matches(NO_IMG)) hosts.push(root);
+      var found = root.querySelectorAll(NO_IMG);
+      for (var i = 0; i < found.length; i++) hosts.push(found[i]);
+    } catch (e) { return; }
+    for (var h = 0; h < hosts.length; h++) {
+      var imgs = hosts[h].querySelectorAll('img.cyl-emoji');
+      for (var j = 0; j < imgs.length; j++) {
+        var img = imgs[j];
+        var txt = document.createTextNode(img.getAttribute('alt') || '');
+        if (img.parentNode) img.parentNode.replaceChild(txt, img);
+      }
+      hosts[h].normalize();   // recolle les morceaux de texte scindes par le parse
+    }
+  }
+
   function parseEl(el) {
     if (!window.twemoji || !el || el.nodeType !== 1) return;
     if (el.classList && el.classList.contains('cyl-emoji')) return;   // déjà un emoji
@@ -49,6 +78,7 @@
       var imgs = el.querySelectorAll('img.cyl-emoji:not([data-up])');
       for (var i = 0; i < imgs.length; i++) { imgs[i].setAttribute('data-up', '1'); upgrade(imgs[i]); }
     } catch (e) {}
+    unwrap(el);
   }
 
   function start() {

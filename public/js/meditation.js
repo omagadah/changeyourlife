@@ -5,6 +5,7 @@ import { showXpFloat } from '/js/xp.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { SCRIPTS, reflectionScript, createVoice, createGuide } from '/js/meditation-guide.js';
 
 let auth, db;
 if (window._cyfFirebase) {
@@ -240,6 +241,8 @@ function selectSession(session) {
   // Stop any running session first
   if (timer) { clearInterval(timer); timer = null; }
   breathingActive = false;
+  voice.stop();
+  guide.reset();
   currentSession = session;
   document.querySelectorAll('.session-card').forEach(c => c.classList.remove('active', 'playing'));
   document.querySelector(`[data-id="${session.id}"]`)?.classList.add('active');
@@ -264,6 +267,58 @@ function selectSession(session) {
   resetTimerUI();
 }
 
+
+// ── GUIDAGE ─────────────────────────────────────────────────────────────────
+// Une seance « guidee » qui ne dit rien n'est qu'un minuteur : c'est ce qui
+// faisait que personne ne revenait. La voix et le texte arrivent maintenant
+// aux bons moments, calcules sur la duree reelle de la seance.
+const voice = createVoice();
+const guide = createGuide({
+  voice,
+  onLine(text) {
+    const el = document.getElementById('guide-line');
+    if (!el) return;
+    if (!text) { el.classList.remove('in'); el.textContent = ''; return; }
+    // On retire la classe, on laisse un cadre s'ecouler, on la remet : sans ce
+    // temps mort le navigateur ne rejoue pas la transition et la phrase change
+    // d'un coup sec.
+    el.classList.remove('in');
+    requestAnimationFrame(() => {
+      el.textContent = text;
+      requestAnimationFrame(() => el.classList.add('in'));
+    });
+  },
+});
+
+// Le choix de couper la voix survit au rechargement : quelqu'un qui medite au
+// bureau ne veut pas le redecocher chaque jour.
+try { voice.setMuted(localStorage.getItem('cyl-med-mute') === '1'); } catch (_) {}
+
+function syncVoiceBtn() {
+  const b = document.getElementById('btn-voice');
+  if (!b) return;
+  if (!voice.available) { b.style.display = 'none'; return; }
+  const m = voice.isMuted();
+  b.classList.toggle('off', m);
+  b.textContent = m ? '🔇 Voix' : '🔊 Voix';
+  b.setAttribute('aria-pressed', String(!m));
+}
+document.getElementById('btn-voice')?.addEventListener('click', () => {
+  voice.setMuted(!voice.isMuted());
+  try { localStorage.setItem('cyl-med-mute', voice.isMuted() ? '1' : '0'); } catch (_) {}
+  syncVoiceBtn();
+});
+syncVoiceBtn();
+
+// Le script depend du type de seance : les respirations ont deja leur rythme
+// visuel, la reflexion se construit autour de la question tiree.
+function scriptFor(session) {
+  if (!session) return [];
+  if (session.type === 'reflection') return reflectionScript(session._prompt || '');
+  if (session.type === 'breathing') return SCRIPTS.breathing;
+  return SCRIPTS[session.id] || SCRIPTS.calm;   // une duree perso suit le calme
+}
+
 document.getElementById('btn-start').addEventListener('click', startSession);
 document.getElementById('btn-pause').addEventListener('click', togglePause);
 document.getElementById('btn-stop').addEventListener('click', stopSession);
@@ -284,9 +339,14 @@ function startSession() {
     startBreathingCycle();
   }
   const totalSec = currentSession.duration * 60;
+  // Le guide est nourri par CE minuteur, il n'en tient pas un second : deux
+  // horloges auraient derive l'une de l'autre et le texte se serait decale.
+  guide.load(scriptFor(currentSession), totalSec);
+  guide.tick(0);
   timer = setInterval(() => {
     if (paused) return;
     elapsed++;
+    guide.tick(elapsed);
     const remaining = totalSec - elapsed;
     if (remaining <= 0) { completeSession(); return; }
     const min = Math.floor(remaining / 60);
@@ -300,6 +360,9 @@ function startSession() {
 
 function togglePause() {
   paused = !paused;
+  // Sans ceci, la phrase en cours continue de se dire alors que la seance est
+  // arretee - et reprend au milieu d'un mot au moment de repartir.
+  if (paused) voice.stop(); else guide.seek(elapsed);
   const btn = document.getElementById('btn-pause');
   btn.textContent = paused ? 'Reprendre' : 'Pause';
   btn.classList.toggle('pause-active', paused);
@@ -314,6 +377,8 @@ function resetTimerUI() {
 function stopSession() {
   clearInterval(timer); timer = null;
   stopAmbient();
+  voice.stop();
+  guide.reset();
   breathingActive = false;
   elapsed = 0; paused = false;
   document.getElementById('btn-start').style.display = 'inline-block';
@@ -331,6 +396,9 @@ function stopSession() {
 async function completeSession() {
   clearInterval(timer); timer = null;
   stopAmbient();
+  // « Sommeil profond » se termine SANS rien dire : reveiller quelqu'un pour
+  // lui annoncer que sa seance d'endormissement est finie serait absurde.
+  if (currentSession && currentSession.id === 'sleep') { voice.stop(); guide.reset(); }
   breathingActive = false;
   document.getElementById('timer').textContent = '✓';
   document.getElementById('timer-label').textContent = 'Terminé !';

@@ -241,6 +241,67 @@
       .ap-ribbon, .ap-jalon, .ap-bar-g i { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
       .ap-weekbody { page-break-inside:avoid; }
     }
+
+    /* ══ CREATION RAPIDE - la bulle ancree au bloc, facon Google Agenda ══
+       Une fenetre au centre de l ecran fait perdre le lieu du geste : on vient
+       de dessiner un creneau, la reponse doit apparaitre A COTE de ce creneau.
+       La bulle est en position:fixed sur le body (et non dans .ap-shell) pour
+       ne jamais etre coupee par le defilement de la grille. */
+    .qc-pop { position:fixed; z-index:120; width:308px; border-radius:14px;
+      background:var(--panel,#111a12); border:1px solid var(--line);
+      box-shadow:0 16px 44px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+      padding:13px 14px 12px;
+      opacity:0; transform:scale(.94) translateY(6px);
+      transition:opacity .17s ease, transform .21s cubic-bezier(.16,1,.3,1); }
+    .qc-pop.in { opacity:1; transform:none; }
+    /* La bulle grandit depuis son point d ancrage et s y retracte : le geste se
+       referme la ou il a commence, sans effet de saut. */
+    .qc-pop.left  { transform-origin:right center; }
+    .qc-pop.right { transform-origin:left center; }
+    .qc-pop.above { transform-origin:center bottom; }
+    .qc-pop.below { transform-origin:center top; }
+
+    .qc-when { display:flex; align-items:center; gap:7px; font-size:.71rem;
+      color:var(--text-3); margin-bottom:9px; }
+    .qc-when b { color:var(--text-2); font-weight:700; }
+    .qc-x { margin-left:auto; background:none; border:none; color:var(--text-3);
+      cursor:pointer; font-size:.85rem; line-height:1; padding:2px 4px; border-radius:6px; }
+    .qc-x:hover { color:var(--text-1); background:var(--surface-2); }
+
+    .qc-t { width:100%; box-sizing:border-box; font:inherit; font-size:.94rem; font-weight:600;
+      color:var(--text-1); background:none; border:none; border-bottom:2px solid var(--line);
+      padding:5px 2px 7px; }
+    .qc-t:focus { outline:none; border-bottom-color:var(--leaf); }
+    .qc-t::placeholder { color:var(--text-3); font-weight:500; }
+
+    .qc-lb { display:block; font-size:.62rem; font-weight:800; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--text-3); margin:12px 0 6px; }
+    .qc-br { display:flex; flex-wrap:wrap; gap:4px; }
+    .qc-b { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:99px;
+      font-size:.68rem; font-weight:600; cursor:pointer; background:var(--surface-1);
+      border:1px solid var(--line); color:var(--text-3); transition:all .14s; }
+    .qc-b:hover { color:var(--text-1); border-color:var(--ac); }
+    .qc-b.on { background:var(--acs); border-color:var(--ac); color:var(--text-1); }
+
+    .qc-acts { display:flex; align-items:center; gap:8px; margin-top:13px; }
+    .qc-hint { font-size:.63rem; color:var(--text-3); }
+    .qc-save { margin-left:auto; padding:7px 15px; border-radius:9px; font-size:.77rem;
+      font-weight:700; cursor:pointer; border:1px solid rgba(132,194,94,.45);
+      background:rgba(132,194,94,.18); color:var(--leaf-text,#a8d98a); }
+    .qc-save:hover { background:rgba(132,194,94,.3); }
+    .qc-save:disabled { opacity:.45; cursor:not-allowed; }
+
+    /* Le creneau dessine reste visible et plein pendant la saisie. */
+    .ap-ghost.pending { border-style:solid; background:rgba(132,194,94,.28); }
+
+    @media (max-width:600px){
+      /* Trop etroit pour une bulle ancree : elle devient une carte posee en bas,
+         a portee de pouce, sans jamais sortir de l ecran. */
+      .qc-pop { left:8px !important; right:8px; width:auto;
+        top:auto !important; bottom:12px; transform-origin:center bottom !important;
+        transform:translateY(14px); }
+      .qc-pop.in { transform:none; }
+    }
   </style>
 </head>
 <body>
