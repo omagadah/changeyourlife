@@ -12,7 +12,6 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 const MAX_ITEMS = 200;
 const MAX_CHARS = 24000;
@@ -81,6 +80,36 @@ function clientIp(req) {
   const xff = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   return xff || req.socket?.remoteAddress || 'unknown';
 }
+
+
+// ── MODELES : UNE LISTE, PAS UN NOM ─────────────────────────────────────────
+// Les deux fournisseurs ont renvoye 404 en production : les cles etaient
+// bonnes, mais les modeles codes en dur avaient ete retires. Groq et Google
+// deprecient regulierement leurs references, et un nom fige casse la
+// traduction du site a chaque fois, en silence.
+//
+// On essaie donc une liste, du plus capable au plus leger, et le premier qui
+// repond gagne. Une variable d'environnement passe toujours en tete, pour
+// pouvoir epingler un modele sans redeployer le code.
+const GROQ_MODELS = [
+  process.env.GROQ_MODEL,
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+  'gemma2-9b-it',
+  'mixtral-8x7b-32768',
+].filter(Boolean);
+
+const GEMINI_MODELS = [
+  process.env.GEMINI_MODEL,
+  'gemini-2.0-flash',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+  'gemini-1.5-flash',
+].filter(Boolean);
+
+// Le modele qui a marche est retenu en memoire de l'instance : la cascade ne
+// se rejoue donc pas a chaque appel tant que la fonction reste chaude.
+let goodGroq = null, goodGemini = null;
 
 function sysPrompt(targetName) {
   return `You are a professional UI translator for « Change Your Life », a warm, calm well-being app (tone close to Calm / Headspace).
@@ -219,35 +248,42 @@ module.exports = async function handler(req, res) {
 
   // ── Groq (préféré) ──────────────────────────────────────────────────────────
   if (process.env.GROQ_API_KEY) {
-    try {
-      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: userPayload },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.3,
-          max_tokens: 8000,
-        }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const text = data.choices?.[0]?.message?.content;
-        const parsed = safeParse(text);
-        if (parsed) return await respond(parsed, 'groq');
-      } else {
-        groqStatus = r.status;
-        console.error('[translate] Groq error', r.status, (await r.text()).slice(0, 200));
+    for (const model of (goodGroq ? [goodGroq] : GROQ_MODELS)) {
+      try {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content: userPayload },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.3,
+            max_tokens: 8000,
+          }),
+        });
+        if (r.ok) {
+          const data = await r.json();
+          const parsed = safeParse(data.choices?.[0]?.message?.content);
+          if (parsed) { goodGroq = model; return await respond(parsed, 'groq:' + model); }
+          groqStatus = 'reponse illisible';
+        } else {
+          groqStatus = r.status;
+          const body = (await r.text()).slice(0, 160);
+          console.error('[translate] Groq', model, r.status, body);
+          // 404 = modele inconnu : on passe au suivant. Tout autre code (401,
+          // 429, 5xx) ne se reglera pas en changeant de modele.
+          if (r.status !== 404 && r.status !== 400) break;
+        }
+      } catch (e) {
+        groqStatus = 'exception';
+        console.error('[translate] Groq', model, e?.message || e);
       }
-    } catch (e) {
-      console.error('[translate] Groq handler', e?.message || e);
     }
     // si Groq échoue, on tente Gemini ci-dessous (s'il est configuré)
   }
@@ -257,30 +293,38 @@ module.exports = async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({ error: 'Aucun provider IA configuré (GROQ_API_KEY ou GEMINI_API_KEY)', detail: { groq: groqStatus } });
   }
-  try {
-    const r = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: system }] },
-        contents: [{ role: 'user', parts: [{ text: userPayload }] }],
-        generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 8000 },
-      }),
-    });
-    if (!r.ok) {
-      const errText = await r.text();
-      console.error('[translate] Gemini error', r.status, errText.slice(0, 200));
-      return res.status(502).json({ error: 'Service de traduction indisponible', detail: { groq: groqStatus, gemini: r.status } });
+  let gemStatus = 0;
+  for (const model of (goodGemini ? [goodGemini] : GEMINI_MODELS)) {
+    try {
+      const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: system }] },
+          contents: [{ role: 'user', parts: [{ text: userPayload }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 8000 },
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const parsed = safeParse(data.candidates?.[0]?.content?.parts?.[0]?.text);
+        if (parsed) { goodGemini = model; return await respond(parsed, 'gemini:' + model); }
+        gemStatus = 'reponse illisible';
+      } else {
+        gemStatus = r.status;
+        console.error('[translate] Gemini', model, r.status, (await r.text()).slice(0, 160));
+        if (r.status !== 404 && r.status !== 400) break;
+      }
+    } catch (e) {
+      gemStatus = 'exception';
+      console.error('[translate] Gemini', model, e?.message || e);
     }
-    const data = await r.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parsed = safeParse(text);
-    if (!parsed) return res.status(502).json({ error: 'Réponse de traduction invalide' });
-    return await respond(parsed, 'gemini');
-  } catch (e) {
-    console.error('[translate] handler', e?.message || e);
-    return res.status(500).json({ error: 'Erreur interne' });
   }
+  return res.status(502).json({
+    error: 'Service de traduction indisponible',
+    detail: { groq: groqStatus, gemini: gemStatus },
+  });
 };
 
 function safeParse(text) {
