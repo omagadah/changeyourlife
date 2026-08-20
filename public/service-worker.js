@@ -1,5 +1,5 @@
-// service-worker.js - v196 (la racine sert enfin ton espace)
-const CACHE_NAME = 'changeyourlife-v196';
+// service-worker.js - v197 (la barre et CYL reviennent sur la racine)
+const CACHE_NAME = 'changeyourlife-v197';
 const urlsToCache = [
   '/',
   '/bienvenue.html',

@@ -252,7 +252,7 @@ if (typeof window !== 'undefined') {
         if ('serviceWorker' in navigator) {
             // Aligné sur CACHE_NAME du service worker (le fichier est servi en no-store,
   // la query n'est qu'un repère de version - elle était figée à 68 depuis v68).
-  const swUrl = '/service-worker.js?v=196';
+  const swUrl = '/service-worker.js?v=197';
             const showUpdateToast = (msg = 'Nouvelle version disponible', action = 'Mettre à jour', onClick = () => location.reload()) => {
                 if (document.getElementById('cyf-sw-toast')) return;
                 const wrap = document.createElement('div');
@@ -441,16 +441,31 @@ if (typeof window !== 'undefined') {
 // de conformité, préremplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
 // chargeait une SECONDE orbe en parallèle sur /app/ - il n'est plus utilisé.
 (function maybeLoadCylChat() {
-  try {
-    var p = location.pathname;
-    if (p === '/' || p === '' || p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
-        || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0) return;
-    // Barre de navigation verticale : sur les mêmes pages que le chat, c'est
-    // à dire partout où l'utilisateur est chez lui.
-    import('/js/sidebar.js')
-      .then(function (m) { m.initSidebar(); })
-      .catch(function (e) { try { console.warn('[sidebar]', e && e.message || e); } catch (_) {} });
-    // import dynamique : non bloquant si le module échoue
-    import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
-  } catch (_) { /* ignore */ }
+  function start() {
+    try {
+      var p = location.pathname;
+      var isPublic = p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
+        || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0;
+
+      // « / » NE DIT PLUS QUI EST LA. Depuis que la racine sert la vitrine aux
+      // visiteurs et l'espace aux personnes connectées, exclure « / » par son
+      // adresse retirait la barre de navigation et CYL a tout le monde une fois
+      // connecté. C'est donc le CONTENU REELLEMENT SERVI qui tranche :
+      // .app-container n'existe que sur l'espace, jamais sur la vitrine.
+      if (p === '/' || p === '') isPublic = !document.querySelector('.app-container');
+      if (isPublic) return;
+
+      // Barre de navigation verticale : sur les mêmes pages que le chat, c'est
+      // à dire partout où l'utilisateur est chez lui.
+      import('/js/sidebar.js')
+        .then(function (m) { m.initSidebar(); })
+        .catch(function (e) { try { console.warn('[sidebar]', e && e.message || e); } catch (_) {} });
+      // import dynamique : non bloquant si le module échoue
+      import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
+    } catch (_) { /* ignore */ }
+  }
+  // Le test ci-dessus lit le DOM : si la page est encore en cours d'analyse,
+  // .app-container n'existe pas encore et l'espace serait pris pour la vitrine.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
 })();
