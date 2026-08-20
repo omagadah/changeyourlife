@@ -23,7 +23,7 @@ const NAV = [
 // Ce que le site conclut de toi. On ne s'y modifie pas : on s'y lit.
 const NAV_LECTURE = [
   { href: '/yourlife/',    icon: '🪜', label: 'Où j\'en suis', note: 'Ta position, vue par CYL' },
-  { href: '/frise/',       icon: '🌊', label: 'Frise chronologique', note: 'D\'où tu viens, où tu vas' },
+  { href: '/frise/',       icon: '➡️', label: 'Frise chronologique', note: 'D\'où tu viens, où tu vas' },
   { href: '/competences/', icon: '🧗', label: 'Compétences',  note: 'Ce que tu sais faire' },
   { href: '/bilan/',       icon: '📊', label: 'Bilan',        note: 'Ta semaine, résumée' },
 ];

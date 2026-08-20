@@ -1,5 +1,5 @@
-// service-worker.js - v191 (frise : cadre decale de la barre laterale)
-const CACHE_NAME = 'changeyourlife-v191';
+// service-worker.js - v192 (frise : axe, carte mentale, piliers)
+const CACHE_NAME = 'changeyourlife-v192';
 const urlsToCache = [
   '/',
   '/app/',
@@ -46,6 +46,8 @@ const urlsToCache = [
   '/js/home-failsafe.js',
   '/js/sidebar.js',
   '/js/frise.js',
+  '/js/frise-map.js',
+  '/js/frise-data.js',
   '/js/userMenu.js',
   '/js/notifications.js',
   '/js/inscription.js',

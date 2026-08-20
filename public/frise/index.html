@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Frise chronologique - Change Your Life</title>
-  <meta name="description" content="La mémoire longue de ta vie : de ta naissance à aujourd'hui, les événements qui t'ont construit et les motifs qui s'en dégagent." />
+  <meta name="description" content="Ta vie sur un axe, en carte mentale ou par pilier : d'où tu viens, où tu en es, où tu vas." />
   <link rel="stylesheet" href="/css/main.min.css" />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -12,132 +12,304 @@
   <meta name="robots" content="noindex" />
   <style>
     /* ════════════════════════════════════════════════════════════
-       FRISE CHRONOLOGIQUE
-       La mémoire longue : la rivière de l'agenda, remontée jusqu'à
-       la naissance. C'est ce qu'aucune app ne propose (VISION §7).
-       Page de structure : la mise en forme finale viendra avec la
-       charte graphique, mais l'ossature et le vocabulaire sont posés.
+       FRISE CHRONOLOGIQUE - trois angles sur la meme vie.
+       La matiere vient de l'audit XMind de l'owner (3 temps x 5
+       piliers). Les vues ne dupliquent rien : elles relisent le
+       meme arbre autrement.
        ════════════════════════════════════════════════════════════ */
     body { color:var(--text-1); }
     .fr-shell {
       position:fixed; inset:16px; background:var(--glass-bg);
       backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
-      padding:18px 20px 16px; overflow-y:auto; box-shadow:var(--shadow-lg);
+      padding:16px 20px 14px; overflow-y:auto; box-shadow:var(--shadow-lg);
       display:flex; flex-direction:column;
     }
-    .fr-hd { margin-bottom:16px; }
-    .fr-hd h1 { font-size:1.3rem; letter-spacing:-.4px; }
-    .fr-hd p { font-size:.86rem; color:var(--text-2); line-height:1.6; max-width:44rem; margin-top:5px; }
+    /* La carte gere son propre deplacement : le cadre ne doit pas defiler avec. */
+    body.fr-mapmode .fr-shell { overflow:hidden; }
 
-    .fr-soon { display:flex; align-items:flex-start; gap:13px; padding:13px 15px; border-radius:14px;
-      background:rgba(231,177,92,.08); border:1px solid rgba(231,177,92,.26); margin-bottom:18px; }
-    .fr-soon .ic { font-size:1.3rem; flex-shrink:0; }
-    .fr-soon b { display:block; font-size:.86rem; color:var(--gold-text); }
-    .fr-soon small { display:block; font-size:.78rem; color:var(--text-2); line-height:1.5; margin-top:3px; }
+    .fr-hd { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+    .fr-hd h1 { font-size:1.24rem; letter-spacing:-.4px; display:flex; align-items:center; gap:9px; }
+    .fr-hd h1 .ar { color:var(--leaf); font-weight:400; }
+    .fr-hd p { font-size:.84rem; color:var(--text-2); line-height:1.55; max-width:46rem; margin-top:4px; }
+    .fr-acts { margin-left:auto; display:flex; gap:7px; flex-shrink:0; }
+    .fr-gh { padding:7px 12px; border-radius:10px; font-size:.76rem; font-weight:700; cursor:pointer;
+      background:var(--surface-1); border:1px solid var(--line); color:var(--text-2); }
+    .fr-gh:hover { background:var(--surface-2); color:var(--text-1); }
 
-    /* La rivière : un axe, des époques, des événements */
-    .fr-axis { position:relative; flex:1; min-height:150px; margin:10px 0 20px;
-      display:flex; flex-direction:column; justify-content:center; }
-    .fr-line { position:absolute; left:0; right:0; top:20px; height:2px;
-      background:linear-gradient(90deg, transparent, var(--line-strong) 8%, var(--line-strong) 92%, transparent); }
-    .fr-eras { position:relative; display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:4px; }
-    .fr-era { position:relative; text-align:center; padding-top:34px; }
-    .fr-era::before { content:''; position:absolute; top:16px; left:50%; width:9px; height:9px;
-      margin-left:-4.5px; border-radius:50%; background:var(--leaf);
-      box-shadow:0 0 12px rgba(132,194,94,.5); }
-    .fr-era b { display:block; font-size:.8rem; color:var(--text-1); }
-    .fr-era small { display:block; font-size:.68rem; color:var(--text-3); margin-top:2px; line-height:1.4; }
+    /* ── Onglets (meme composant que /yourlife/) ── */
+    .view-switcher { display:inline-flex; gap:4px; background:var(--surface-1);
+      border:1px solid var(--line); border-radius:12px; padding:5px; margin:14px 0 10px; }
+    .view-btn { padding:8px 15px; border-radius:9px; border:none; font-size:.81rem; font-weight:600;
+      cursor:pointer; background:transparent; color:var(--text-3); transition:all .2s; white-space:nowrap; }
+    .view-btn:hover { color:var(--text-1); }
+    .view-btn.active { background:var(--surface-3,rgba(255,255,255,.11)); color:var(--text-1);
+      box-shadow:0 1px 4px rgba(0,0,0,.3); }
 
-    .fr-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
-    .fr-card { background:var(--surface-1); border:1px solid var(--line); border-radius:15px; padding:14px 15px; }
-    .fr-card h2 { font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
-      color:var(--text-3); font-weight:800; margin-bottom:8px; }
-    .fr-card p { font-size:.8rem; color:var(--text-2); line-height:1.6; }
-    .fr-card ul { margin:8px 0 0; padding-left:17px; }
-    .fr-card li { font-size:.78rem; color:var(--text-2); line-height:1.6; margin-bottom:4px; }
-    .fr-card li b { color:var(--text-1); }
-    .fr-cta { display:inline-flex; align-items:center; gap:7px; margin-top:11px; padding:8px 14px;
-      border-radius:99px; text-decoration:none; font-size:.79rem; font-weight:700;
-      background:rgba(132,194,94,.13); border:1px solid rgba(132,194,94,.34); color:var(--leaf-text); }
-    .fr-cta:hover { background:rgba(132,194,94,.24); }
+    .fr-line2 { display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      font-size:.73rem; color:var(--text-3); margin-bottom:10px; }
+    .fr-save { font-weight:700; }
+    .fr-save.on { color:var(--text-3); } .fr-save.ok { color:var(--leaf); }
+    .fr-save.err { color:#e0785f; }
 
-    /* Sous 900px la colonne etouffe : on rend l'axe a sa hauteur naturelle
-       et le cadre redevient une page qui defile normalement. */
+    .view-panel { display:none; }
+    .view-panel.active { display:flex; flex-direction:column; flex:1; min-height:0; }
+
+    /* ══ VUE 1 : LA FRISE PLATE ══ */
+    .fr-ribbon { padding:52px 6px 56px; }
+    .fr-track { position:relative; height:8px; border-radius:99px; background:var(--surface-2);
+      border:1px solid var(--line); }
+    .fr-track-past { position:absolute; top:0; bottom:0; left:0; border-radius:99px;
+      background:linear-gradient(90deg,rgba(195,154,107,.5),rgba(132,194,94,.75)); }
+    .fr-arrow { position:absolute; right:-13px; top:50%; margin-top:-8px; width:0; height:0;
+      border-left:15px solid var(--leaf); border-top:8px solid transparent; border-bottom:8px solid transparent; }
+    .fr-now { position:absolute; top:-9px; bottom:-9px; width:2px; background:var(--leaf); }
+    .fr-now span { position:absolute; top:-19px; left:50%; transform:translateX(-50%);
+      font-size:.63rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+      color:var(--leaf); white-space:nowrap; }
+
+    .fr-pin { position:absolute; transform:translateX(-50%); background:none; border:none;
+      cursor:pointer; padding:0; display:flex; flex-direction:column; align-items:center; }
+    .fr-pin-dot { width:11px; height:11px; border-radius:50%; background:var(--ac);
+      box-shadow:0 0 0 3px var(--bg), 0 0 12px var(--ac); flex-shrink:0; }
+    .fr-pin-lab { max-width:120px; text-align:center; }
+    .fr-pin-lab b { display:-webkit-box; font-size:.71rem; color:var(--text-1); line-height:1.25;
+      overflow:hidden; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+    .fr-pin-lab small { display:block; font-size:.62rem; color:var(--text-3); margin-top:1px; }
+    .fr-pin.above { bottom:4px; flex-direction:column-reverse; }
+    .fr-pin.above .fr-pin-dot { margin-top:5px; }
+    .fr-pin.below { top:4px; }
+    .fr-pin.below .fr-pin-dot { margin-bottom:5px; }
+    .fr-pin:hover .fr-pin-lab b { color:var(--ac); }
+    .fr-pin:focus-visible { outline:2px solid var(--leaf); outline-offset:3px; border-radius:6px; }
+
+    .fr-empty-axis { font-size:.8rem; color:var(--text-2); line-height:1.6; text-align:center;
+      max-width:38rem; margin:0 auto 18px; }
+    .fr-empty-axis b { color:var(--text-1); }
+
+    .fr-eras3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(238px,1fr)); gap:12px; }
+    .fr-era3 { background:var(--surface-1); border:1px solid var(--line); border-radius:15px;
+      padding:13px 15px; border-top:3px solid var(--ac); }
+    .fr-era3 header { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+    .fr-era3 header b { font-size:.9rem; }
+    .fr-era3 header span { font-size:.73rem; color:var(--text-3); }
+    .fr-bar { height:5px; border-radius:99px; background:var(--surface-2); margin:9px 0 5px; overflow:hidden; }
+    .fr-bar i { display:block; height:100%; background:var(--ac); border-radius:99px; transition:width .4s; }
+    .fr-cnt { font-size:.68rem; color:var(--text-3); }
+    .fr-mini { list-style:none; margin:9px 0 0; padding:0; display:flex; flex-direction:column; gap:2px; }
+    .fr-mini li.mut { font-size:.74rem; color:var(--text-3); padding:3px 0; }
+    .fr-mini button { width:100%; text-align:left; background:none; border:none; cursor:pointer;
+      font:inherit; font-size:.76rem; color:var(--text-2); padding:4px 7px; border-radius:7px; }
+    .fr-mini button:hover { background:var(--surface-2); color:var(--text-1); }
+
+    /* ══ VUE 2 : LA CARTE MENTALE ══ */
+    .fm-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:9px; }
+    .fm-b { padding:6px 11px; border-radius:9px; font-size:.75rem; font-weight:600; cursor:pointer;
+      background:var(--surface-1); border:1px solid var(--line); color:var(--text-2); }
+    .fm-b:hover { background:var(--surface-2); color:var(--text-1); }
+    .fm-b.on { background:rgba(241,205,146,.16); border-color:rgba(241,205,146,.45); color:var(--gold-text); }
+    #fm-hint { font-size:.7rem; color:var(--text-3); margin-left:auto; text-align:right; max-width:34rem; }
+
+    .fm-stage { position:relative; flex:1; min-height:340px; overflow:hidden; border-radius:15px;
+      background:var(--stage-bg,rgba(0,0,0,.16)); border:1px solid var(--line);
+      cursor:grab; touch-action:none; }
+    .fm-stage.grabbing { cursor:grabbing; }
+    .fm-stage.link-mode { cursor:crosshair; }
+    .fm-world { position:absolute; top:0; left:0; transform-origin:0 0; }
+    .fm-links { position:absolute; top:0; left:0; overflow:visible; pointer-events:none; }
+    .fm-edge { fill:none; stroke-width:2; opacity:.45; }
+    .fm-free { fill:none; stroke:#f1cd92; stroke-width:1.7; stroke-dasharray:5 5; opacity:.8; }
+
+    .fm-node { position:absolute; box-sizing:border-box; padding:8px 24px 8px 11px;
+      border-radius:11px; background:var(--panel,#141c14); border:1px solid var(--line);
+      border-left:3px solid var(--ac); cursor:grab; user-select:none;
+      box-shadow:0 2px 8px rgba(0,0,0,.28); transition:box-shadow .15s,border-color .15s; }
+    .fm-node:hover { border-color:var(--ac); }
+    .fm-node.sel { box-shadow:0 0 0 2px var(--ac), 0 4px 14px rgba(0,0,0,.4); }
+    .fm-node.linking { box-shadow:0 0 0 2px #f1cd92; }
+    .fm-node.drop { box-shadow:0 0 0 2px var(--leaf); }
+    .fm-node.dragging { opacity:.6; cursor:grabbing; }
+    .fm-node:focus-visible { outline:2px solid var(--leaf); outline-offset:2px; }
+    .fm-node.root { background:linear-gradient(135deg,rgba(132,194,94,.2),rgba(241,205,146,.12)); }
+    .fm-node.d0 .fm-t { font-size:.94rem; font-weight:800; }
+    .fm-node.d1 .fm-t { font-size:.84rem; font-weight:700; }
+    .fm-t { font-size:.79rem; font-weight:600; color:var(--text-1); line-height:1.3; word-break:break-word; }
+    .fm-t[contenteditable="true"] { outline:none; background:rgba(132,194,94,.14); border-radius:4px;
+      cursor:text; user-select:text; }
+    .fm-s { font-size:.68rem; color:var(--text-2); line-height:1.4; margin-top:3px; }
+    .fm-s.hint { color:var(--text-3); font-style:italic; }
+    .fm-meta { display:flex; align-items:center; gap:6px; margin-top:5px; }
+    .fm-date { font-size:.63rem; font-weight:700; color:var(--gold-text);
+      background:rgba(231,177,92,.14); padding:1px 6px; border-radius:99px; }
+    .fm-fold { font-size:.64rem; font-weight:800; cursor:pointer; padding:1px 7px; border-radius:99px;
+      background:var(--surface-2); border:1px solid var(--line); color:var(--text-3); }
+    .fm-fold:hover { color:var(--text-1); border-color:var(--ac); }
+    .fm-add { position:absolute; top:6px; right:6px; width:18px; height:18px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:.8rem; line-height:1;
+      cursor:pointer; background:var(--surface-2); border:1px solid var(--line); color:var(--text-3);
+      opacity:0; transition:opacity .15s; }
+    .fm-node:hover .fm-add, .fm-node.sel .fm-add, .fm-add:focus-visible { opacity:1; }
+    .fm-add:hover { background:var(--leaf); color:#0a0f0a; border-color:var(--leaf); }
+
+    /* ══ VUE 3 : LES PILIERS ══ */
+    .fr-pgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(212px,1fr)); gap:11px;
+      align-items:start; }
+    .fr-pcol { background:var(--surface-1); border:1px solid var(--line); border-radius:15px;
+      overflow:hidden; border-top:3px solid var(--ac); }
+    .fr-phead { display:flex; align-items:center; gap:8px; padding:11px 13px 9px; }
+    .fr-phead .ic { font-size:1.05rem; }
+    .fr-phead b { font-size:.83rem; }
+    .fr-pblock { border-top:1px solid var(--line); padding:9px 13px 11px; }
+    .fr-pera { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:5px; }
+    .fr-pera b { font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; color:var(--text-3); }
+    .fr-pera small { font-size:.66rem; color:var(--text-3); }
+    .fr-pcol ul { list-style:none; margin:0; padding:0; }
+    .fr-pcol li.mut { font-size:.73rem; color:var(--text-3); }
+    .fr-pcol li button { width:100%; text-align:left; background:none; border:none; cursor:pointer;
+      font:inherit; font-size:.75rem; color:var(--text-3); padding:4px 6px; border-radius:7px;
+      display:flex; gap:7px; align-items:baseline; line-height:1.35; }
+    .fr-pcol li button:hover { background:var(--surface-2); color:var(--text-1); }
+    .fr-pcol li.on button { color:var(--text-1); }
+    .fr-pcol li .tick { font-size:.6rem; color:var(--ac); flex-shrink:0; }
+
+    /* ══ PANNEAU D'INSPECTION ══ */
+    #fr-insp { position:fixed; top:16px; right:16px; bottom:16px; width:352px; z-index:60;
+      background:var(--panel,#111a12); border:1px solid var(--line); border-radius:18px;
+      box-shadow:var(--shadow-lg); padding:15px 17px; overflow-y:auto;
+      transform:translateX(calc(100% + 24px)); transition:transform .26s cubic-bezier(.4,0,.2,1); }
+    #fr-insp.open { transform:none; }
+    .fi-top { display:flex; align-items:flex-start; gap:10px; margin-bottom:11px; }
+    #fi-path { font-size:.68rem; color:var(--text-3); line-height:1.45; flex:1; word-break:break-word; }
+    #fi-close { background:var(--surface-1); border:1px solid var(--line); color:var(--text-2);
+      width:26px; height:26px; border-radius:8px; cursor:pointer; flex-shrink:0; font-size:.85rem; }
+    #fi-close:hover { color:var(--text-1); background:var(--surface-2); }
+    #fi-tag { display:inline-block; font-size:.64rem; font-weight:700; color:var(--text-3);
+      background:var(--pill-bg,rgba(255,255,255,.05)); padding:2px 8px; border-radius:99px; margin-bottom:10px; }
+    .fi-lb { display:block; font-size:.65rem; font-weight:800; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--text-3); margin:11px 0 4px; }
+    #fi-label, #fi-note, #fi-date { width:100%; box-sizing:border-box; font:inherit; font-size:.82rem;
+      background:var(--field-bg,rgba(0,0,0,.22)); border:1px solid var(--line); border-radius:10px;
+      color:var(--text-1); padding:8px 10px; }
+    #fi-note { min-height:132px; resize:vertical; line-height:1.55; }
+    #fi-label:focus, #fi-note:focus, #fi-date:focus { outline:none; border-color:var(--leaf); }
+    #fi-note::placeholder { color:var(--text-3); font-style:italic; }
+    .fi-mut { font-size:.72rem; color:var(--text-3); line-height:1.5; }
+    .fi-link { display:flex; align-items:center; gap:8px; padding:5px 9px; border-radius:9px;
+      background:var(--surface-1); border:1px solid var(--line); margin-bottom:4px; }
+    .fi-link span { flex:1; font-size:.74rem; color:var(--text-2); }
+    .fi-link button { background:none; border:none; color:var(--text-3); cursor:pointer; font-size:.75rem; }
+    .fi-link button:hover { color:#e0785f; }
+    .fi-acts { display:flex; gap:7px; margin-top:15px; }
+    .fi-acts button { flex:1; padding:8px; border-radius:10px; font-size:.76rem; font-weight:700;
+      cursor:pointer; border:1px solid var(--line); background:var(--surface-1); color:var(--text-2); }
+    #fi-add:hover { background:rgba(132,194,94,.16); border-color:rgba(132,194,94,.4); color:var(--leaf-text); }
+    #fi-del:hover:not(:disabled) { background:rgba(224,120,95,.14); border-color:rgba(224,120,95,.4); color:#e58e73; }
+    #fi-del:disabled { opacity:.4; cursor:not-allowed; }
+
+    #fr-boot { padding:40px 0; text-align:center; font-size:.82rem; color:var(--text-3); }
+
+    /* ── Ecrans etroits ── */
     @media (max-width:900px){
-      .fr-axis { flex:0 0 auto; min-height:0; padding:22px 0 6px; }
+      #fr-insp { top:auto; left:8px; right:8px; bottom:8px; width:auto; max-height:64vh;
+        transform:translateY(calc(100% + 24px)); border-radius:16px; }
+      #fr-insp.open { transform:none; }
+      #fm-hint { margin-left:0; text-align:left; }
     }
-    @media (max-width:700px){ .fr-shell { inset:8px; padding:14px 12px 10px; } }
+    @media (max-width:700px){
+      .fr-shell { inset:8px; padding:13px 12px 10px; }
+      .fr-ribbon { padding:46px 4px 50px; }
+      .fr-pin-lab { max-width:82px; }
+      .view-btn { padding:7px 10px; font-size:.75rem; }
+    }
+
+    /* ── Impression : la frise doit pouvoir finir sur un mur ── */
+    @media print {
+      body { background:#fff !important; color:#000 !important; padding:0 !important; }
+      .cyl-sb, .cyl-sb-burger, .cyl-sb-veil, .view-switcher, .fr-acts, .fm-bar,
+      #fr-insp, #cyl-chat-root, #fr-save, #fm-hint { display:none !important; }
+      .fr-shell { position:static !important; inset:auto !important; border:none !important;
+        background:none !important; box-shadow:none !important; backdrop-filter:none !important;
+        overflow:visible !important; padding:0 !important; }
+      .view-panel { display:block !important; }
+      .fm-stage { overflow:visible !important; height:auto !important; border:none !important; }
+      .fm-world { position:static !important; transform:none !important; }
+    }
   </style>
 </head>
 <body>
   <main class="fr-shell" data-cyl-shell>
     <div class="fr-hd">
-      <h1>Frise chronologique</h1>
-      <p>La mémoire longue de ta vie. L'agenda montre tes semaines ; la frise
-         montre tes décennies - de ta naissance à aujourd'hui, et vers où tu vas.
-         C'est là que les motifs deviennent visibles : les cycles, les ruptures,
-         les périodes qui se ressemblent.</p>
-    </div>
-
-    <div class="fr-soon">
-      <span class="ic">🌱</span>
       <div>
-        <b>Cette page est une ossature, pas encore la frise</b>
-        <small>La structure et le vocabulaire sont posés. Ce qui manque, c'est
-        la matière : tes événements de vie. Ils viendront de ce que tu déposes
-        au fil du temps et de ce que CYL retient de vos échanges - pas d'un
-        formulaire de 60 questions à remplir un dimanche.</small>
+        <h1><span class="ar" aria-hidden="true">➡</span> Frise chronologique</h1>
+        <p>La mémoire longue de ta vie. L'agenda montre tes semaines ; la frise montre tes
+           décennies. Trois façons de la regarder : <b>l'axe</b> du passé vers le futur,
+           <b>la carte</b> où tout se relie, <b>les piliers</b> domaine par domaine.</p>
+      </div>
+      <div class="fr-acts">
+        <button class="fr-gh" id="fr-export" type="button">⬇ Exporter</button>
+        <button class="fr-gh" id="fr-print" type="button">🖨 Imprimer</button>
       </div>
     </div>
 
-    <div class="fr-axis">
-      <div class="fr-eras">
-        <div class="fr-line" aria-hidden="true"></div>
-        <div class="fr-era"><b>Racines</b><small>D'où tu viens</small></div>
-        <div class="fr-era"><b>Formation</b><small>Ce qui t'a construit</small></div>
-        <div class="fr-era"><b>Bascules</b><small>Ce qui a tout changé</small></div>
-        <div class="fr-era"><b>Aujourd'hui</b><small>Où tu en es</small></div>
-        <div class="fr-era"><b>Horizon</b><small>Où tu vas</small></div>
-      </div>
+    <div class="view-switcher" role="group" aria-label="Changer de vue">
+      <button class="view-btn active" data-view="frise" type="button">Frise</button>
+      <button class="view-btn" data-view="map" type="button">Carte mentale</button>
+      <button class="view-btn" data-view="piliers" type="button">Piliers</button>
     </div>
 
-    <div class="fr-grid">
-      <section class="fr-card">
-        <h2>Ce que la frise fera</h2>
-        <ul>
-          <li><b>Ancrer les événements</b> qui comptent, avec leur date et la
-              branche de vie qu'ils ont touchée.</li>
-          <li><b>Faire émerger les motifs</b> : les cycles de joie, d'épuisement,
-              de reconstruction. Ce qui revient tous les deux ans.</li>
-          <li><b>Relier au présent</b> : « la dernière fois que tu t'es senti
-              comme ça, voilà ce qui avait aidé ».</li>
-          <li><b>Prolonger l'arbre</b> : la frise, ce sont ses racines. Même
-              rivière que l'agenda, remontée bien plus loin.</li>
-        </ul>
-      </section>
+    <div class="fr-line2">
+      <span id="fr-stats"></span>
+      <span class="fr-save" id="fr-save"></span>
+    </div>
 
-      <section class="fr-card">
-        <h2>D'où viendra la matière</h2>
-        <p>Rien ne te sera demandé d'un bloc. La frise se remplit de trois façons,
-           toutes passives ou volontaires :</p>
-        <ul>
-          <li>Les <b>jalons franchis</b> de tes objectifs s'y déposent seuls.</li>
-          <li>Ce que tu racontes à CYL peut y être <b>ancré, avec ton accord</b>.</li>
-          <li>Tu peux ajouter un événement <b>quand tu y penses</b>, sans ordre imposé.</li>
-        </ul>
-        <a class="fr-cta" href="/objectifs/">Poser un premier jalon →</a>
-      </section>
+    <div id="fr-boot">Chargement de ta frise…</div>
 
-      <section class="fr-card">
-        <h2>Ce qui n'y sera jamais</h2>
-        <p>Pas de note globale sur ta vie. Pas de comparaison avec d'autres
-           personnes. Pas de jugement sur ce que tu as traversé.
-           La frise <b>montre</b> - elle ne classe pas, elle ne conclut pas à ta
-           place. Tu restes le seul à décider de ce que ton histoire veut dire.</p>
-      </section>
+    <!-- Vue 1 : l'axe -->
+    <div class="view-panel" id="view-frise">
+      <div id="fr-axisview"></div>
+    </div>
+
+    <!-- Vue 2 : la carte mentale -->
+    <div class="view-panel" id="view-map">
+      <div class="fm-bar">
+        <button class="fm-b" id="fm-link" type="button" aria-pressed="false">🔗 Relier</button>
+        <button class="fm-b" id="fm-fit" type="button">⤢ Recadrer</button>
+        <button class="fm-b" id="fm-open" type="button">Tout déplier</button>
+        <button class="fm-b" id="fm-close" type="button">Tout replier</button>
+        <span id="fm-hint"></span>
+      </div>
+      <div id="fm-host"></div>
+    </div>
+
+    <!-- Vue 3 : les piliers -->
+    <div class="view-panel" id="view-piliers">
+      <div id="fr-pilview"></div>
     </div>
   </main>
+
+  <aside id="fr-insp" aria-label="Détail de l'élément">
+    <div class="fi-top">
+      <div id="fi-path"></div>
+      <button id="fi-close" type="button" aria-label="Fermer le panneau">✕</button>
+    </div>
+    <span id="fi-tag"></span>
+
+    <label class="fi-lb" for="fi-label">Titre</label>
+    <input id="fi-label" type="text" maxlength="160" autocomplete="off" />
+
+    <label class="fi-lb" for="fi-note">Ce que tu veux en dire</label>
+    <textarea id="fi-note" maxlength="4000"></textarea>
+
+    <label class="fi-lb" for="fi-date">Date (facultative)</label>
+    <input id="fi-date" type="date" />
+
+    <span class="fi-lb">Relié à</span>
+    <div id="fi-links"></div>
+
+    <div class="fi-acts">
+      <button id="fi-add" type="button">+ Ajouter dessous</button>
+      <button id="fi-del" type="button">Supprimer</button>
+    </div>
+  </aside>
 
   <script type="module" src="/js/frise.js"></script>
 </body>

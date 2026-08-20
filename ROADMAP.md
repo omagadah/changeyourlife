@@ -102,11 +102,31 @@ Garde-fous non négociables :
 
 ## 4 · Frise chronologique (mémoire longue)
 
-Page créée le 2026-08-19 (`/frise/`), pour l'instant une ossature.
-Reste à faire : le modèle d'événement de vie, l'ancrage depuis les jalons
-franchis, l'ancrage depuis les échanges avec CYL (avec accord), et la
-détection de motifs (cycles, ruptures, périodes qui se ressemblent).
-C'est le prolongement des racines de l'arbre et de la vue Rivière de l'agenda.
+Page créée le 2026-08-19, remplie le 2026-08-20 avec **trois vues** sur le
+même arbre (`/frise/`) - le modèle vit dans `js/frise-data.js`, document
+Firestore `users/{uid}.frise` :
+
+| Vue | Ce qu’elle donne à voir |
+|---|---|
+| **Frise** | L’axe plat, passé → présent → futur. Ce qui est daté s’y pose à sa vraie place. |
+| **Carte mentale** | L’arbre éditable façon XMind : créer, renommer, déplacer, relier, replier. |
+| **Piliers** | Les 5 domaines, chacun lu dans les 3 temps. « Ma santé : d’où elle vient, où elle en est, où elle va. » |
+
+La structure de départ est la transcription de **l’audit XMind de l’owner**
+(3 temps × 5 piliers = 42 thèmes). Ce sont des **pistes, pas un formulaire** :
+chaque nœud se renomme et se supprime, et l’indice gris s’efface dès qu’on
+écrit. C’est la façon de guider sans prescrire (règle CYL non-directif).
+
+Reste à faire :
+
+- **Alimentation automatique** : les jalons franchis des objectifs devraient s’y
+  déposer seuls, et ce qui se dit à CYL devrait pouvoir y être ancré avec accord
+  explicite. Aujourd’hui tout est saisi à la main.
+- **Détection de motifs** : cycles, ruptures, périodes qui se ressemblent. C’est
+  ce qui transformerait la frise d’un classeur en un miroir.
+- **Relier la frise à l’arbre** : ses racines, et à la vue Rivière de l’agenda.
+- **Import XMind** (un `.xmind` est un zip contenant du JSON) pour récupérer les
+  cartes déjà faites ailleurs. L’export Markdown existe déjà dans l’autre sens.
 
 ## 5 · CHARTE GRAPHIQUE COMPLÈTE (gros morceau — à faire EN DERNIER)
 
