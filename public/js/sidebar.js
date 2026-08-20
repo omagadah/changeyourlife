@@ -15,7 +15,7 @@
 //   ce que j'ai en tete -> quand -> ou je vais -> ce que ca donne de moi.
 const NAV = [
   { href: '/',          icon: '🌳', label: 'Mon espace',   note: 'Vue d\'ensemble' },
-  { href: '/organizer/',    icon: '🗂️', label: 'ORGANIZER',    note: 'Tes idées, triées' },
+  { href: '/organizer/',    icon: '🗂️', label: 'ORGANIZER',    note: 'Tes idées enfin triées & priorisées' },
   { href: '/agenda/',       icon: '🗓️', label: 'Agenda',       note: 'Ce qui a une date' },
   { href: '/plan/',         icon: '🌅', label: "Aujourd'hui",  note: 'Rythme du jour' },
   { href: '/objectifs/',    icon: '🎯', label: 'Objectifs',    note: 'Où tu vas' },

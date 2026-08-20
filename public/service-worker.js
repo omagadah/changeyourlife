@@ -1,7 +1,8 @@
-// service-worker.js - v195 (racine = ton espace, hub cliquable, CYL a un visage)
-const CACHE_NAME = 'changeyourlife-v195';
+// service-worker.js - v196 (la racine sert enfin ton espace)
+const CACHE_NAME = 'changeyourlife-v196';
 const urlsToCache = [
   '/',
+  '/bienvenue.html',
   '/app/',
   '/plan/',
   '/competences/',

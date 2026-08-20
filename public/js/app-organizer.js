@@ -86,7 +86,6 @@ function render() {
 
     <div class="hub-cols" id="hub-cols"></div>
     <a class="hub-foot" id="hub-foot" href="/organizer/" aria-label="Ouvrir l'ORGANIZER"></a>
-    <div class="hub-sheet hidden" id="hub-sheet"></div>
   `;
 
   $('#hub-capture').addEventListener('submit', (e) => {
@@ -178,7 +177,8 @@ function renderCard(card, col) {
     (b ? `<span class="hub-card-branch" title="${esc(b.label)}${card.sub ? ' · ' + esc(card.sub) : ''}">${b.emoji}</span>` : '') +
     `<span class="hub-card-title">${esc(card.title)}</span>` +
     (badges.length ? `<span class="hub-card-badges">${badges.join('')}</span>` : '') +
-    (suggest || hand ? `<span class="hub-card-actions">${suggest}${hand}</span>` : '');
+    (suggest || hand ? `<span class="hub-card-actions">${suggest}${hand}</span>` : '') +
+    reliefBlock(card);
   // Accessible au clavier : la fiche s'ouvre a Entree/Espace, et la modale
   // permet ensuite priorite/echeance/branche sans souris (drag&drop non requis).
   el.tabIndex = 0;
@@ -195,11 +195,22 @@ function renderCard(card, col) {
       toast(`Rangée dans « ${SHORT[to] || to} »`);
       return;
     }
+    if (e.target.closest('[data-relief="cyl"]')) { e.stopPropagation(); askCylAbout(card); return; }
+    if (e.target.closest('[data-relief-no]')) {
+      // « Je gère » : le bloc se retire de CETTE fiche. Rien n'est efface, et
+      // CYL reste joignable - c'est un choix, pas une porte qui se ferme.
+      e.stopPropagation();
+      card.distress = false;
+      logCard(card, 'Panneau d\'aide masqué');
+      persist(); renderCols(); renderFoot();
+      return;
+    }
     if (e.target.closest('[data-cyl]')) { e.stopPropagation(); askCylAbout(card); return; }
-    openSheet(card.id);
+    // Le reste du clic est traite par initCardOpen(), qui sait distinguer un
+    // clic d'un glisser-deposer. Rien a faire ici.
   });
   el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSheet(card.id); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToCard(card.id); }
   });
   return el;
 }
@@ -252,6 +263,9 @@ function renderFoot() {
 // fiche (puces, main de CYL), et on ignore un clic qui suit un DEPLACEMENT -
 // sinon ranger une fiche d'une colonne a l'autre ouvrirait la page a l'arrivee.
 const CLICK_SLOP = 6;
+function goToCard(id) {
+  window.location.href = '/organizer/?card=' + encodeURIComponent(id);
+}
 function initCardOpen() {
   const box = $('#hub-cols');
   if (!box || box.dataset.openWired === '1') return;
@@ -264,10 +278,10 @@ function initCardOpen() {
     const moved = down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > CLICK_SLOP;
     down = null;
     if (moved) return;
-    if (e.target.closest('button, a, input, textarea, [data-sugg], [data-cyl]')) return;
+    if (e.target.closest('button, a, input, textarea, [data-sugg], [data-cyl], .hub-relief')) return;
     const card = e.target.closest('.hub-card');
     if (!card || !card.dataset.id) return;
-    window.location.href = '/organizer/?card=' + encodeURIComponent(card.dataset.id);
+    goToCard(card.dataset.id);
   });
 }
 
@@ -308,178 +322,23 @@ function onDragEnd(evt) {
   persist(); renderCols(); renderFoot(); initDnd();
 }
 
-// Bloc « CYL » de la fiche. Deux états :
-//  - elle propose son aide (confiance faible, ou pensée trop large)
-//  - l'aide a été refusée : elle s'efface, mais reste joignable en un clic.
-// Dans tous les cas l'utilisateur garde la main : c'est lui qui décide.
-function cylBlock(card) {
-  // La détresse passe AVANT toute logique de rangement. On ne demande pas à
-  // quelqu'un qui va mal de choisir une colonne Eisenhower : on lui ouvre des
-  // portes, et il prend celle qu'il veut - ou aucune.
-  if (card.distress) {
-    const opts = reliefOptions(card).map((o) => o.act === 'cyl'
-      ? `<button class="hub-relief-b" data-relief="cyl">${esc(o.label)}</button>`
-      : `<a class="hub-relief-b${o.tone === 'urgent' ? ' urgent' : ''}" href="${esc(o.href)}">${esc(o.label)}</a>`).join('');
-    return `<div class="hub-relief${card.crisis ? ' crisis' : ''}">
-      <div class="hub-relief-t">${card.crisis ? 'Tu comptes.' : 'Ça passe devant le reste.'}</div>
-      <div class="hub-relief-r">${esc(card.cylReason)}</div>
-      <div class="hub-relief-opts">${opts}</div>
-      ${card.crisis ? '<div class="hub-relief-num"><b>3114</b> (24h/24, gratuit) · <b>15</b> SAMU · <b>112</b> urgences</div>' : ''}
-      <button class="hub-cyl-no" id="hs-cyl-no">Je gère, range-la normalement</button>
-    </div>`;
-  }
-  const needs = (card.confidence < 0.5 || card.complexity === 'complexe' || card.altBranch);
-  if (needs && !card.cylDismissed) {
-    return `<div class="hub-cyl">
-      <div class="hub-cyl-orb"></div>
-      <div class="hub-cyl-body">
-        <div class="hub-cyl-t">CYL a besoin d'en savoir plus</div>
-        <div class="hub-cyl-r">${esc(card.cylReason || "Je n'arrive pas à situer cette note avec certitude.")}</div>
-        <div class="hub-cyl-acts">
-          <button class="hub-cyl-go" id="hs-cyl">En parler à CYL</button>
-          <button class="hub-cyl-no" id="hs-cyl-no">Non, c'est bon</button>
-        </div>
-      </div>
-    </div>`;
-  }
-  return `<div class="hub-cyl-quiet">
-    <button class="hub-cyl-link" id="hs-cyl">Demander l'avis de CYL sur cette note</button>
+
+// ── Detresse : ce qui passe devant tout le reste ─────────────────────────────
+// Rendu A MEME LA FICHE, pas dans une fenetre a ouvrir. On ne demande pas a
+// quelqu'un qui va mal de choisir une colonne Eisenhower : on lui ouvre des
+// portes, et il prend celle qu'il veut - ou aucune.
+function reliefBlock(card) {
+  if (!card.distress) return '';
+  const opts = reliefOptions(card).map((o) => o.act === 'cyl'
+    ? `<button class="hub-relief-b" data-relief="cyl">${esc(o.label)}</button>`
+    : `<a class="hub-relief-b${o.tone === 'urgent' ? ' urgent' : ''}" href="${esc(o.href)}">${esc(o.label)}</a>`).join('');
+  return `<div class="hub-relief${card.crisis ? ' crisis' : ''}">
+    <div class="hub-relief-t">${card.crisis ? 'Tu comptes.' : 'Ça passe devant le reste.'}</div>
+    <div class="hub-relief-r">${esc(card.cylReason)}</div>
+    <div class="hub-relief-opts">${opts}</div>
+    ${card.crisis ? '<div class="hub-relief-num"><b>3114</b> (24h/24, gratuit) · <b>15</b> SAMU · <b>112</b> urgences</div>' : ''}
+    <button class="hub-cyl-no" data-relief-no="1">Je gère, range-la normalement</button>
   </div>`;
-}
-
-// ── Fiche : panneau d'action rapide ──────────────────────────────────────────
-function openSheet(cardId) {
-  const f = findCard(board, cardId); if (!f) return;
-  const card = f.card;
-  const s = $('#hub-sheet'); if (!s) return;
-  const wasHidden = s.classList.contains('hidden');
-  const dueVal = card.due ? new Date(card.due).toISOString().slice(0, 10) : '';
-  s.innerHTML = `
-    <div class="hub-sheet-in" role="dialog" aria-modal="true" aria-label="${esc(card.title)}">
-      <button class="hub-sheet-x" id="hs-x" aria-label="Fermer">✕</button>
-      <textarea class="hub-sheet-title" id="hs-title" rows="1">${esc(card.title)}</textarea>
-
-      ${cylBlock(card)}
-
-      <div class="hub-l">Quelle part de ta vie ça nourrit</div>
-      <div class="hub-branches" id="hs-branches">
-        ${BRANCHES.map((b) => `<button class="hub-br${card.branch === b.key ? ' on' : ''}" data-b="${b.key}" style="--bc:${b.color}" title="${esc(b.label)}">${b.emoji}<span>${esc(b.label)}</span></button>`).join('')}
-      </div>
-
-      ${card.branch && SUBS[card.branch] ? `
-      <div class="hub-l">Plus précisément</div>
-      <div class="hub-when" id="hs-subs">
-        ${SUBS[card.branch].map((sname) => `<button class="hub-chip${card.sub === sname ? ' on' : ''}" data-sub="${esc(sname)}">${esc(sname)}</button>`).join('')}
-      </div>` : ''}
-
-      <div class="hub-l">Quand</div>
-      <div class="hub-when">
-        <button class="hub-chip" data-when="0">Aujourd'hui</button>
-        <button class="hub-chip" data-when="1">Demain</button>
-        <button class="hub-chip" data-when="7">Dans 7 j</button>
-        <input type="date" id="hs-due" value="${dueVal}" />
-      </div>
-
-      <div class="hub-l">Priorité</div>
-      <div class="hub-when" id="hs-move">
-        ${['ui', 'ni', 'up', 'nn'].map((id) => `<button class="hub-chip${f.col.id === id ? ' on' : ''}" data-move="${id}">${esc(SHORT[id] || id)}</button>`).join('')}
-      </div>
-
-      <div class="hub-sheet-actions">
-        <button class="hub-b cal" id="hs-cal">${card.gcalId ? '✓ Dans ton agenda' : '↗ Planifier dans Google Agenda'}</button>
-        <button class="hub-b ok" id="hs-done">Terminée (+${FINISH_XP} XP)</button>
-        <button class="hub-b del" id="hs-del">Supprimer</button>
-      </div>
-    </div>`;
-  s.classList.remove('hidden');
-
-  const close = () => { s.classList.add('hidden'); document.removeEventListener('keydown', onEsc); };
-  const onEsc = (e) => { if (e.key === 'Escape') close(); };
-  // openSheet est re-appele au sein de la meme modale (choix de branche,
-  // echeance...) : on remplace le handler au lieu de l'empiler.
-  if (s._onEsc) document.removeEventListener('keydown', s._onEsc);
-  s._onEsc = onEsc;
-  document.addEventListener('keydown', onEsc);
-  s.onclick = (e) => { if (e.target === s) close(); };
-  $('#hs-x').onclick = close;
-  if (wasHidden) $('#hs-x').focus();
-
-  const ta = $('#hs-title');
-  const grow = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
-  grow(); ta.oninput = grow;
-  ta.onblur = () => {
-    const v = ta.value.trim();
-    if (v && v !== card.title) { card.title = v; logCard(card, 'Titre modifié'); persist(); renderCols(); }
-  };
-
-  s.querySelectorAll('#hs-branches .hub-br').forEach((btn) => {
-    btn.onclick = () => {
-      const k = btn.dataset.b;
-      card.branch = card.branch === k ? null : k;
-      // changer de branche invalide la sous-categorie precedente
-      if (!card.branch || !(SUBS[card.branch] || []).includes(card.sub)) card.sub = null;
-      logCard(card, card.branch ? 'Branche : ' + BRANCH_BY_KEY[k].label : 'Branche retirée');
-      persist(); openSheet(cardId); renderCols();
-    };
-  });
-
-  s.querySelectorAll('#hs-subs .hub-chip').forEach((btn) => {
-    btn.onclick = () => {
-      const v = btn.dataset.sub;
-      card.sub = card.sub === v ? null : v;
-      logCard(card, card.sub ? 'Précision : ' + card.sub : 'Précision retirée');
-      persist(); openSheet(cardId); renderCols();
-    };
-  });
-
-  const cylGo = $('#hs-cyl');
-  if (cylGo) cylGo.onclick = () => { close(); askCylAbout(card); };
-  const relief = s.querySelector('[data-relief="cyl"]');
-  if (relief) relief.onclick = () => { close(); askCylAbout(card); };
-  const cylNo = $('#hs-cyl-no');
-  if (cylNo) cylNo.onclick = () => {
-    // « Non, c'est bon » : CYL se retire de CETTE fiche, mais reste joignable.
-    card.cylDismissed = true;
-    logCard(card, 'Aide de CYL déclinée');
-    persist(); openSheet(cardId); renderCols();
-  };
-
-  const setDue = (ts) => {
-    card.due = ts;
-    logCard(card, ts ? 'Échéance ' + fmtDate(ts) : 'Échéance retirée');
-    persist(); openSheet(cardId); renderCols(); renderFoot();
-  };
-  s.querySelectorAll('[data-when]').forEach((btn) => {
-    btn.onclick = () => {
-      const d = new Date(); d.setHours(9, 0, 0, 0);
-      d.setDate(d.getDate() + Number(btn.dataset.when));
-      setDue(d.getTime());
-    };
-  });
-  $('#hs-due').onchange = (e) => setDue(e.target.value ? new Date(e.target.value + 'T09:00:00').getTime() : null);
-
-  s.querySelectorAll('[data-move]').forEach((btn) => {
-    btn.onclick = () => {
-      moveCard(board, cardId, btn.dataset.move);
-      persist(); close(); renderCols(); renderFoot(); initDnd();
-      toast('Priorité : ' + (SHORT[btn.dataset.move] || btn.dataset.move));
-    };
-  });
-
-  $('#hs-cal').onclick = (e) => planInCalendar(card, e.currentTarget);
-
-  $('#hs-done').onclick = async () => {
-    const r = moveCard(board, cardId, FINISH_ID);
-    persist(); close(); renderCols(); renderFoot(); initDnd();
-    if (r.finished) await award(card.branch, FINISH_XP, 'fiche terminée');
-  };
-
-  $('#hs-del').onclick = () => {
-    if (!confirm('Supprimer cette fiche ?')) return;
-    f.col.cards = f.col.cards.filter((x) => x.id !== cardId);
-    persist(); close(); renderCols(); renderFoot(); initDnd();
-    toast('Fiche supprimée');
-  };
 }
 
 // ── Planification dans Google Agenda ─────────────────────────────────────────
@@ -645,7 +504,10 @@ function injectCSS() {
   .hub-cyl-no{background:var(--surface-2);color:var(--text-2);border:1px solid var(--line-strong);}
   .hub-cyl-no:hover{background:var(--surface-3);color:var(--text-1);}
   /* Fiche de detresse : le rangement s'efface, les portes de sortie passent devant */
-  .hub-relief{margin:16px 0 2px;padding:15px 16px;border-radius:14px;
+  /* Dessine pour une fenetre large, il vit desormais dans une fiche de colonne :
+     marges et espacements resserres, et les boutons passent en pleine largeur
+     des que la colonne devient etroite. */
+  .hub-relief{margin:9px 0 1px;padding:11px 12px;border-radius:12px;
     background:rgba(224,120,95,0.08);border:1px solid rgba(224,120,95,0.32);}
   .hub-relief.crisis{background:rgba(224,120,95,0.14);border-color:rgba(224,120,95,0.55);}
   .hub-relief-t{font-size:0.86rem;font-weight:800;color:#e58e73;}
@@ -659,7 +521,13 @@ function injectCSS() {
   .hub-relief-b.urgent{background:linear-gradient(135deg,#e0785f,#c0503a);color:#fff;border-color:transparent;}
   .hub-relief-num{margin-top:11px;font-size:0.76rem;color:var(--text-2);}
   .hub-relief-num b{color:#e58e73;}
-  .hub-relief .hub-cyl-no{margin-top:12px;}
+  .hub-relief .hub-cyl-no{margin-top:10px;}
+  /* Dans une colonne serree, des puces cote a cote deviennent illisibles :
+     chacune prend toute la largeur. Un numero d'urgence ne se lit pas a moitie. */
+  @media (max-width:1400px){
+    .hub-relief-opts{flex-direction:column;gap:5px;}
+    .hub-relief-b{width:100%;justify-content:center;}
+  }
   .hub-cyl-quiet{margin:14px 0 2px;}
   .hub-cyl-link{background:none;border:none;padding:0;cursor:pointer;font:inherit;font-size:0.74rem;
     color:var(--text-3);text-decoration:underline;text-underline-offset:3px;transition:color .16s;}
@@ -697,16 +565,6 @@ function injectCSS() {
 
   /* z-index > 10000 : le logo (.header) et les toasts sont forces a 10000 en
      !important dans main.min.css et passaient au-dessus du voile de la modale. */
-  .hub-sheet{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:18px;
-    background:var(--veil);backdrop-filter:blur(8px);}
-  .hub-sheet.hidden{display:none;}
-  .hub-sheet-in{position:relative;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:22px;
-    background:var(--sheet-bg);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.6);}
-  .hub-sheet-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;cursor:pointer;
-    border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);font-size:0.9rem;}
-  .hub-sheet-x:hover{background:rgba(255,255,255,0.12);color:var(--text-1);}
-  .hub-sheet-title{width:100%;resize:none;overflow:hidden;border:none;outline:none;background:transparent;
-    color:var(--text-1);font:inherit;font-size:1.08rem;font-weight:800;line-height:1.4;padding:0 34px 6px 0;}
   .hub-l{font-size:0.66rem;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);font-weight:800;margin:16px 0 8px;}
   .hub-branches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
   .hub-br{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:11px;cursor:pointer;
@@ -721,7 +579,6 @@ function injectCSS() {
   .hub-chip.on{border-color:rgba(231,177,92,0.55);background:rgba(231,177,92,0.16);color:var(--text-1);}
   .hub-when input[type=date]{padding:6px 10px;border-radius:9px;font:inherit;font-size:0.76rem;
     border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);color-scheme:dark;}
-  .hub-sheet-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
   .hub-b{flex:1;min-width:130px;padding:11px 14px;border-radius:11px;border:none;cursor:pointer;font:inherit;font-weight:800;font-size:0.8rem;transition:filter .18s;}
   .hub-b:disabled{opacity:.6;cursor:default;}
   .hub-b.cal{background:linear-gradient(135deg,#4285f4,#1a73e8);color:#fff;}

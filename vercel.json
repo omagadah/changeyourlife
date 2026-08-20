@@ -108,9 +108,28 @@
           "value": "0"
         }
       ]
+    },
+    {
+      "source": "/bienvenue.html",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://changeyourlife.ai/>; rel=\"canonical\""
+        }
+      ]
     }
   ],
   "redirects": [
+    {
+      "source": "/app",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/app/",
+      "destination": "/",
+      "permanent": false
+    },
     {
       "source": "/journal",
       "destination": "/journal/",
@@ -118,12 +137,12 @@
     },
     {
       "source": "/dashboard.html",
-      "destination": "/app",
+      "destination": "/",
       "permanent": true
     },
     {
       "source": "/app.html",
-      "destination": "/app",
+      "destination": "/",
       "permanent": true
     },
     {
@@ -178,6 +197,10 @@
         }
       ],
       "destination": "/app/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/bienvenue.html"
     }
   ]
 }
