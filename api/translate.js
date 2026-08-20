@@ -17,14 +17,64 @@ const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemi
 const MAX_ITEMS = 200;
 const MAX_CHARS = 24000;
 const IP_WINDOW_MS = 60_000;      // fenêtre du rate-limit IP
-const IP_MAX_PER_WINDOW = 4;      // 4 requêtes / min / IP (le client cache en localStorage : largement assez)
-const GLOBAL_DAILY_MAX = 400;     // plafond global de traductions / jour (protège le quota provider)
-const IP_DAILY_MAX = 60;          // plafond / jour / IP : empêche une seule IP d'épuiser le global
+const IP_MAX_PER_WINDOW = 10;     // le cache partage absorbe le reste : ce plafond ne concerne plus que les textes JAMAIS traduits
+const GLOBAL_DAILY_MAX = 600;     // plafond global / jour. Amorcer les 16 langues du site coute ~270 appels UNE SEULE FOIS
+const IP_DAILY_MAX = 250;         // plafond / jour / IP : empêche une seule IP d'épuiser le global
 
 function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];
   const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   return initializeApp({ credential: cert(sa) });
+}
+
+
+// ── CACHE PARTAGE DES TRADUCTIONS ───────────────────────────────────────────
+// Le site est ECRIT UNE FOIS : « Ta journée » se traduit de la meme facon pour
+// tout le monde. Sans cache commun, chaque visiteur refaisait traduire les
+// memes 800 chaines, ce qui epuisait le quota (4 requetes/min, 60/jour par IP)
+// des la premiere page - et l i18n echouait en silence.
+//
+// Ici, une langue = un document Firestore { empreinte du texte -> traduction }.
+// Ce qui a deja ete traduit une fois ne repasse plus jamais par le modele, ni
+// par le compteur de quota. Le site se traduit donc progressivement, puis
+// devient instantane et gratuit pour tous.
+const CACHE_DOC_MAX = 800_000;   // un document Firestore plafonne a 1 Mo
+
+// Empreinte courte et stable du texte source (FNV-1a). Sert de cle : deux
+// chaines identiques partagent leur traduction, ou qu'elles apparaissent.
+function fp(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0).toString(36);
+}
+
+async function readCache(db, lang) {
+  try {
+    const snap = await db.collection('translations').doc(lang).get();
+    return snap.exists ? (snap.data().m || {}) : {};
+  } catch (e) {
+    console.error('[translate] lecture cache', e?.message || e);
+    return {};
+  }
+}
+
+async function writeCache(db, lang, add) {
+  if (!Object.keys(add).length) return;
+  try {
+    const ref = db.collection('translations').doc(lang);
+    const snap = await ref.get();
+    const m = snap.exists ? (snap.data().m || {}) : {};
+    Object.assign(m, add);
+    // Au-dela du plafond on cesse d ecrire plutot que de faire echouer TOUTES
+    // les ecritures suivantes : le cache deja constitue continue de servir.
+    if (JSON.stringify(m).length > CACHE_DOC_MAX) {
+      console.warn('[translate] cache ' + lang + ' plein, ecriture ignoree');
+      return;
+    }
+    await ref.set({ m, updatedAt: new Date() }, { merge: true });
+  } catch (e) {
+    console.error('[translate] ecriture cache', e?.message || e);
+  }
 }
 
 function clientIp(req) {
@@ -82,12 +132,29 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ translations: items });
   }
 
-  // ── Rate-limit IP + plafond global journalier (fail-closed) ────────────────
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     return res.status(503).json({ error: 'Service temporairement indisponible' });
   }
+  const db = getFirestore(getAdminApp());
+
+  // ── Le cache d'abord ────────────────────────────────────────────────────
+  // Un lot deja connu repart tout de suite, SANS toucher au quota : celui-ci
+  // protege le cout du modele, pas la lecture d'un dictionnaire.
+  const cached = await readCache(db, target);
+  const known = {};
+  const missing = {};
+  for (const id of ids) {
+    const src = String(items[id] || '');
+    const hit = cached[fp(src)];
+    if (hit) known[id] = hit; else missing[id] = src;
+  }
+  const missingIds = Object.keys(missing);
+  if (!missingIds.length) {
+    return res.status(200).json({ translations: known, provider: 'cache' });
+  }
+
+  // ── Rate-limit IP + plafond global journalier (fail-closed) ────────────────
   try {
-    const db = getFirestore(getAdminApp());
     const now = Date.now();
     const ip = clientIp(req);
 
@@ -128,7 +195,23 @@ module.exports = async function handler(req, res) {
 
   const langName = (typeof targetName === 'string' && targetName.trim()) || target;
   const system = sysPrompt(langName);
-  const userPayload = 'Translate these strings:\n' + JSON.stringify(items);
+  // Seuls les textes encore inconnus partent au modele : un lot de 45 chaines
+  // dont 44 sont deja en cache ne coute qu'une seule chaine.
+  const userPayload = 'Translate these strings:\n' + JSON.stringify(missing);
+
+  // Fusionne ce qui vient du modele avec ce que le cache savait deja, et
+  // enregistre les nouveautes pour le visiteur suivant.
+  async function respond(parsed, provider) {
+    const add = {};
+    for (const id of missingIds) {
+      const tr = parsed && parsed[id];
+      if (typeof tr === 'string' && tr.trim()) add[fp(missing[id])] = tr;
+    }
+    await writeCache(db, target, add);
+    const out = Object.assign({}, known);
+    for (const id of missingIds) if (parsed && parsed[id]) out[id] = parsed[id];
+    return res.status(200).json({ translations: out, provider });
+  }
 
   // ── Groq (préféré) ──────────────────────────────────────────────────────────
   if (process.env.GROQ_API_KEY) {
@@ -154,7 +237,7 @@ module.exports = async function handler(req, res) {
         const data = await r.json();
         const text = data.choices?.[0]?.message?.content;
         const parsed = safeParse(text);
-        if (parsed) return res.status(200).json({ translations: parsed, provider: 'groq' });
+        if (parsed) return await respond(parsed, 'groq');
       } else {
         console.error('[translate] Groq error', r.status, (await r.text()).slice(0, 200));
       }
@@ -188,7 +271,7 @@ module.exports = async function handler(req, res) {
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     const parsed = safeParse(text);
     if (!parsed) return res.status(502).json({ error: 'Réponse de traduction invalide' });
-    return res.status(200).json({ translations: parsed, provider: 'gemini' });
+    return await respond(parsed, 'gemini');
   } catch (e) {
     console.error('[translate] handler', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });
