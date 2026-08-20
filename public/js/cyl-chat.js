@@ -3,6 +3,7 @@
 // (sécurisé par ID token Firebase) et oriente vers les modules du site.
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { mountAvatar, setThinking } from '/js/cyl-avatar.js';
 
 let auth;
 if (window._cyfFirebase) { ({ auth } = window._cyfFirebase); }
@@ -31,8 +32,13 @@ if (window.__cylChat) { /* déjà chargé */ } else {
       .cyl-fab-orb{width:100%;height:100%;border-radius:50%;
         background:radial-gradient(circle at 36% 32%,#fbe6b0,#e7b15c 40%,#4a7a3a 100%);
         box-shadow:inset 0 0 12px rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;}
-      .cyl-panel{position:fixed;right:20px;bottom:20px;z-index:99991;width:min(380px,calc(100vw - 32px));
-        height:min(560px,calc(100vh - 40px));display:none;flex-direction:column;border-radius:18px;overflow:hidden;
+      /* La taille vit dans deux variables : la poignee les ecrit, le stockage
+         local les relit d'une visite a l'autre. Les bornes empechent de reduire
+         la fenetre a un timbre ou de la faire deborder de l'ecran. */
+      .cyl-panel{position:fixed;right:20px;bottom:20px;z-index:99991;
+        --cw:380px; --ch:560px;
+        width:min(var(--cw),calc(100vw - 32px));
+        height:min(var(--ch),calc(100vh - 40px));display:none;flex-direction:column;border-radius:18px;overflow:hidden;
         background:rgba(8,16,28,0.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.12);
         box-shadow:0 24px 64px rgba(0,0,0,.55);}
       .cyl-panel.open{display:flex;animation:cylUp .26s cubic-bezier(.4,0,.2,1);}
@@ -83,6 +89,56 @@ if (window.__cylChat) { /* déjà chargé */ } else {
         color:#0c130a;background:linear-gradient(135deg,#f1cd92,#e7b15c);transition:filter .2s,opacity .2s;}
       .cyl-consent-ok:hover{filter:brightness(1.07);}
       .cyl-consent-ok:disabled{opacity:.45;cursor:default;}
+
+      /* ── Poignee de redimensionnement ──
+         En haut a GAUCHE : la fenetre est ancree en bas a droite, c est donc
+         le coin oppose qui bouge quand on l agrandit. */
+      .cyl-grip{position:absolute;top:0;left:0;width:22px;height:22px;cursor:nwse-resize;z-index:6;
+        touch-action:none;}
+      .cyl-grip::before{content:"";position:absolute;top:7px;left:7px;width:9px;height:9px;
+        border-top:2px solid rgba(255,255,255,.3);border-left:2px solid rgba(255,255,255,.3);
+        border-radius:3px 0 0 0;transition:border-color .16s;}
+      .cyl-grip:hover::before{border-color:rgba(231,177,92,.9);}
+      .cyl-panel.sizing{user-select:none;}
+      .cyl-panel.sizing .cyl-msgs{pointer-events:none;}
+
+      /* ── Reglages ── */
+      .cyl-tool{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);
+        background:rgba(255,255,255,0.05);color:#aab7cf;cursor:pointer;font-size:.9rem;line-height:1;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+      .cyl-tool:hover{background:rgba(255,255,255,0.1);color:#fff;}
+      .cyl-tool.on{background:rgba(231,177,92,.18);border-color:rgba(231,177,92,.5);color:#f1cd92;}
+      .cyl-head-btns{display:flex;gap:6px;align-items:center;}
+
+      .cyl-set{position:absolute;top:56px;right:12px;z-index:8;width:214px;border-radius:13px;
+        background:rgba(10,18,30,.99);border:1px solid rgba(255,255,255,.14);padding:11px 12px;
+        box-shadow:0 14px 38px rgba(0,0,0,.6);display:none;}
+      .cyl-set.show{display:block;}
+      .cyl-set-lb{font:800 9.5px Segoe UI,Roboto,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+        color:#7d8ea6;margin:0 0 6px;}
+      .cyl-set-row{display:flex;gap:5px;margin-bottom:11px;}
+      .cyl-set-row:last-child{margin-bottom:0;}
+      .cyl-set-b{flex:1;padding:6px 4px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.04);color:#aab7cf;cursor:pointer;
+        font:700 11px Segoe UI,Roboto,sans-serif;}
+      .cyl-set-b:hover{background:rgba(255,255,255,.1);color:#fff;}
+      .cyl-set-b.on{background:rgba(132,194,94,.2);border-color:rgba(132,194,94,.5);color:#bfe3a6;}
+      .cyl-set-b.danger:hover{background:rgba(224,120,95,.2);border-color:rgba(224,120,95,.5);color:#f0a68f;}
+
+      /* Trois tailles de texte : le confort de lecture n est pas le meme a 20
+         ans sur un portable et a 60 sur un ecran de bureau. */
+      .cyl-panel[data-fs="s"] .cyl-msg{font-size:12.5px;}
+      .cyl-panel[data-fs="l"] .cyl-msg{font-size:15px;}
+      .cyl-panel[data-fs="l"] .cyl-input{font-size:14.5px;}
+
+      /* Plein ecran : pour relire une longue conversation sans la lire par
+         la fenetre d une boite aux lettres. */
+      .cyl-panel.max{right:16px;bottom:16px;top:16px;left:16px;width:auto;height:auto;
+        max-width:none;border-radius:20px;}
+      .cyl-panel.max .cyl-grip{display:none;}
+      .cyl-panel.max .cyl-msgs{align-items:center;}
+      .cyl-panel.max .cyl-msg{max-width:min(84%,720px);}
+      .cyl-panel.max .cyl-mods{max-width:min(84%,720px);}
       @media (max-width:600px){ .cyl-panel{right:8px;bottom:8px;height:min(72vh,560px);} .cyl-fab{right:14px;bottom:14px;} }
     `;
     document.head.appendChild(s);
@@ -90,6 +146,7 @@ if (window.__cylChat) { /* déjà chargé */ } else {
 
   const history = [];   // {role:'user'|'assistant', content}
   let panel, msgsEl, inputEl, sendBtn, started = false;
+  let avatarSvg = null;   // le visage de l'entete, anime pendant l'attente
 
   function addMsg(role, text) {
     const el = document.createElement('div');
@@ -115,6 +172,7 @@ if (window.__cylChat) { /* déjà chargé */ } else {
     history.push({ role: 'user', content: text });
     sendBtn.disabled = true;
     const typing = addMsg('cyl', 'CYL réfléchit...'); typing.classList.add('typing');
+    setThinking(avatarSvg, true);
     try {
       const user = auth.currentUser;
       if (!user) throw new Error('not-signed-in');
@@ -136,6 +194,7 @@ if (window.__cylChat) { /* déjà chargé */ } else {
       typing.remove();
       addMsg('cyl', 'Connexion impossible pour le moment. Reessaie dans un instant.');
     } finally {
+      setThinking(avatarSvg, false);
       sendBtn.disabled = false;
       inputEl.focus();
     }
@@ -145,14 +204,32 @@ if (window.__cylChat) { /* déjà chargé */ } else {
     injectCSS();
     const fab = document.createElement('button');
     fab.className = 'cyl-fab'; fab.title = 'Parler à CYL'; fab.setAttribute('aria-label', 'Ouvrir CYL');
-    fab.innerHTML = `<span class="cyl-fab-orb">💬</span>`;
+    fab.innerHTML = `<span class="cyl-fab-orb"></span>`;
+    mountAvatar(fab.querySelector('.cyl-fab-orb'), { size: 58, ring: true });
 
     panel = document.createElement('div'); panel.className = 'cyl-panel';
     panel.innerHTML =
+      `<div class="cyl-grip" title="Redimensionner"></div>` +
       `<div class="cyl-head"><div class="cyl-head-orb"></div>` +
         `<div class="cyl-head-id"><div class="cyl-head-name">CYL</div>` +
         `<div class="cyl-head-sub">Ton assistant de vie</div></div>` +
-        `<button class="cyl-x" aria-label="Fermer">✕</button></div>` +
+        `<div class="cyl-head-btns">` +
+          `<button class="cyl-tool cyl-gear" aria-label="Réglages" title="Réglages" aria-expanded="false">⚙</button>` +
+          `<button class="cyl-tool cyl-max" aria-label="Plein écran" title="Plein écran" aria-pressed="false">⛶</button>` +
+          `<button class="cyl-x" aria-label="Fermer">✕</button>` +
+        `</div></div>` +
+      `<div class="cyl-set" role="dialog" aria-label="Réglages de CYL">` +
+        `<p class="cyl-set-lb">Taille du texte</p>` +
+        `<div class="cyl-set-row">` +
+          `<button class="cyl-set-b" data-fs="s">Petit</button>` +
+          `<button class="cyl-set-b" data-fs="m">Normal</button>` +
+          `<button class="cyl-set-b" data-fs="l">Grand</button>` +
+        `</div>` +
+        `<p class="cyl-set-lb">Fenêtre</p>` +
+        `<div class="cyl-set-row"><button class="cyl-set-b" data-act="reset">Taille par défaut</button></div>` +
+        `<p class="cyl-set-lb">Conversation</p>` +
+        `<div class="cyl-set-row"><button class="cyl-set-b danger" data-act="clear">Tout effacer</button></div>` +
+      `</div>` +
       `<div class="cyl-msgs"></div>` +
       `<div class="cyl-form"><textarea class="cyl-input" rows="1" placeholder="Ecris à CYL..."></textarea>` +
         `<button class="cyl-send" aria-label="Envoyer">↑</button></div>` +
@@ -179,6 +256,120 @@ if (window.__cylChat) { /* déjà chargé */ } else {
     msgsEl = panel.querySelector('.cyl-msgs');
     inputEl = panel.querySelector('.cyl-input');
     sendBtn = panel.querySelector('.cyl-send');
+
+
+    // ── REGLAGES ET TAILLE ────────────────────────────────────────────────
+    // Le panneau etait fige : ni redimensionnable, ni reglable. On ne lit pas
+    // une conversation de vingt echanges dans une fenetre de 380 par 560.
+    const headOrb = panel.querySelector('.cyl-head-orb');
+    avatarSvg = mountAvatar(headOrb, { size: 34, ring: true });
+
+    const SIZE_KEY = 'cyl_chat_size', FS_KEY = 'cyl_chat_fs', MAX_KEY = 'cyl_chat_max';
+    const MINW = 320, MINH = 380;
+    const setEl = panel.querySelector('.cyl-set');
+    const gear = panel.querySelector('.cyl-gear');
+    const maxBtn = panel.querySelector('.cyl-max');
+    const grip = panel.querySelector('.cyl-grip');
+
+    function readNum(k, d) { try { const v = parseInt(localStorage.getItem(k) || '', 10); return Number.isFinite(v) ? v : d; } catch (_) { return d; } }
+    function applySize(w, h) {
+      // Bornes hautes calculees sur l ecran courant : une taille enregistree sur
+      // un grand moniteur ne doit pas deborder sur un portable.
+      const W = Math.max(MINW, Math.min(w, window.innerWidth - 32));
+      const H = Math.max(MINH, Math.min(h, window.innerHeight - 40));
+      panel.style.setProperty('--cw', W + 'px');
+      panel.style.setProperty('--ch', H + 'px');
+      return { W, H };
+    }
+    applySize(readNum(SIZE_KEY + '_w', 380), readNum(SIZE_KEY + '_h', 560));
+
+    function applyFs(v) {
+      const val = ['s', 'm', 'l'].includes(v) ? v : 'm';
+      panel.dataset.fs = val;
+      setEl.querySelectorAll('[data-fs]').forEach((b) => b.classList.toggle('on', b.dataset.fs === val));
+      try { localStorage.setItem(FS_KEY, val); } catch (_) {}
+    }
+    let fs0 = 'm';
+    try { fs0 = localStorage.getItem(FS_KEY) || 'm'; } catch (_) {}
+    applyFs(fs0);
+
+    function applyMax(on) {
+      panel.classList.toggle('max', !!on);
+      maxBtn.setAttribute('aria-pressed', String(!!on));
+      maxBtn.classList.toggle('on', !!on);
+      maxBtn.textContent = on ? '⤡' : '⛶';
+      maxBtn.title = on ? 'Réduire' : 'Plein écran';
+      try { localStorage.setItem(MAX_KEY, on ? '1' : '0'); } catch (_) {}
+    }
+    let max0 = false;
+    try { max0 = localStorage.getItem(MAX_KEY) === '1'; } catch (_) {}
+    applyMax(max0);
+
+    function closeSet() { setEl.classList.remove('show'); gear.setAttribute('aria-expanded', 'false'); gear.classList.remove('on'); }
+    gear.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const on = !setEl.classList.contains('show');
+      setEl.classList.toggle('show', on);
+      gear.setAttribute('aria-expanded', String(on));
+      gear.classList.toggle('on', on);
+    });
+    maxBtn.addEventListener('click', () => { applyMax(!panel.classList.contains('max')); closeSet(); });
+    // Un clic hors du volet le referme, mais PAS un clic dedans - sinon changer
+    // la taille du texte fermerait le volet a chaque essai.
+    panel.addEventListener('click', (e) => { if (!e.target.closest('.cyl-set, .cyl-gear')) closeSet(); });
+
+    setEl.addEventListener('click', (e) => {
+      const f = e.target.closest('[data-fs]');
+      if (f) { applyFs(f.dataset.fs); return; }
+      const a = e.target.closest('[data-act]');
+      if (!a) return;
+      if (a.dataset.act === 'reset') {
+        applyMax(false);
+        const r = applySize(380, 560);
+        try { localStorage.setItem(SIZE_KEY + '_w', r.W); localStorage.setItem(SIZE_KEY + '_h', r.H); } catch (_) {}
+        closeSet();
+      } else if (a.dataset.act === 'clear') {
+        if (!confirm('Effacer toute la conversation avec CYL ?')) return;
+        history.length = 0;
+        msgsEl.replaceChildren();
+        started = false;
+        startChat();
+        closeSet();
+      }
+    });
+
+    // ── Poignee ──
+    // Pointer Events avec capture : le geste continue meme si le curseur sort
+    // du panneau, ce qui arrive des qu'on agrandit vite.
+    grip.addEventListener('pointerdown', (e) => {
+      if (panel.classList.contains('max')) return;
+      e.preventDefault();
+      const r = panel.getBoundingClientRect();
+      const x0 = e.clientX, y0 = e.clientY, w0 = r.width, h0 = r.height;
+      panel.classList.add('sizing');
+      try { grip.setPointerCapture(e.pointerId); } catch (_) {}
+      const move = (ev) => { applySize(w0 - (ev.clientX - x0), h0 - (ev.clientY - y0)); };
+      const up = () => {
+        grip.removeEventListener('pointermove', move);
+        grip.removeEventListener('pointerup', up);
+        grip.removeEventListener('pointercancel', up);
+        panel.classList.remove('sizing');
+        const rr = panel.getBoundingClientRect();
+        try {
+          localStorage.setItem(SIZE_KEY + '_w', Math.round(rr.width));
+          localStorage.setItem(SIZE_KEY + '_h', Math.round(rr.height));
+        } catch (_) {}
+      };
+      grip.addEventListener('pointermove', move);
+      grip.addEventListener('pointerup', up);
+      grip.addEventListener('pointercancel', up);
+    });
+
+    // Un ecran retreci ne doit pas laisser la fenetre dehors.
+    window.addEventListener('resize', () => {
+      const r = panel.getBoundingClientRect();
+      applySize(r.width, r.height);
+    });
 
     // ── Consentement (1re ouverture, exigence de conformité) ────────────────
     const CONSENT_KEY = 'cyl_consent_v1';

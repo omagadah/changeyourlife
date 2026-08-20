@@ -161,12 +161,22 @@
       opacity:0; transition:opacity .15s; box-shadow:0 0 9px var(--nc,#8aa0bf); z-index:2; }
     .org-node:hover .org-node-port, .org-canvas-wrap.linking .org-node-port { opacity:1; }
     .org-canvas-wrap.linking .org-node { cursor:crosshair; }
+
+    /* Arrivee depuis le mini-module de l accueil : la colonne visee se signale
+       une seconde et demie, puis redevient normale. Sans ce reperage, on
+       atterrit sur un board identique a lui-meme et on cherche.  */
+    .org-col-landed { animation: orgLand 1.6s ease-out; }
+    @keyframes orgLand {
+      0%   { box-shadow: 0 0 0 2px rgba(231,177,92,.9), 0 0 26px rgba(231,177,92,.5); }
+      70%  { box-shadow: 0 0 0 2px rgba(231,177,92,.55), 0 0 18px rgba(231,177,92,.25); }
+      100% { box-shadow: none; }
+    }
   </style>
 </head>
 <body>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <nav class="site-nav">
-    <a href="/app/" class="site-nav__back">← Mon espace</a>
+    <a href="/" class="site-nav__back">← Mon espace</a>
     <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
   </nav>
   <main class="page-shell page-shell-nav">

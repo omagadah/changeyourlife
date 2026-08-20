@@ -14,7 +14,7 @@
 // La navigation suit le PARCOURS, pas l'ordre de construction des modules :
 //   ce que j'ai en tete -> quand -> ou je vais -> ce que ca donne de moi.
 const NAV = [
-  { href: '/app/',          icon: '🌳', label: 'Mon espace',   note: 'Vue d\'ensemble' },
+  { href: '/',          icon: '🌳', label: 'Mon espace',   note: 'Vue d\'ensemble' },
   { href: '/organizer/',    icon: '🗂️', label: 'ORGANIZER',    note: 'Tes idées, triées' },
   { href: '/agenda/',       icon: '🗓️', label: 'Agenda',       note: 'Ce qui a une date' },
   { href: '/plan/',         icon: '🌅', label: "Aujourd'hui",  note: 'Rythme du jour' },
@@ -252,7 +252,7 @@ export function initSidebar() {
   sb.className = 'cyl-sb';
   sb.setAttribute('aria-label', 'Navigation principale');
   sb.innerHTML = `
-    <a class="cyl-sb-top" href="/app/" style="text-decoration:none">
+    <a class="cyl-sb-top" href="/" style="text-decoration:none">
       <span class="cyl-sb-logo">${LOGO}</span>
       <span class="cyl-sb-name">ChangeYourLife<small>Ton espace</small></span>
     </a>

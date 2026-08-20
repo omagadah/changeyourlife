@@ -1,45 +1,79 @@
 {
   "headers": [
     {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, must-revalidate"
+        },
+        {
+          "key": "Vary",
+          "value": "Cookie"
+        }
+      ]
+    },
+    {
       "source": "/css/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/js/(.*)\\.js",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/(.*)\\.png",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/(.*)\\.svg",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/vendor/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/(.*)\\.(jpg|jpeg|webp|glb)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/service-worker.js",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
@@ -77,16 +111,73 @@
     }
   ],
   "redirects": [
-    { "source": "/journal", "destination": "/journal/", "permanent": false },
-    { "source": "/dashboard.html", "destination": "/app", "permanent": true },
-    { "source": "/app.html", "destination": "/app", "permanent": true },
-    { "source": "/inscription.html", "destination": "/login", "permanent": true },
-    { "source": "/login.html", "destination": "/login", "permanent": true },
-    { "source": "/settings.html", "destination": "/settings", "permanent": true },
-    { "source": "/profile.html", "destination": "/profile", "permanent": true },
-    { "source": "/journal.html", "destination": "/journal/", "permanent": true },
-    { "source": "/signup", "destination": "/login", "permanent": true },
-    { "source": "/arbre", "destination": "/", "permanent": false },
-    { "source": "/arbre/", "destination": "/", "permanent": false }
+    {
+      "source": "/journal",
+      "destination": "/journal/",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard.html",
+      "destination": "/app",
+      "permanent": true
+    },
+    {
+      "source": "/app.html",
+      "destination": "/app",
+      "permanent": true
+    },
+    {
+      "source": "/inscription.html",
+      "destination": "/login",
+      "permanent": true
+    },
+    {
+      "source": "/login.html",
+      "destination": "/login",
+      "permanent": true
+    },
+    {
+      "source": "/settings.html",
+      "destination": "/settings",
+      "permanent": true
+    },
+    {
+      "source": "/profile.html",
+      "destination": "/profile",
+      "permanent": true
+    },
+    {
+      "source": "/journal.html",
+      "destination": "/journal/",
+      "permanent": true
+    },
+    {
+      "source": "/signup",
+      "destination": "/login",
+      "permanent": true
+    },
+    {
+      "source": "/arbre",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/arbre/",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "cookie",
+          "key": "cyl_in",
+          "value": "1"
+        }
+      ],
+      "destination": "/app/index.html"
+    }
   ]
 }

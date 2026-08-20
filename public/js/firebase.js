@@ -94,6 +94,46 @@ export async function awardXp(domain, amount) {
   }
 }
 
+// ── AIGUILLAGE DE LA RACINE ─────────────────────────────────────────────────
+// changeyourlife.ai/ doit montrer la vitrine a un visiteur et TON ESPACE a toi.
+// Vercel ne peut pas interroger Firebase depuis sa peripherie : on lui laisse
+// donc un temoin, et sa regle de reecriture sert /app/index.html quand il est
+// present. L URL affichee reste « / ».
+//
+// CE COOKIE N EST PAS UNE AUTHENTIFICATION. Il ne donne acces a aucune donnee
+// et ne prouve rien : quelqu un qui le poserait a la main verrait une coquille
+// vide, puisque tout passe par Firebase Auth et les regles Firestore. Il ne
+// decide QUE de la page servie.
+//
+// SameSite=Lax : le temoin ne part pas avec les requetes venues d autres sites.
+const ROOT_COOKIE = 'cyl_in';
+function markSession(on) {
+  try {
+    const secure = location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = on
+      ? ROOT_COOKIE + '=1; Path=/; Max-Age=2592000; SameSite=Lax' + secure
+      : ROOT_COOKIE + '=; Path=/; Max-Age=0; SameSite=Lax' + secure;
+  } catch (_) {}
+}
+// Premiere visite apres la connexion : le temoin n existe pas encore, donc la
+// peripherie a servi la vitrine alors que la personne est connectee. On le pose
+// et on recharge UNE fois - le drapeau de session interdit toute boucle, y
+// compris si la reecriture echouait.
+function settleRoot(signedIn) {
+  if (!signedIn) return;
+  if (location.pathname !== '/') return;
+  if (!document.querySelector('.hero')) return;      // deja sur l espace
+  try {
+    if (sessionStorage.getItem('cyl-root-settled') === '1') return;
+    sessionStorage.setItem('cyl-root-settled', '1');
+  } catch (_) { return; }                            // pas de stockage : on s abstient
+  location.reload();
+}
+
+auth.onAuthStateChanged((u) => {
+  markSession(!!u);
+  settleRoot(!!u);
+});
 // Compat avec le pattern window._cyfFirebase utilisé par les anciennes pages
 if (!window._cyfFirebase) {
   window._cyfFirebase = { app, auth, db, functions, awardXp };

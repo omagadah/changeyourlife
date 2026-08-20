@@ -1,5 +1,5 @@
-// service-worker.js - v194 (la meditation lit l humeur du jour)
-const CACHE_NAME = 'changeyourlife-v194';
+// service-worker.js - v195 (racine = ton espace, hub cliquable, CYL a un visage)
+const CACHE_NAME = 'changeyourlife-v195';
 const urlsToCache = [
   '/',
   '/app/',
@@ -79,6 +79,7 @@ const urlsToCache = [
   '/js/pixel-badge.js',
   '/js/archi-build.js',
   '/js/cyl-chat.js',
+  '/js/cyl-avatar.js',
   '/js/giveaway.js',
   '/js/admin-giveaway.js',
   '/js/ez-tree-build.js',

@@ -85,7 +85,7 @@ function render() {
     </form>
 
     <div class="hub-cols" id="hub-cols"></div>
-    <div class="hub-foot" id="hub-foot"></div>
+    <a class="hub-foot" id="hub-foot" href="/organizer/" aria-label="Ouvrir l'ORGANIZER"></a>
     <div class="hub-sheet hidden" id="hub-sheet"></div>
   `;
 
@@ -120,9 +120,11 @@ function renderCols() {
     el.style.setProperty('--cc', HUB_COLORS[c.id] || c.color || 'var(--text-2)');
     el.dataset.col = c.id;
     el.innerHTML =
-      `<div class="hub-col-head"><span class="hub-col-dot"></span>` +
+      `<a class="hub-col-head" href="/organizer/?col=${encodeURIComponent(c.id)}"` +
+      ` title="Ouvrir « ${esc(shortTitle(c))} » dans l'ORGANIZER">` +
+      `<span class="hub-col-dot"></span>` +
       `<span class="hub-col-title">${esc(shortTitle(c))}</span>` +
-      `<span class="hub-col-count">${c.cards.length}</span></div>` +
+      `<span class="hub-col-count">${c.cards.length}</span></a>` +
       `<div class="hub-cards" data-col="${esc(c.id)}"></div>`;
     const cards = el.querySelector('.hub-cards');
     c.cards.slice(0, 40).forEach((card) => cards.appendChild(renderCard(card, c)));
@@ -219,6 +221,10 @@ function askCylAbout(card) {
   } catch (_) {}
 }
 
+// Le pied n'affichait que des compteurs. Il est devenu la PORTE : une barre
+// pleine largeur, visiblement cliquable au repos - pas seulement au survol.
+// C'est le geste que tout le monde connait (Stripe, Vercel, GitHub) et il ne
+// se devine pas : il se voit.
 function renderFoot() {
   const f = $('#hub-foot'); if (!f) return;
   const open = allCards(board).filter(({ card, col }) => !card.done && col.id !== FINISH_ID);
@@ -231,11 +237,43 @@ function renderFoot() {
     late ? `<b class="late">${late}</b> en retard` : '',
     done ? `<b>${done}</b> terminées` : '',
   ].filter(Boolean);
-  f.innerHTML = bits.join('<span class="sep">·</span>');
+  f.innerHTML =
+    `<span class="hub-foot-n">${bits.join('<span class="sep">·</span>')}</span>` +
+    `<span class="hub-foot-go">Ouvrir l'ORGANIZER <span aria-hidden="true">→</span></span>`;
+}
+
+
+// Cliquer une fiche mene A CETTE FICHE, pas au board en general. Le lien n'est
+// pas une balise <a> : la fiche se deplace au glisser, et un lien dans une zone
+// de glissement declenche le glisser-deposer natif du navigateur en plus de
+// Sortable.
+//
+// Deux gardes avant d'ouvrir : on ignore ce qui est deja interactif dans la
+// fiche (puces, main de CYL), et on ignore un clic qui suit un DEPLACEMENT -
+// sinon ranger une fiche d'une colonne a l'autre ouvrirait la page a l'arrivee.
+const CLICK_SLOP = 6;
+function initCardOpen() {
+  const box = $('#hub-cols');
+  if (!box || box.dataset.openWired === '1') return;
+  box.dataset.openWired = '1';
+  let down = null;
+  box.addEventListener('pointerdown', (e) => {
+    down = { x: e.clientX, y: e.clientY };
+  });
+  box.addEventListener('click', (e) => {
+    const moved = down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > CLICK_SLOP;
+    down = null;
+    if (moved) return;
+    if (e.target.closest('button, a, input, textarea, [data-sugg], [data-cyl]')) return;
+    const card = e.target.closest('.hub-card');
+    if (!card || !card.dataset.id) return;
+    window.location.href = '/organizer/?card=' + encodeURIComponent(card.dataset.id);
+  });
 }
 
 // ── Drag & drop entre colonnes ───────────────────────────────────────────────
 function initDnd() {
+  initCardOpen();
   if (!window.Sortable) return;
   sortables.forEach((s) => { try { s.destroy(); } catch (_) {} });
   sortables = [];
@@ -518,9 +556,13 @@ function injectCSS() {
   .hub-brand-txt{min-width:0;}
   .hub-dot{width:10px;height:10px;border-radius:50%;background:#e7b15c;box-shadow:0 0 14px rgba(231,177,92,0.8);flex-shrink:0;}
   .hub-title{font-size:1.02rem;font-weight:900;letter-spacing:1.4px;color:var(--text-1);display:flex;align-items:center;gap:7px;}
-  .hub-go{font-size:0.92rem;font-weight:700;color:#e7b15c;opacity:0;transform:translateX(-5px);
+  /* Visible AU REPOS, pas seulement au survol : sur un ecran tactile il n'y a
+     pas de survol, donc une fleche qui n'apparait qu'au passage de la souris
+     n'existe tout simplement pas pour la moitie des gens. */
+  .hub-go{font-size:0.92rem;font-weight:700;color:#e7b15c;opacity:.75;
     transition:opacity .2s,transform .2s;}
-  .hub-head:hover .hub-go{opacity:1;transform:translateX(0);}
+  /* Elle etait invisible au repos : la zone cliquable ne se devinait pas. */
+  .hub-head:hover .hub-go{opacity:1;transform:translateX(3px);}
   .hub-sub{font-size:0.78rem;color:var(--text-2);margin-top:1px;}
   /* seul element interactif pose au-dessus du lien */
   .hub-head-actions{position:relative;z-index:2;display:flex;gap:8px;flex-wrap:wrap;}
@@ -626,9 +668,32 @@ function injectCSS() {
   .hub-ghost-card{opacity:.35;}
   .hub-drag{transform:rotate(2deg);box-shadow:0 14px 30px rgba(0,0,0,.5)!important;}
 
-  .hub-foot{margin-top:11px;font-size:0.76rem;color:var(--text-2);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  /* LE PIED EST LA PORTE. Il porte une bordure et un fond AU REPOS : une zone
+     qui ne se revele qu'au survol ne se decouvre jamais sur un ecran tactile,
+     et se devine mal ailleurs. */
+  .hub-foot{margin-top:12px;padding:10px 14px;border-radius:12px;text-decoration:none;
+    font-size:0.76rem;color:var(--text-2);display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    background:rgba(231,177,92,0.06);border:1px solid rgba(231,177,92,0.22);
+    transition:background .16s,border-color .16s;}
+  .hub-foot:hover{background:rgba(231,177,92,0.13);border-color:rgba(231,177,92,0.45);}
+  .hub-foot:focus-visible{outline:2px solid rgba(231,177,92,0.75);outline-offset:2px;}
   .hub-foot b{color:var(--text-1);font-weight:800;} .hub-foot b.late{color:#c0503a;}
-  .hub-foot .sep{opacity:.4;}
+  .hub-foot .sep{opacity:.4;margin:0 5px;}
+  .hub-foot-n{flex:1;min-width:0;}
+  .hub-foot-go{font-weight:800;color:var(--gold-text,#f1cd92);white-space:nowrap;
+    display:inline-flex;align-items:center;gap:6px;}
+  .hub-foot:hover .hub-foot-go span{transform:translateX(3px);}
+  .hub-foot-go span{transition:transform .16s;}
+
+  /* Un en-tete de colonne mene DANS cette colonne. */
+  .hub-col-head{text-decoration:none;cursor:pointer;border-radius:8px;
+    transition:background .14s;}
+  .hub-col-head:hover{background:rgba(255,255,255,0.06);}
+  .hub-col-head:focus-visible{outline:2px solid rgba(231,177,92,0.7);outline-offset:1px;}
+
+  /* Une fiche s'ouvre au clic : le curseur doit le dire avant qu'on essaie. */
+  .hub-card{cursor:pointer;}
+  .hub-card button,.hub-card a{cursor:pointer;}
 
   /* z-index > 10000 : le logo (.header) et les toasts sont forces a 10000 en
      !important dans main.min.css et passaient au-dessus du voile de la modale. */

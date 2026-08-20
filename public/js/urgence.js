@@ -68,7 +68,7 @@
   function talkToCyl() {
     // CYL n'est dispo qu'une fois connecté (/app). Sur l'accueil -> on y redirige.
     if (window.cylChat && typeof window.cylChat.open === 'function') { close(); window.cylChat.open(); return; }
-    window.location.href = '/app/';
+    window.location.href = '/';
   }
 
   function stepIntro() {

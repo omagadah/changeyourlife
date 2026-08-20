@@ -606,6 +606,32 @@ document.querySelectorAll('#org-viewtoggle button').forEach((b) => { b.onclick =
 const _reorg = document.getElementById('org-canvas-reorg'); if (_reorg) _reorg.onclick = reorganizeCanvas;
 const _fit = document.getElementById('org-canvas-fit'); if (_fit) _fit.onclick = fitCanvas;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+// ── ARRIVEE CIBLEE ──────────────────────────────────────────────────────────
+// Le mini-module de l'accueil renvoie ici, mais PAS au board en general :
+// ?card=<id> ouvre la fiche cliquee, ?col=<id> amene devant sa colonne. Sans
+// cela, chaque clic obligeait a retrouver a la main ce qu'on venait de viser.
+function applyDeepLink() {
+  let q;
+  try { q = new URLSearchParams(window.location.search); } catch (_) { return; }
+  const cardId = q.get('card');
+  const colId = q.get('col');
+  if (!cardId && !colId) return;
+
+  // L'adresse est nettoyee tout de suite : recharger la page ne doit pas
+  // rouvrir la fiche, et le lien partage ne doit pas trainer dans l'historique.
+  try { history.replaceState(null, '', window.location.pathname); } catch (_) {}
+
+  if (cardId && findCard(cardId)) { openCard(cardId); return; }
+  if (colId) {
+    const el = document.querySelector('.org-col[data-col="' + CSS.escape(colId) + '"]');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      el.classList.add('org-col-landed');
+      setTimeout(() => el.classList.remove('org-col-landed'), 1600);
+    }
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login/'; return; }
   uid = user.uid;
@@ -613,4 +639,5 @@ onAuthStateChanged(auth, async (user) => {
   try { initUserMenu(); } catch (e) {}
   await load();
   setView(board.view);
+  applyDeepLink();
 });
