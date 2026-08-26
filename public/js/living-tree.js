@@ -9,6 +9,9 @@ import * as THREE from '/vendor/three/three.module.min.js';
 const TARGET_XP = 6000;   // XP pour atteindre l'arbre pleinement majestueux
 const BRANCH_TARGET = 800; // XP pour qu'une branche Maslow soit pleinement épanouie
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
+// Mouvement reduit demande par l'OS : on fige les pulsations decoratives et on
+// saute les tweens de croissance (la media query CSS ne coupe pas une scene WebGL).
+const REDUCED_MOTION = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
 
 // Les 8 branches de Maslow (mêmes clés/couleurs/tiers que tree-model.js).
 // azimuth = position angulaire autour de l'arbre · tier = étage (1 bas → 4 cime).
@@ -264,7 +267,7 @@ export function initLivingTree(userData) {
     camera.lookAt(target);
     // Croissance animée de l'arbre entier (pousse au gain d'XP)
     if (treeScaleAnim && tree) {
-      const e = clamp01((nowMs() - treeScaleAnim.t0) / treeScaleAnim.dur);
+      const e = REDUCED_MOTION ? 1 : clamp01((nowMs() - treeScaleAnim.t0) / treeScaleAnim.dur);
       let s;
       if (treeScaleAnim.type === 'pulse') s = 1 + treeScaleAnim.amp * Math.sin(Math.PI * e);
       else s = treeScaleAnim.from + (treeScaleAnim.to - treeScaleAnim.from) * easeOutBack(e);
@@ -275,7 +278,7 @@ export function initLivingTree(userData) {
     const tEl = clock.elapsedTime;
     nodeMap.forEach((n, key) => {
       if (n.xp <= 0) return;
-      const base = 2.3 + Math.sin(tEl * 2 + n.phase) * 0.16;
+      const base = REDUCED_MOTION ? 2.3 : 2.3 + Math.sin(tEl * 2 + n.phase) * 0.16;
       n.halo.scale.setScalar(key === hovered ? base + 0.6 : base);
     });
     resize();

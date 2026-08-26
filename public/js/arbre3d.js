@@ -350,7 +350,10 @@ function initControls(canvas, camera) {
   };
   let dragging = false, moved = false, px = 0, py = 0;
   let userZoomed = false;   // l'utilisateur a pris la main sur le zoom
-  let autoRotate = true;    // tourne tout seul tant qu'on ne touche pas
+  // Mouvement reduit : pas de rotation automatique (la scene ne bouge que si
+  // l'utilisateur la manipule). matchMedia, car le CSS n'atteint pas WebGL.
+  const REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let autoRotate = !REDUCED_MOTION;    // tourne tout seul tant qu'on ne touche pas
   let idle = 0;             // temps depuis la dernière interaction
   canvas.addEventListener('pointerdown', (e) => {
     dragging = true; moved = false; px = e.clientX; py = e.clientY;
@@ -412,7 +415,7 @@ function initControls(canvas, camera) {
     // Rotation auto (vue 360) tant qu'on ne touche pas. Reprise après inactivité.
     autoSpin(dt) {
       if (dragging) { idle = 0; return; }
-      if (!autoRotate) { idle += dt; if (idle > 6) autoRotate = true; }   // reprise après 6 s
+      if (!autoRotate) { idle += dt; if (idle > 6 && !REDUCED_MOTION) autoRotate = true; }   // reprise après 6 s
       if (autoRotate) s.tAz += dt * 0.11;
     },
     setAutoRotate(v) { autoRotate = v; if (v) idle = 0; },

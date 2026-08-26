@@ -15,7 +15,7 @@
   /* ── Text (blanc chaud / sauge) ── */
   --text-1: #f4efe1;
   --text-2: #b4ad94;
-  --text-3: #7c7660;
+  --text-3: #86806a;          /* 4,9:1 sur #0a0f0a - AA (etait #7c7660, 4,26:1) */
 
   /* ── Brand accent (vert feuille — remplace le navy) ── */
   --blue:       #84c25e;
