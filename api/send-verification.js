@@ -163,7 +163,7 @@ module.exports = async function handler(req, res) {
       `Votre code de vérification ChangeYourLife : ${code}\n\n` +
       `Ce code expire dans 15 minutes. À ne partager avec personne.\n\n` +
       `Si vous n'avez pas créé de compte sur ChangeYourLife.ai, ignorez simplement cet email.\n\n` +
-      `— L'équipe ChangeYourLife\nhttps://changeyourlife.ai\n`;
+      `- L'équipe ChangeYourLife\nhttps://changeyourlife.ai\n`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { data: resendData, error: resendError } = await resend.emails.send({

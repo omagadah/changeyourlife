@@ -13,6 +13,7 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
+const { cleanText } = require('./_text.js');
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -203,7 +204,8 @@ module.exports = async function handler(req, res) {
     const baseReply = String(parsed.reply || '').trim() || "Je suis là. Raconte-moi.";
     const lastUser = [...safeMessages].reverse().find((m) => m.role === 'user');
     const { reply, safety } = moderateReply(baseReply, lastUser && lastUser.content);
-    return res.status(200).json({ reply, modules, safety });
+    // Nettoyage final : la consigne de prompt est une demande, ceci est la garantie.
+    return res.status(200).json({ reply: cleanText(reply), modules, safety });
   } catch (e) {
     console.error('[chat] handler error:', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });

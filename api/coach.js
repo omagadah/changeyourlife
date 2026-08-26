@@ -1,13 +1,14 @@
-// api/coach.js — IA Coach endpoint using Gemini 2.0 Flash (free tier)
+// api/coach.js - IA Coach endpoint using Gemini 2.0 Flash (free tier)
 // Requires GEMINI_API_KEY + FIREBASE_SERVICE_ACCOUNT in Vercel environment variables
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
+const { cleanDeep } = require('./_text.js');
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-const SYSTEM_PROMPT = `Tu es Lya, une coach de vie bienveillante, empathique et directe, sur l'application Change Your Life.
+const SYSTEM_PROMPT = `Tu es CYL, une coach de vie bienveillante, empathique et directe, sur l'application Change Your Life.
 
 Ton rôle : aider l'utilisateur à mieux se connaître, à progresser et à personnaliser son espace Change Your Life.
 
@@ -16,6 +17,8 @@ RÈGLES :
 - Sois chaleureux, concis, personnalisé (2-4 phrases max pour "reply")
 - Pose une question de suivi pour approfondir
 - Détecte les thèmes dans le message pour nourrir l'arbre de vie
+- N'utilise JAMAIS le tiret long. Utilise un tiret simple "-". Cela vaut pour
+  TOUS les champs de ta réponse, sans exception.
 
 FORMAT DE RÉPONSE OBLIGATOIRE :
 {
@@ -54,7 +57,7 @@ function getAdminApp() {
 }
 
 module.exports = async function handler(req, res) {
-  // Same-origin only — no wildcard CORS for an authenticated endpoint
+  // Same-origin only - no wildcard CORS for an authenticated endpoint
   res.setHeader('Access-Control-Allow-Origin', 'https://changeyourlife.ai');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -135,9 +138,9 @@ module.exports = async function handler(req, res) {
     last.parts[0].text += profileCtx;
   }
 
-  // ── Provider Groq (gratuit, fiable, format OpenAI) — préféré si GROQ_API_KEY défini ──
+  // ── Provider Groq (gratuit, fiable, format OpenAI) - préféré si GROQ_API_KEY défini ──
   // Llama 3.3 70B via Groq : quota gratuit 30 req/min, hyper rapide, JSON mode.
-  // Permet à Lya de fonctionner même si la clé Gemini est invalide ou épuisée.
+  // Permet à CYL de fonctionner même si la clé Gemini est invalide ou épuisée.
   if (process.env.GROQ_API_KEY) {
     const groqMessages = [
       { role: 'system', content: SYSTEM_PROMPT },
@@ -178,7 +181,7 @@ module.exports = async function handler(req, res) {
           analysis: { topics: [], stats_delta: { mental: 0, corps: 0, social: 0, pro: 0 }, new_nodes: [], priority_modules: [], insight: '' },
         };
       }
-      return res.status(200).json(parsed);
+      return res.status(200).json(cleanDeep(parsed));
     } catch (e) {
       console.error('[coach] Groq handler error:', e?.message || e);
       return res.status(500).json({ error: 'Erreur interne', provider: 'groq' });
@@ -233,7 +236,7 @@ module.exports = async function handler(req, res) {
       };
     }
 
-    return res.status(200).json(parsed);
+    return res.status(200).json(cleanDeep(parsed));
   } catch (e) {
     console.error('[coach] handler error:', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });

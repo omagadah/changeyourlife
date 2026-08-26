@@ -83,7 +83,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({
         error: remaining > 0
           ? `Code incorrect. ${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}.`
-          : 'Code incorrect. Trop de tentatives — demandez un nouveau code.',
+          : 'Code incorrect. Trop de tentatives - demandez un nouveau code.',
         attemptsLeft: remaining
       });
     }

@@ -1,4 +1,4 @@
-// api/translate.js — Traduction IA à la demande pour l'i18n du site.
+// api/translate.js - Traduction IA à la demande pour l'i18n du site.
 //
 // Le contenu est écrit une seule fois en français ; ce endpoint le traduit
 // vers n'importe quelle langue. Le client met le résultat en cache
@@ -11,6 +11,7 @@
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
+const { cleanText } = require('./_text.js');
 
 
 const MAX_ITEMS = 200;
@@ -122,7 +123,7 @@ STRICT RULES:
 - Preserve placeholders like %s exactly.
 - Do NOT translate these: "ChangeYourLife.ai", "Cyl", "XP".
 - Use simple hyphens "-" only. NEVER use em dashes (—) or en dashes (–).
-- Keep the tone warm, encouraging, natural — not literal. Use the informal/friendly register when the language has one (tutoiement, du, tú…).
+- Keep the tone warm, encouraging, natural, not literal. Use the informal/friendly register when the language has one (tutoiement, du, tú…).
 - Output the translation in ${targetName} only.`;
 }
 
@@ -234,11 +235,15 @@ module.exports = async function handler(req, res) {
     const add = {};
     for (const id of missingIds) {
       const tr = parsed && parsed[id];
-      if (typeof tr === 'string' && tr.trim()) add[fp(missing[id])] = tr;
+      // Nettoyage AVANT l'ecriture en cache, et non a la sortie : une traduction
+      // est enregistree pour tous les visiteurs suivants. Un tiret long qui
+      // passe ici s'y figerait definitivement, meme si on le nettoyait ensuite
+      // a l'affichage.
+      if (typeof tr === 'string' && tr.trim()) add[fp(missing[id])] = cleanText(tr);
     }
     await writeCache(db, target, add);
     const out = Object.assign({}, known);
-    for (const id of missingIds) if (parsed && parsed[id]) out[id] = parsed[id];
+    for (const id of missingIds) if (parsed && parsed[id]) out[id] = cleanText(parsed[id]);
     return res.status(200).json({ translations: out, provider });
   }
 
