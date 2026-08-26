@@ -1,5 +1,5 @@
-// service-worker.js - v203 (drag & drop : zones de depot et previsualisation)
-const CACHE_NAME = 'changeyourlife-v203';
+// service-worker.js - v204 (hierarchie visuelle de l espace)
+const CACHE_NAME = 'changeyourlife-v204';
 const urlsToCache = [
   '/',
   '/bienvenue.html',

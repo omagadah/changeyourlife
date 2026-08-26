@@ -120,7 +120,7 @@
         .hub-sc {
           display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px;
           text-decoration:none; border:1px solid var(--line);
-          background:rgba(255,255,255,0.025); transition:transform .18s, border-color .18s, background .18s;
+          background:var(--lvl3); transition:transform .18s, border-color .18s, background .18s;
         }
         .hub-sc:hover { transform:translateY(-2px); background:rgba(132,194,94,0.07); border-color:var(--sc,var(--line-hov)); }
         .hub-sc-ic { font-size:1.3rem; flex-shrink:0; }
@@ -130,13 +130,35 @@
         @media (max-width:640px){ .hub-shortcuts { grid-template-columns:1fr; } }
 
         /* ── Today progress ── */
+        /* ── UNE ÉCHELLE DE POIDS ────────────────────────────────────────────
+           Cinq familles de blocs (journée, raccourcis, jauges, roue, modules)
+           partageaient EXACTEMENT le même traitement : rgba(255,255,255,0.02)
+           + 1px de bordure. Rien ne pesait plus lourd que le reste, donc l'œil
+           ne pouvait pas trier - la page se lisait comme un empilement plutôt
+           que comme une séquence.
+
+           Trois niveaux désormais, du plus lourd au plus léger :
+             1. ce qui concerne AUJOURD'HUI      -> surface marquée + liseré
+             2. ce qui se consulte d'un coup d'œil -> surface intermédiaire
+             3. ce qui sert à NAVIGUER            -> surface discrète
+           Les trois se déclinent depuis les mêmes tokens : un seul endroit à
+           toucher pour rééquilibrer la page. */
+        .app-container {
+          --lvl1: rgba(255,255,255,0.055);
+          --lvl2: rgba(255,255,255,0.032);
+          --lvl3: rgba(255,255,255,0.018);
+        }
+
+        /* Niveau 1 : la journée en cours. Le liseré gauche vert la rattache au
+           langage de l'arbre et la distingue au premier regard. */
         .today-card {
           display:flex; align-items:center; gap:16px;
           padding:14px 18px; border-radius:16px; margin-bottom:18px;
-          background:rgba(255,255,255,0.02); border:1px solid var(--line);
+          background:var(--lvl1); border:1px solid var(--line);
+          border-left:3px solid var(--leaf);
           flex-wrap:wrap;
         }
-        .today-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3); font-weight:700; flex-shrink:0; }
+        .today-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text-2); font-weight:700; flex-shrink:0; }
         .today-items { display:flex; gap:8px; flex-wrap:wrap; flex:1; }
         .today-item {
           display:inline-flex; align-items:center; gap:6px;
@@ -151,32 +173,49 @@
 
         /* ── Quick actions ── */
         .quick-actions { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:22px; }
+        /* Niveau 3 : de la navigation. Discret au repos, franc au survol.
+           Le mouvement de survol est le MEME que celui des cartes de modules
+           (2 px) : deux amplitudes differentes pour un meme geste donnaient
+           l'impression de deux composants sans rapport. */
         .qa-btn {
           display:flex; flex-direction:column; align-items:center; gap:6px;
           padding:14px 10px; border-radius:16px; text-decoration:none;
           border:1px solid var(--line);
-          background:rgba(255,255,255,0.02);
-          transition:all .2s var(--ease);
+          background:var(--lvl3);
+          transition:transform .2s var(--ease), border-color .2s, background .2s, box-shadow .2s;
         }
-        .qa-btn:hover { transform:translateY(-3px); border-color:var(--line-hov); background:rgba(132,194,94,0.07); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
-        .qa-btn:active { transform:translateY(-1px) scale(0.98); }
+        .qa-btn:hover { transform:translateY(-2px); border-color:rgba(132,194,94,0.45); background:rgba(132,194,94,0.07); box-shadow:0 10px 26px -12px rgba(0,0,0,0.6); }
+        .qa-btn:focus-visible { outline:2px solid var(--leaf); outline-offset:2px; }
+        .qa-btn:active { transform:translateY(0) scale(0.98); }
         .qa-btn, .qa-btn:visited { color:var(--text-2); }
         .qa-icon { font-size:1.6rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
-        .qa-label { font-size:0.72rem; font-weight:700; color:var(--text-2); text-align:center; letter-spacing:.2px; }
-        .qa-xp { font-size:0.6rem; color:var(--gold); font-weight:700; }
+        .qa-label { font-size:0.75rem; font-weight:700; color:var(--text-1); text-align:center; letter-spacing:.2px; }
+        /* Le nom de l'action domine, le gain passe au second plan : en or gras
+           il pesait autant que le libelle, et on lisait la recompense avant le
+           geste. Meme information, hierarchie inversee. */
+        .qa-xp { font-size:0.6rem; color:var(--text-3); font-weight:600; }
+        .qa-btn:hover .qa-xp { color:var(--gold); }
 
         /* ── Stats bar ── */
         /* 7 chips : auto-fit évite la dernière rangée orpheline d'une grille fixe */
         .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px; margin-bottom:22px; }
+        /* Niveau 2 : des données qu'on consulte, pas des boutons. Elles ne se
+           soulèvent donc pas au survol - seul ce qui mène quelque part bouge. */
         .stat-chip {
-          background:rgba(255,255,255,0.02); border:1px solid var(--line);
+          background:var(--lvl2); border:1px solid var(--line);
           border-radius:14px; padding:14px 14px 12px;
           display:flex; flex-direction:column; gap:3px;
           position:relative; overflow:hidden;
           border-bottom:2px solid var(--chip-color,var(--line));
-          transition:border-color .2s;
+          transition:border-color .2s, background .2s;
         }
-        .stat-chip:hover { border-color:var(--chip-color,var(--line-hov)); background:rgba(255,255,255,0.04); }
+        /* `border-color` en raccourci reecrivait les QUATRE cotes : le liseré
+           coloré du bas - la seule chose qui distinguait une jauge d'une autre -
+           disparaissait au survol. Les côtés sont désormais nommés un par un. */
+        .stat-chip:hover {
+          border-top-color:var(--line-hov); border-right-color:var(--line-hov);
+          border-left-color:var(--line-hov); background:rgba(255,255,255,0.05);
+        }
         .stat-chip-icon { font-size:1.1rem; }
         .stat-chip-value { font-size:1.5rem; font-weight:800; color:var(--text-1); line-height:1.1; }
         .stat-chip-label { font-size:0.65rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
@@ -265,7 +304,7 @@
         .wheel-eval-date { font-size:0.72rem; color:var(--text-3); flex:1; text-align:center; }
         .wheel-new-eval-btn { font-size:0.72rem; color:var(--leaf); text-decoration:none; padding:4px 10px; border:1px solid rgba(132,194,94,0.28); border-radius:7px; transition:background .2s; white-space:nowrap; font-weight:600; }
         .wheel-new-eval-btn:hover { background:rgba(132,194,94,0.10); }
-        .wheel-card { background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+        .wheel-card { background:var(--lvl2); border:1px solid var(--line); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
         .wheel-radar-box { width:150px; height:150px; flex-shrink:0; }
         .wheel-domain-bars { flex:1; min-width:180px; display:flex; flex-direction:column; gap:10px; }
         .wdb-row { display:flex; align-items:center; gap:8px; }
@@ -276,12 +315,26 @@
         .wheel-cta-card { background:rgba(231,177,92,0.04); border:1px dashed rgba(231,177,92,0.25); border-radius:16px; padding:22px; text-align:center; text-decoration:none; display:block; transition:background .2s, border-color .2s; margin-bottom:22px; }
         .wheel-cta-card:hover { background:rgba(231,177,92,0.08); border-color:rgba(231,177,92,0.4); }
 
-        /* ── Modules : grille compacte (fini les grosses bannières) ── */
-        .modules-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; margin-bottom:12px; }
+        /* ── Intertitres ──────────────────────────────────────────────────────
+           Les modules avaient le leur, pas les raccourcis ni les jauges : les
+           trois rangées s'enchaînaient sans qu'on sache où l'une finit. Un
+           libellé nomme chaque groupe, et le trait le prolonge jusqu'au bord -
+           c'est ce qui fait lire une SÉQUENCE plutôt qu'une pile.
+           .modules-label garde son nom : elle est posée dans le HTML et par
+           i18n.js (clé app.modules). */
+        .sec-label, .modules-label {
+          font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
+          color:var(--text-3); font-weight:700; margin-bottom:12px;
+        }
+        .sec-label { display:flex; align-items:center; gap:12px; margin-top:4px; }
+        .sec-label::after {
+          content:''; flex:1; height:1px;
+          background:linear-gradient(90deg, var(--line), transparent);
+        }
         .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; }
         .tool-card {
           display:flex; align-items:flex-start; gap:12px;
-          background:rgba(255,255,255,0.02); border:1px solid var(--line);
+          background:var(--lvl3); border:1px solid var(--line);
           border-radius:14px; padding:13px 14px; text-decoration:none;
           transition:transform .2s var(--ease), border-color .2s, background .2s;
           position:relative; overflow:hidden;
@@ -326,6 +379,11 @@
         }
         @media (prefers-reduced-motion: reduce) {
           .app-container *, #organizer-hub, #cyl-brief, #agenda-card { animation:none !important; }
+          /* Les animations étaient coupées, pas les TRANSFORMS de survol : les
+             cartes continuaient de se soulever sous la souris alors que le
+             système demandait l'inverse. Le retour visuel reste assuré par la
+             bordure et le fond, qui eux ne déplacent rien. */
+          .qa-btn:hover, .tool-card:hover, .hub-sc:hover, .qa-btn:active { transform:none !important; }
         }
     </style>
 </head>
@@ -431,6 +489,7 @@
         </div>
 
         <!-- ── Actions rapides ── -->
+        <div class="sec-label">Passer à l'action</div>
         <div class="quick-actions">
           <a href="/meditation/" class="qa-btn">
             <span class="qa-icon">🧘</span>
@@ -470,6 +529,7 @@
         </div>
 
         <!-- ── Stats ── -->
+        <div class="sec-label">Où tu en es</div>
         <div class="stats-row" id="stats-row">
           <div class="stat-chip streak">
             <div class="stat-chip-icon">🔥</div>
