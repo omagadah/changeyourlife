@@ -1,4 +1,4 @@
-# 🚀 Reprendre le projet sur le Mac — guide simple
+# 🚀 Reprendre le projet sur le Mac - guide simple
 
 Ce guide te fait passer de « rien » à « je code et je déploie » en quelques minutes.
 Suis les étapes dans l'ordre. Copie-colle les commandes dans le **Terminal** du Mac
@@ -27,7 +27,7 @@ npm install -g @anthropic-ai/claude-code
 ```
 > Puis tu le lanceras avec la commande `claude` dans le dossier du projet.
 
-### d) (Optionnel) Vercel & Firebase — seulement si tu déploies toi-même
+### d) (Optionnel) Vercel & Firebase - seulement si tu déploies toi-même
 ```bash
 npm install -g vercel firebase-tools
 ```

@@ -73,7 +73,7 @@ Règles du motif :
   des données (l'ORGANIZER affiche tout, y compris ce qui est déjà planifié).
 - Un module par bandeau, jamais empilés au point de faire défiler l'accueil.
 
-## 3 · « Où j'en suis » — la pyramide devient une CONCLUSION
+## 3 · « Où j'en suis » - la pyramide devient une CONCLUSION
 
 > Décidé le 2026-08-19. `/yourlife/` est aujourd'hui un module qu'on **modifie**
 > (on coche des compétences à la main). Ce n'est pas sa place : la pyramide doit
@@ -128,7 +128,7 @@ Reste à faire :
 - **Import XMind** (un `.xmind` est un zip contenant du JSON) pour récupérer les
   cartes déjà faites ailleurs. L’export Markdown existe déjà dans l’autre sens.
 
-## 5 · CHARTE GRAPHIQUE COMPLÈTE (gros morceau — à faire EN DERNIER)
+## 5 · CHARTE GRAPHIQUE COMPLÈTE (gros morceau - à faire EN DERNIER)
 
 > La mise en page se fait à la fin. On construit d'abord des modules qui
 > marchent, on habille ensuite. Mais quand on y viendra, ce sera un chantier
@@ -141,7 +141,7 @@ Reste à faire :
   (repos / survol / focus / actif / désactivé). Un document, pas des valeurs
   éparpillées dans 40 fichiers.
 - **Direction artistique de l'XP** : à quoi ressemble un gain ? une montée de
-  niveau ? un palier ? Aujourd'hui c'est un toast et un nombre — il n'y a
+  niveau ? un palier ? Aujourd'hui c'est un toast et un nombre - il n'y a
   aucune *sensation*.
 - **Badges par domaine** : un jeu complet pour les 8 branches Maslow, décliné
   par niveau (Novice → Légende). Cohérent avec le badge pixel-art déjà créé.

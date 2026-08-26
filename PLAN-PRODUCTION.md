@@ -1,4 +1,4 @@
-# PLAN-PRODUCTION.md — Audit complet 2026-07-07
+# PLAN-PRODUCTION.md - Audit complet 2026-07-07
 
 > Feuille de route exécutable pour Claude Code (VSCode). Issue d'un audit total
 > (sécurité + code/architecture + UX/UI) du 2026-07-07.
@@ -6,33 +6,33 @@
 > Rappels projet : vanilla JS sans build · bump `CACHE_NAME` du SW à chaque modif js/css ·
 > commits signés `Omagadah <noreply@changeyourlife.ai>` + Co-Authored-By Claude.
 
-## ✅ Session Opus 4.8 (2026-07-07 soir) — réalisé
+## ✅ Session Opus 4.8 (2026-07-07 soir) - réalisé
 
 Tout committé sur `main` (6 commits), **rien poussé** (à toi de valider le push → deploy Vercel).
 
-**P0 — bloquants : TOUS traités.**
+**P0 - bloquants : TOUS traités.**
 - **P0-1 CSP accueil** : 3 scripts inline → `home-aura.js` / `home-auth-modal.js` / `home-failsafe.js`. Le failsafe `tree-ready` remarche (plus de risque d'accueil noir).
 - **P0-2 Fiabilité** : socle `common.js` (`saveWithFeedback` + `toast` XSS-safe + `escapeHtml` + bannière offline). Écritures silencieuses corrigées : gratitude, organizer, plan, skills, **habitudes** (le pire : faux succès), objectifs, yourlife, coach.
 - **P0-3 Données** : avatar redimensionné 256px avant stockage (LE vrai risque 1 Mo). `meditation.history` déjà borné (20).
 - **P0-4 Légal** : `/legal/ /cgu/ /confidentialite/` (tiers listés = pilier "données non vendues") + footer accueil + consentement CYL 1re ouverture + case signup (accueil + /login/).
 - **P0-5 Deploy** : `DEPLOY.md` créé. À lancer par toi : `firebase deploy --only firestore`.
 
-**P2 — anti-IA (démarré) :** ~75 emojis décoratifs retirés (titres/toasts/boutons) sur 32 fichiers ; sélecteurs d'humeur/pickers/**maps de données** préservés. Titre/OG accueil réécrit ("pour de vrai"). Tutoiement verify-email + settings.
+**P2 - anti-IA (démarré) :** ~75 emojis décoratifs retirés (titres/toasts/boutons) sur 32 fichiers ; sélecteurs d'humeur/pickers/**maps de données** préservés. Titre/OG accueil réécrit ("pour de vrai"). Tutoiement verify-email + settings.
 
 **P1 :** token GCal → sessionStorage. Doc à jour (CLAUDE.md, DEPLOY.md).
 
-## ⏭️ Reste à faire — pour Claude dans VSCode (ordre conseillé)
+## ⏭️ Reste à faire - pour Claude dans VSCode (ordre conseillé)
 
-**1. DÉPLOYER les règles Firestore** (avant tout) : `firebase deploy --only firestore` — cf. `DEPLOY.md`. Pas faisable ici (Firebase non authentifié sur ce Mac).
+**1. DÉPLOYER les règles Firestore** (avant tout) : `firebase deploy --only firestore` - cf. `DEPLOY.md`. Pas faisable ici (Firebase non authentifié sur ce Mac).
 
-**2. Fiabilité — écritures encore silencieuses** (même recette `saveWithFeedback` du socle) :
+**2. Fiabilité - écritures encore silencieuses** (même recette `saveWithFeedback` du socle) :
 - `settings.js:498/499` : suppression compte (`users/{uid}` + `roles/{uid}`) dans catch vides → signaler l'échec (**sensible** : la promesse "données supprimées" doit être fiable).
 - `profile.js:241/248/254/282/377` (badges/titres/displayName), `journal.js:569` (delete), `autoevaluation.js:304`, `codex.js:248` : échec avalé.
 - `settings.js:460-472` (prefs), `app.js:53`, `branche.js:66` : mineurs/heartbeats.
 
 **3. Modèle de données (finir P0-3)** : migrer `organizer` (gros), `goals`, `habits` du mono-doc `users/{uid}` vers des sous-collections + bornes rules. Migration lazy au login. (avatar + meditation.history déjà OK.)
 
-**4. UX anti-IA — le gros morceau restant (P2), À FAIRE AVEC REVUE VISUELLE** :
+**4. UX anti-IA - le gros morceau restant (P2), À FAIRE AVEC REVUE VISUELLE** :
 - **Couleurs** : 769 hex inline, dont Tailwind par défaut (#3b82f6 ×43, #a78bfa ×31, #6366f1 ×17…). Porter la palette organique de l'accueil en variables CSS puis remplacer. Page par page (risque de casser le design). Points chauds : app (123), journal (75), organizer (59), objectifs (44).
 - **Icônes** : remplacer les emojis de DONNÉES (domaines/branches/badges) et labels restants par un set SVG trait fin unique (Lucide/Phosphor) + mapping.
 - **Fontes** : aucune fonte chargée. Paire auto-hébergée dans `public/fonts/` (pas Google Fonts, RGPD). Nécessite les .woff2.
@@ -52,7 +52,7 @@ Tout committé sur `main` (6 commits), **rien poussé** (à toi de valider le pu
   un modèle de données mono-document qui va plafonner, une CSP qui casse le failsafe de
   l'accueil, zéro page légale, et une UX qui « signe IA » (~700 emojis, palette Tailwind).
 
-## ✅ Corrigé ce jour (session Cowork 2026-07-07) — À COMMITTER PUIS DÉPLOYER
+## ✅ Corrigé ce jour (session Cowork 2026-07-07) - À COMMITTER PUIS DÉPLOYER
 
 - [x] CRITIQUE `api/translate.js` : endpoint public sans auth ni rate-limit (quota Groq/Gemini
       vidable par n'importe qui). Ajouté : rate-limit 4 req/min/IP + plafond global 400/jour
@@ -70,7 +70,7 @@ Tout committé sur `main` (6 commits), **rien poussé** (à toi de valider le pu
 
 ---
 
-## P0 — Bloquant production
+## P0 - Bloquant production
 
 ### P0-1 · CSP casse 3 scripts inline de l'accueil (connu depuis le 08/06)
 `public/index.html:736,777,821` bloqués par `script-src` sans hash/nonce (`vercel.json:38`).
@@ -83,7 +83,7 @@ hash CSP dans `vercel.json`. Tester : accueil avec JS module désactivé → le 
 ### P0-2 · Écritures Firestore silencieusement perdues
 L'utilisateur croit avoir sauvegardé, rien n'est écrit, aucun signal :
 - `public/js/gratitude.js:203` : `await setDoc` hors try/catch.
-- `public/js/organizer.js:74` : `.catch(() => {})` — le board entier peut ne jamais persister.
+- `public/js/organizer.js:74` : `.catch(() => {})` - le board entier peut ne jamais persister.
 - `public/js/plan.js:101`, `public/js/skills.js:38,48,68` : catch vides.
 - `navigator.onLine` : 0 occurrence dans tout le code.
 **Fix** : helper commun `saveWithFeedback(promise)` dans `common.js` (toast erreur + retry),
@@ -103,7 +103,7 @@ Produit de bien-être mental avec IA, données santé (sommeil, humeur, détress
 (Anthropic, Groq, Gemini, ipwho.is, Tidio ?). Aucune CGU, mentions légales, politique de
 confidentialité, ni consentement 1re ouverture CYL. Bloquant pour ouvrir au public en France.
 **Fix** : pages `/legal/` (mentions), `/cgu/`, `/confidentialite/` (lister TOUS les tiers et
-ce qui leur est envoyé — c'est LE pilier de la promesse « données non vendues, vérifiable ») ;
+ce qui leur est envoyé - c'est LE pilier de la promesse « données non vendues, vérifiable ») ;
 liens footer ; consentement stocké à la 1re ouverture de CYL (« CYL ne remplace pas un
 professionnel ») ; case à cocher au signup.
 
@@ -112,7 +112,7 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
 
 ---
 
-## P1 — Important (avant d'inviter de vrais utilisateurs)
+## P1 - Important (avant d'inviter de vrais utilisateurs)
 
 ### Sécurité / robustesse
 - [ ] **Token OAuth Google Calendar en localStorage** (`agenda.js:13`, `agenda-page.js:16`,
@@ -132,13 +132,13 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       à déclarer dans la politique de confidentialité ou remplacer par un choix manuel.
 
 ### Architecture / dette
-- [ ] **Unifier Lya/CYL — LE cœur du produit existe en 3 exemplaires** :
+- [ ] **Unifier Lya/CYL - LE cœur du produit existe en 3 exemplaires** :
       `lya-overlay.js` (partout, backend `/api/coach` Groq/Gemini) vs `cyl-chat.js` (/app,
       backend `/api/chat` Anthropic) vs page `/coach/` (Gemini). Un seul nom (CYL, déjà le
       seul visible), un seul widget, un seul backend (`/api/chat`), un seul prompt système.
       Rediriger `/coach/` ou la fusionner. Renommer les classes/fichiers `lya-*` ensuite.
-- [ ] **Purger les morts (~3,5 Mo de public/, 30 %)** — ordre impératif : retirer d'abord du
-      précache SW (`service-worker.js:54` liste `tree-widget.js` — `addAll` est atomique, une
+- [ ] **Purger les morts (~3,5 Mo de public/, 30 %)** - ordre impératif : retirer d'abord du
+      précache SW (`service-worker.js:54` liste `tree-widget.js` - `addAll` est atomique, une
       404 casse l'install), bump `CACHE_NAME`, puis supprimer :
       `js/arbre.svg.legacy.js`, `js/landing.js`, `js/tree-widget.js`, `logo.svg`,
       `og-image.svg`, `models/tree-hd.glb` (1,5 Mo), `models/tree.glb`,
@@ -147,13 +147,13 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       Retirer `/tree-lab/` du précache (page de dev servie en prod).
 - [ ] **Trancher le sort de `web/`** (2,7 Mo de prototype Next.js tracké dans git, jamais
       documenté, contredit « vanilla sans build ») : le sortir du repo ou le documenter.
-- [ ] **Factoriser dans `common.js`** : `escapeHtml` (10 copies) et toast (17 copies — c'est
+- [ ] **Factoriser dans `common.js`** : `escapeHtml` (10 copies) et toast (17 copies - c'est
       aussi une surface XSS : chaque page ré-implémente l'échappement à la main).
 - [ ] **Perf accueil mobile** : ez-tree vendored = 3,9 Mo NON minifié → minifier (~1 Mo),
       `<link rel="modulepreload">` sur three/ez-tree, alléger le précache SW (60 URLs à
       l'install, excessif).
 - [ ] **MAJ doc** : CLAUDE.md (16→32 pages, 3→5 API, modules agenda/organizer/plan/
-      competences/branches), AUDIT.md, ROADMAP.md — la carte actuelle est fausse pour tout
+      competences/branches), AUDIT.md, ROADMAP.md - la carte actuelle est fausse pour tout
       contributeur (humain ou IA).
 
 ### Anti-copie (repo public)
@@ -162,16 +162,16 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       de facto) OU repo privé + miroir public minimal (`firestore.rules`, politique données,
       api/ anonymisée) qui suffit à prouver « on ne vend pas les données ». Noter : le JS
       restera de toute façon lisible en prod dans le navigateur. Les prompts système de CYL
-      sont actuellement publics dans `api/chat.js:31` — les déplacer en variable d'env si
+      sont actuellement publics dans `api/chat.js:31` - les déplacer en variable d'env si
       considérés stratégiques.
 
 ---
 
-## P2 — Refonte « ne pas sentir l'IA » (chantier UX/UI complet)
+## P2 - Refonte « ne pas sentir l'IA » (chantier UX/UI complet)
 
 > Référence qualité : templates v0.app. Direction : l'identité ORGANIQUE de la landing
 > (fond forêt nocturne `#0a0f0a`, vert feuille `#84c25e`, or `#e7b15c`, blanc chaud
-> `#f4efe1`) est la meilleure du site — c'est ELLE qu'on généralise. Le problème n'est pas
+> `#f4efe1`) est la meilleure du site - c'est ELLE qu'on généralise. Le problème n'est pas
 > la landing, ce sont les pages internes (design system navy v2 + 769 hex hardcodés).
 
 ### 1 · Palette unique
@@ -181,13 +181,13 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       palette Tailwind par défaut (`#3b82f6 #a78bfa #6366f1 #a855f7 #ec4899…`) = signature
       « généré par IA » immédiate. Interdire tout hex hors variables.
 - [ ] Supprimer les dégradés multicolores des cartes (`app/index.html:356-420` : chaque carte
-      a son dégradé pastel + glow — pattern v0-naïf par excellence). Surfaces unies
+      a son dégradé pastel + glow - pattern v0-naïf par excellence). Surfaces unies
       `--bg-surface`, bordure 1px, accent uniquement sur liseré/icône.
 - [ ] 4 pages n'importent même pas `main.min.css` : `autoevaluation`, `codex`, `login`,
       `verify-email` → les rebrancher sur le design system.
 
 ### 2 · Zéro emoji décoratif (~700 emojis au total)
-- [ ] Supprimer l'emoji de TOUS les h1/h2/CTA/toasts — le tic IA n°1. Liste des h1 :
+- [ ] Supprimer l'emoji de TOUS les h1/h2/CTA/toasts - le tic IA n°1. Liste des h1 :
       `meditation:202` (🧘) · `sommeil:143` (🌙) · `objectifs:255` (🎯) · `plan:127` (🌅) ·
       `humeur:206` (😌) · `organizer:169` (🗂️) · `codex:140` (📚) · `habitudes:148` (✅) ·
       `agenda:83` (📅) · `gratitude:179` (🌟) · `bilan:187` (📊) · `competences:98` (🧗) ·
@@ -195,7 +195,7 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
       (`verify-email.js:140,187` « 🎉 », « 📧 ») + carte XP (`xp-reward.js:8-15`) +
       cartes dashboard (`app/index.html:356-410`) + entêtes profile (~30).
 - [ ] Remplacer par un set d'icônes SVG unique, trait fin 1.5px, monochrome `currentColor`
-      (style Lucide/Phosphor — cohérent avec la référence v0/Linear).
+      (style Lucide/Phosphor - cohérent avec la référence v0/Linear).
 - [ ] GARDER les emojis légitimes : picker d'icône d'habitude (contenu utilisateur,
       `habitudes:172-187`), sélecteurs d'humeur (`meditation:214-219`, `/humeur/`).
 - [ ] Gros fichiers à traiter : `competences.js` (42), `habitudes/index.html` (41),
@@ -204,7 +204,7 @@ Les rules et functions du repo ne sont pas celles qui tournent. À faire AVANT t
 ### 3 · Typographie
 - [ ] Aucune fonte n'est chargée aujourd'hui (system stack partout, « Inter » cité mais
       jamais importé). Ajouter une paire distinctive AUTO-HÉBERGÉE (`public/fonts/`, pas de
-      Google Fonts — cohérent RGPD) : une serif chaleureuse pour les titres + une sans
+      Google Fonts - cohérent RGPD) : une serif chaleureuse pour les titres + une sans
       neutre pour l'UI. C'est le changement qui casse le plus vite le look template.
 
 ### 4 · Ton & copywriting
@@ -236,10 +236,10 @@ le concept XP-branches Maslow · l'accueil CYL de /meditation/.
 
 ---
 
-## P3 — Qualité continue
+## P3 - Qualité continue
 
 - [ ] Smoke test Playwright minimal (login → save gratitude → XP visible) avant chaque push
-      — zéro test aujourd'hui, pas de staging.
+      - zéro test aujourd'hui, pas de staging.
 - [ ] Accessibilité : quasi aucun `aria-*` sur /app/ (3 occurrences) ; audit clavier des
       modals/panneaux 3D.
 - [ ] Versioning : choisir entre busting manuel (`inscription.js?v=18`) et SW network-first.

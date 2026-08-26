@@ -1,6 +1,6 @@
 # Change Your Life
 
-> Une PWA gratuite de santé mentale optimisée par l'IA — méditation, journal, objectifs, coach IA, trackers de bien-être.
+> Une PWA gratuite de santé mentale optimisée par l'IA - méditation, journal, objectifs, coach IA, trackers de bien-être.
 
 🔗 **Live :** [changeyourlife.ai](https://changeyourlife.ai)
 
@@ -45,7 +45,7 @@
 
 ## Développement local
 
-Pas de build step — il suffit de servir `public/` statiquement.
+Pas de build step - il suffit de servir `public/` statiquement.
 
 ```bash
 # Option 1 : avec Vercel CLI (recommandé, simule les /api/)
@@ -92,15 +92,15 @@ Cf. [docs/SECURITY.md](docs/SECURITY.md) pour la politique complète.
 
 ## Audit & qualité
 
-- [AUDIT.md](AUDIT.md) — état des lieux courant (tenu à jour à chaque scan)
-- [docs/sessions/](docs/sessions/) — log chronologique des sessions de développement
+- [AUDIT.md](AUDIT.md) - état des lieux courant (tenu à jour à chaque scan)
+- [docs/sessions/](docs/sessions/) - log chronologique des sessions de développement
 
 ## Workflow Claude Code
 
 Le repo intègre [Claude Code](https://claude.com/claude-code) :
-- [CLAUDE.md](CLAUDE.md) — contexte permanent (lu auto à chaque session)
-- `/audit` — relance un audit profond
-- `/session-end` — clôture une session avec log
+- [CLAUDE.md](CLAUDE.md) - contexte permanent (lu auto à chaque session)
+- `/audit` - relance un audit profond
+- `/session-end` - clôture une session avec log
 
 ## License
 

@@ -26,3 +26,6 @@ ui-debug.log
 *_diff*.txt
 .latest_commit_diff*.txt
 .inscription_diff*.txt
+
+# Dossier privé du projet Claude (contient des infos personnelles, jamais poussé)
+_claude-project/

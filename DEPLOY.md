@@ -1,9 +1,9 @@
-# DEPLOY.md — Runbook de déploiement ChangeYourLife.ai
+# DEPLOY.md - Runbook de déploiement ChangeYourLife.ai
 
 > Comment mettre en production. Le frontend se déploie tout seul par `git push`.
 > Le backend Firebase (rules + functions) se déploie **à la main** avec la CLI.
 
-## 0. Prérequis outillage (Mac) — fait le 2026-07-07
+## 0. Prérequis outillage (Mac) - fait le 2026-07-07
 
 ```bash
 # Node 22 (moteur exigé par functions/) + CLIs
@@ -22,7 +22,7 @@ Aucun build (site statique). Vérifier ensuite sur https://changeyourlife.ai.
 > ⚠️ À chaque modif de `/public/css` ou `/public/js`, le `CACHE_NAME` du
 > service worker (`public/service-worker.js`) doit être bumpé (déjà à **v148**).
 
-## 2. Backend → Firebase (manuel) — EN RETARD DEPUIS MAI, À FAIRE
+## 2. Backend → Firebase (manuel) - EN RETARD DEPUIS MAI, À FAIRE
 
 Les `firestore.rules` du repo ne sont **pas** celles qui tournent en prod
 (bornes bilans/codexNotes, noXpTampering, chatRate/translateRate, deny des
@@ -37,7 +37,7 @@ npm run deploy:functions             # = firebase deploy --only functions
 
 Scripts npm équivalents : `npm run deploy:firestore` · `npm run deploy:firebase`.
 
-## 3. Variables d'environnement (Vercel — dashboard projet)
+## 3. Variables d'environnement (Vercel - dashboard projet)
 
 Nécessaires au bon fonctionnement des API serverless :
 
@@ -59,6 +59,6 @@ Nécessaires au bon fonctionnement des API serverless :
 
 ## 5. Sécurité (rappels)
 
-- La config Firebase web (`public/js/firebase.js`) est **publique par nature** — ce n'est pas un secret.
-- La clé API Firebase est restreinte par referrers (Google Cloud) — garder `firebaseapp.com` autorisé.
+- La config Firebase web (`public/js/firebase.js`) est **publique par nature** - ce n'est pas un secret.
+- La clé API Firebase est restreinte par referrers (Google Cloud) - garder `firebaseapp.com` autorisé.
 - Aucun secret ne doit entrer dans `public/` ni dans `api/` en dur : tout par variable d'env Vercel.

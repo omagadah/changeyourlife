@@ -1,10 +1,10 @@
-# HISTORIQUE — ChangeYourLife.ai
+# HISTORIQUE - ChangeYourLife.ai
 
 > **Mémoire longue du projet.** De la première ligne à aujourd'hui.
 >
 > `ROADMAP.md` dit **où on va**. `AUDIT.md` dit **où on en est techniquement**.
 > Ce fichier dit **d'où on vient** : les décisions, les virages, ce qu'on a
-> essayé, gardé, abandonné — et pourquoi. Rien de ce qu'on a construit ne doit
+> essayé, gardé, abandonné - et pourquoi. Rien de ce qu'on a construit ne doit
 > tomber dans l'oubli, même ce qui a été supprimé depuis.
 >
 > **Règle : à chaque session de travail, on ajoute une entrée ici.** Le détail
@@ -16,9 +16,9 @@
 
 Le projet a changé trois fois de centre de gravité :
 
-1. **L'arbre** (mai → juin 2026) — la vie devient un organisme vivant.
-2. **Les modules** (juin → juillet 2026) — 16 outils empilés autour de l'arbre.
-3. **L'ORGANIZER** (août 2026) — *ce que j'ai en tête* devient le point
+1. **L'arbre** (mai → juin 2026) - la vie devient un organisme vivant.
+2. **Les modules** (juin → juillet 2026) - 16 outils empilés autour de l'arbre.
+3. **L'ORGANIZER** (août 2026) - *ce que j'ai en tête* devient le point
    d'entrée ; l'arbre redevient le **reflet** de l'action, plus le sujet.
 
 Le fil qui n'a jamais bougé : **le site assiste, il ne dirige jamais.**
@@ -51,7 +51,7 @@ SW v92 → v147. La direction artistique naît ce jour-là.
 - **ORGANIZER** apparaît : board Eisenhower + vue Canvas avec connecteurs.
 - **Croissance par branche Maslow** : l'XP ne tombe plus dans un pot commun.
 - **SYL devient un vrai chatbot** (Claude), avec un **cadre strictement
-  non-directif** — décision structurante, jamais remise en cause depuis.
+  non-directif** - décision structurante, jamais remise en cause depuis.
 - **Bouton Urgence** et flux de crise (3114 / 15 / 112).
 - Emojis Fluent 3D, badge pixel-art devenu le logo.
 
@@ -59,7 +59,7 @@ SW v92 → v147. La direction artistique naît ce jour-là.
 
 SW v147 → v168.
 
-- **Fix login Chrome** : `COOP: same-origin-allow-popups` — sans lui, la
+- **Fix login Chrome** : `COOP: same-origin-allow-popups` - sans lui, la
   connexion Google était cassée sur Chrome et fonctionnait sur Opera.
 - Bascule clair/sombre dans le bandeau, menu vertical animé, fiche profil
   premium, badge ID interactif.
@@ -91,14 +91,14 @@ Grosse session. SW v169 → v175.
 4 critiques, 36 importants, 51 mineurs, avec vérification adversariale
 (6 findings réfutés et retirés). Trois découvertes structurantes :
 
-1. **Le CSS et le JS n'atteignaient jamais les clients** — `/css/` était servi
+1. **Le CSS et le JS n'atteignaient jamais les clients** - `/css/` était servi
    en `immutable` un an sans versionnage d'URL. Les refontes seraient restées
    invisibles pour tout visiteur déjà venu.
-2. **Le circuit ORGANIZER → arbre était rompu sur 4 branches sur 8** —
+2. **Le circuit ORGANIZER → arbre était rompu sur 4 branches sur 8** -
    `BRANCH_TO_LEGACY` n'en mappait que 4, et `/app/` lisait ce miroir. Terminer
    une fiche « Accomplissement » créditait l'arbre sans que rien ne bouge à
    l'écran.
-3. **La suppression de compte ne supprimait aucune donnée** (RGPD) — le compte
+3. **La suppression de compte ne supprimait aucune donnée** (RGPD) - le compte
    Auth partait, les données restaient.
 
 Plus : 2 XSS réels, OTP non lié à son email, coût LLM non borné, CSP trop
@@ -108,13 +108,13 @@ vulnérabilités npm critical et high éliminées.
 ### Refonte visuelle de `/app/`
 La page était restée en **navy v2** alors que le design system était passé à la
 **forêt nocturne** : 3 `var()` sur ~600 déclarations. Réécrite sur les tokens.
-Suppression des 11 règles `order:` — l'ordre du DOM redevient l'ordre visuel.
+Suppression des 11 règles `order:` - l'ordre du DOM redevient l'ordre visuel.
 Fond Vanta + three.js r134 retirés au profit d'un dégradé CSS.
 
 ### SYL → CYL
 L'IA prend le nom du produit. 332 remplacements, fichiers renommés.
 **Bug trouvé au passage** : deux chats se chargeaient en parallèle sur `/app/`
-(l'ancien overlay Lya + le chat récent) — deux orbes superposées. Unifié.
+(l'ancien overlay Lya + le chat récent) - deux orbes superposées. Unifié.
 
 ### L'onglet-module
 Tout le bandeau d'en-tête de l'ORGANIZER devient cliquable et mène au board
@@ -122,7 +122,7 @@ complet. Motif validé, à décliner sur les autres modules.
 
 ### Le moteur de classification
 Réécriture complète : d'une liste de 8 mots-clés à un moteur qui rend une
-**lecture** de la pensée — branche, sous-catégorie, nature (tâche / ressenti /
+**lecture** de la pensée - branche, sous-catégorie, nature (tâche / ressenti /
 envie / objectif / idée), ampleur, confiance, colonne proposée. Il sait que
 « j'en ai marre de ce boulot… » est un **ressenti** qui touche deux branches,
 et que « apprendre la conjecture de Hodge » est un **chantier** malgré ses
@@ -131,7 +131,7 @@ deviner. 18/18 sur le jeu de test.
 
 ### Mode clair réparé
 Le site n'avait **aucune** règle de thème clair dans son design system : 26
-règles bricolées dans 7 modules. Résultat, seul l'ORGANIZER changeait — en
+règles bricolées dans 7 modules. Résultat, seul l'ORGANIZER changeait - en
 blanc illisible. Refait au niveau des **tokens** : un seul point de bascule.
 
 ### Suppression du code mort
@@ -156,4 +156,4 @@ chargeait Tidio sur la page portant le formulaire mot de passe), et
 | **L'arbre est le reflet, pas le sujet** | 2026-08-08 | Il reste la signature visuelle et le langage du produit |
 | **L'ordre du DOM = l'ordre visuel** | 2026-08-16 | Le réordonnancement CSS cassait tab-order et lecteurs d'écran |
 | **Le thème vit dans les tokens** | 2026-08-16 | Un module qui code une couleur en dur casse le thème |
-| **Pas de tiret long** | — | Convention d'écriture du projet |
+| **Pas de tiret long** | - | Convention d'écriture du projet |

@@ -1,4 +1,4 @@
-# AUDIT — changeyourlife.ai
+# AUDIT - changeyourlife.ai
 
 > Dernier passage : **2026-08-26** · SW **v201** · branche `main`
 > Méthode : reprise du rapport du 2026-08-16, vérification de chacun de ses
@@ -13,7 +13,7 @@
 | Critique | 1 | 1 | 0 |
 | Important | 8 | 5 | 3 |
 | Mineur | 10 | 3 | 7 |
-| Décisions produit en attente | 3 | — | 3 |
+| Décisions produit en attente | 3 | - | 3 |
 
 **Aucun secret exposé, aucun `eval`/`new Function`/`document.write`, aucune URL
 externe suspecte, aucune collection Firestore sans règle, aucune référence
@@ -27,9 +27,9 @@ de l'audit précédent.
 
 ## 🔴 Critique
 
-### C1 — Le service worker n'était plus JAMAIS enregistré ✅ CORRIGÉ
+### C1 - Le service worker n'était plus JAMAIS enregistré ✅ CORRIGÉ
 `public/js/common.js` · Le commit `4af1833` (20 août, refonte du fond animé) a
-réécrit `common.js` et **perdu le bloc `serviceWorker.register()`** — le seul du
+réécrit `common.js` et **perdu le bloc `serviceWorker.register()`** - le seul du
 site. Depuis : `grep -r "serviceWorker.register" public/` → **0 résultat**.
 
 Conséquences réelles :
@@ -52,7 +52,7 @@ le chargement initial.
 
 | # | Sujet | Fichiers | Ce qui a été fait |
 |---|---|---|---|
-| I1 | **Zéro CDN de scripts** — fin des `<script>` tiers | `public/vendor/` · 4 HTML · `cyl-bg.js` · `emoji.js` | Chart.js, SortableJS, three r134, vanta.birds et twemoji sont **vendorisés** (`/vendor/chart/`, `/vendor/sortable/`, `/vendor/three-r134/`, `/vendor/vanta/`, `/vendor/twemoji/`). Ferme d'un coup : « aucun SRI sur les CDN », « three r134 en CDN », la moitié du « précache offline illusoire » (le SW ignorait le cross-origin), et le risque supply-chain cdnjs/jsdelivr. Les assets **images** emoji (Fluent 3D, Twemoji SVG) restent en CDN — des milliers de fichiers, couverts par `img-src https:` |
+| I1 | **Zéro CDN de scripts** - fin des `<script>` tiers | `public/vendor/` · 4 HTML · `cyl-bg.js` · `emoji.js` | Chart.js, SortableJS, three r134, vanta.birds et twemoji sont **vendorisés** (`/vendor/chart/`, `/vendor/sortable/`, `/vendor/three-r134/`, `/vendor/vanta/`, `/vendor/twemoji/`). Ferme d'un coup : « aucun SRI sur les CDN », « three r134 en CDN », la moitié du « précache offline illusoire » (le SW ignorait le cross-origin), et le risque supply-chain cdnjs/jsdelivr. Les assets **images** emoji (Fluent 3D, Twemoji SVG) restent en CDN - des milliers de fichiers, couverts par `img-src https:` |
 | I2 | **Chart.js en 3 versions différentes** (4.4.0 / 4.4.1 / 4.4.3 selon la page) | `app/` · `autoevaluation/` · `settings/` | Unifié sur **4.4.3 vendorisé** |
 | I3 | **CSP : plus aucun CDN autorisé en script/style/connect** | `vercel.json:84` | `script-src` passe de 4 origines à `'self' + gstatic + apis.google` (Firebase/OAuth, incompressibles). `cdn.jsdelivr.net` et `cdnjs.cloudflare.com` retirés de `script-src`, `style-src` et `connect-src` |
 | I4 | **Contraste AA du texte tertiaire (thème sombre)** | `main.min.css:18` | `--text-3` #7c7660 → **#86806a** : 4,26:1 → **4,9:1** sur `--bg` (le thème clair avait déjà été corrigé) |
@@ -60,10 +60,10 @@ le chargement initial.
 
 ### Restants
 
-- **Jeton OAuth Google en `sessionStorage`** (`gcal.js:43`) — atténué depuis le
+- **Jeton OAuth Google en `sessionStorage`** (`gcal.js:43`) - atténué depuis le
   dernier audit (scope lecture par défaut, TTL, effacé à la fermeture de
   l'onglet) mais toujours lisible par tout JS de la page. Cible : mémoire module.
-- **`ROOT_ADMIN_UID` toujours actif** (`functions/src/index.ts:124-128`) —
+- **`ROOT_ADMIN_UID` toujours actif** (`functions/src/index.ts:124-128`) -
   CLAUDE.md prévoit son retrait une fois un admin créé par custom claim.
 - **i18n inchangé** : 9 langues sur 16 sans dictionnaire de secours, attributs
   (`placeholder`, `title`, `aria-label`) jamais traduits, dates figées `fr-FR`
@@ -85,7 +85,7 @@ le chargement initial.
 
 ### Restants
 
-- **`quests-data.js` (284 lignes, commit récent) n'est importé par personne** —
+- **`quests-data.js` (284 lignes, commit récent) n'est importé par personne** -
   catalogue de quêtes prêt mais jamais branché. À câbler ou à dater comme WIP.
 - **2 événements custom émis sans écouteur** : `cyf:theme-changed`,
   `cyl:gcal-changed`.
@@ -96,10 +96,10 @@ le chargement initial.
 - **7 pages sans `main.min.css`** : volontaire pour `bienvenue`, `login`,
   `signup`, `verify-email`, `404` (autonomes pré-auth) ; **incohérent** pour
   `codex/` et `autoevaluation/` (modules connectés avec leur propre `<style>`).
-- **`console.log` admin** (`settings.js:25-26`) : affiche UID + email en console
-  — volontaire pour le bootstrap admin, à retirer quand `ROOT_ADMIN_UID` partira.
+- **`console.log` admin** (`settings.js:25-26`) : affiche UID + email en console,
+  volontaire pour le bootstrap admin, à retirer quand `ROOT_ADMIN_UID` partira.
 - **`web/`** (refonte Next.js gelée) toujours absente de CLAUDE.md.
-- **npm** : 8 modérées racine + 10 modérées functions — inchangé, toutes
+- **npm** : 8 modérées racine + 10 modérées functions - inchangé, toutes
   attendent le major `firebase-admin 12 → 14` (breaking, à planifier).
 
 ---
@@ -118,7 +118,7 @@ le chargement initial.
 - **C4 (organizer inutilisable au clavier)** : fiches `tabIndex=0` +
   `role=button` + Enter/Espace, modale fermée par Escape (`organizer.js:176-183`).
 - **Code mort ~2,3 Mo purgé** : `public/models/`, `tree-widget.js`,
-  `arbre.svg.legacy.js`, `tree-lab/`, `landing.js` (et Tidio avec lui) — disparus.
+  `arbre.svg.legacy.js`, `tree-lab/`, `landing.js` (et Tidio avec lui) - disparus.
 - **Vanta ×14 implémentations → un seul module** `cyl-bg.js`, avec
   `prefers-reduced-motion`, `saveData` et exclusion mobile.
 - **three/vanta CDN sur ~26 pages** → un seul point de chargement (désormais
@@ -139,7 +139,7 @@ Réfs locales      100 % valides   Imports ESM        100 % valides
 ## Ce qui reste à faire côté owner (hors code)
 
 - [ ] Vérifier après déploiement que le SW s'installe (DevTools → Application →
-      Service Workers) — c'est le fix critique de cette passe.
+      Service Workers) - c'est le fix critique de cette passe.
 - [ ] Trancher les 3 décisions produit ci-dessus.
 - [ ] Planifier le major `firebase-admin` (dernières 18 vulns modérées).
 - [ ] Retirer `ROOT_ADMIN_UID` des env vars Functions une fois l'admin claimé.
