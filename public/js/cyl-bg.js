@@ -16,8 +16,8 @@
 // ne vaut pas de vider un forfait mobile.
 
 const HOST_ID = 'cyl-bg';
-const THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js';
-const VANTA_URL = 'https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.birds.min.js';
+const THREE_URL = '/vendor/three-r134/three.min.js';   // vendorisé (audit 2026-08-26) : zéro CDN
+const VANTA_URL = '/vendor/vanta/vanta.birds.min.js';
 
 // Les teintes du fond restent BLEUES, a la difference du reste du site : elles
 // signent l'espace numerique, la couche « machine » sur laquelle l'arbre pousse.

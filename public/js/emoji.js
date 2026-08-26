@@ -15,7 +15,7 @@
 
   var TW_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/';     // <base>svg/<code>.svg
   var FLUENT  = 'https://cdn.jsdelivr.net/npm/@lobehub/fluent-emoji-3d@1.1.0/assets/'; // <code>.webp
-  var LIB     = 'https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js';
+  var LIB     = '/vendor/twemoji/twemoji.min.js';   // vendorisé : la lib est locale, seuls les ASSETS images restent CDN
   var OPT = { folder: 'svg', ext: '.svg', base: TW_BASE, className: 'cyl-emoji' };
 
   // Style : emoji 3D légèrement plus grand que le texte, taille FIXE (layout stable).
@@ -106,7 +106,7 @@
   }
 
   var s = document.createElement('script');
-  s.src = LIB; s.crossOrigin = 'anonymous';
+  s.src = LIB;
   s.onload = start;
   s.onerror = function () { /* repli silencieux : emojis système conservés */ };
   document.head.appendChild(s);
