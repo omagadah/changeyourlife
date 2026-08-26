@@ -1,5 +1,5 @@
-// service-worker.js - v201 (enregistrement SW retabli)
-const CACHE_NAME = 'changeyourlife-v201';
+// service-worker.js - v202 (sortable vendorise - drag du mini-organizer)
+const CACHE_NAME = 'changeyourlife-v202';
 const urlsToCache = [
   '/',
   '/bienvenue.html',

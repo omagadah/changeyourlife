@@ -604,12 +604,25 @@ function injectCSS() {
 }
 
 // SortableJS (drag & drop) - meme version que /organizer/.
+//
+// SERVI EN LOCAL, ET CE N EST PAS UN DETAIL. Ce chargement est DYNAMIQUE : il
+// echappe a toute recherche de « <script src » dans les pages HTML. C est
+// exactement ce qui a fait passer ce fichier au travers de la vendorisation du
+// 26/08 : /organizer/ a bien ete bascule, pas celui-ci. La CSP ne listant plus
+// jsdelivr, le navigateur a bloque le script sans que rien ne le dise, et le
+// glisser-deposer du mini-organizer est mort en silence - une fiche qu on tirait
+// se contentait de se selectionner en bleu.
+//
+// Ne jamais remettre une URL de CDN ici : elle sera bloquee par la CSP.
 function loadSortable() {
   if (window.Sortable || document.getElementById('cyl-sortable-js')) return;
   const s = document.createElement('script');
   s.id = 'cyl-sortable-js';
-  s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js';
+  s.src = '/vendor/sortable/Sortable.min.js';
   s.onload = () => { if (board) initDnd(); };
+  // Si le script manque, le drag est perdu mais la page doit rester utilisable :
+  // les fiches s ouvrent au clic et la modale porte le select « Deplacer vers ».
+  s.onerror = () => { console.error('[app-organizer] SortableJS introuvable : glisser-deposer indisponible'); };
   document.head.appendChild(s);
 }
 
