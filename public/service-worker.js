@@ -1,5 +1,5 @@
-// service-worker.js - v205 (la fiche tiree suit enfin le curseur)
-const CACHE_NAME = 'changeyourlife-v205';
+// service-worker.js - v206 (retour au glisser natif, fiable)
+const CACHE_NAME = 'changeyourlife-v206';
 const urlsToCache = [
   '/',
   '/bienvenue.html',

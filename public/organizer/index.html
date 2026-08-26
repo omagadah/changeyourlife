@@ -58,16 +58,12 @@
       border:1px dashed rgba(132,194,94,0.75) !important; box-shadow:none !important; }
     .org-slot > * { visibility:hidden; }
 
-    /* La fiche tirée. forceFallback donne un clone stylable, là où l'image de
-       drag native du navigateur ne l'est pas.
-       AUCUN transform ici : c'est SortableJS qui pilote celui du clone pour le
-       faire suivre le curseur (transform-origin calculé sur le point de saisie,
-       puis translate3d à chaque mouvement). Une règle transform en feuille de
-       style est écrasée, ou entre en conflit avec ce calcul. La fiche se
-       décolle par l'ombre et la bordure. */
+    /* La fiche pendant qu'on la tire. En glisser natif, cette classe n'est
+       posée que le temps du CLICHÉ pris par le navigateur : un fond opaque et
+       une bordure franche s'y rendent bien, une grosse ombre y est rognée et un
+       transform y fausserait le point de saisie. */
     .org-drag { cursor:grabbing; opacity:1 !important;
-      background:rgba(38,48,34,0.98) !important;
-      box-shadow:0 24px 50px -12px rgba(0,0,0,0.75) !important; border-color:rgba(132,194,94,0.75) !important; }
+      background:#26301f !important; border-color:rgba(132,194,94,0.85) !important; }
     .org-chosen { cursor:grabbing; }
     .org-col-ghost { opacity:0.4; }
 

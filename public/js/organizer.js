@@ -387,14 +387,12 @@ function initSortables() {
       ghostClass: 'org-slot',
       chosenClass: 'org-chosen',
       dragClass: 'org-drag',
-      fallbackClass: 'org-drag',
-      forceFallback: true,
-      // Voir le commentaire detaille dans app-organizer.js : le clone est
-      // attache au conteneur en position:fixed, or .page-shell porte un
-      // backdrop-filter, qui redefinit le repere des elements fixes. Sans
-      // fallbackOnBody, la fiche reste piegee sur place.
-      fallbackOnBody: true,
-      fallbackTolerance: 4,
+      // PAS de forceFallback : voir le commentaire detaille dans
+      // app-organizer.js. Le clone qu il fabrique est pose en position:fixed,
+      // or .page-shell porte un backdrop-filter, qui redefinit le repere des
+      // elements fixes - la fiche se decalait du curseur puis se bloquait.
+      // Le glisser natif du navigateur est fiable ; l encoche, le seuil
+      // d insertion et la colonne qui s allume n en dependent pas.
       emptyInsertThreshold: 30,
       delay: 60, delayOnTouchOnly: true, disabled: board.lockCards,
       onStart: (evt) => { document.body.classList.add('org-dragging'); markOrgTarget(evt.to); },

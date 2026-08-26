@@ -304,30 +304,24 @@ function initCardOpen() {
 //    d arrivee, contenu masque. C est le repere de Trello, Linear et Notion,
 //    et c est ce qui rend le geste lisible.
 //
-// 3. LE NAVIGATEUR DESSINAIT LA FICHE TIREE. En glisser natif HTML5, l image
-//    de drag est une capture non stylable. forceFallback laisse SortableJS
-//    cloner l element : on peut enfin l incliner, l ombrer, l alleger.
+// 3. LE GLISSER RESTE CELUI DU NAVIGATEUR, ET C EST VOULU.
+//    J ai essaye forceFallback, qui fait cloner la fiche par SortableJS pour
+//    pouvoir la styliser. Deux bugs de positionnement d affilee : le clone est
+//    pose en position:fixed, or .app-container porte un backdrop-filter, qui
+//    redefinit le repere des elements fixes. fallbackOnBody:true ne l a pas
+//    suffi - la fiche restait decalee du curseur puis bloquee net.
+//    Le glisser natif, lui, marchait depuis toujours. On le garde : l image de
+//    drag est celle du navigateur (non stylable), mais le geste est FIABLE, et
+//    tout ce qui compte ici - l encoche, le seuil d insertion, la colonne qui
+//    s allume - en est totalement independant.
+//    Ne pas reintroduire forceFallback sans regler d abord le backdrop-filter.
 const DND_OPTS = {
   group: 'hub-cards',
   animation: 180,
   easing: 'cubic-bezier(0.22, 0.8, 0.3, 1)',
   ghostClass: 'hub-slot',        // l encoche laissee dans la liste
   chosenClass: 'hub-chosen',
-  dragClass: 'hub-drag',         // la fiche qui suit le curseur
-  fallbackClass: 'hub-drag',
-  forceFallback: true,
-  // INDISPENSABLE, ET CE N EST PAS UN REGLAGE DE CONFORT.
-  // SortableJS attache le clone au CONTENEUR par defaut, en position:fixed :
-  //   t = options.fallbackOnBody ? document.body : J
-  //   R(Q, "position", "fixed")
-  // Or .app-container porte un backdrop-filter. Un element fixe prend alors
-  // pour reference cet ancetre au lieu du viewport : ses coordonnees sont
-  // calculees en repere ecran mais appliquees dans un autre repere, et la
-  // fiche reste PIEGEE sur place pendant que l encoche, elle, suit le curseur.
-  // SortableJS compense les ancetres `transform`, jamais les `filter`.
-  // Attache au body, le clone retrouve le repere du viewport.
-  fallbackOnBody: true,
-  fallbackTolerance: 4,          // 4 px avant de demarrer : un clic reste un clic
+  dragClass: 'hub-drag',         // la fiche pendant qu on la tire
   emptyInsertThreshold: 28,      // « assez proche » suffit, plus besoin de viser juste
   delay: 80,
   delayOnTouchOnly: true,
@@ -644,20 +638,15 @@ function injectCSS() {
     box-shadow:none!important;}
   .hub-slot>*{visibility:hidden;}
 
-  /* LA FICHE TIREE (.hub-drag). forceFallback laisse SortableJS cloner
-     l element : contrairement a l image de drag native, ce clone est stylable.
-
-     AUCUN transform ICI, JAMAIS. C est SortableJS qui pilote le transform du
-     clone pour le faire suivre le curseur : il le vide (R(Q,"transform","")),
-     pose un transform-origin calcule sur le point de saisie, puis y ecrit un
-     translate3d a chaque mouvement. Une regle transform en feuille de style
-     est donc soit ecrasee (elle ne s affiche jamais), soit en conflit avec ce
-     calcul. La fiche se decolle par l ombre et la bordure - qui, elles, ne
-     participent ni au positionnement ni a la mise en page. */
+  /* LA FICHE PENDANT QU ON LA TIRE (.hub-drag).
+     En glisser natif, cette classe est posee juste le temps que le navigateur
+     prenne son CLICHE de la fiche, puis retiree. Ce qui s y rend bien : un fond
+     OPAQUE et une bordure franche. Ce qui ne s y rend pas : une grosse ombre
+     portee, que le cliche rogne, et tout transform, qui fausse le point de
+     saisie. On s en tient donc au fond et a la bordure. */
   .hub-drag{cursor:grabbing;
-    box-shadow:0 22px 46px -10px rgba(0,0,0,.7)!important;
-    border-color:rgba(132,194,94,0.75)!important;
-    background:var(--surface-3,rgba(40,50,35,0.98))!important;
+    border-color:rgba(132,194,94,0.85)!important;
+    background:var(--surface-3,#232e1e)!important;
     opacity:1!important;}
   .hub-chosen{cursor:grabbing;}
 
