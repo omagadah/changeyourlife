@@ -407,8 +407,6 @@ if (window._cyfFirebase) {
 window.addEventListener("DOMContentLoaded", () => { 
   try { updateGlobalAvatar(); } catch (e) {} 
   try { initUserMenu(); } catch (e) {} 
-  try {
-  } catch (e) { console.log('Vanta init error:', e); }
 });
 
 // ----- Préférences (thème/animations/notifications) -----
