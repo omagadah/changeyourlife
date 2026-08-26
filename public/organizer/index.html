@@ -26,24 +26,59 @@
     .org-lock:hover { background:rgba(255,255,255,0.09); color:#fff; }
     .org-lock.locked { background:rgba(245,158,11,0.16); border-color:rgba(245,158,11,0.5); color:#fcd34d; }
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; box-shadow:0 8px 28px rgba(0,0,0,.35); }
-    .toast.show { transform:translate(-50%,0); } .toast.xp { background:rgba(59,130,246,.92); }
+    .toast.show { transform:translate(-50%,0); } .toast.xp { background:linear-gradient(135deg,#e7b15c,#c3944f); color:#2a1e08; }
 
     /* ── Board ── */
-    .org-wrap { display:flex; gap:0; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:flex-start; }
-    .org-board { display:flex; gap:14px; align-items:flex-start; height:100%; }
+    .org-wrap { display:flex; gap:0; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:stretch; }
+    .org-board { display:flex; gap:14px; align-items:stretch; height:100%; }
     .org-sep { flex:0 0 1px; align-self:stretch; margin:6px 14px; width:2px; border-radius:2px;
       background:linear-gradient(180deg,transparent,rgba(255,255,255,0.18),transparent); }
     .org-col { flex:0 0 290px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
       background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); }
     /* Colonne « Idées à trier » : figée à gauche, mise en avant */
     .org-tri { flex:0 0 296px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
-      background:linear-gradient(180deg,rgba(138,160,191,0.12),rgba(138,160,191,0.04)); border:1px solid rgba(138,160,191,0.32);
-      box-shadow:0 0 0 1px rgba(138,160,191,0.08) inset; }
-    .org-col.drag-over, .org-tri.drag-over { border-color:var(--cc,#a4d486); background:rgba(96,165,250,0.08); }
-    /* SortableJS : fiche fantôme + fiche en mouvement */
-    .org-ghost { opacity:0.35; background:rgba(96,165,250,0.12) !important; border:1px dashed rgba(96,165,250,0.6) !important; }
-    .org-drag { transform:rotate(2deg); box-shadow:0 14px 34px rgba(0,0,0,0.5) !important; cursor:grabbing; }
+      background:linear-gradient(180deg,rgba(180,173,148,0.12),rgba(180,173,148,0.04)); border:1px solid rgba(180,173,148,0.30);
+      box-shadow:0 0 0 1px rgba(180,173,148,0.08) inset; }
+    /* ── Le geste de déplacement ───────────────────────────────────────────
+       Mêmes repères que le mini-organizer de l'accueil, pour que le geste
+       s'apprenne une seule fois. Les teintes passent du navy #60a5fa (reste
+       de l'ancienne charte) au vert feuille du design system. */
+
+    /* La colonne visée s'allume, et elle seule. Cette classe était définie ici
+       depuis le début mais n'était JAMAIS posée par le JS : elle est désormais
+       gérée par markOrgTarget() dans organizer.js. */
+    .org-col.drag-over, .org-tri.drag-over {
+      border-color:rgba(132,194,94,0.6); background:rgba(132,194,94,0.07);
+      box-shadow:0 0 0 1px rgba(132,194,94,0.22) inset, 0 10px 30px -14px rgba(132,194,94,0.55); }
+
+    /* L'ENCOCHE : l'emplacement exact où la fiche va tomber. Un creux en
+       pointillés, contenu masqué - et non une copie pâle de la fiche, qu'on
+       lisait comme un doublon plutôt que comme une destination. */
+    .org-slot { opacity:1 !important; background:rgba(132,194,94,0.09) !important;
+      border:1px dashed rgba(132,194,94,0.75) !important; box-shadow:none !important; }
+    .org-slot > * { visibility:hidden; }
+
+    /* La fiche tirée. forceFallback donne un clone stylable, là où l'image de
+       drag native du navigateur ne l'est pas. */
+    .org-drag { transform:rotate(2.5deg) scale(1.03); cursor:grabbing; opacity:0.96 !important;
+      box-shadow:0 22px 48px -12px rgba(0,0,0,0.7) !important; border-color:rgba(132,194,94,0.6) !important; }
+    .org-chosen { cursor:grabbing; }
     .org-col-ghost { opacity:0.4; }
+
+    /* Pendant le geste : le survol ordinaire s'efface pour que la seule
+       surbrillance visible soit celle de la colonne visée. */
+    body.org-dragging .org-card:hover { box-shadow:none; }
+
+    /* À l'arrivée : la fiche s'illumine une fois. */
+    @keyframes orgLanded {
+      0%   { box-shadow:0 0 0 0 rgba(132,194,94,0.55); }
+      100% { box-shadow:0 0 0 12px rgba(132,194,94,0); }
+    }
+    .org-landed { animation:orgLanded 0.9s cubic-bezier(0.22,0.8,0.3,1) both; }
+    @media (prefers-reduced-motion: reduce) {
+      .org-landed { animation:none; }
+      .org-drag { transform:none; }
+    }
     .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
     .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#b0a999); flex-shrink:0; box-shadow:0 0 8px var(--cc,#b0a999); }
     .org-col-title { flex:1; font-size:0.82rem; font-weight:800; color:#f1efec; line-height:1.25; cursor:text; }
@@ -54,10 +89,10 @@
     .org-add { margin:8px 10px 12px; padding:9px 12px; border-radius:10px; border:1px dashed rgba(255,255,255,0.15); background:transparent; color:var(--text-3,#a79f8c); font-size:0.82rem; cursor:pointer; text-align:left; font-family:inherit; }
     .org-add:hover { background:rgba(255,255,255,0.05); color:#e1ded8; }
     .org-add-input { margin:6px 10px 12px; }
-    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:10px; border:1px solid rgba(96,165,250,0.4); background:rgba(255,255,255,0.06); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; outline:none; }
+    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:10px; border:1px solid rgba(132,194,94,0.45); background:rgba(255,255,255,0.06); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; outline:none; }
     .org-add-row { display:flex; gap:8px; margin-top:6px; }
     .org-add-row button { padding:7px 14px; border-radius:9px; border:none; cursor:pointer; font-weight:700; font-size:0.8rem; font-family:inherit; }
-    .org-add-ok { background:#8dca67; color:#fff; } .org-add-ok:hover{ filter:brightness(1.1); }
+    .org-add-ok { background:linear-gradient(135deg,#84c25e,#4a7a3a); color:#08130a; } .org-add-ok:hover{ filter:brightness(1.1); }
     .org-add-cancel { background:rgba(255,255,255,0.06); color:var(--text-2,#c5c0b4); }
 
     /* ── Card ── */
@@ -83,7 +118,7 @@
       border-radius:10px; padding:10px 12px; font-family:inherit; resize:vertical; min-height:44px; outline:none; }
     .org-d-label { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3,#a79f8c); margin:18px 0 8px; }
     .org-d-input { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1efec; font-family:inherit; font-size:0.9rem; padding:9px 11px; outline:none; }
-    .org-d-input:focus { border-color:rgba(96,165,250,0.5); }
+    .org-d-input:focus { border-color:rgba(132,194,94,0.55); }
     textarea.org-d-input { resize:vertical; min-height:70px; }
     /* Rattachement d'une fiche à une branche Maslow (elle nourrit cette part de vie) */
     .org-d-branches { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
@@ -108,7 +143,7 @@
     .org-btn.move { background:rgba(255,255,255,0.06); color:#e1ded8; }
     .org-btn.cal { background:rgba(66,133,244,0.16); color:#badfa3; border:1px solid rgba(66,133,244,0.4); }
     .org-btn.del { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.3); margin-left:auto; }
-    .org-btn.close { background:#8dca67; color:#fff; }
+    .org-btn.close { background:linear-gradient(135deg,#84c25e,#4a7a3a); color:#08130a; }
     .org-d-move { border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; }
     .org-d-move option { background:#1d1b17; }
 
@@ -117,7 +152,7 @@
     /* ── Bascule de vue Board / Canvas ── */
     .org-viewtoggle { display:inline-flex; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:99px; padding:3px; }
     .org-viewtoggle button { border:none; background:none; color:var(--text-2,#c5c0b4); font-weight:700; font-size:0.82rem; padding:6px 14px; border-radius:99px; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }
-    .org-viewtoggle button.active { background:#8dca67; color:#fff; box-shadow:0 4px 12px rgba(59,130,246,0.4); }
+    .org-viewtoggle button.active { background:linear-gradient(135deg,#84c25e,#4a7a3a); color:#08130a; box-shadow:0 4px 14px rgba(132,194,94,0.35); }
 
     /* ── Scène (contient les 2 vues) ── */
     .org-stage { position:relative; height:100%; min-height:0; overflow:hidden; }

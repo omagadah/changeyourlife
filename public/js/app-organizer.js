@@ -286,18 +286,79 @@ function initCardOpen() {
 }
 
 // ── Drag & drop entre colonnes ───────────────────────────────────────────────
+//
+// TROIS PROBLEMES CORRIGES ICI, tous constates a l usage :
+//
+// 1. UNE ZONE MORTE SOUS LES FICHES. .hub-cards grandissait avec son contenu
+//    (min-height:46px) alors que .hub-col, cellule de grille, prend la hauteur
+//    de la colonne la plus haute. Le vide entre les deux n appartenait a
+//    AUCUNE liste : viser le bas d une colonne courte ne deposait rien. Il
+//    fallait coller une fiche existante ou viser le haut. La correction est en
+//    CSS (.hub-cards passe en flex:1, le plafond descend sur .hub-col) et se
+//    double d emptyInsertThreshold, qui autorise l insertion en approchant
+//    d une liste sans avoir a la toucher au pixel pres.
+//
+// 2. AUCUNE PREVISUALISATION. Le fantome etait la fiche elle-meme a 35 %
+//    d opacite : on voyait un doublon pale, pas OU la fiche allait tomber. Il
+//    devient une ENCOCHE - un creux en pointilles a l emplacement exact
+//    d arrivee, contenu masque. C est le repere de Trello, Linear et Notion,
+//    et c est ce qui rend le geste lisible.
+//
+// 3. LE NAVIGATEUR DESSINAIT LA FICHE TIREE. En glisser natif HTML5, l image
+//    de drag est une capture non stylable. forceFallback laisse SortableJS
+//    cloner l element : on peut enfin l incliner, l ombrer, l alleger.
+const DND_OPTS = {
+  group: 'hub-cards',
+  animation: 180,
+  easing: 'cubic-bezier(0.22, 0.8, 0.3, 1)',
+  ghostClass: 'hub-slot',        // l encoche laissee dans la liste
+  chosenClass: 'hub-chosen',
+  dragClass: 'hub-drag',         // la fiche qui suit le curseur
+  fallbackClass: 'hub-drag',
+  forceFallback: true,
+  fallbackTolerance: 4,          // 4 px avant de demarrer : un clic reste un clic
+  emptyInsertThreshold: 28,      // « assez proche » suffit, plus besoin de viser juste
+  delay: 80,
+  delayOnTouchOnly: true,
+  filter: '.hub-empty',
+  onStart: onDragStart,
+  onMove: onDragMove,
+  onEnd: onDragEnd,
+};
+
 function initDnd() {
   initCardOpen();
   if (!window.Sortable) return;
   sortables.forEach((s) => { try { s.destroy(); } catch (_) {} });
   sortables = [];
   document.querySelectorAll('#hub-cols .hub-cards').forEach((cc) => {
-    sortables.push(window.Sortable.create(cc, {
-      group: 'hub-cards', animation: 150, ghostClass: 'hub-ghost-card', dragClass: 'hub-drag',
-      delay: 80, delayOnTouchOnly: true, filter: '.hub-empty',
-      onEnd: onDragEnd,
-    }));
+    sortables.push(window.Sortable.create(cc, DND_OPTS));
   });
+}
+
+// Pendant le geste, la page entiere sait qu un deplacement est en cours : les
+// colonnes s allument, les colonnes vides se declarent comme cibles, et le
+// survol ordinaire des fiches est neutralise (deux surbrillances a la fois
+// rendaient illisible celle qui compte).
+function onDragStart(evt) {
+  document.body.classList.add('hub-dragging');
+  markTarget(evt.to);
+}
+
+function onDragMove(evt) {
+  markTarget(evt.to);
+  return true;
+}
+
+function markTarget(list) {
+  document.querySelectorAll('#hub-cols .hub-col').forEach((c) => c.classList.remove('hub-col-target'));
+  const col = list && list.closest('.hub-col');
+  if (col) col.classList.add('hub-col-target');
+}
+
+function clearDragState() {
+  document.body.classList.remove('hub-dragging');
+  document.querySelectorAll('#hub-cols .hub-col').forEach((c) => c.classList.remove('hub-col-target'));
 }
 
 function syncFromDom() {
@@ -311,6 +372,7 @@ function syncFromDom() {
 }
 
 function onDragEnd(evt) {
+  clearDragState();
   const from = evt.from.dataset.col, to = evt.to.dataset.col;
   const id = evt.item.dataset.id;
   const before = findCard(board, id);
@@ -318,8 +380,21 @@ function onDragEnd(evt) {
   syncFromDom();
   if (from !== to && cardRef) {
     logCard(cardRef, `Déplacée : ${stripEmoji(SHORT[from] || from)} -> ${stripEmoji(SHORT[to] || to)}`);
+    // Le deplacement est confirme la ou l oeil est deja : sur la fiche.
+    flashLanded(id);
   }
   persist(); renderCols(); renderFoot(); initDnd();
+}
+
+// Une fiche qui vient de changer de colonne s illumine une fois. Sans ce
+// signal, un deplacement reussi et un deplacement annule se ressemblent.
+function flashLanded(id) {
+  requestAnimationFrame(() => {
+    const el = document.querySelector(`#hub-cols .hub-card[data-id="${CSS.escape(String(id))}"]`);
+    if (!el) return;
+    el.classList.add('hub-landed');
+    setTimeout(() => el.classList.remove('hub-landed'), 900);
+  });
 }
 
 
@@ -440,8 +515,16 @@ function injectCSS() {
   .hub-add:hover{filter:brightness(1.1);transform:translateY(-1px);}
 
   .hub-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  /* Le plafond de hauteur vit ICI, sur la colonne, et non sur la liste de
+     fiches. C est ce qui permet a .hub-cards de remplir tout le corps de la
+     colonne (flex:1) : sans ca, le vide sous la derniere fiche n appartient a
+     aucune liste, et on ne peut pas y deposer. */
   .hub-col{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;
-    padding:10px 9px 8px;display:flex;flex-direction:column;min-width:0;}
+    padding:10px 9px 8px;display:flex;flex-direction:column;min-width:0;max-height:286px;
+    transition:border-color .18s,background .18s,box-shadow .18s;}
+  /* Colonne visee pendant un deplacement : elle s allume, et elle seule. */
+  .hub-col-target{border-color:rgba(132,194,94,0.55);background:rgba(132,194,94,0.07);
+    box-shadow:0 0 0 1px rgba(132,194,94,0.22), 0 8px 26px -12px rgba(132,194,94,0.5);}
   .hub-col-tri{background:linear-gradient(180deg,rgba(180,173,148,0.12),rgba(180,173,148,0.03));border-color:rgba(180,173,148,0.30);}
   .hub-col-head{display:flex;align-items:center;gap:7px;padding:0 3px 8px;}
   .hub-col-dot{width:7px;height:7px;border-radius:50%;background:var(--cc,var(--text-2));box-shadow:0 0 8px var(--cc,var(--text-2));flex-shrink:0;}
@@ -454,7 +537,10 @@ function injectCSS() {
      qui reduisait la hauteur, decalait le contenu, faisait perdre le survol,
      donc disparaitre la barre... et le texte tremblait a l'infini.
      scrollbar-gutter:stable evite le meme saut sur l'axe vertical. */
-  .hub-cards{display:flex;flex-direction:column;gap:6px;min-height:46px;max-height:230px;
+  /* flex:1 - la liste occupe TOUT le corps de la colonne, y compris sous la
+     derniere fiche. C est la moitie structurelle du « je peux deposer
+     n importe ou dans la colonne » ; l autre moitie est emptyInsertThreshold. */
+  .hub-cards{display:flex;flex-direction:column;gap:6px;flex:1 1 auto;min-height:52px;
     overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:1px;}
   .hub-card{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;cursor:pointer;
     background:var(--surface-2);border:1px solid var(--line);
@@ -532,9 +618,50 @@ function injectCSS() {
   .hub-cyl-link{background:none;border:none;padding:0;cursor:pointer;font:inherit;font-size:0.74rem;
     color:var(--text-3);text-decoration:underline;text-underline-offset:3px;transition:color .16s;}
   .hub-cyl-link:hover{color:var(--gold-text);}
-  .hub-empty{font-size:0.72rem;color:var(--text-3);padding:6px 4px;}
-  .hub-ghost-card{opacity:.35;}
-  .hub-drag{transform:rotate(2deg);box-shadow:0 14px 30px rgba(0,0,0,.5)!important;}
+  .hub-empty{font-size:0.72rem;color:var(--text-3);padding:6px 4px;
+    border:1px dashed transparent;border-radius:10px;transition:border-color .18s,color .18s,background .18s;}
+
+  /* ── Le geste de deplacement ──────────────────────────────────────────────
+     L ENCOCHE (.hub-slot). SortableJS applique ghostClass a l element laisse
+     DANS la liste, a l emplacement exact ou la fiche tombera. On ne le rend
+     donc pas comme une fiche pale (on croyait voir un doublon) mais comme un
+     CREUX : pointilles verts, fond legerement teinte, contenu masque. La
+     hauteur reste celle de la fiche, donc l espace s ouvre reellement et l oeil
+     lit l arrivee avant le lacher. */
+  .hub-slot{opacity:1!important;background:rgba(132,194,94,0.09)!important;
+    border:1px dashed rgba(132,194,94,0.75)!important;border-left:1px dashed rgba(132,194,94,0.75)!important;
+    box-shadow:none!important;}
+  .hub-slot>*{visibility:hidden;}
+
+  /* LA FICHE TIREE (.hub-drag). forceFallback laisse SortableJS cloner
+     l element : contrairement a l image de drag native, ce clone est stylable.
+     Legere inclinaison + ombre portee = elle se decolle du plan de la page. */
+  .hub-drag{transform:rotate(2.5deg) scale(1.03);cursor:grabbing;
+    box-shadow:0 20px 44px -10px rgba(0,0,0,.65)!important;
+    border-color:rgba(132,194,94,0.6)!important;opacity:.96!important;}
+  .hub-chosen{cursor:grabbing;}
+
+  /* PENDANT LE GESTE. Le survol ordinaire est neutralise : deux surbrillances
+     simultanees rendaient illisible celle qui compte (la colonne visee). Les
+     colonnes vides se declarent comme cibles au lieu d afficher « Vide. ». */
+  body.hub-dragging .hub-card{cursor:grabbing;}
+  body.hub-dragging .hub-card:hover{background:var(--surface-2);box-shadow:none;}
+  body.hub-dragging .hub-empty{border-color:rgba(132,194,94,0.4);color:var(--leaf-text);
+    background:rgba(132,194,94,0.05);}
+  body.hub-dragging .hub-col-target .hub-empty{border-color:rgba(132,194,94,0.85);
+    background:rgba(132,194,94,0.10);}
+
+  /* APRES LE LACHER. La fiche qui a change de colonne s illumine une fois :
+     sans ce signal, un deplacement reussi ressemble a un deplacement annule. */
+  @keyframes hubLanded{
+    0%{box-shadow:0 0 0 0 rgba(132,194,94,.55);background:rgba(132,194,94,.16);}
+    100%{box-shadow:0 0 0 10px rgba(132,194,94,0);background:var(--surface-2);}
+  }
+  .hub-landed{animation:hubLanded .9s cubic-bezier(.22,.8,.3,1) both;}
+  @media (prefers-reduced-motion: reduce){
+    .hub-landed{animation:none;}
+    .hub-drag{transform:none;}
+  }
 
   /* LE PIED EST LA PORTE. Il porte une bordure et un fond AU REPOS : une zone
      qui ne se revele qu'au survol ne se decouvre jamais sur un ecran tactile,

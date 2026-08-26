@@ -373,10 +373,27 @@ function initSortables() {
   if (!window.Sortable) return;
   sortables.forEach((s) => { try { s.destroy(); } catch (e) {} });
   sortables = [];
+  // Meme systeme de reperes que le mini-organizer de l accueil (cf.
+  // app-organizer.js) : une ENCOCHE en pointilles a l emplacement exact
+  // d arrivee plutot qu une fiche pale, la colonne visee qui s allume, et un
+  // clone stylable au bout du curseur (forceFallback).
+  // emptyInsertThreshold : deposer « vers » une colonne suffit, plus besoin de
+  // coller une fiche existante.
   document.querySelectorAll('.org-cards').forEach((cc) => {
     sortables.push(window.Sortable.create(cc, {
-      group: 'cards', animation: 160, ghostClass: 'org-ghost', dragClass: 'org-drag',
+      group: 'cards',
+      animation: 180,
+      easing: 'cubic-bezier(0.22, 0.8, 0.3, 1)',
+      ghostClass: 'org-slot',
+      chosenClass: 'org-chosen',
+      dragClass: 'org-drag',
+      fallbackClass: 'org-drag',
+      forceFallback: true,
+      fallbackTolerance: 4,
+      emptyInsertThreshold: 30,
       delay: 60, delayOnTouchOnly: true, disabled: board.lockCards,
+      onStart: (evt) => { document.body.classList.add('org-dragging'); markOrgTarget(evt.to); },
+      onMove: (evt) => { markOrgTarget(evt.to); return true; },
       onEnd: handleCardEnd,
     }));
   });
@@ -401,11 +418,28 @@ function refreshCounts() {
     if (c && n) n.textContent = c.cards.length;
   });
 }
+// Colonne visee pendant le geste : une seule s allume a la fois.
+function markOrgTarget(list) {
+  document.querySelectorAll('.org-col').forEach((c) => c.classList.remove('drag-over'));
+  const col = list && list.closest('.org-col');
+  if (col) col.classList.add('drag-over');
+}
+
+function clearOrgDragState() {
+  document.body.classList.remove('org-dragging');
+  document.querySelectorAll('.org-col').forEach((c) => c.classList.remove('drag-over'));
+}
+
 function handleCardEnd(evt) {
+  clearOrgDragState();
   const cardId = evt.item.dataset.id;
   const fromCol = evt.from.dataset.col, toCol = evt.to.dataset.col;
   syncFromDom();
   if (fromCol !== toCol) {
+    // La fiche s illumine une fois a l arrivee : un deplacement reussi ne doit
+    // pas ressembler a un deplacement annule.
+    evt.item.classList.add('org-landed');
+    setTimeout(() => evt.item.classList.remove('org-landed'), 900);
     const f = findCard(cardId);
     if (f) {
       log(f.card, `Déplacée : ${stripEmoji(colTitle(fromCol))} → ${stripEmoji(colTitle(toCol))}`);

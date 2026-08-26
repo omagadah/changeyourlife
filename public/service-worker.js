@@ -1,5 +1,5 @@
-// service-worker.js - v202 (sortable vendorise - drag du mini-organizer)
-const CACHE_NAME = 'changeyourlife-v202';
+// service-worker.js - v203 (drag & drop : zones de depot et previsualisation)
+const CACHE_NAME = 'changeyourlife-v203';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
