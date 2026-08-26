@@ -59,9 +59,15 @@
     .org-slot > * { visibility:hidden; }
 
     /* La fiche tirée. forceFallback donne un clone stylable, là où l'image de
-       drag native du navigateur ne l'est pas. */
-    .org-drag { transform:rotate(2.5deg) scale(1.03); cursor:grabbing; opacity:0.96 !important;
-      box-shadow:0 22px 48px -12px rgba(0,0,0,0.7) !important; border-color:rgba(132,194,94,0.6) !important; }
+       drag native du navigateur ne l'est pas.
+       AUCUN transform ici : c'est SortableJS qui pilote celui du clone pour le
+       faire suivre le curseur (transform-origin calculé sur le point de saisie,
+       puis translate3d à chaque mouvement). Une règle transform en feuille de
+       style est écrasée, ou entre en conflit avec ce calcul. La fiche se
+       décolle par l'ombre et la bordure. */
+    .org-drag { cursor:grabbing; opacity:1 !important;
+      background:rgba(38,48,34,0.98) !important;
+      box-shadow:0 24px 50px -12px rgba(0,0,0,0.75) !important; border-color:rgba(132,194,94,0.75) !important; }
     .org-chosen { cursor:grabbing; }
     .org-col-ghost { opacity:0.4; }
 
@@ -75,9 +81,10 @@
       100% { box-shadow:0 0 0 12px rgba(132,194,94,0); }
     }
     .org-landed { animation:orgLanded 0.9s cubic-bezier(0.22,0.8,0.3,1) both; }
+    /* Rien a neutraliser sur .org-drag : son deplacement est pilote par
+       SortableJS en inline, pas par une regle CSS. */
     @media (prefers-reduced-motion: reduce) {
       .org-landed { animation:none; }
-      .org-drag { transform:none; }
     }
     .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
     .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#b0a999); flex-shrink:0; box-shadow:0 0 8px var(--cc,#b0a999); }

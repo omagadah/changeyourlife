@@ -1,5 +1,5 @@
-// service-worker.js - v204 (hierarchie visuelle de l espace)
-const CACHE_NAME = 'changeyourlife-v204';
+// service-worker.js - v205 (la fiche tiree suit enfin le curseur)
+const CACHE_NAME = 'changeyourlife-v205';
 const urlsToCache = [
   '/',
   '/bienvenue.html',

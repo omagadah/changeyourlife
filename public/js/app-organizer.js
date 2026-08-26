@@ -316,6 +316,17 @@ const DND_OPTS = {
   dragClass: 'hub-drag',         // la fiche qui suit le curseur
   fallbackClass: 'hub-drag',
   forceFallback: true,
+  // INDISPENSABLE, ET CE N EST PAS UN REGLAGE DE CONFORT.
+  // SortableJS attache le clone au CONTENEUR par defaut, en position:fixed :
+  //   t = options.fallbackOnBody ? document.body : J
+  //   R(Q, "position", "fixed")
+  // Or .app-container porte un backdrop-filter. Un element fixe prend alors
+  // pour reference cet ancetre au lieu du viewport : ses coordonnees sont
+  // calculees en repere ecran mais appliquees dans un autre repere, et la
+  // fiche reste PIEGEE sur place pendant que l encoche, elle, suit le curseur.
+  // SortableJS compense les ancetres `transform`, jamais les `filter`.
+  // Attache au body, le clone retrouve le repere du viewport.
+  fallbackOnBody: true,
   fallbackTolerance: 4,          // 4 px avant de demarrer : un clic reste un clic
   emptyInsertThreshold: 28,      // « assez proche » suffit, plus besoin de viser juste
   delay: 80,
@@ -635,10 +646,19 @@ function injectCSS() {
 
   /* LA FICHE TIREE (.hub-drag). forceFallback laisse SortableJS cloner
      l element : contrairement a l image de drag native, ce clone est stylable.
-     Legere inclinaison + ombre portee = elle se decolle du plan de la page. */
-  .hub-drag{transform:rotate(2.5deg) scale(1.03);cursor:grabbing;
-    box-shadow:0 20px 44px -10px rgba(0,0,0,.65)!important;
-    border-color:rgba(132,194,94,0.6)!important;opacity:.96!important;}
+
+     AUCUN transform ICI, JAMAIS. C est SortableJS qui pilote le transform du
+     clone pour le faire suivre le curseur : il le vide (R(Q,"transform","")),
+     pose un transform-origin calcule sur le point de saisie, puis y ecrit un
+     translate3d a chaque mouvement. Une regle transform en feuille de style
+     est donc soit ecrasee (elle ne s affiche jamais), soit en conflit avec ce
+     calcul. La fiche se decolle par l ombre et la bordure - qui, elles, ne
+     participent ni au positionnement ni a la mise en page. */
+  .hub-drag{cursor:grabbing;
+    box-shadow:0 22px 46px -10px rgba(0,0,0,.7)!important;
+    border-color:rgba(132,194,94,0.75)!important;
+    background:var(--surface-3,rgba(40,50,35,0.98))!important;
+    opacity:1!important;}
   .hub-chosen{cursor:grabbing;}
 
   /* PENDANT LE GESTE. Le survol ordinaire est neutralise : deux surbrillances
@@ -658,9 +678,12 @@ function injectCSS() {
     100%{box-shadow:0 0 0 10px rgba(132,194,94,0);background:var(--surface-2);}
   }
   .hub-landed{animation:hubLanded .9s cubic-bezier(.22,.8,.3,1) both;}
+  /* Le clone de drag n a AUCUN transform en CSS (c est SortableJS qui le
+     pilote) : il n y a donc rien a neutraliser ici, et poser transform:none
+     serait un piege - avec un !important, ce serait la fiche figee sur place
+     pour qui demande moins de mouvement. */
   @media (prefers-reduced-motion: reduce){
     .hub-landed{animation:none;}
-    .hub-drag{transform:none;}
   }
 
   /* LE PIED EST LA PORTE. Il porte une bordure et un fond AU REPOS : une zone
