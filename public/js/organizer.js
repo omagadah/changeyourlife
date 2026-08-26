@@ -396,7 +396,9 @@ function initSortables() {
       emptyInsertThreshold: 30,
       delay: 60, delayOnTouchOnly: true, disabled: board.lockCards,
       onStart: (evt) => { document.body.classList.add('org-dragging'); markOrgTarget(evt.to); },
-      onMove: (evt) => { markOrgTarget(evt.to); return true; },
+      // onChange et pas onMove : onMove se declenche a chaque dragover, et y
+      // muter le DOM faisait decrocher le glisser natif (cf. app-organizer.js).
+      onChange: (evt) => markOrgTarget(evt.to),
       onEnd: handleCardEnd,
     }));
   });
@@ -421,16 +423,22 @@ function refreshCounts() {
     if (c && n) n.textContent = c.cards.length;
   });
 }
-// Colonne visee pendant le geste : une seule s allume a la fois.
+// Colonne visee pendant le geste : une seule s allume a la fois, et le DOM
+// n est touche QUE si la cible a reellement change (balayer toutes les
+// colonnes a chaque appel relancait leur transition pour rien).
+let orgMarkedCol = null;
 function markOrgTarget(list) {
-  document.querySelectorAll('.org-col').forEach((c) => c.classList.remove('drag-over'));
-  const col = list && list.closest('.org-col');
+  const col = (list && list.closest('.org-col')) || null;
+  if (col === orgMarkedCol) return;
+  if (orgMarkedCol) orgMarkedCol.classList.remove('drag-over');
   if (col) col.classList.add('drag-over');
+  orgMarkedCol = col;
 }
 
 function clearOrgDragState() {
   document.body.classList.remove('org-dragging');
-  document.querySelectorAll('.org-col').forEach((c) => c.classList.remove('drag-over'));
+  if (orgMarkedCol) orgMarkedCol.classList.remove('drag-over');
+  orgMarkedCol = null;
 }
 
 function handleCardEnd(evt) {

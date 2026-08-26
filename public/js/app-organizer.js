@@ -327,7 +327,15 @@ const DND_OPTS = {
   delayOnTouchOnly: true,
   filter: '.hub-empty',
   onStart: onDragStart,
-  onMove: onDragMove,
+  // onChange, PAS onMove. onMove se declenche a CHAQUE evenement dragover,
+  // soit des dizaines de fois par seconde. Y muter le DOM (retirer puis
+  // reposer une classe sur toutes les colonnes, avec une transition CSS qui
+  // redemarre a chaque fois) faisait decrocher le glisser natif : le
+  // navigateur emettait un dragleave sur l element sous le curseur et
+  // l operation se figeait. onChange ne se declenche que lorsque l encoche
+  // change reellement de place - c est exactement quand la surbrillance doit
+  // bouger, et c est quelques appels au lieu de milliers.
+  onChange: onDragChange,
   onEnd: onDragEnd,
 };
 
@@ -350,20 +358,28 @@ function onDragStart(evt) {
   markTarget(evt.to);
 }
 
-function onDragMove(evt) {
+function onDragChange(evt) {
   markTarget(evt.to);
-  return true;
 }
 
+// La colonne visee, marquee SANS TOUCHER AU DOM quand rien n a change.
+// La version precedente balayait toutes les colonnes a chaque appel pour
+// retirer la classe, puis la reposait : meme quand la cible etait la meme,
+// le style etait invalide et la transition relancee. Ici, si la cible n a pas
+// bouge, la fonction ne fait rien du tout.
+let markedCol = null;
 function markTarget(list) {
-  document.querySelectorAll('#hub-cols .hub-col').forEach((c) => c.classList.remove('hub-col-target'));
-  const col = list && list.closest('.hub-col');
+  const col = (list && list.closest('.hub-col')) || null;
+  if (col === markedCol) return;
+  if (markedCol) markedCol.classList.remove('hub-col-target');
   if (col) col.classList.add('hub-col-target');
+  markedCol = col;
 }
 
 function clearDragState() {
   document.body.classList.remove('hub-dragging');
-  document.querySelectorAll('#hub-cols .hub-col').forEach((c) => c.classList.remove('hub-col-target'));
+  if (markedCol) markedCol.classList.remove('hub-col-target');
+  markedCol = null;
 }
 
 function syncFromDom() {
@@ -632,9 +648,17 @@ function injectCSS() {
      donc pas comme une fiche pale (on croyait voir un doublon) mais comme un
      CREUX : pointilles verts, fond legerement teinte, contenu masque. La
      hauteur reste celle de la fiche, donc l espace s ouvre reellement et l oeil
-     lit l arrivee avant le lacher. */
+     lit l arrivee avant le lacher.
+
+     NEUTRE POUR LA MISE EN PAGE, et c est vital. La premiere version passait
+     le border-left de 3 px (celui de la fiche, colore par branche) a 1 px : la
+     fiche retrecissait de 2 px a chaque repositionnement de l encoche, juste
+     sous le curseur. Un decalage de mise en page pendant un dragover fait
+     decrocher le glisser natif. Les EPAISSEURS sont donc identiques a celles
+     de .hub-card - seuls le style de trait et les couleurs changent. */
   .hub-slot{opacity:1!important;background:rgba(132,194,94,0.09)!important;
-    border:1px dashed rgba(132,194,94,0.75)!important;border-left:1px dashed rgba(132,194,94,0.75)!important;
+    border:1px dashed rgba(132,194,94,0.75)!important;
+    border-left:3px dashed rgba(132,194,94,0.75)!important;
     box-shadow:none!important;}
   .hub-slot>*{visibility:hidden;}
 

@@ -53,9 +53,17 @@
 
     /* L'ENCOCHE : l'emplacement exact où la fiche va tomber. Un creux en
        pointillés, contenu masqué - et non une copie pâle de la fiche, qu'on
-       lisait comme un doublon plutôt que comme une destination. */
+       lisait comme un doublon plutôt que comme une destination.
+
+       NEUTRE POUR LA MISE EN PAGE : organizer.js pose un `border-left:3px` EN
+       INLINE sur chaque fiche (la couleur de sa branche). Un `border` en
+       raccourci avec !important le ramenait à 1px, donc la fiche rétrécissait
+       de 2px à chaque repositionnement de l'encoche, juste sous le curseur -
+       et un décalage de mise en page pendant un dragover fait décrocher le
+       glisser natif. Le bord gauche garde donc ses 3px. */
     .org-slot { opacity:1 !important; background:rgba(132,194,94,0.09) !important;
-      border:1px dashed rgba(132,194,94,0.75) !important; box-shadow:none !important; }
+      border:1px dashed rgba(132,194,94,0.75) !important;
+      border-left:3px dashed rgba(132,194,94,0.75) !important; box-shadow:none !important; }
     .org-slot > * { visibility:hidden; }
 
     /* La fiche pendant qu'on la tire. En glisser natif, cette classe n'est

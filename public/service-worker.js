@@ -1,5 +1,5 @@
-// service-worker.js - v206 (retour au glisser natif, fiable)
-const CACHE_NAME = 'changeyourlife-v206';
+// service-worker.js - v207 (le gel du glisser - dragover et decalage de mise en page)
+const CACHE_NAME = 'changeyourlife-v207';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
