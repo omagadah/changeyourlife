@@ -46,3 +46,14 @@
 
   load('/js/arbre3d.js');
 })();
+
+// Service worker : la landing n'importe pas common.js (qui porte
+// l'enregistrement pour les pages connectées), elle s'enregistre donc
+// elle-même. Sans ça : ni installation PWA ni offline pour un visiteur
+// qui reste sur l'accueil.
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/service-worker.js').catch(function () { /* silencieux */ });
+  }, { once: true });
+})();

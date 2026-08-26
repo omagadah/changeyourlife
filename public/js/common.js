@@ -395,3 +395,46 @@ if (typeof window !== 'undefined') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();
+// ── Service worker : enregistrement global ───────────────────────────────────
+// RÉINTRODUIT (audit 2026-08-26). La refonte du fond animé (4af1833) a réécrit
+// ce fichier et perdu ce bloc : plus AUCUNE page n'appelait register(), donc
+// plus de PWA ni d'offline pour tout nouveau visiteur, et le bump de version
+// du SW ne servait qu'aux anciens. La landing (non-module) a le sien dans
+// home-boot.js - garder les deux.
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  const register = () => {
+    navigator.serviceWorker.getRegistration().then((reg) => {
+      if (!reg) {
+        navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+          registration.addEventListener('updatefound', () => {
+            const w = registration.installing;
+            if (!w) return;
+            w.addEventListener('statechange', () => {
+              if (w.state === 'installed' && navigator.serviceWorker.controller) {
+                toast('Nouvelle version disponible', {
+                  duration: 10000,
+                  action: { label: 'Mettre à jour', onClick: () => location.reload() },
+                });
+              }
+            });
+          });
+        }).catch(() => { /* silencieux : le site marche sans SW */ });
+      } else {
+        reg.update().catch(() => { /* ignore */ });
+        let prompted = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (prompted) return;
+          prompted = true;
+          toast('Le site a été mis à jour', {
+            duration: 10000,
+            action: { label: 'Recharger', onClick: () => location.reload() },
+          });
+        });
+      }
+    }).catch(() => { /* ignore */ });
+  };
+  // Après le load : ne jamais concurrencer le chargement initial de la page.
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register, { once: true });
+})();

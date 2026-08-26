@@ -1,5 +1,5 @@
-// service-worker.js - v200 (mise en page reparee)
-const CACHE_NAME = 'changeyourlife-v200';
+// service-worker.js - v201 (enregistrement SW retabli)
+const CACHE_NAME = 'changeyourlife-v201';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
