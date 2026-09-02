@@ -50,13 +50,17 @@
       "url": "/meditation"
     },
     {
-      "name": "Coach IA",
-      "short_name": "Coach",
-      "description": "Parler avec ton coach IA",
-      "url": "/coach"
+      "name": "ORGANIZER",
+      "short_name": "Organizer",
+      "description": "Deposer et trier ce que tu as en tete",
+      "url": "/organizer/"
     }
   ],
   "related_applications": [],
   "prefer_related_applications": false,
-  "categories": ["health", "lifestyle", "education"]
+  "categories": [
+    "health",
+    "lifestyle",
+    "education"
+  ]
 }

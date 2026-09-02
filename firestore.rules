@@ -170,10 +170,6 @@ service cloud.firestore {
     match /verificationCodes/{uid} {
       allow read, write: if false;
     }
-    // Rate-limit IA Coach (api/coach.js)
-    match /coachRate/{uid} {
-      allow read, write: if false;
-    }
     // Rate-limit CYL chat (api/chat.js)
     match /chatRate/{uid} {
       allow read, write: if false;

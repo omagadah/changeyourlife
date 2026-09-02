@@ -1,5 +1,5 @@
-// service-worker.js - v207 (le gel du glisser - dragover et decalage de mise en page)
-const CACHE_NAME = 'changeyourlife-v207';
+// service-worker.js - v208 (traduction reparee, coach retire)
+const CACHE_NAME = 'changeyourlife-v208';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
@@ -29,7 +29,6 @@ const urlsToCache = [
   '/yourlife/',
   '/meditation/',
   '/objectifs/',
-  '/coach/',
   '/codex/',
   '/autoevaluation/',
   '/bilan/',

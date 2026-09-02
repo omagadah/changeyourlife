@@ -83,33 +83,26 @@ function clientIp(req) {
 }
 
 
-// ── MODELES : UNE LISTE, PAS UN NOM ─────────────────────────────────────────
-// Les deux fournisseurs ont renvoye 404 en production : les cles etaient
-// bonnes, mais les modeles codes en dur avaient ete retires. Groq et Google
-// deprecient regulierement leurs references, et un nom fige casse la
-// traduction du site a chaque fois, en silence.
-//
-// On essaie donc une liste, du plus capable au plus leger, et le premier qui
-// repond gagne. Une variable d'environnement passe toujours en tete, pour
-// pouvoir epingler un modele sans redeployer le code.
-const GROQ_MODELS = [
-  process.env.GROQ_MODEL,
-  'llama-3.3-70b-versatile',
-  'llama-3.1-8b-instant',
-  'gemma2-9b-it',
-  'mixtral-8x7b-32768',
-].filter(Boolean);
+// ── MODELES : ON DEMANDE AU FOURNISSEUR, ON NE DEVINE PLUS ──────────────────
+// Il y avait ici une liste de huit noms codes en dur. Le 2 septembre, LES HUIT
+// etaient morts : 143 erreurs en production, quinze langues sans traduction,
+// treize jours sans que personne le voie. Une liste ecrite a la main pourrit,
+// c'est mecanique. api/_models.js interroge desormais l'annuaire de chaque
+// fournisseur et choisit dans ce qui existe reellement. Voir le commentaire de
+// tete de ce fichier pour le detail.
+const { candidats, invalider, fetchWithTimeout } = require('./_models.js');
 
-const GEMINI_MODELS = [
-  process.env.GEMINI_MODEL,
-  'gemini-2.0-flash',
-  'gemini-2.5-flash',
-  'gemini-flash-latest',
-  'gemini-1.5-flash',
-].filter(Boolean);
+// ── BUDGET DE TEMPS ─────────────────────────────────────────────────────────
+// Sans plafond, la fonction enchainait ses appels rates jusqu'au timeout de la
+// plateforme : « Task timed out after 300 seconds », constate deux fois. Cinq
+// minutes de budget d'execution brulees, et l'utilisateur qui attend pour rien.
+// Chaque tentative a donc son plafond, et l'ensemble un budget global.
+const BUDGET_TOTAL_MS = 55_000;   // large pour un lot de 45 chaines, borne quand meme
+const BUDGET_APPEL_MS = 22_000;   // une generation qui depasse ca ne finira pas mieux
+const BUDGET_ANNUAIRE_MS = 4_000; // lire une liste de modeles est rapide, ou echoue
 
-// Le modele qui a marche est retenu en memoire de l'instance : la cascade ne
-// se rejoue donc pas a chaque appel tant que la fonction reste chaude.
+// Le modele qui a marche est retenu en memoire de l'instance : on ne rejoue pas
+// la selection a chaque appel tant que la fonction reste chaude.
 let goodGroq = null, goodGemini = null;
 
 function sysPrompt(targetName) {
@@ -251,11 +244,25 @@ module.exports = async function handler(req, res) {
   // panne de quota donnent le meme message et rien n est actionnable.
   let groqStatus = process.env.GROQ_API_KEY ? 0 : 'absente';
 
+  // L'heure limite est posee ICI, une fois, et vaut pour les deux fournisseurs
+  // reunis : c'est ce qui garantit qu'on ne depassera pas le budget, quel que
+  // soit le nombre de modeles essayes.
+  const finAvant = Date.now() + BUDGET_TOTAL_MS;
+  const resteMs = () => finAvant - Date.now();
+  const budgetPourUnAppel = () => Math.min(BUDGET_APPEL_MS, resteMs());
+
   // ── Groq (préféré) ──────────────────────────────────────────────────────────
   if (process.env.GROQ_API_KEY) {
-    for (const model of (goodGroq ? [goodGroq] : GROQ_MODELS)) {
+    const modelesGroq = goodGroq
+      ? [goodGroq]
+      : await candidats('groq', process.env.GROQ_API_KEY, {
+          budgetMs: BUDGET_ANNUAIRE_MS,
+          epingle: process.env.GROQ_MODEL || '',
+        });
+    for (const model of modelesGroq) {
+      if (resteMs() < 3000) { groqStatus = 'budget de temps epuise'; break; }
       try {
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const r = await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -271,7 +278,7 @@ module.exports = async function handler(req, res) {
             temperature: 0.3,
             max_tokens: 8000,
           }),
-        });
+        }, budgetPourUnAppel());
         if (r.ok) {
           const data = await r.json();
           const parsed = safeParse(data.choices?.[0]?.message?.content);
@@ -281,12 +288,16 @@ module.exports = async function handler(req, res) {
           groqStatus = r.status;
           const body = (await r.text()).slice(0, 160);
           console.error('[translate] Groq', model, r.status, body);
-          // 404 = modele inconnu : on passe au suivant. Tout autre code (401,
-          // 429, 5xx) ne se reglera pas en changeant de modele.
-          if (r.status !== 404 && r.status !== 400) break;
+          // 404 ou 400 = ce modele n'existe plus. Il vient pourtant de
+          // l'annuaire : celui-ci est donc perime, on le jette pour que le
+          // prochain appel reparte d'une liste fraiche.
+          if (r.status === 404 || r.status === 400) { invalider('groq'); goodGroq = null; continue; }
+          // Tout autre code (401, 429, 5xx) ne se reglera pas en changeant de
+          // modele : on passe a l'autre fournisseur.
+          break;
         }
       } catch (e) {
-        groqStatus = 'exception';
+        groqStatus = e?.name === 'AbortError' ? 'delai depasse' : 'exception';
         console.error('[translate] Groq', model, e?.message || e);
       }
     }
@@ -299,10 +310,17 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Aucun provider IA configuré (GROQ_API_KEY ou GEMINI_API_KEY)', detail: { groq: groqStatus } });
   }
   let gemStatus = 0;
-  for (const model of (goodGemini ? [goodGemini] : GEMINI_MODELS)) {
+  const modelesGemini = goodGemini
+    ? [goodGemini]
+    : await candidats('gemini', apiKey, {
+        budgetMs: Math.min(BUDGET_ANNUAIRE_MS, Math.max(0, resteMs())),
+        epingle: process.env.GEMINI_MODEL || '',
+      });
+  for (const model of modelesGemini) {
+    if (resteMs() < 3000) { gemStatus = 'budget de temps epuise'; break; }
     try {
       const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
-      const r = await fetch(url, {
+      const r = await fetchWithTimeout(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
         body: JSON.stringify({
@@ -310,7 +328,7 @@ module.exports = async function handler(req, res) {
           contents: [{ role: 'user', parts: [{ text: userPayload }] }],
           generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 8000 },
         }),
-      });
+      }, budgetPourUnAppel());
       if (r.ok) {
         const data = await r.json();
         const parsed = safeParse(data.candidates?.[0]?.content?.parts?.[0]?.text);
@@ -319,10 +337,13 @@ module.exports = async function handler(req, res) {
       } else {
         gemStatus = r.status;
         console.error('[translate] Gemini', model, r.status, (await r.text()).slice(0, 160));
-        if (r.status !== 404 && r.status !== 400) break;
+        // Meme raisonnement que pour Groq : un 404 sur un modele issu de
+        // l'annuaire signifie que l'annuaire est perime.
+        if (r.status === 404 || r.status === 400) { invalider('gemini'); goodGemini = null; continue; }
+        break;
       }
     } catch (e) {
-      gemStatus = 'exception';
+      gemStatus = e?.name === 'AbortError' ? 'delai depasse' : 'exception';
       console.error('[translate] Gemini', model, e?.message || e);
     }
   }

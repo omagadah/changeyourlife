@@ -20,10 +20,10 @@ function showAdminInfo(user) {
         emailSpan.textContent = `Connecté en tant qu'admin : ${user.email || 'Utilisateur inconnu'}`;
         uidSpan.textContent = user.uid;
         infoDiv.style.display = 'block';
-        
-        // Log l'UID dans la console pour faciliter la configuration
-        console.log(`%c🔧 ADMIN UID: ${user.uid}`, 'background: #8dca67; color: white; padding: 8px; border-radius: 4px; font-weight: bold;');
-        console.log(`%c📧 ADMIN EMAIL: ${user.email}`, 'background: #59a862; color: white; padding: 8px; border-radius: 4px;');
+        // L'UID et l'email etaient AUSSI ecrits en console. C'etait un doublon
+        // pur : les deux lignes juste au-dessus les affichent deja dans la page,
+        // en clair. Les repeter dans la console ne servait qu'a les laisser
+        // trainer dans les journaux du navigateur.
     }
 }
 
