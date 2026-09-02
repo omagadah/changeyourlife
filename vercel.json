@@ -202,5 +202,19 @@
       "source": "/",
       "destination": "/bienvenue.html"
     }
-  ]
+  ],
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "0 7 * * *"
+    }
+  ],
+  "functions": {
+    "api/translate.js": {
+      "maxDuration": 60
+    },
+    "api/health.js": {
+      "maxDuration": 30
+    }
+  }
 }
