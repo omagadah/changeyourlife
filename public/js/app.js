@@ -140,11 +140,16 @@
                             const s = ylData[lvl] || [];
                             total += s.length; done += s.filter(x=>x.done).length;
                         });
-                        const pct = total ? Math.round(done/total*100) : 0;
+                        // UN COMPTE, PAS UNE NOTE. C'etait « Score Ma Vie », un
+                        // pourcentage global sur une vie - exactement ce que la
+                        // regle non negociable de non-directivite interdit : CYL
+                        // constate, elle ne note pas une existence.
+                        // L'information reste entiere, seul le jugement part :
+                        // « 12 / 14 » se lit, « 87 % » se subit.
                         const mlEl = document.getElementById('stat-mylife');
-                        if (mlEl) mlEl.textContent = total ? `${pct}%` : '-';
+                        if (mlEl) mlEl.textContent = total ? `${done}/${total}` : '-';
                         const cardMl = document.getElementById('card-stat-mylife');
-                        if (cardMl) cardMl.textContent = total ? `Score : ${pct}% - ${done}/${total} compétences` : '';
+                        if (cardMl) cardMl.textContent = total ? `${done} jalons posés sur ${total}` : '';
                     }
                 } catch(e) {}
 

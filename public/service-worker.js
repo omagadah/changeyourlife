@@ -1,5 +1,5 @@
-// service-worker.js - v208 (traduction reparee, coach retire)
-const CACHE_NAME = 'changeyourlife-v208';
+// service-worker.js - v209 (jalons au lieu d une note de vie)
+const CACHE_NAME = 'changeyourlife-v209';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
