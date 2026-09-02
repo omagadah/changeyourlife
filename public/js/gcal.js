@@ -63,7 +63,13 @@ const POPUP_RETRYABLE = new Set([
 export async function connect({ write = true } = {}) {
   const provider = new GoogleAuthProvider();
   provider.addScope(write ? SCOPE_RW : SCOPE_RO);
-  provider.setCustomParameters({ prompt: 'consent' });
+  // PAS de prompt:'consent'. Il forcait l ecran d autorisation Google a CHAQUE
+  // reconnexion, y compris quand l accord etait deja donne - le jeton expirant
+  // au bout de ~55 min, ca faisait un mur Google plusieurs fois par jour pour
+  // une permission deja accordee. Sans ce parametre, Google reutilise l accord
+  // existant et rend la main sans rien demander ; il ne redemande que si le
+  // scope change vraiment (passage lecture -> ecriture), ce qui est le seul
+  // moment ou la question a un sens.
   let result;
   try {
     result = auth.currentUser

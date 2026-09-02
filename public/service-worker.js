@@ -1,5 +1,5 @@
-// service-worker.js - v209 (jalons au lieu d une note de vie)
-const CACHE_NAME = 'changeyourlife-v209';
+// service-worker.js - v210 (fin du mur Google a chaque reconnexion)
+const CACHE_NAME = 'changeyourlife-v210';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
