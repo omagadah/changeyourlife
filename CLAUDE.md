@@ -2,7 +2,7 @@
 
 > Contexte permanent pour Claude Code travaillant sur changeyourlife.ai.
 > Lu automatiquement à chaque session. Si tu modifies des conventions du projet, mets à jour ce fichier.
-> Dernière vérification contre le code : **2026-08-26** (SW v201).
+> Dernière vérification contre le code : **2026-09-02** (SW v210).
 
 ## ⚠️ Vision produit - à lire en premier
 
@@ -77,9 +77,10 @@ Point de confusion fréquent, à connaître avant de toucher à `vercel.json` :
 
 ## Modules frontend (37 pages HTML · 7 API serverless · 3 Cloud Functions)
 
-> API `/api/*` : `chat` (CYL/Anthropic), `coach` (CYL/Groq+Gemini),
-> `cyl-brief` (brief du jour), `translate` (Groq+Gemini + cache Firestore
-> partagé), `send-verification`, `verify-code`, `giveaway-draw`.
+> API `/api/*` : `chat` (CYL/Anthropic), `cyl-brief` (brief du jour),
+> `translate` (Groq+Gemini, modeles resolus via l annuaire du fournisseur -
+> cf. `api/_models.js` - et cache Firestore partagé), `send-verification`,
+> `verify-code`, `giveaway-draw`, `health` (controle quotidien + alerte).
 > Cloud Functions : `addXp`, `getMyRole`, `setUserRole`.
 
 | Module | Route | Notes |
@@ -95,7 +96,6 @@ Point de confusion fréquent, à connaître avant de toucher à `vercel.json` :
 | Journal | `/journal/` | Journal quotidien |
 | Méditation | `/meditation/` | Sessions guidées, lit l'humeur du jour |
 | Objectifs | `/objectifs/` | OKR / suivi |
-| Coach | `/coach/` | **Orphelin** : aucun lien entrant, décision en attente |
 | Codex | `/codex/` | Base de connaissance + notes user |
 | Autoévaluation | `/autoevaluation/` | Roue de vie 4 axes |
 | Bilan | `/bilan/` | Récap hebdo |
@@ -149,6 +149,13 @@ Co-Authored-By: Claude <modèle> <noreply@anthropic.com>
   (`order:`), ça casse le tab-order et les lecteurs d'écran.
 - **WebGL** : `prefers-reduced-motion` doit être lu en JS (`matchMedia`), la
   media query CSS n'atteint pas un canvas.
+- **JAMAIS de nom de modèle IA codé en dur.** Groq et Google déprécient en
+  continu : la traduction est tombée DEUX FOIS pour ça, la seconde en restant
+  morte 13 jours sans que personne le voie. `api/_models.js` interroge
+  l'annuaire du fournisseur et choisit dans ce qui existe. Tout appel à un
+  modèle passe par lui.
+- **Tout appel réseau sortant a un plafond de temps.** Sans `AbortController`,
+  une cascade d'échecs a fait tourner `/api/translate` 300 secondes.
 
 ### Navigation
 La nav est une **barre latérale verticale** (`/js/sidebar.js`, 17 entrées en
