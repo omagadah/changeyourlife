@@ -53,8 +53,21 @@ async function fetchWithTimeout(url, opts, ms) {
 // panne - contrairement a se tromper de nom.
 
 /** Groq sert aussi de l audio, de la moderation et de la synthese vocale.
- *  Les envoyer traduire du texte est un echec garanti : on les ecarte. */
-const GROQ_EXCLUS = /whisper|tts|guard|embed|vision|distil-whisper/i;
+ *  Les envoyer traduire du texte est un echec garanti.
+ *
+ *  DEUX FILTRES, ET LE PREMIER EST LE VRAI. Le nom seul ne suffit pas : le
+ *  premier controle de sante a remonte « canopylabs/orpheus-v1-english »
+ *  comme candidat de traduction, alors que c est de la synthese vocale - rien
+ *  dans son nom ne le disait. Filtrer par nom, c est justement le travers que
+ *  ce fichier existe pour corriger.
+ *
+ *  Le signal structurel est la FENETRE DE CONTEXTE : un modele de
+ *  conversation en annonce une large, un modele audio ou d embedding non.
+ *  On demande 8000 jetons de sortie, donc tout ce qui est sous 8192 ne peut
+ *  de toute facon pas faire le travail. Le nom ne sert plus que de garde-fou
+ *  secondaire, pour les cas ou le champ est absent. */
+const GROQ_CONTEXTE_MIN = 8192;
+const GROQ_EXCLUS = /whisper|tts|guard|embed|vision|audio|speech|orpheus|playai|moderation/i;
 
 function scoreGroq(id) {
   let s = 0;
@@ -99,10 +112,16 @@ async function listGroq(apiKey, budgetMs) {
   if (!r.ok) throw new Error('annuaire Groq ' + r.status);
   const data = await r.json();
   const list = (data.data || [])
-    .filter((m) => m && m.id && !GROQ_EXCLUS.test(m.id))
+    .filter((m) => m && m.id)
     // Groq expose `active` : un modele inactif est deja mort, on l ecarte ici
     // plutot que d apprendre son deces par un 404 en pleine traduction.
     .filter((m) => m.active !== false)
+    // Le filtre qui compte : une fenetre de contexte de modele de
+    // conversation. Quand le champ manque, on laisse passer et le nom tranche.
+    .filter((m) => (typeof m.context_window === 'number'
+      ? m.context_window >= GROQ_CONTEXTE_MIN
+      : !GROQ_EXCLUS.test(m.id)))
+    .filter((m) => !GROQ_EXCLUS.test(m.id))
     .map((m) => m.id)
     .sort((a, b) => scoreGroq(b) - scoreGroq(a));
   cache.groq = { at: now, list };
