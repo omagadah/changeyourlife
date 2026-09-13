@@ -1,13 +1,15 @@
 {
   "name": "Change Your Life",
   "short_name": "ChangeYourLife",
-  "description": "Une base saine pour construire de grandes choses - Outils de santé mentale optimisés par l'IA",
+  "description": "Ton arbre de vie : dépose ce que tu as en tête, fais grandir tes branches, avance avec CYL.",
   "start_url": "/",
+  "id": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
-  "background_color": "#07192f",
-  "theme_color": "#0070f3",
+  "background_color": "#0a0f0a",
+  "theme_color": "#0a0f0a",
   "lang": "fr-FR",
   "dir": "ltr",
   "icons": [
@@ -38,29 +40,29 @@
   ],
   "shortcuts": [
     {
-      "name": "Your Life",
-      "short_name": "YourLife",
-      "description": "Ouvrir Your Life",
-      "url": "/yourlife"
+      "name": "Ma journée",
+      "short_name": "Aujourd'hui",
+      "description": "Les gestes du jour et ton plan",
+      "url": "/plan/"
     },
     {
-      "name": "Méditation",
-      "short_name": "Méditer",
-      "description": "Commencer une méditation",
-      "url": "/meditation"
-    },
-    {
-      "name": "ORGANIZER",
-      "short_name": "Organizer",
-      "description": "Deposer et trier ce que tu as en tete",
+      "name": "Déposer une idée",
+      "short_name": "Déposer",
+      "description": "Vider ce que tu as en tête dans l'ORGANIZER",
       "url": "/organizer/"
+    },
+    {
+      "name": "Mon arbre",
+      "short_name": "Mon arbre",
+      "description": "Voir grandir tes branches",
+      "url": "/yourlife/"
     }
   ],
   "related_applications": [],
   "prefer_related_applications": false,
   "categories": [
-    "health",
     "lifestyle",
+    "productivity",
     "education"
   ]
 }

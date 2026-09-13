@@ -145,8 +145,13 @@ function injectCSS() {
     font-size:.76rem; font-weight:800; color:#08130a;
     background:linear-gradient(140deg,#f1cd92,#84c25e); background-size:cover; background-position:center; }
   .cyl-sb-av.img { color:transparent; }
-  .cyl-sb-out { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
+  /* Les deux boutons du pied reprennent l'allure des liens voisins : sans ce
+     reset, un <button> impose sa police et son fond au milieu de <a>. */
+  .cyl-sb-out, .cyl-sb-inst { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
   .cyl-sb-out:hover { background:rgba(224,120,95,.12); color:#e58e73; }
+  .cyl-sb-inst { color:var(--leaf,#84c25e); }
+  .cyl-sb-inst:hover { background:rgba(132,194,94,.12); }
+  .cyl-sb-inst[hidden] { display:none !important; }
   /* DECALAGE DES CONTENEURS PLEIN ECRAN
      Les pages posent leur cadre en position:fixed : padding-left sur le body
      ne les touche pas, il faut nommer chaque conteneur. Une page qui invente sa
@@ -192,6 +197,39 @@ function injectCSS() {
     /* la ligne d'accueil laisse la place au bouton d'ouverture */
     body.has-sb .welcome-row { padding-left:46px; }
   }
+  /* ══ EN APPLICATION INSTALLÉE ═══════════════════════════════════════════
+     Une PWA en mode standalone occupe TOUT l'écran : il n'y a plus de barre
+     d'adresse pour protéger le haut, ni de barre d'outils en bas. Sur un
+     iPhone, l'encoche mange le titre et la barre home coupe le dernier
+     élément. Les env(safe-area-inset-...) valent 0 partout ailleurs, donc ces
+     règles ne changent rien dans un navigateur classique.
+     (Pas de backtick dans ce commentaire : ce CSS vit dans un template JS.)
+
+     Ciblé sur display-mode:standalone plutôt qu'appliqué partout : dans un
+     onglet ordinaire, ajouter ces marges creuserait du vide pour rien. */
+  @media (display-mode: standalone) {
+    .cyl-sb { padding-top: env(safe-area-inset-top, 0px); }
+    .cyl-sb-foot { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+    .cyl-sb-burger { top: calc(12px + env(safe-area-inset-top, 0px)); }
+
+    /* Les cadres plein écran : mêmes sélecteurs que les décalages ci-dessus,
+       verticalement cette fois. La classe .has-gw-bar est reprise avec une
+       spécificité supérieure pour que le bandeau d'annonce continue de
+       pousser le contenu quand il est là. */
+    body.has-sb .app-container { top: calc(15px + env(safe-area-inset-top, 0px)); bottom: calc(15px + env(safe-area-inset-bottom, 0px)); }
+    body.has-gw-bar.has-sb .app-container { top: calc(15px + var(--gw-h, 0px) + env(safe-area-inset-top, 0px)); }
+    body.has-sb .ap-shell,
+    body.has-sb [data-cyl-shell] { top: calc(16px + env(safe-area-inset-top, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+    body.has-sb .page-shell,
+    body.has-sb .page-shell-nav { top: calc(20px + env(safe-area-inset-top, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+  }
+  /* Sur téléphone, la barre latérale s'ouvre par-dessus : son propre haut doit
+     aussi respecter l'encoche, y compris hors mode standalone (Safari masque
+     sa barre au défilement). */
+  @media (max-width:1080px) {
+    .cyl-sb { padding-top: env(safe-area-inset-top, 0px); }
+  }
+
   @media (prefers-reduced-motion:reduce) { .cyl-sb { transition:none; } }
   `;
   document.head.appendChild(s);
@@ -233,6 +271,23 @@ function adopt(host) {
 async function initAccount(sb) {
   const av = sb.querySelector('#cyl-sb-av');
   const nm = sb.querySelector('#cyl-sb-me-n');
+  // L'entrée d'installation ne se montre que si elle mène quelque part : la
+  // PWA déjà installée, ou un navigateur qui ne sait pas le faire, laisserait
+  // sinon un bouton qui ne produit rien.
+  const inst = sb.querySelector('#cyl-sb-inst');
+  if (inst) {
+    const relire = () => {
+      const api = window.cylInstall;
+      inst.hidden = !(api && api.peutProposer());
+    };
+    inst.onclick = () => { try { window.cylInstall && window.cylInstall.installer(); } catch (_) {} };
+    relire();
+    // install.js arrive en import dynamique et le navigateur peut tendre la
+    // main plus tard encore : on réévalue à ces deux moments.
+    document.addEventListener('cyl:installable', relire);
+    setTimeout(relire, 2500);
+  }
+
   const out = sb.querySelector('#cyl-sb-out');
 
   // L'avatar enregistre localement s'affiche tout de suite, sans attendre Firebase.
@@ -294,6 +349,14 @@ export function initSidebar() {
         <span class="cyl-sb-ic" aria-hidden="true">⚙️</span>
         <span class="cyl-sb-txt"><span class="cyl-sb-l">PARAMÈTRES</span></span>
       </a>
+      <!-- Installer l'app : masqué par défaut, révélé par install.js seulement
+           s'il y a quelque chose à proposer. C'est la porte de sortie pour qui
+           a fermé la bannière - sans lui, un refus était définitif. -->
+      <button class="cyl-sb-i cyl-sb-inst" id="cyl-sb-inst" type="button" data-cyl-install hidden>
+        <span class="cyl-sb-ic" aria-hidden="true">📲</span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l">Installer l'app</span>
+          <span class="cyl-sb-n">Sur ton écran d'accueil</span></span>
+      </button>
       <button class="cyl-sb-i cyl-sb-out" id="cyl-sb-out" type="button">
         <span class="cyl-sb-ic" aria-hidden="true">↪</span>
         <span class="cyl-sb-txt"><span class="cyl-sb-l">Se déconnecter</span></span>

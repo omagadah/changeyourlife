@@ -1,5 +1,5 @@
 // service-worker.js - v210 (fin du mur Google a chaque reconnexion)
-const CACHE_NAME = 'changeyourlife-v213';
+const CACHE_NAME = 'changeyourlife-v214';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
@@ -70,6 +70,7 @@ const urlsToCache = [
   '/js/organizer-data.js',
   '/js/app-organizer.js',
   '/js/app-today.js',
+  '/js/install.js',
   '/js/cyl-brief.js',
   '/js/tree-model.js',
   '/js/tree-data.js',

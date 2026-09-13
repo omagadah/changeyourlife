@@ -517,6 +517,19 @@ body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !importa
   .cylp-fab .cylp-badge { top: -4px; right: -4px; }
 }
 
+/* En application installée, la feuille mobile de CYL touche le bas de l'écran :
+   sans cette marge, sa zone de saisie passe sous la barre home de l'iPhone et
+   devient intouchable. env() vaut 0 dans un navigateur classique. */
+@media (display-mode: standalone) {
+  .cylp { padding-top: env(safe-area-inset-top, 0px); }
+  .cylp-compose { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .cylp-fab { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 900px) {
+  .cylp-compose { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .cylp-fab { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cylp,
   body.has-cylp,

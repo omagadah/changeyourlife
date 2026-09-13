@@ -48,6 +48,19 @@ export function setupThemeToggle() {
  * Met à jour l'icône globale de l'utilisateur avec l'avatar sauvegardé ou une initiale.
  * @param {string} initial - La lettre initiale de l'email de l'utilisateur.
  */
+// ── Capteur d'installation, en PREMIER ──────────────────────────────────────
+// `beforeinstallprompt` ne se rattrape pas : l'événement passe une fois, et si
+// personne n'écoute à cet instant, la page ne peut plus jamais déclencher
+// l'installation de la PWA. Le module qui gère tout ça (/js/install.js) arrive
+// par import dynamique, donc potentiellement trop tard. Ce capteur de trois
+// lignes le met de côté ; install.js le reprend via window.__cylBip.
+try {
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    window.__cylBip = e;
+  });
+} catch (_) {}
+
 // Jolis emojis (Twemoji) sur toutes les pages qui chargent common.js.
 try { if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); } } catch (_) {}
 
@@ -425,6 +438,14 @@ if (typeof window !== 'undefined') {
       // CYL : panneau latéral permanent à droite, en miroir de la barre de
       // navigation. Import dynamique : non bloquant si le module échoue.
       import('/js/cyl-panel.js').catch(function (e) { try { console.warn('[cyl-panel]', e && e.message || e); } catch (_) {} });
+
+      // « Mets-le sur ton téléphone » : la PWA était installable depuis le
+      // début, mais rien ne l'avait jamais proposé. Le module décide lui-même
+      // s'il y a lieu de dire quelque chose (jamais à la 1re visite, jamais
+      // si c'est déjà installé, un refus vaut un mois de silence).
+      import('/js/install.js')
+        .then(function (m) { m.initInstall(); })
+        .catch(function (e) { try { console.warn('[install]', e && e.message || e); } catch (_) {} });
     } catch (_) { /* ignore */ }
   }
   // Le test ci-dessus lit le DOM : si la page est encore en cours d'analyse,
