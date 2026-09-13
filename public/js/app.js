@@ -49,6 +49,24 @@
                 const userData = userDoc.exists() ? userDoc.data() : {};
                 try { await setDoc(userDocRef, { lastActive: new Date() }, { merge: true }); } catch(e) {}
 
+                // ── La naissance : on plante la graine ─────────────────────
+                // Avant tout le reste. Un nouvel inscrit arrivait jusqu'ici sur
+                // un tableau de bord vide, sans un mot - le fichier censé
+                // l'accueillir (tree-widget.js) n'a jamais existé.
+                try {
+                  const seed = await import('/js/seed.js');
+                  if (seed.doitPlanter(userData)) {
+                    await seed.planterGraine(db, user.uid, userData);
+                    // L'écran a écrit dans Firestore : on repart de la donnée
+                    // fraîche, sinon l'arbre et les compteurs afficheraient
+                    // l'état d'avant la plantation.
+                    try {
+                      const relu = await getDoc(userDocRef);
+                      if (relu.exists()) Object.assign(userData, relu.data());
+                    } catch (_) {}
+                  }
+                } catch (e) { console.warn('[seed]', e && e.message || e); }
+
                 // ── Arbre de vie : bel arbre ez-tree qui grandit avec l'XP ──
                 try {
                   window._cyfLivingTree = initLivingTree(userData);

@@ -410,7 +410,11 @@ const RULES = [
   // ── SECURITE ─────────────────────────────────────────────────────────────
   ['securite', 'Logement', 3, /\b(loyer|appart|appartement|maison|demenag|logement|proprietaire|bail|travaux|plombier|electricien|chauffage|serrure)/],
   ['securite', 'Stabilite', 3, /\b(assurance|mutuelle|contrat|papier|administratif|paperasse|impot|taxe|declaration|prefecture|permis|passeport|carte d identite|caf\b|pole emploi|urssaf)/],
-  ['securite', 'Finances', 3, /\b(budget|argent|banque|epargne|credit|dette|emprunt|facture|payer|virement|salaire|compta|economiser|depense|decouvert|investir|placement|impaye)/],
+  // ATTENTION AUX MOTS TROP COURANTS : « compte » seul est tentant mais
+  // catastrophique - « ce qui compte pour moi », « je compte faire » tomberaient
+  // dans les finances. On n accepte donc que « compte bancaire ». Meme prudence
+  // pour « pret » (pret a partir) qui n est pas repris.
+  ['securite', 'Finances', 3, /\b(budget|argent|banque|epargne|credit|dette|emprunt|facture|payer|virement|salaire|compta|economiser|depense|decouvert|investir|placement|impaye|finance|financier|revenu|rembours|fisc|impots|livret|compte bancaire|releve bancaire|tresorerie|pouvoir d achat)/],
   ['securite', 'Sante', 3, /\b(medecin|docteur|dentiste|ordonnance|pharmacie|analyse|prise de sang|vaccin|kine|osteo|specialiste|hopital|rdv medical|generaliste|ophtalmo|dermato)/],
   ['securite', 'Serenite', 3, /\b(sauvegarde|backup|mot de passe|securiser|proteger|assurance vie|testament)/],
   ['securite', 'Serenite', 2, /\b(peur de manquer|insecurite|precaire|instable|angoisse financiere)/],
