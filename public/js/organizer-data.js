@@ -6,7 +6,7 @@
 //
 // Document : users/{uid}.organizer
 //   {
-//     v: 2,
+//     v: 4,
 //     columns: [{ id, title, color, cards: [Card] }],
 //     links:   [{ id, from, to }],          // connecteurs de la vue Canvas
 //     canvas:  { x, y, z }, view: 'board'|'canvas',
@@ -15,14 +15,19 @@
 //
 // Card :
 //   { id, title, desc, due (ms|null), checklist: [{id,t,done}], logs: [{at,m}],
-//     done, createdAt,
+//     comments: [{id,at,t}],       // v4 : ce que TOI tu ecris (vs logs = systeme)
+//     done, createdAt, doneAt,     // v4 : quand la fiche a ete bouclee
 //     branch: <cle Maslow|null>,   // la branche de l'arbre que la fiche nourrit
 //     gcalId: <id evenement|null>, // evenement Google Agenda cree depuis la fiche
 //     cx, cy }                     // position dans la vue Canvas
+//
+// L'ID N'EST PAS QU'UN IDENTIFIANT : uid6() y ecrit l'instant de creation en
+// base 36. C'est ce qui permet de dater correctement les fiches d'avant la v4
+// (cf. cardCreatedAt). Ne jamais regenerer l'id d'une fiche existante.
 
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-export const ORGANIZER_VERSION = 3;
+export const ORGANIZER_VERSION = 4;
 export const TRI_ID = 'tri';
 export const FINISH_ID = 'finish';
 export const FINISH_XP = 50;
@@ -58,6 +63,86 @@ export const now = () => Date.now();
 export const uid6 = (p) => (p || 'c') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 export function stripEmoji(s) { return String(s || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}✅✔️]/gu, '').trim(); }
 
+// ── DATER UNE FICHE ──────────────────────────────────────────────────────────
+// « Quand est-ce que j'ai note ca ? » est la question la plus utile devant une
+// colonne « A trier » : une idee deposee il y a trois mois et jamais bougee ne
+// dit pas la meme chose qu'une idee d'hier.
+//
+// Trois sources, et on garde LA PLUS ANCIENNE des trois. Ce n'est pas de la
+// paranoia :
+//   1. `card.createdAt` - juste pour les fiches recentes, mais normalizeBoard
+//      le remplissait avec now() quand il manquait. Les fiches d'avant se sont
+//      donc vu tamponner la date de leur premiere migration, pas leur creation.
+//   2. Le plus ancien `log.at` - une fiche ne peut pas avoir d'activite avant
+//      d'exister, donc sa premiere trace est un majorant sur.
+//   3. L'ID lui-meme : uid6() ecrit Date.now() en base 36 entre le prefixe et
+//      les 4 caracteres aleatoires. Cette source-la ne peut pas mentir, elle
+//      est produite a l'instant exact de la creation et jamais reecrite.
+// Le minimum repare donc les dates deja faussees, sans migration ni perte.
+const EPOCH_MIN = Date.UTC(2024, 0, 1);   // le site n'existait pas avant
+const plausible = (t) => typeof t === 'number' && Number.isFinite(t)
+  && t >= EPOCH_MIN && t <= Date.now() + 86400000;
+
+// Retrouve l'instant de creation encode dans un id produit par uid6().
+export function idTime(id) {
+  const s = String(id || '');
+  const mid = s.slice(1, -4);            // prefixe + <base36> + 4 aleatoires
+  if (!/^[0-9a-z]{6,10}$/.test(mid)) return null;
+  const t = parseInt(mid, 36);
+  return plausible(t) ? t : null;
+}
+
+export function cardCreatedAt(card) {
+  if (!card) return null;
+  const dates = [];
+  if (plausible(card.createdAt)) dates.push(card.createdAt);
+  for (const l of (Array.isArray(card.logs) ? card.logs : [])) {
+    if (l && plausible(l.at)) dates.push(l.at);
+  }
+  const fromId = idTime(card.id);
+  if (fromId) dates.push(fromId);
+  return dates.length ? Math.min(...dates) : null;
+}
+
+// Derniere trace d'activite : le log le plus recent, sinon la creation.
+export function cardUpdatedAt(card) {
+  if (!card) return null;
+  const dates = [];
+  for (const l of (Array.isArray(card.logs) ? card.logs : [])) {
+    if (l && plausible(l.at)) dates.push(l.at);
+  }
+  if (plausible(card.doneAt)) dates.push(card.doneAt);
+  if (dates.length) return Math.max(...dates);
+  return cardCreatedAt(card);
+}
+
+// « il y a 3 jours » quand c'est proche, la date quand ca ne l'est plus.
+// Au-dela d'une semaine, « il y a 47 jours » ne veut plus rien dire pour
+// personne : on rend une date lisible.
+export function fmtAge(ts, { prefix = true } = {}) {
+  if (!plausible(ts)) return '';
+  const d = new Date(ts);
+  const diff = Date.now() - ts;
+  const jours = Math.floor(diff / 86400000);
+  if (diff < 60000) return "a l'instant";
+  if (diff < 3600000) { const m = Math.floor(diff / 60000); return `${prefix ? 'il y a ' : ''}${m} min`; }
+  if (jours === 0) { const h = Math.floor(diff / 3600000); return `${prefix ? 'il y a ' : ''}${h} h`; }
+  if (jours === 1) return 'hier';
+  if (jours < 7) return `${prefix ? 'il y a ' : ''}${jours} jours`;
+  const memeAnnee = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString('fr-FR', memeAnnee
+    ? { day: 'numeric', month: 'short' }
+    : { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// Date complete, pour les infobulles : « samedi 12 septembre 2026 a 20:07 ».
+export function fmtFull(ts) {
+  if (!plausible(ts)) return '';
+  return new Date(ts).toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  }) + ' a ' + new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
 // ── Chargement / sauvegarde ──────────────────────────────────────────────────
 export function emptyBoard() {
   return {
@@ -78,7 +163,22 @@ export function normalizeBoard(raw) {
       if (!Array.isArray(k.logs)) k.logs = [];
       if (!('branch' in k)) k.branch = null;
       if (!('gcalId' in k)) k.gcalId = null;
-      if (typeof k.createdAt !== 'number') k.createdAt = now();
+      // NE JAMAIS TAMPONNER now() ICI. C'est ce que faisait la version
+      // precedente quand createdAt manquait : toutes les fiches anterieures se
+      // retrouvaient « creees aujourd'hui », et l'information etait perdue
+      // definitivement. cardCreatedAt() va la rechercher dans les logs et dans
+      // l'id, et rend la plus ancienne date plausible.
+      const vrai = cardCreatedAt(k);
+      if (vrai && k.createdAt !== vrai) k.createdAt = vrai;
+      else if (typeof k.createdAt !== 'number') k.createdAt = now();
+      if (!Array.isArray(k.comments)) k.comments = [];
+      // Date de fin : Trello la garde, elle repond a « quand ai-je boucle ca ».
+      // Les fiches deja terminees n'en ont pas - on prend leur derniere trace.
+      if (k.done && typeof k.doneAt !== 'number') {
+        const fin = (k.logs || []).find((l) => l && /Termin/i.test(l.m || ''));
+        k.doneAt = (fin && fin.at) || cardUpdatedAt(k) || null;
+      }
+      if (!k.done) k.doneAt = null;
       // v3 : les fiches anterieures n'ont pas de lecture. On la calcule une
       // fois, sans jamais ecraser ce que l'utilisateur a deja choisi.
       if (!('kind' in k)) {
@@ -155,7 +255,7 @@ export function newCard(title, extra = {}) {
   const r = classify(title);
   const card = {
     id: uid6(), title: String(title || '').trim(), desc: '', due: null,
-    checklist: [], logs: [], done: false, createdAt: now(),
+    checklist: [], logs: [], comments: [], done: false, createdAt: now(), doneAt: null,
     branch: extra.branch || r.branch, gcalId: null,
     sub: r.sub,                    // sous-categorie (Sommeil, Finances, Projets…)
     kind: r.kind,                  // tache | ressenti | envie | objectif | idee
@@ -193,9 +293,39 @@ export function moveCard(board, cardId, toColId) {
   dest.cards.push(f.card);
   logCard(f.card, `Deplacee : ${stripEmoji(f.col.title)} -> ${stripEmoji(dest.title)}`);
   let finished = false, reopened = false;
-  if (toColId === FINISH_ID && !f.card.done) { f.card.done = true; logCard(f.card, 'Termine'); finished = true; }
-  else if (toColId !== FINISH_ID && f.card.done) { f.card.done = false; reopened = true; }
+  if (toColId === FINISH_ID && !f.card.done) { f.card.done = true; f.card.doneAt = now(); logCard(f.card, 'Termine'); finished = true; }
+  else if (toColId !== FINISH_ID && f.card.done) { f.card.done = false; f.card.doneAt = null; reopened = true; }
   return { finished, reopened, card: f.card };
+}
+
+// ── Commentaires ─────────────────────────────────────────────────────────────
+// Les logs racontent ce que le SYSTEME a fait ; un commentaire est ce que TOI
+// tu voulais te rappeler. Trello distingue les deux dans le meme fil, on fait
+// pareil : meme colonne d'activite, deux natures.
+export function addComment(card, texte) {
+  const t = String(texte || '').trim();
+  if (!t) return null;
+  card.comments = Array.isArray(card.comments) ? card.comments : [];
+  const c = { id: uid6('m'), at: now(), t: t.slice(0, 2000) };
+  card.comments.unshift(c);
+  if (card.comments.length > 100) card.comments.length = 100;
+  return c;
+}
+
+export function removeComment(card, id) {
+  if (!Array.isArray(card.comments)) return false;
+  const n = card.comments.length;
+  card.comments = card.comments.filter((c) => c.id !== id);
+  return card.comments.length !== n;
+}
+
+// Le fil d'activite complet : commentaires et logs fondus, du plus recent au
+// plus ancien. C'est la vue de la capture Trello (« Commentaires et activite »).
+export function cardFeed(card) {
+  const out = [];
+  for (const c of (card.comments || [])) if (c && c.at) out.push({ kind: 'comment', at: c.at, t: c.t, id: c.id });
+  for (const l of (card.logs || [])) if (l && l.at) out.push({ kind: 'log', at: l.at, t: l.m });
+  return out.sort((a, b) => b.at - a.at);
 }
 
 // ── Priorisation / tri du jour ───────────────────────────────────────────────

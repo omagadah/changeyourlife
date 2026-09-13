@@ -118,6 +118,12 @@
     .org-badge { display:inline-flex; align-items:center; gap:4px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,0.07); color:#c3beb2; }
     .org-badge.due-soon { background:rgba(251,191,36,0.15); color:#fcd34d; }
     .org-badge.due-late { background:rgba(239,68,68,0.16); color:#fca5a5; }
+    /* L'âge de la fiche : discret par défaut, il ne doit pas voler la vedette
+       au titre. Passé un mois sans bouger, il se colore : c'est précisément
+       l'information qu'on cherchait en ouvrant la colonne « à trier ». */
+    .org-badge.age { background:transparent; color:#847b66; padding-left:0; }
+    .org-badge.age.old { background:rgba(231,177,92,0.13); color:#e7b15c; padding-left:7px; }
+    .org-badge.done-at { background:rgba(74,222,128,0.13); color:#86efac; }
 
     /* ── Modal ── */
     .org-modal { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;
@@ -146,9 +152,25 @@
     .org-check .del:hover { color:#f87171; }
     .org-prog { height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; margin:4px 0 8px; }
     .org-prog div { height:100%; background:#22c55e; border-radius:4px; transition:width .4s; }
-    .org-logs { display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; }
+    .org-logs { display:flex; flex-direction:column; gap:5px; max-height:230px; overflow-y:auto; }
     .org-log { font-size:0.76rem; color:#b4ad9e; display:flex; gap:8px; }
     .org-log .t { color:#847b66; white-space:nowrap; flex-shrink:0; }
+    /* Un commentaire se distingue d'une trace système : il est encadré, plus
+       lisible, et supprimable. Le fil reste unique (comme Trello). */
+    .org-log.com { align-items:flex-start; padding:7px 9px; border-radius:9px;
+      background:rgba(255,255,255,0.05); border:1px solid rgba(221,205,160,0.14); color:#e1ded8; }
+    .org-log-txt { flex:1; white-space:pre-wrap; word-break:break-word; }
+    .org-log-del { border:none; background:none; cursor:pointer; color:#847b66;
+      font-size:0.75rem; line-height:1; padding:2px 4px; flex-shrink:0; }
+    .org-log-del:hover { color:#f87171; }
+    .org-comment-new { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+    .org-comment-new .org-btn { align-self:flex-start; background:rgba(132,194,94,0.16);
+      color:#a8d98a; border:1px solid rgba(132,194,94,0.34); }
+    /* Bandeau de dates sous le titre de la fiche. */
+    .org-d-meta { display:flex; flex-wrap:wrap; align-items:center; gap:7px;
+      font-size:0.73rem; color:#847b66; margin:2px 0 4px; }
+    .org-d-meta b { color:#b4ad9e; font-weight:700; }
+    .org-d-meta i { color:#5c5648; font-style:normal; }
     .org-d-actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
     .org-btn { padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:0.85rem; font-family:inherit; }
     .org-btn.move { background:rgba(255,255,255,0.06); color:#e1ded8; }
