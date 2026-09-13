@@ -3,7 +3,7 @@
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { initUserMenu } from '/js/userMenu.js';
-    import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
+    import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
     import { showXpFloat } from '/js/xp.js';
 
     let auth, db, uid, habits = [], editingIdx = null;
@@ -60,7 +60,23 @@
       return saveWithFeedback(() => setDoc(doc(db, 'users', uid), { habits }, { merge: true }));
     }
 
+    // Ce que CYL voit des habitudes : des compteurs et des séries, jamais le
+    // détail des journées. Assez pour parler juste, pas plus.
+    function publishContext() {
+      try {
+        const enCours = habits.filter(h => !isDoneToday(h)).map(h => String(h.name || h.title || '').slice(0, 50));
+        const meilleure = habits.reduce((m, h) => Math.max(m, getStreak(h)), 0);
+        setContext('habitudes', {
+          'habitudes suivies': habits.length,
+          'tenues aujourd hui': habits.filter(h => isDoneToday(h)).length,
+          'pas encore faites': enCours.slice(0, 5),
+          'meilleure serie en cours': meilleure ? meilleure + ' jours' : 'aucune serie en cours',
+        });
+      } catch (_) { /* la page marche meme si CYL n'apprend rien */ }
+    }
+
     function render() {
+      publishContext();
       const area = document.getElementById('content-area');
       if (!area) return;
 

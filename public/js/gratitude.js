@@ -5,7 +5,7 @@
     import {
       doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, getCountFromServer
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
+    import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
     try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 
@@ -132,6 +132,15 @@
       document.getElementById('stat-total').textContent = totalDays;
       document.getElementById('stat-month').textContent = thisMonth;
       document.getElementById('streak-badge').textContent = `${streak} jour${streak !== 1 ? 's' : ''} de suite`;
+
+      // Des compteurs pour CYL, jamais le CONTENU des gratitudes : c'est ce
+      // que la personne a de plus personnel sur cette page.
+      setContext('gratitude', {
+        'jours notes au total': totalDays,
+        'serie en cours': streak ? streak + ' jours' : 'aucune serie en cours',
+        'ce mois-ci': thisMonth,
+        'aujourd hui': entries[today] ? 'deja note' : 'pas encore note',
+      });
     }
 
     function renderHeatmap() {

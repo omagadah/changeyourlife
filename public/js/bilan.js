@@ -4,6 +4,7 @@ import { auth, db } from '/js/firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initUserMenu } from '/js/userMenu.js';
+import { setContext } from '/js/common.js';
 
 window.addEventListener('DOMContentLoaded', () => {
 });
@@ -207,6 +208,17 @@ async function renderStats(monday, sunday) {
 
   // Highlights
   buildHighlights(journalCount, medCount, habitsDoneCount, moodEntries, habits.length);
+
+  // La semaine en chiffres pour CYL. Elle est a cote pendant la relecture :
+  // sans ces reperes, elle commente une semaine qu'elle ne voit pas.
+  setContext('bilan', {
+    'semaine du': monday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }),
+    'entrees de journal': journalCount,
+    'seances de meditation': medCount,
+    'habitudes tenues': habitsDoneCount,
+    'humeurs notees': moodEntries.length,
+    'XP estimes sur la semaine': xpEstimate,
+  });
 }
 
 function setBar(barId, valId, val, max) {

@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initUserMenu } from '/js/userMenu.js';
 import { showXpFloat } from '/js/xp.js';
+import { setContext } from '/js/common.js';
 
 window.addEventListener('DOMContentLoaded', () => {
 });
@@ -81,6 +82,30 @@ async function loadEntries() {
     const e = allEntries[todayStr];
     showAlreadyLogged(e);
   }
+
+  publishContext();
+}
+
+// ── Ce que CYL sait de l'humeur, et ce qu'elle ne saura jamais ──────────────
+// Le SCORE et la TENDANCE partent avec le message (CYL est dans le panneau
+// pendant qu'on note sa journée : sans ça, elle demande « comment te sens-tu ? »
+// à quelqu'un qui vient justement de répondre à l'écran).
+// La NOTE, elle, ne part JAMAIS : c'est le texte intime, pas un repère.
+const MOOD_WORDS = { 1: 'tres bas', 2: 'bas', 3: 'neutre', 4: 'bon', 5: 'tres bon' };
+
+function publishContext() {
+  try {
+    const dates = Object.keys(allEntries).sort().reverse();
+    const last7 = dates.slice(0, 7).map((d) => allEntries[d]).filter((e) => e && typeof e.mood === 'number');
+    const moy = last7.length ? (last7.reduce((s, e) => s + e.mood, 0) / last7.length) : null;
+    const today = allEntries[todayDateStr()];
+    setContext('humeur', {
+      'humeur du jour': today && today.mood ? `${MOOD_WORDS[today.mood] || today.mood} (${today.mood}/5)` : 'pas encore notee',
+      'moyenne 7 jours': moy === null ? 'aucune donnee' : `${moy.toFixed(1)}/5`,
+      'jours suivis': dates.length,
+      'domaine du jour': (today && today.domain) || 'non precise',
+    });
+  } catch (_) { /* la page marche meme si CYL n'apprend rien */ }
 }
 
 function todayDateStr() {

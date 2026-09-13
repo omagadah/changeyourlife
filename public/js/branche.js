@@ -6,7 +6,7 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, setContext } from '/js/common.js';
 
 let auth, db, uid;
 let dim = {};   // { "<branch>.<i>": "YYYY-MM-DD" } - sous-catégorie validée ce jour
@@ -77,18 +77,30 @@ function render() {
   document.title = label + ' - Change Your Life';
 
   // sous-catégories (s1..s5)
+  // La même passe alimente l'affichage ET le contexte de CYL : un seul module
+  // sert les huit pages de branche, et `key` (venu de data-branch sur le body)
+  // est aussi la clé de page attendue par CYL - physio, securite, etc.
   let subs = '';
+  const faitesAuj = [];
+  const restantes = [];
   for (let i = 1; i <= 5; i++) {
     const name = T(`branch.${key}.s${i}.name`, '');
     const note = T(`branch.${key}.s${i}.note`, '');
     if (!name) continue;
     const done = dim[`${key}.${i}`] === todayStr();
+    (done ? faitesAuj : restantes).push(name);
     subs +=
       `<div class="dim-sub${done ? ' done' : ''}">` +
       `<div class="dim-sub-txt"><div class="dim-sub-name">${escapeHtml(name)}</div><div class="dim-sub-note">${escapeHtml(note)}</div></div>` +
       `<button class="dim-act" data-i="${i}">${done ? '✓ Fait' : "J'y ai consacré du temps"}</button>` +
       `</div>`;
   }
+
+  setContext(key, {
+    'branche affichee': label,
+    'sous-categories nourries aujourd hui': faitesAuj.length ? faitesAuj : 'aucune pour le moment',
+    'sous-categories en attente': restantes,
+  });
 
   const tools = (TOOLS[key] || []);
   const toolsHtml = tools.length

@@ -2,7 +2,7 @@
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { updateGlobalAvatar, toast } from '/js/common.js';
+import { updateGlobalAvatar, toast, setContext } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 
 
@@ -135,6 +135,16 @@ function showResults(){
   const global=Math.round((Object.values(scores).reduce((a,b)=>a+b,0)/DOMAINS.length)*10)/10;
   show('s-results');
   document.getElementById('g-score').textContent=global;
+
+  // Les axes tels que la personne VIENT de les noter elle-meme. Ce sont ses
+  // propres reponses, pas un jugement porte sur elle : CYL peut les reprendre
+  // pour l'aider a y voir clair, jamais pour la classer.
+  const tries=DOMAINS.map(d=>({nom:d.label,note:scores[d.key]})).sort((a,b)=>a.note-b.note);
+  setContext('autoevaluation',{
+    'axes notes par la personne':tries.map(x=>`${x.nom} : ${x.note}/10`),
+    'axe le plus a l etroit':tries[0]?tries[0].nom:'-',
+    'axe le plus a l aise':tries.length?tries[tries.length-1].nom:'-',
+  });
 
   if(radarChart)radarChart.destroy();
   radarChart=new Chart(document.getElementById('radar-chart').getContext('2d'),{

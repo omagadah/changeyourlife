@@ -5,7 +5,7 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
 import { loadSkills, awardSkillXp } from '/js/skills.js';
 
 let auth, db, uid;
@@ -145,6 +145,7 @@ async function saveRhythm() {
 
 // ── Base vitale ──────────────────────────────────────────────────────────────
 function renderVitals() {
+  publishContext();
   const grid = document.getElementById('vitals-grid');
   if (!grid) return;
   grid.innerHTML = '';
@@ -217,7 +218,24 @@ async function delTask(id) {
   renderTasks();
   await savePlan();
 }
+// CYL est dans le panneau pendant qu'on coche sa journée : ces repères lui
+// évitent de redemander ce qui est déjà affiché à l'écran.
+function publishContext() {
+  try {
+    const faites = plan.tasks.filter((t) => t.done).length;
+    const vitaux = VITALS.filter((v) => plan.vitals[v.key]).map((v) => v.label);
+    setContext('plan', {
+      'taches du jour': plan.tasks.length,
+      'taches accomplies': faites,
+      'reste a faire': plan.tasks.filter((t) => !t.done).slice(0, 5).map((t) => String(t.title || '').slice(0, 60)),
+      'essentiels coches': vitaux.length ? vitaux : 'aucun pour le moment',
+      'essentiels au total': VITALS.length,
+    });
+  } catch (_) { /* la journee s'affiche meme si CYL n'apprend rien */ }
+}
+
 function renderTasks() {
+  publishContext();
   const list = document.getElementById('task-list');
   const prog = document.getElementById('tasks-progress');
   if (!list) return;

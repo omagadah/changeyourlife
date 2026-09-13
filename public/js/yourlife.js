@@ -1,6 +1,6 @@
 // /yourlife/ - Pyramide de Maslow interactive (skills par niveau, mindmap, timeline).
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -107,6 +107,21 @@ function renderGlobalScore() {
   });
   const pct = total ? Math.round(done / total * 100) : 0;
   const complete = LEVELS.filter(lvl => { const s=skillData[lvl.id]||[]; return s.length>0 && s.every(x=>x.done); }).length;
+
+  // L'etat de l'arbre, etage par etage. On dit ce qui est POSE, jamais « ou
+  // tu en es » comme une note sur une vie (cf. regle non negociable : CYL ne
+  // note pas une vie, et « Score Ma Vie » est devenu « Jalons posés »).
+  setContext('yourlife', {
+    'jalons poses': `${done} sur ${total}`,
+    'etages complets': `${complete} sur ${LEVELS.length}`,
+    'etages les plus fournis': LEVELS
+      .map(l => ({ nom: l.label || l.id, faits: (skillData[l.id]||[]).filter(x=>x.done).length }))
+      .sort((a,b) => b.faits - a.faits).slice(0, 3)
+      .map(x => `${x.nom} (${x.faits})`),
+    'etages encore vides': LEVELS
+      .filter(l => !(skillData[l.id]||[]).some(x=>x.done))
+      .map(l => l.label || l.id),
+  });
 
   document.getElementById('gsb-pct').textContent = `${pct}%`;
 

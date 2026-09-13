@@ -3,7 +3,7 @@
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, setContext } from '/js/common.js';
 import { loadSkills, upsertSkill, deleteSkill, awardSkillXp, skillLevel } from '/js/skills.js';
 
 let auth, db, uid;
@@ -126,6 +126,18 @@ function render() {
     return;
   }
   const sorted = ids.map((id) => ({ id, ...skills[id] })).sort((a, b) => (b.xp || 0) - (a.xp || 0));
+
+  // Les competences les plus hautes, avec leur niveau, pour CYL.
+  setContext('competences', {
+    'competences suivies': ids.length,
+    // skillLevel() rend un objet {level, name, pct...}, pas un nombre.
+    'les plus avancees': sorted.slice(0, 4).map((s) => {
+      const lv = skillLevel(s.xp || 0);
+      return `${s.name || s.id} (${lv.name}, niveau ${lv.level})`;
+    }),
+    'en veille': sorted.filter((s) => !(s.xp || 0)).length,
+  });
+
   const grid = document.createElement('div'); grid.className = 'skill-grid';
   sorted.forEach((s) => {
     const b = BRANCH_BY[s.branch] || BRANCH_BY.accomplissement;

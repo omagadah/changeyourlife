@@ -9,9 +9,11 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/f
 import {
   loadBoard, saveBoard, getCol, findCard, moveCard, addCard, logCard,
   allCards, dueToday, topPriorities, stripEmoji,
+  cardCreatedAt, fmtAge, fmtFull,
   BRANCHES, BRANCH_BY_KEY, SUBS, reliefOptions, TRI_ID, FINISH_ID, FINISH_XP,
 } from '/js/organizer-data.js';
 import * as gcal from '/js/gcal.js';
+import { setContext } from '/js/common.js';
 
 let auth, db, uid;
 let board = null;
@@ -148,14 +150,25 @@ function renderCard(card, col) {
   const b = card.branch && BRANCH_BY_KEY[card.branch];
   if (b) el.style.setProperty('--bc', b.color);
   const badges = [];
+  // QUAND l'ai-je notée ? En premier, et discret : sur une fiche « à trier »,
+  // c'est ce qui fait la différence entre une idée d'hier et une idée qu'on
+  // repousse depuis trois mois. L'échéance qui suit répond à une autre
+  // question (« pour quand ? ») - les deux ne se confondent pas.
+  const cree = cardCreatedAt(card);
+  if (cree) {
+    const vieux = Date.now() - cree > 30 * 86400000;
+    badges.push(`<span class="hub-badge age${vieux ? ' old' : ''}" title="Notée le ${esc(fmtFull(cree))}">🕘 ${esc(fmtAge(cree))}</span>`);
+  }
   if (card.due) {
     const days = Math.ceil((card.due - Date.now()) / 86400000);
     const cls = days < 0 ? ' late' : days <= 1 ? ' soon' : '';
-    badges.push(`<span class="hub-badge${cls}">${esc(fmtDate(card.due))}</span>`);
+    badges.push(`<span class="hub-badge${cls}" title="Échéance : ${esc(fmtFull(card.due))}">🗓 ${esc(fmtDate(card.due))}</span>`);
   }
   if (card.gcalId) badges.push('<span class="hub-badge cal" title="Dans ton Google Agenda">agenda</span>');
   const total = (card.checklist || []).length;
   if (total) badges.push(`<span class="hub-badge">${(card.checklist || []).filter((s) => s.done).length}/${total}</span>`);
+  const nc = (card.comments || []).length;
+  if (nc) badges.push(`<span class="hub-badge" title="${nc} commentaire${nc > 1 ? 's' : ''}">💬 ${nc}</span>`);
   // sous-categorie (Sommeil, Finances, Projets…) : le rangement fin
   if (card.sub) badges.push(`<span class="hub-badge sub">${esc(card.sub)}</span>`);
   // ampleur : un geste ou un chantier ? (ne s'affiche que si ce n'est pas anodin)
@@ -251,6 +264,22 @@ function renderFoot() {
   f.innerHTML =
     `<span class="hub-foot-n">${bits.join('<span class="sep">·</span>')}</span>` +
     `<span class="hub-foot-go">Ouvrir l'ORGANIZER <span aria-hidden="true">→</span></span>`;
+
+  // CYL regarde par-dessus l'épaule. Ces mêmes chiffres, déjà calculés
+  // ci-dessus, lui évitent de demander « où en es-tu ? » à chaque ouverture.
+  // Des repères, pas la matière : on lui passe des titres de fiches (que
+  // l'utilisateur voit déjà à l'écran), jamais le contenu des notes.
+  const vieux = Date.now() - 30 * 86400000;
+  const dorment = open.filter(({ card }) => { const c = cardCreatedAt(card); return c && c < vieux; }).length;
+  setContext('app', {
+    'fiches en cours': open.length,
+    'a trier': tri,
+    'en retard': late,
+    'notees il y a plus d un mois et jamais bougees': dorment,
+    'terminees': done,
+    'priorites du moment': topPriorities(board, 3).map(({ card }) => stripEmoji(card.title)),
+    'echeances du jour': dueToday(board).length,
+  });
 }
 
 
@@ -581,6 +610,10 @@ function injectCSS() {
   .hub-badge.late{background:rgba(224,120,95,0.18);color:#c0503a;}
   .hub-badge.cal{background:rgba(132,194,94,0.16);color:var(--leaf-text);}
   .hub-badge.sub{background:var(--surface-2);color:var(--text-3);font-weight:700;}
+  /* L'age de la fiche : sans fond tant que c'est recent, il ne doit pas peser
+     autant qu'une echeance. Passe un mois sans bouger, il se colore. */
+  .hub-badge.age{background:transparent;color:var(--text-3);font-weight:700;padding-left:0;}
+  .hub-badge.age.old{background:rgba(231,177,92,0.13);color:var(--gold-text);padding-left:6px;}
   .hub-badge.mid{background:rgba(231,177,92,0.13);color:var(--gold-text);}
   .hub-badge.big{background:rgba(195,154,107,0.20);color:var(--gold-text);}
 

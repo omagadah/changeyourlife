@@ -2,7 +2,7 @@
   "name": "changeyourlife",
   "version": "1.0.0",
   "private": true,
-  "description": "PWA santé mentale optimisée par l'IA — méditation, journal, objectifs, coach IA, trackers.",
+  "description": "PWA assistant de vie : un arbre vivant, une IA-coach (CYL), méditation, journal, objectifs, trackers.",
   "homepage": "https://changeyourlife.ai",
   "repository": "github:omagadah/changeyourlife",
   "license": "UNLICENSED",

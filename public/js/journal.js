@@ -1,6 +1,6 @@
 // /journal/ - journal de bord, gestion des entrées + stats + filtres.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, setContext } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { showXpFloat } from '/js/xp.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -110,7 +110,31 @@ function renderFilterPills() {
 }
 
 // ── Render: entry list ─────────────────────────────────────────────────────
+// ── Ce que CYL sait du journal ──────────────────────────────────────────────
+// Le TEXTE des entrees ne sort jamais d'ici. C'est la page la plus intime du
+// site : CYL apprend qu'on ecrit, a quel rythme, avec quelle tonalite - pas ce
+// qu'on ecrit. Si on veut lui en parler, on le lui dit soi-meme.
+function publishContext() {
+  try {
+    // createdAt est un Timestamp Firestore, pas un nombre : passer par
+    // tsToDate() comme le reste du module, sinon toutes les dates tombent a 0.
+    const weekAgo = Date.now() - 7 * 86400000;
+    const semaine = entries.filter((e) => tsToDate(e.createdAt).getTime() >= weekAgo);
+    const compte = {};
+    for (const e of semaine) if (e.emotion && e.emotion !== 'neutral') compte[e.emotion] = (compte[e.emotion] || 0) + 1;
+    const dom = Object.entries(compte).sort((a, b) => b[1] - a[1])[0];
+    const auj = new Date().toDateString();
+    setContext('journal', {
+      'entrees au total': entries.length,
+      'entrees cette semaine': semaine.length,
+      'tonalite dominante de la semaine': dom && EMOTION_MAP[dom[0]] ? EMOTION_MAP[dom[0]].label : 'pas assez d entrees',
+      'aujourd hui': entries.some((e) => tsToDate(e.createdAt).toDateString() === auj) ? 'deja ecrit' : 'pas encore ecrit',
+    });
+  } catch (_) { /* la page marche meme si CYL n'apprend rien */ }
+}
+
 function renderList() {
+  publishContext();
   const list = document.getElementById('entry-list');
   const cnt  = document.getElementById('entry-count');
   const q = searchQuery.toLowerCase().trim();

@@ -1,0 +1,541 @@
+/* public/css/cyl-panel.css - Le panneau lateral de CYL.
+ *
+ * CYL cesse d'etre une bulle posee par dessus le site : elle occupe une
+ * colonne a droite, et le contenu se reduit d'autant. Meme mecanique que la
+ * barre de navigation a gauche (cf. /js/sidebar.js), en miroir.
+ *
+ * AUCUNE COULEUR EN DUR : tout passe par les tokens du design system, sinon
+ * le theme clair casse. Les valeurs apres la virgule sont des replis pour le
+ * cas ou la feuille principale n'aurait pas encore ete appliquee.
+ */
+
+:root {
+  --cylp-w: 360px;       /* colonne ouverte */
+  --cylp-min-w: 56px;    /* barre reduite : avatar + badge */
+  --cylp-z: 9700;        /* sous la barre de nav (9800), au dessus du contenu */
+}
+
+/* Entre 900 et 1280 px, la barre de nav (232) + le panneau (360) prendraient
+   592 px : le contenu n'a plus de quoi respirer. La colonne se resserre. */
+@media (max-width: 1280px) {
+  :root { --cylp-w: 316px; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   LE CADRE
+   ───────────────────────────────────────────────────────────────────────── */
+
+.cylp {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--cylp-w);
+  z-index: var(--cylp-z);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface, #0f1710);
+  border-left: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  font-family: inherit;
+  transition: width 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cylp[data-state='min'] { width: var(--cylp-min-w); }
+
+/* Le panneau existe avant d'etre visible : on le cache tant que l'utilisateur
+   n'est pas authentifie, sans le detruire. */
+.cylp[hidden] { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   LE CONTENU DU SITE SE DECALE
+   Meme demarche que la barre de nav : padding sur le body pour le flux
+   normal, et surcharge nommee pour les cadres poses en position:fixed.
+   ───────────────────────────────────────────────────────────────────────── */
+
+body.has-cylp { padding-right: var(--cylp-w); transition: padding-right 0.24s cubic-bezier(0.4, 0, 0.2, 1); }
+body.has-cylp.cylp-min { padding-right: var(--cylp-min-w); }
+
+/* SPECIFICITE VOLONTAIRE (0,3,1).
+   sidebar.js ecrit `inset: ... !important` sur ces memes selecteurs avec une
+   specificite de (0,2,1). Les deux feuilles sont injectees par imports
+   dynamiques : leur ordre n'est pas garanti. On ne peut donc pas compter sur
+   « la derniere gagne », il faut peser plus lourd. D'ou le `.has-sb.has-cylp`
+   plutot qu'un simple `.has-cylp`. */
+body.has-cylp .app-container { right: calc(var(--cylp-w) + 15px) !important; }
+body.has-sb.has-cylp .app-container { right: calc(var(--cylp-w) + 15px) !important; }
+body.has-cylp.cylp-min .app-container,
+body.has-sb.has-cylp.cylp-min .app-container { right: calc(var(--cylp-min-w) + 15px) !important; }
+
+body.has-cylp .ap-shell,
+body.has-cylp [data-cyl-shell],
+body.has-sb.has-cylp .ap-shell,
+body.has-sb.has-cylp [data-cyl-shell] { right: calc(var(--cylp-w) + 16px) !important; }
+body.has-cylp.cylp-min .ap-shell,
+body.has-cylp.cylp-min [data-cyl-shell],
+body.has-sb.has-cylp.cylp-min .ap-shell,
+body.has-sb.has-cylp.cylp-min [data-cyl-shell] { right: calc(var(--cylp-min-w) + 16px) !important; }
+
+body.has-cylp .page-shell,
+body.has-cylp .page-shell-nav,
+body.has-sb.has-cylp .page-shell,
+body.has-sb.has-cylp .page-shell-nav { right: calc(var(--cylp-w) + 20px) !important; }
+body.has-cylp.cylp-min .page-shell,
+body.has-cylp.cylp-min .page-shell-nav,
+body.has-sb.has-cylp.cylp-min .page-shell,
+body.has-sb.has-cylp.cylp-min .page-shell-nav { right: calc(var(--cylp-min-w) + 20px) !important; }
+
+/* Porte de sortie non destructive, jumelle de [data-cyl-shift] a gauche :
+   une page qui pose son propre cadre ajoute cet attribut et herite du
+   decalage sans que ce fichier ait a connaitre sa mise en page. */
+body.has-cylp [data-cyl-shift] { margin-right: var(--cylp-w) !important; }
+body.has-cylp.cylp-min [data-cyl-shift] { margin-right: var(--cylp-min-w) !important; }
+
+/* CAS NOMME : le panneau d'inspection de /frise/.
+   C'est le seul element du site qui occupe DEJA le bord droit (352 px, cale
+   sur right:16px). Sans cette regle il disparait purement et simplement sous
+   CYL. Les portes de sortie ci-dessus ne conviennent pas : #fr-insp n'est pas
+   un cadre de page mais un volet, et lui poser une marge droite le decalerait
+   sans le redimensionner.
+   En pratique CYL demarre reduite hors de l'accueil, donc le volet ne perd
+   que 56 px ; l'utilisateur qui ouvre CYL sur la frise choisit ce partage. */
+body.has-cylp #fr-insp { right: calc(var(--cylp-w) + 16px) !important; }
+body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !important; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MODE REDUIT : la barre de 56 px
+   ───────────────────────────────────────────────────────────────────────── */
+
+.cylp-rail {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-2, #b4ad94);
+}
+.cylp[data-state='min'] .cylp-rail { display: flex; }
+.cylp[data-state='min'] .cylp-main { display: none; }
+
+.cylp-rail-orb { position: relative; width: 34px; height: 34px; flex-shrink: 0; }
+.cylp-rail:hover .cylp-rail-orb { transform: scale(1.07); }
+.cylp-rail-orb { transition: transform 0.18s ease; }
+
+/* Le nom, a la verticale : la barre reste lisible sans s'elargir. */
+.cylp-rail-name {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3, #86806a);
+  user-select: none;
+}
+.cylp-rail:hover .cylp-rail-name { color: var(--leaf, #84c25e); }
+
+.cylp-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--leaf, #84c25e);
+  color: var(--bg-surface, #0f1710);
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 17px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--bg-surface, #0f1710);
+}
+.cylp-badge[hidden] { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PANNEAU OUVERT
+   ───────────────────────────────────────────────────────────────────────── */
+
+.cylp-main { position: relative; display: flex; flex-direction: column; height: 100%; min-height: 0; }
+
+/* L'entete reste AU-DESSUS de l'ecran de consentement (z-index 5 plus bas).
+   Sans ca, tant qu'on n'avait pas accepte, on ne pouvait plus reduire le
+   panneau : l'overlay mangeait le seul bouton de sortie. */
+.cylp-head {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 12px 11px 14px;
+  background: var(--bg-surface, #0f1710);
+  border-bottom: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  flex-shrink: 0;
+}
+/* La poignee mobile suit, pour la meme raison. */
+.cylp-grab { position: relative; z-index: 6; }
+.cylp-head-orb { width: 34px; height: 34px; flex-shrink: 0; }
+.cylp-head-id { flex: 1; min-width: 0; }
+.cylp-head-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-1, #f4efe1);
+  line-height: 1.15;
+}
+/* Le sous-titre nomme la page : CYL dit ou elle regarde. */
+.cylp-head-sub {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-3, #86806a);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cylp-ico {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  background: var(--surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--text-2, #b4ad94);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.16s, color 0.16s;
+}
+.cylp-ico:hover { background: var(--surface-3, rgba(255, 255, 255, 0.08)); color: var(--text-1, #f4efe1); }
+
+/* Onglets */
+.cylp-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  flex-shrink: 0;
+}
+.cylp-tab {
+  flex: 1;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-3, #86806a);
+  transition: background 0.16s, color 0.16s;
+}
+.cylp-tab:hover { background: var(--surface-2, rgba(255, 255, 255, 0.05)); color: var(--text-1, #f4efe1); }
+.cylp-tab[aria-selected='true'] {
+  background: rgba(132, 194, 94, 0.14);
+  color: var(--leaf, #84c25e);
+  box-shadow: inset 0 0 0 1px rgba(132, 194, 94, 0.26);
+}
+
+.cylp-panes { flex: 1; min-height: 0; display: flex; }
+.cylp-pane { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px; }
+.cylp-pane[hidden] { display: none; }
+
+/* Messages */
+.cylp-msgs { display: flex; flex-direction: column; gap: 9px; }
+.cylp-msg {
+  max-width: 92%;
+  padding: 9px 12px;
+  border-radius: 13px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.cylp-msg.user {
+  align-self: flex-end;
+  background: rgba(132, 194, 94, 0.16);
+  border: 1px solid rgba(132, 194, 94, 0.3);
+  color: var(--text-1, #f4efe1);
+  border-bottom-right-radius: 5px;
+}
+.cylp-msg.cyl {
+  align-self: flex-start;
+  background: var(--surface-2, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  color: var(--text-1, #f4efe1);
+  border-bottom-left-radius: 5px;
+}
+.cylp-msg.wait { color: var(--text-3, #86806a); font-style: italic; }
+.cylp-msg.err {
+  align-self: stretch;
+  max-width: none;
+  background: rgba(224, 120, 95, 0.12);
+  border: 1px solid rgba(224, 120, 95, 0.3);
+  color: var(--text-2, #b4ad94);
+}
+
+/* Modules suggeres sous une reponse */
+.cylp-mods { display: flex; flex-wrap: wrap; gap: 6px; align-self: flex-start; max-width: 92%; }
+.cylp-mod {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(231, 177, 92, 0.32);
+  background: rgba(231, 177, 92, 0.1);
+  color: var(--gold-soft, #f1cd92);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.16s;
+}
+.cylp-mod:hover { background: rgba(231, 177, 92, 0.2); }
+
+/* Onglet Actions */
+.cylp-acts { display: flex; flex-direction: column; gap: 7px; }
+.cylp-acts-note {
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--text-3, #86806a);
+  padding: 0 2px 4px;
+}
+.cylp-act {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 11px;
+  border-radius: 11px;
+  border: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  background: var(--surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--text-2, #b4ad94);
+  font: inherit;
+  font-size: 0.79rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s, border-color 0.16s;
+}
+.cylp-act:hover {
+  background: rgba(132, 194, 94, 0.12);
+  border-color: rgba(132, 194, 94, 0.3);
+  color: var(--text-1, #f4efe1);
+}
+.cylp-act-ic { font-size: 0.98rem; width: 18px; text-align: center; flex-shrink: 0; }
+.cylp-act.go { border-style: dashed; }
+
+/* Zone de saisie */
+.cylp-compose {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 10px;
+  border-top: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  flex-shrink: 0;
+}
+.cylp-input {
+  flex: 1;
+  min-height: 38px;
+  max-height: 140px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  border: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+  background: var(--field-bg, rgba(8, 13, 7, 0.55));
+  color: var(--text-1, #f4efe1);
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  resize: none;
+  overflow-y: auto;
+}
+.cylp-input::placeholder { color: var(--text-3, #86806a); }
+.cylp-send {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 11px;
+  background: var(--leaf, #84c25e);
+  color: var(--bg-surface, #0f1710);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: filter 0.16s, opacity 0.16s;
+}
+.cylp-send:hover { filter: brightness(1.08); }
+.cylp-send:disabled { opacity: 0.4; cursor: default; }
+
+/* Consentement, premiere ouverture. Exigence de conformite : conserve tel
+   quel depuis l'ancienne bulle, meme cle de stockage (cyl_consent_v1). */
+.cylp-consent {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+  overflow-y: auto;
+  background: var(--bg-surface, #0f1710);
+}
+.cylp-consent.show { display: flex; }
+.cylp-consent-orb { width: 48px; height: 48px; align-self: center; flex-shrink: 0; }
+.cylp-consent-title { font-size: 0.95rem; font-weight: 800; text-align: center; color: var(--text-1, #f4efe1); }
+.cylp-consent-body { font-size: 0.76rem; line-height: 1.55; color: var(--text-2, #b4ad94); }
+.cylp-consent-body ul { margin: 8px 0 0; padding-left: 17px; }
+.cylp-consent-body li { margin-bottom: 5px; }
+.cylp-consent-body b { color: var(--gold-soft, #f1cd92); }
+.cylp-consent-check {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--text-2, #b4ad94);
+  cursor: pointer;
+}
+.cylp-consent-check input { margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--leaf, #84c25e); cursor: pointer; }
+.cylp-consent-ok {
+  padding: 11px;
+  border: none;
+  border-radius: 11px;
+  background: var(--leaf, #84c25e);
+  color: var(--bg-surface, #0f1710);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cylp-consent-ok:disabled { opacity: 0.45; cursor: default; }
+
+/* Bouton flottant : n'existe que sur petit ecran (voir plus bas). */
+.cylp-fab { display: none; }
+
+/* La poignee de la feuille mobile : masquee sur grand ecran. */
+.cylp-grab { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE : le panneau devient une feuille qu'on remonte du doigt
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  body.has-cylp,
+  body.has-cylp.cylp-min { padding-right: 0; }
+
+  /* Les surcharges de cadres fixes n'ont plus lieu d'etre : la feuille passe
+     par dessus au lieu de pousser. */
+  body.has-cylp .app-container,
+  body.has-sb.has-cylp .app-container,
+  body.has-cylp.cylp-min .app-container,
+  body.has-sb.has-cylp.cylp-min .app-container { right: 15px !important; }
+  body.has-cylp .ap-shell,
+  body.has-cylp [data-cyl-shell],
+  body.has-sb.has-cylp .ap-shell,
+  body.has-sb.has-cylp [data-cyl-shell],
+  body.has-cylp.cylp-min .ap-shell,
+  body.has-cylp.cylp-min [data-cyl-shell],
+  body.has-sb.has-cylp.cylp-min .ap-shell,
+  body.has-sb.has-cylp.cylp-min [data-cyl-shell] { right: 8px !important; }
+  body.has-cylp .page-shell,
+  body.has-cylp .page-shell-nav,
+  body.has-sb.has-cylp .page-shell,
+  body.has-sb.has-cylp .page-shell-nav,
+  body.has-cylp.cylp-min .page-shell,
+  body.has-cylp.cylp-min .page-shell-nav,
+  body.has-sb.has-cylp.cylp-min .page-shell,
+  body.has-sb.has-cylp.cylp-min .page-shell-nav { right: 8px !important; }
+  body.has-cylp [data-cyl-shift],
+  body.has-cylp.cylp-min [data-cyl-shift] { margin-right: 0 !important; }
+  body.has-cylp #fr-insp,
+  body.has-cylp.cylp-min #fr-insp { right: 16px !important; }
+
+  .cylp {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    /* La hauteur est pilotee par le doigt ; --cylp-h est ecrite par le JS. */
+    height: var(--cylp-h, 68vh);
+    max-height: 92vh;
+    border-left: none;
+    border-top: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+    border-radius: 18px 18px 0 0;
+    box-shadow: var(--shadow-lg, 0 20px 56px rgba(0, 0, 0, 0.55));
+    transform: translateY(100%);
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .cylp[data-state='min'] { width: auto; }
+  /* En mode reduit la feuille descend entierement : c'est le bouton flottant
+     qui la rappelle, la barre verticale n'a pas de sens ici. */
+  .cylp[data-state='min'] .cylp-rail { display: none; }
+  .cylp[data-state='min'] .cylp-main { display: flex; }
+  .cylp[data-state='open'] { transform: none; }
+
+  .cylp-grab {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 8px auto 2px;
+    border-radius: 3px;
+    background: var(--line-strong, rgba(221, 205, 160, 0.28));
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+  }
+  .cylp.dragging { transition: none; }
+  .cylp.dragging .cylp-grab { cursor: grabbing; }
+
+  /* La zone de prehension deborde la poignee : 4 px de haut, personne ne les
+     attrape. L'entete entier sert de zone de glissement. */
+  .cylp-head { touch-action: none; }
+
+  .cylp-fab {
+    display: flex;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: calc(var(--cylp-z) - 1);
+    width: 54px;
+    height: 54px;
+    padding: 0;
+    border: 1px solid var(--line, rgba(221, 205, 160, 0.12));
+    border-radius: 50%;
+    background: var(--bg-surface, #0f1710);
+    box-shadow: var(--shadow-lg, 0 20px 56px rgba(0, 0, 0, 0.55));
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+  .cylp[data-state='open'] ~ .cylp-fab { display: none; }
+  .cylp-fab-orb { position: relative; width: 38px; height: 38px; }
+  .cylp-fab .cylp-badge { top: -4px; right: -4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cylp,
+  body.has-cylp,
+  .cylp-rail-orb { transition: none !important; }
+}
+
+/* A l'impression, CYL n'a rien a faire sur la feuille, et le contenu reprend
+   toute la largeur. Regle GLOBALE : sans elle, chaque page devait penser a
+   masquer le panneau dans son propre @media print (/frise/ et /agenda/ le
+   faisaient, les 26 autres non). */
+@media print {
+  .cylp,
+  .cylp-fab { display: none !important; }
+  body.has-cylp,
+  body.has-cylp.cylp-min { padding-right: 0 !important; }
+  body.has-cylp .app-container,
+  body.has-cylp .ap-shell,
+  body.has-cylp [data-cyl-shell],
+  body.has-cylp .page-shell,
+  body.has-cylp .page-shell-nav { right: 0 !important; }
+  body.has-cylp [data-cyl-shift] { margin-right: 0 !important; }
+}

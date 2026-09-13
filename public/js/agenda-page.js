@@ -24,6 +24,7 @@ import {
   BRANCHES, BRANCH_BY_KEY, FINISH_ID, TRI_ID,
 } from '/js/organizer-data.js';
 import { initUserMenu } from '/js/userMenu.js';
+import { setContext } from '/js/common.js';
 import * as gcal from '/js/gcal.js';
 
 let auth, db, uid;
@@ -582,6 +583,31 @@ function render() {
   renderRail(all);
   renderEmptyNotice(all);
   document.body.dataset.view = view;
+  publishContext(all);
+}
+
+// ── Ce que CYL sait de l'agenda ─────────────────────────────────────────────
+// DES COMPTEURS, PAS DES TITRES. Partout ailleurs on lui passe quelques
+// libelles (une fiche, une habitude) parce qu'ils sont deja a l'ecran et
+// anodins. Ici non : « Oncologie 14h » ou le nom d'un avocat en dit long, et
+// l'agenda est le seul module aliment par une source EXTERIEURE que la
+// personne n'a pas ecrite en pensant a CYL.
+function publishContext(all) {
+  try {
+    const now = new Date();
+    const finJour = new Date(now); finJour.setHours(23, 59, 59, 999);
+    const dans7 = new Date(now); dans7.setDate(dans7.getDate() + 7);
+    const auj = all.filter((x) => x.date >= now && x.date <= finJour);
+    const prochain = all.find((x) => x.date >= now);
+    setContext('agenda', {
+      'elements aujourd hui': auj.length,
+      'elements sur 7 jours': all.filter((x) => x.date >= now && x.date <= dans7).length,
+      'prochain creneau': prochain
+        ? prochain.date.toLocaleString('fr-FR', { weekday: 'long', hour: '2-digit', minute: '2-digit' })
+        : 'rien de prevu',
+      'vue affichee': view,
+    });
+  } catch (_) { /* l'agenda s'affiche meme si CYL n'apprend rien */ }
 }
 function syncTabs() {
   $('#ap-tabs').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === view));

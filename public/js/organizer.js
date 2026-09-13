@@ -9,8 +9,11 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
-import { BRANCHES, BRANCH_BY_KEY, guessBranch } from '/js/organizer-data.js';
+import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
+import {
+  BRANCHES, BRANCH_BY_KEY, guessBranch,
+  cardCreatedAt, cardUpdatedAt, fmtAge, fmtFull, addComment, removeComment, cardFeed,
+} from '/js/organizer-data.js';
 import * as gcal from '/js/gcal.js';
 
 let auth, db, uid;
@@ -90,6 +93,7 @@ function save() { clearTimeout(saveT); saveT = setTimeout(() => { saveWithFeedba
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
 function render() {
+  publishContext();
   if (board.view === 'canvas') { renderCanvas(); updateLockUI(); return; }
   const triHost = document.getElementById('org-tri');
   const boardEl = document.getElementById('org-board');
@@ -99,6 +103,45 @@ function render() {
   board.columns.filter((c) => c.id !== TRI_ID).forEach((c) => boardEl.appendChild(renderColumn(c)));
   initSortables();
   updateLockUI();
+}
+
+// Ce que CYL voit du board, en chiffres. Elle est dans le panneau à droite
+// pendant qu'on trie : lui donner l'état réel évite le dialogue de reperage
+// (« combien de fiches as-tu ? ») qui faisait perdre son interet a l'echange.
+function publishContext() {
+  try {
+    const cols = (board && board.columns) || [];
+    const now = Date.now();
+    let done = 0, tri = 0, open = 0, late = 0, dorment = 0;
+    const titres = [];
+    const vieux = now - 30 * 86400000;
+    for (const c of cols) {
+      const cards = c.cards || [];
+      if (c.id === FINISH_ID) { done = cards.length; continue; }
+      if (c.id === TRI_ID) tri = cards.length;
+      for (const card of cards) {
+        if (card.done) continue;
+        open += 1;
+        if (card.due && card.due < now) late += 1;
+        // Une fiche notée il y a plus d'un mois et toujours pas bougée : c'est
+        // le signal que le badge d'âge rend visible à l'écran, autant que CYL
+        // le voie aussi.
+        const cree = cardCreatedAt(card);
+        if (cree && cree < vieux) dorment += 1;
+        if (titres.length < 5) titres.push(String(card.title || '').slice(0, 60));
+      }
+    }
+    setContext('organizer', {
+      'colonnes': cols.length,
+      'fiches en cours': open,
+      'a trier': tri,
+      'en retard': late,
+      'notees il y a plus d un mois et jamais bougees': dorment,
+      'terminees': done,
+      'quelques titres': titres,
+      'vue': board && board.view === 'canvas' ? 'canvas' : 'colonnes',
+    });
+  } catch (_) { /* le board s'affiche meme si CYL n'apprend rien */ }
 }
 
 // Reflète l'état des deux verrous sur les boutons (cadenas ouvert/fermé + libellé).
@@ -146,16 +189,36 @@ function renderColumn(c, into) {
   return el;
 }
 
+// Les pastilles du front de fiche, dans l'ordre de lecture de Trello :
+// quand · échéance · étapes · description · commentaires.
 function badgesHtml(card) {
   const checked = (card.checklist || []).filter((s) => s.done).length;
   const total = (card.checklist || []).length;
   const out = [];
+
+  // QUAND. C'est la première pastille parce que c'est la première question
+  // qu'on se pose devant une colonne « à trier » : une idée déposée il y a
+  // trois mois et jamais bougée ne dit pas la même chose qu'une idée d'hier.
+  // Relatif tant que c'est proche, date ensuite ; la date complète est dans
+  // l'infobulle.
+  const cree = cardCreatedAt(card);
+  if (cree) {
+    const vieux = Date.now() - cree > 30 * 86400000;
+    out.push(`<span class="org-badge age${vieux ? ' old' : ''}" title="Créée le ${escapeHtml(fmtFull(cree))}">🕘 ${escapeHtml(fmtAge(cree))}</span>`);
+  }
+
   if (card.due) {
     const days = Math.ceil((card.due - now()) / 86400000);
     const cls = days < 0 ? 'due-late' : days <= 2 ? 'due-soon' : '';
-    out.push(`<span class="org-badge ${cls}">🗓 ${escapeHtml(fmtDate(card.due))}</span>`);
+    out.push(`<span class="org-badge ${cls}" title="Échéance : ${escapeHtml(fmtFull(card.due))}">🗓 ${escapeHtml(fmtDate(card.due))}</span>`);
   }
-  if (total) out.push(`<span class="org-badge">☑ ${checked}/${total}</span>`);
+  if (total) out.push(`<span class="org-badge" title="${checked} étape${checked > 1 ? 's' : ''} sur ${total}">☑ ${checked}/${total}</span>`);
+  if ((card.desc || '').trim()) out.push('<span class="org-badge" title="Cette fiche a une description">≡</span>');
+  const nc = (card.comments || []).length;
+  if (nc) out.push(`<span class="org-badge" title="${nc} commentaire${nc > 1 ? 's' : ''}">💬 ${nc}</span>`);
+  if (card.done && card.doneAt) {
+    out.push(`<span class="org-badge done-at" title="Terminée le ${escapeHtml(fmtFull(card.doneAt))}">✓ ${escapeHtml(fmtAge(card.doneAt))}</span>`);
+  }
   return out;
 }
 
@@ -529,9 +592,20 @@ function openCard(cardId) {
   const total = (card.checklist || []).length;
   const pct = total ? Math.round((checked / total) * 100) : 0;
   const dueVal = card.due ? new Date(card.due).toISOString().slice(0, 10) : '';
+  // Le bandeau de dates, en tête de fiche : créée / dernière activité /
+  // terminée. C'est ce que Trello met sous le titre, et c'est ce qui manquait
+  // le plus - on ne savait pas dater ce qu'on avait sous les yeux.
+  const cree = cardCreatedAt(card);
+  const maj = cardUpdatedAt(card);
+  const metas = [];
+  if (cree) metas.push(`<span title="${escapeHtml(fmtFull(cree))}">Créée <b>${escapeHtml(fmtAge(cree))}</b></span>`);
+  if (maj && cree && maj - cree > 60000) metas.push(`<span title="${escapeHtml(fmtFull(maj))}">Dernière activité <b>${escapeHtml(fmtAge(maj))}</b></span>`);
+  if (card.done && card.doneAt) metas.push(`<span title="${escapeHtml(fmtFull(card.doneAt))}">Terminée <b>${escapeHtml(fmtAge(card.doneAt))}</b></span>`);
+
   m.innerHTML = `
     <div class="org-card-detail">
       <textarea class="org-d-title" id="d-title" rows="1">${escapeHtml(card.title)}</textarea>
+      ${metas.length ? `<div class="org-d-meta">${metas.join('<i>·</i>')}</div>` : ''}
       <div class="org-d-label">Description</div>
       <textarea class="org-d-input" id="d-desc" placeholder="Détaille cette idée...">${escapeHtml(card.desc || '')}</textarea>
       <div class="org-d-label">Quelle part de ta vie ça nourrit</div>
@@ -546,7 +620,11 @@ function openCard(cardId) {
       <input type="text" class="org-d-input" id="d-newstep" placeholder="Ajouter une étape + Entrée" style="margin-top:6px" />
       <div class="org-d-label">Déplacer vers</div>
       <select class="org-d-move" id="d-move">${board.columns.map((c) => `<option value="${c.id}"${c.id === f.col.id ? ' selected' : ''}>${escapeHtml(stripEmoji(c.title))}</option>`).join('')}</select>
-      <div class="org-d-label">Activité</div>
+      <div class="org-d-label">Commentaires et activité</div>
+      <div class="org-comment-new">
+        <textarea class="org-d-input" id="d-newcom" rows="2" placeholder="Écris un commentaire..."></textarea>
+        <button class="org-btn" id="d-addcom">Commenter</button>
+      </div>
       <div class="org-logs" id="d-logs"></div>
       <div class="org-d-actions">
         <button class="org-btn cal" id="d-cal">↗ Ajouter à l'Agenda</button>
@@ -582,6 +660,22 @@ function openCard(cardId) {
       newStep.value = ''; save(); openCard(cardId); render();
     }
   });
+  // Commentaire : le bouton, et Ctrl+Entrée depuis la zone de saisie (Entrée
+  // seule doit rester un retour à la ligne, un commentaire fait souvent
+  // plusieurs lignes).
+  const comEl = m.querySelector('#d-newcom');
+  const postCom = () => {
+    const v = (comEl.value || '').trim();
+    if (!v) return;
+    addComment(card, v);
+    comEl.value = '';
+    save(); renderLogs(card); render();
+  };
+  m.querySelector('#d-addcom').onclick = postCom;
+  comEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); postCom(); }
+  });
+
   m.querySelector('#d-move').onchange = (e) => { closeModal(); moveCard(cardId, e.target.value); };
   m.querySelector('#d-cal').onclick = () => addToAgenda(card);
   m.querySelector('#d-del').onclick = () => { if (confirm('Supprimer cette fiche ?')) { f.col.cards = f.col.cards.filter((x) => x.id !== cardId); closeModal(); save(); render(); } };
@@ -601,10 +695,31 @@ function renderChecks(card, cardId) {
     box.appendChild(row);
   });
 }
+// Un seul fil, deux natures : ce que TU as écrit, et ce que le système a fait.
+// Trello les mélange dans la même colonne en les distinguant visuellement -
+// c'est plus lisible que deux listes séparées qu'il faut recoller de tête.
 function renderLogs(card) {
   const box = document.getElementById('d-logs'); if (!box) return;
-  const logs = card.logs || [];
-  box.innerHTML = logs.length ? logs.map((l) => `<div class="org-log"><span class="t">${escapeHtml(fmtLogTime(l.at))}</span><span>${escapeHtml(l.m)}</span></div>`).join('') : '<div class="org-log">Aucune activité.</div>';
+  const feed = cardFeed(card);
+  if (!feed.length) { box.innerHTML = '<div class="org-log">Aucune activité.</div>'; return; }
+  box.innerHTML = feed.map((e) => {
+    const quand = `<span class="t" title="${escapeHtml(fmtFull(e.at))}">${escapeHtml(fmtLogTime(e.at))}</span>`;
+    if (e.kind === 'comment') {
+      return `<div class="org-log com" data-com="${escapeHtml(e.id)}">${quand}`
+        + `<span class="org-log-txt">${escapeHtml(e.t)}</span>`
+        + '<button class="org-log-del" aria-label="Supprimer ce commentaire" title="Supprimer">✕</button></div>';
+    }
+    return `<div class="org-log">${quand}<span>${escapeHtml(e.t)}</span></div>`;
+  }).join('');
+
+  box.querySelectorAll('.org-log-del').forEach((b) => {
+    b.onclick = (ev) => {
+      ev.stopPropagation();
+      const id = b.closest('[data-com]').dataset.com;
+      if (!confirm('Supprimer ce commentaire ?')) return;
+      if (removeComment(card, id)) { save(); renderLogs(card); render(); }
+    };
+  });
 }
 function closeModal() { const m = document.getElementById('org-modal'); if (m) m.classList.add('hidden'); }
 

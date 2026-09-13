@@ -1,6 +1,6 @@
 // /objectifs/ - gestion d'objectifs avec sous-tâches + filtres + templates.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar, saveWithFeedback } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { showXpFloat } from '/js/xp.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -139,6 +139,15 @@ function renderStats() {
     <div class="stat-pill amber"><span class="sp-val">${avgPct}%</span> progression moy.</div>
     ${overdue ? `<div class="stat-pill red"><span class="sp-val">${overdue}</span> en retard</div>` : ''}
   `;
+
+  // Les mêmes chiffres pour CYL, dans le panneau à droite.
+  setContext('objectifs', {
+    'en cours': active,
+    'completes': completed,
+    'en retard': overdue,
+    'progression moyenne': avgPct + '%',
+    'intitules en cours': goals.filter((g) => !g.completed).slice(0, 5).map((g) => String(g.title || '').slice(0, 60)),
+  });
 }
 
 // ── Domain filter tabs ────────────────────────────────────────────────────

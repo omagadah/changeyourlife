@@ -2,7 +2,7 @@
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { updateGlobalAvatar, toast } from '/js/common.js';
+import { updateGlobalAvatar, toast, setContext } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
 
 
@@ -111,6 +111,14 @@ function updateCounts(){
     document.getElementById('cnt-'+c).textContent=all.filter(i=>i.cat===c).length;
   });
   document.getElementById('cnt-user').textContent=userNotes.length;
+
+  // Combien de fiches, dans quels domaines. Pas le contenu des notes.
+  setContext('codex', {
+    'fiches au total': all.length,
+    'notes personnelles': userNotes.length,
+    'par domaine': ['corps','coeur','etre','ordre']
+      .map(c=>`${c} : ${all.filter(i=>i.cat===c).length}`).join(', '),
+  });
 }
 
 async function loadUserNotes(){

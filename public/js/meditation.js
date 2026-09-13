@@ -1,6 +1,6 @@
 // /meditation/ - sessions guidées + respiration + sons d'ambiance + stats.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar } from '/js/common.js';
+import { updateGlobalAvatar, setContext } from '/js/common.js';
 import { showXpFloat } from '/js/xp.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -504,6 +504,17 @@ async function loadStats() {
       document.getElementById('stat-time').textContent = mins >= 60 ? `${Math.floor(mins/60)}h${mins%60?` ${mins%60}m`:''}` : `${mins} min`;
       document.getElementById('stat-streak').textContent = calculateStreak(med);
       renderHistory(med.history || []);
+
+      // Ce que CYL voit de la pratique : le rythme, pas le vecu de la seance.
+      const derniere = (med.history || [])[0];
+      setContext('meditation', {
+        'seances au total': med.totalSessions || 0,
+        'minutes cumulees': mins,
+        'serie en cours': calculateStreak(med),
+        'derniere seance': derniere && derniere.completedAt
+          ? new Date(derniere.completedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+          : 'aucune seance enregistree',
+      });
     }
   } catch(e) {}
 }

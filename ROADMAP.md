@@ -1,7 +1,7 @@
 # Roadmap - ChangeYourLife.ai
 
 > Liste opérationnelle, à cocher au fil de l'eau. Vision narrative → [docs/VISION.md](docs/VISION.md).
-> Architecture technique → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). MAJ : **2026-08-16**.
+> Architecture technique → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). MAJ : **2026-09-13**.
 
 ---
 
@@ -356,7 +356,7 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [x] **Wording produit corrigé** ✅ (satellite CYL, widget) : plus de « t'oriente vers la
   bonne action » ; disclaimer visible dans le chat (« ne décide pas à ta place / pas un pro »).
 - [ ] **CGU + mentions légales + politique de confidentialité** (pages dédiées, lien footer).
-- [x] **Consentement explicite** ✅ à la 1re ouverture de CYL (`cyl-chat.js` : écran de
+- [x] **Consentement explicite** ✅ à la 1re ouverture de CYL (`cyl-panel.js` : écran de
   consentement + case « j'ai compris que CYL ne remplace pas un professionnel », stocké
   `cyl_consent_v1`). Bloque le chat tant que non accepté.
 - [x] **Modération / garde-fou serveur** ✅ (`api/chat.js` : `moderateReply()` détecte la

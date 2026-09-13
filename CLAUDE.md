@@ -165,6 +165,31 @@ chez lui. Le compte est à plat dans son pied : plus de menu déroulant.
 Une page qui pose son propre cadre plein écran (`position:fixed`) doit porter
 `data-cyl-shell` pour hériter du décalage, sinon elle passe sous la barre.
 
+### CYL : le panneau latéral droit
+`/js/cyl-panel.js` + `/css/cyl-panel.css`, chargés par le **même bloc** de
+`common.js` que la barre de nav, donc sur les mêmes 28 pages. **Aucune page
+HTML ne référence CYL** : ne jamais l'ajouter page par page.
+
+- Le panneau **pousse** le contenu (`body.has-cylp { padding-right }`), il ne
+  le recouvre pas. Réduit, il tombe à 56 px (`body.cylp-min`).
+- Les cadres `position:fixed` sont décalés par les **mêmes portes de sortie**
+  qu'à gauche : `data-cyl-shell` (réécrit l'inset) ou `data-cyl-shift`
+  (marge, non destructif, à préférer).
+- Les sélecteurs de décalage sont écrits en `.has-sb.has-cylp` **exprès** :
+  `sidebar.js` pose des `!important` de même spécificité et l'ordre des deux
+  imports dynamiques n'est pas garanti.
+- État et conversation vivent en `sessionStorage` ; le consentement reste en
+  `localStorage` sous `cyl_consent_v1` (ne pas renommer : changer la clé
+  reviendrait à redemander son accord à tout le monde).
+- **Contexte de page** : une page publie ses repères avec
+  `setContext('clé', { … })` de `common.js`. Des chiffres et des libellés,
+  **jamais de matière intime** (le texte d'une entrée de journal, une note
+  d'humeur). `api/chat.js` borne et nettoie tout côté serveur, et dit au
+  modèle que ce bloc est de la donnée, pas une instruction.
+- Contrat public à ne pas casser : `window.cylChat.open()` (urgence.js),
+  l'événement `cyl:chat-open` + `{ prefill }` (app-organizer.js, cyl-brief.js).
+  Un prefill n'est **jamais** envoyé tout seul.
+
 ### Rôles & permissions
 - Auth via Firebase Custom Claims (`role: 'admin' | 'mod' | 'user'`)
 - Cloud Function `setUserRole({ uid, role })` - réservée aux admins

@@ -230,6 +230,37 @@ export function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * Publie le contexte de la page pour CYL (panneau latéral).
+ *
+ * CYL déduit déjà la page de l'URL. Ce helper sert à lui donner en plus les
+ * quelques repères que SEULE la page connaît : combien de fiches en retard,
+ * l'humeur du jour, le nombre d'habitudes tenues. Sans eux, CYL demande à
+ * chaque fois où on en est ; avec eux, elle part de la situation réelle.
+ *
+ * À appeler quand les données sont chargées, pas au démarrage du module.
+ * Les valeurs partent dans le même et unique appel sortant que le message
+ * (/api/chat) : aucun tiers supplémentaire. Ne jamais y mettre de contenu
+ * intime brut (le texte d'une entrée de journal) - des repères, pas la matière.
+ *
+ * @param {string} page - clé de la page (ex. 'organizer', 'humeur')
+ * @param {object} [data] - repères courts : nombres, libellés, listes de titres
+ */
+let _ctxSig = '';
+export function setContext(page, data) {
+  try {
+    const ctx = { page: String(page || ''), data: data || null };
+    window.CYL_CONTEXT = ctx;
+    // Les modules appellent ce helper depuis leur fonction de rendu, donc à
+    // chaque geste de l'utilisateur. On ne réveille CYL que si les repères ont
+    // réellement changé, sinon on redessine son panneau pour rien.
+    const sig = JSON.stringify(ctx);
+    if (sig === _ctxSig) return;
+    _ctxSig = sig;
+    document.dispatchEvent(new CustomEvent('cyl:context'));
+  } catch (_) { /* le site marche sans contexte */ }
+}
+
 let _toastHostReady = false;
 function _ensureToastHost() {
   if (_toastHostReady || typeof document === 'undefined') return;
@@ -350,13 +381,13 @@ if (typeof window !== 'undefined') {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initOffline);
   else initOffline();
   // Namespace global pour les scripts non-module (pratique + rétro-compat).
-  window.cyl = Object.assign(window.cyl || {}, { escapeHtml, toast, saveWithFeedback });
+  window.cyl = Object.assign(window.cyl || {}, { escapeHtml, toast, saveWithFeedback, setContext });
 }
 
 // ── CYL (orbe + chat) - chargée sur toutes les pages authentifiées ──────────
 // Pas sur la landing, login, signup, verify-email (pages publiques sans CYL).
 //
-// UNE SEULE IA, UN SEUL MODULE : c'est `cyl-chat.js` (consentement, garde-fous
+// UNE SEULE IA, UN SEUL MODULE : c'est `cyl-panel.js` (consentement, garde-fous
 // de conformité, préremplissage depuis l'ORGANIZER). L'ancien `lya-overlay.js`
 // chargeait une SECONDE orbe en parallèle sur /app/ - il n'est plus utilisé.
 (function maybeLoadCylChat() {
@@ -364,7 +395,12 @@ if (typeof window !== 'undefined') {
     try {
       var p = location.pathname;
       var isPublic = p.indexOf('/login') === 0 || p.indexOf('/signup') === 0 || p.indexOf('/verify-email') === 0
-        || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0;
+        || p.indexOf('/legal') === 0 || p.indexOf('/cgu') === 0 || p.indexOf('/confidentialite') === 0
+        // La vitrine reste servie EN DIRECT sous son vrai nom (vercel.json ne
+        // pose qu'un canonical sur /bienvenue.html, pas de redirection). Sans
+        // cette ligne, l'ouvrir par cette adresse affichait la barre de
+        // navigation et CYL par-dessus la page d'accueil publique.
+        || p === '/bienvenue.html';
 
       // « / » NE DIT PLUS QUI EST LA. Depuis que la racine sert la vitrine aux
       // visiteurs et l'espace aux personnes connectées, exclure « / » par son
@@ -386,8 +422,9 @@ if (typeof window !== 'undefined') {
       import('/js/sidebar.js')
         .then(function (m) { m.initSidebar(); })
         .catch(function (e) { try { console.warn('[sidebar]', e && e.message || e); } catch (_) {} });
-      // import dynamique : non bloquant si le module échoue
-      import('/js/cyl-chat.js').catch(function (e) { try { console.warn('[cyl-chat]', e && e.message || e); } catch (_) {} });
+      // CYL : panneau latéral permanent à droite, en miroir de la barre de
+      // navigation. Import dynamique : non bloquant si le module échoue.
+      import('/js/cyl-panel.js').catch(function (e) { try { console.warn('[cyl-panel]', e && e.message || e); } catch (_) {} });
     } catch (_) { /* ignore */ }
   }
   // Le test ci-dessus lit le DOM : si la page est encore en cours d'analyse,

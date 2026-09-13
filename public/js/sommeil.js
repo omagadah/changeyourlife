@@ -4,6 +4,7 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { initUserMenu } from '/js/userMenu.js';
+    import { setContext } from '/js/common.js';
 
 
     window.CYF_NAV_LINKS = [
@@ -120,9 +121,27 @@
 
     // ── Render ──
     function renderAll() {
+      publishContext();
       renderStats();
       renderBarChart();
       renderLog();
+    }
+
+    // Durees et qualite moyennes pour CYL. Pas de detail nuit par nuit : elle
+    // a besoin de la tendance, pas du journal de bord.
+    function publishContext() {
+      try {
+        const logs = Object.values(allLogs);
+        const last7 = logs.filter((l) => new Date(l.date) >= new Date(Date.now() - 7 * 86400000));
+        const avgMins = last7.length ? Math.round(last7.reduce((s, l) => s + (l.duration || 0), 0) / last7.length) : null;
+        const avgQ = last7.length ? (last7.reduce((s, l) => s + (l.quality || 3), 0) / last7.length).toFixed(1) : null;
+        setContext('sommeil', {
+          'nuits enregistrees': logs.length,
+          'duree moyenne 7 jours': avgMins === null ? 'aucune donnee' : fmtDuration(avgMins),
+          'qualite moyenne 7 jours': avgQ === null ? 'aucune donnee' : `${avgQ}/5`,
+          'nuit du jour': allLogs[dateKey(new Date())] ? 'enregistree' : 'pas encore enregistree',
+        });
+      } catch (_) { /* la page marche meme si CYL n'apprend rien */ }
     }
 
     function renderStats() {
