@@ -81,20 +81,9 @@
            au premier paint, avant que l'auth ne résolve. */
         #organizer-hub:empty, #agenda-card:empty, #cyl-brief:empty { display: none; }
 
-        /* ── Welcome : une seule ligne discrète ── */
-        .welcome-row {
-          display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
-          margin:4px 0 14px; padding-right:96px;
-          animation:fadeUp .5s var(--ease) both;
-        }
-        @media (max-width:600px){ .welcome-row { padding-right:56px; } }
-        .welcome-left { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
-        .welcome-left h1 { font-size:0.84rem; font-weight:700; color:var(--text-2); letter-spacing:0; margin:0; }
-        .welcome-date { font-size:0.76rem; color:var(--text-3); }
-        .welcome-date::before { content:'·'; margin-right:8px; opacity:.6; }
-        .welcome-sub-text { font-size:0.76rem; color:var(--text-3); }
-        .welcome-sub-text::before { content:'·'; margin-right:8px; opacity:.6; }
-        .welcome-right { display:none; }
+        /* La ligne d'accueil (bonjour + date + XP) a été absorbée par la barre
+           du jour : elle disait la même chose, en plus petit, sans rien
+           apporter que l'anneau ne dise mieux. */
 
         /* L'XP vit désormais dans le pied de la barre latérale. Cette pastille
            reste dans le DOM (app.js l'alimente, la barre la recopie) mais ne
@@ -111,23 +100,17 @@
           position:relative; width:100%; height:260px; border-radius:20px; overflow:hidden;
           background:var(--stage-bg);
           border:1px solid var(--line); cursor:grab; touch-action:none;
-          margin-bottom:18px;
+          /* Plus de marge propre : l'arbre vit dans une .side-card qui gère
+             son espacement au `gap`. Une marge en plus creusait un vide sous
+             lui, dans la carte. */
+          margin-bottom:0;
         }
         .tree-stage:active { cursor:grabbing; }
 
         /* ── Raccourcis (rangée compacte) ── */
-        .hub-shortcuts { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
-        .hub-sc {
-          display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:14px;
-          text-decoration:none; border:1px solid var(--line);
-          background:var(--lvl3); transition:transform .18s, border-color .18s, background .18s;
-        }
-        .hub-sc:hover { transform:translateY(-2px); background:rgba(132,194,94,0.07); border-color:var(--sc,var(--line-hov)); }
-        .hub-sc-ic { font-size:1.3rem; flex-shrink:0; }
-        .hub-sc > span:not(.hub-sc-ic) { min-width:0; }
-        .hub-sc-t { display:block; font-size:0.82rem; font-weight:800; color:var(--text-1); line-height:1.2; }
-        .hub-sc-s { display:block; font-size:0.7rem; color:var(--text-3); margin-top:1px; }
-        @media (max-width:640px){ .hub-shortcuts { grid-template-columns:1fr; } }
+        /* Les 3 « raccourcis » menaient aux mêmes pages que les 7 actions
+           rapides et que les 10 cartes de modules : trois listes de liens pour
+           un seul besoin. Il n'en reste qu'une, la grille des modules en bas. */
 
         /* ── Today progress ── */
         /* ── UNE ÉCHELLE DE POIDS ────────────────────────────────────────────
@@ -147,54 +130,127 @@
           --lvl1: rgba(255,255,255,0.055);
           --lvl2: rgba(255,255,255,0.032);
           --lvl3: rgba(255,255,255,0.018);
+          /* Le conteneur se déclare mesurable : c'est LUI qui commande la
+             bascule une/deux colonnes, pas le viewport. Voir .dash. */
+          container-type: inline-size;
+          container-name: dash;
         }
+
+        /* ══════════════════════════════════════════════════════════════════
+           LA BARRE DU JOUR
+           Un anneau qui se remplit, remis à zéro chaque matin (Oura, Apple
+           Fitness). C'est la seule chose de la page qui change tous les jours,
+           donc la seule qui donne une raison de revenir demain.
+           Elle absorbe l'ancienne ligne d'accueil ET les 7 actions rapides.
+           ══════════════════════════════════════════════════════════════════ */
+        .today-bar {
+          background:var(--lvl1); border:1px solid var(--line);
+          border-radius:18px; padding:16px 18px; margin-bottom:16px;
+          animation:fadeUp .5s var(--ease) both;
+        }
+        .td-head { display:flex; align-items:center; gap:15px; }
+        .td-ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
+        .td-ring { width:64px; height:64px; transform:rotate(-90deg); }
+        .td-ring-bg { fill:none; stroke:var(--lvl1); stroke-width:6; }
+        .td-ring-fg {
+          fill:none; stroke:var(--leaf); stroke-width:6; stroke-linecap:round;
+          transition:stroke-dashoffset .9s var(--ease);
+        }
+        .td-ring-txt {
+          position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+          font-size:0.78rem; color:var(--text-3); letter-spacing:-.4px;
+        }
+        .td-ring-txt b { font-size:1.18rem; font-weight:800; color:var(--text-1); }
+        .td-ring-txt i { font-style:normal; }
+        .td-id { flex:1; min-width:0; }
+        .td-hello { font-size:1.06rem; font-weight:800; color:var(--text-1); letter-spacing:-.3px; }
+        .td-date { font-size:0.78rem; color:var(--text-3); margin-top:2px; text-transform:capitalize; }
+        /* Le titre choisi dans le profil, à la suite de la date. */
+        .td-titre { color:var(--gold-soft); font-style:italic; text-transform:none; }
+        .td-meters { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+        .td-meter {
+          display:inline-flex; align-items:center; gap:5px; padding:6px 11px; border-radius:99px;
+          background:var(--lvl2); border:1px solid var(--line);
+          font-size:0.78rem; font-weight:800; color:var(--text-2); white-space:nowrap;
+        }
+        .td-meter.gold { background:rgba(231,177,92,0.11); border-color:rgba(231,177,92,0.26); color:var(--gold-soft); }
+        .td-meter i { font-style:normal; }
+
+        /* Les gestes : un rail qui défile plutôt que des boutons qui passent
+           à la ligne. Sept éléments sur deux rangées se lisent comme une
+           corvée ; sur une ligne, comme une journée. */
+        .td-gestes {
+          display:flex; gap:7px; margin-top:14px;
+          overflow-x:auto; overscroll-behavior-x:contain;
+          padding-bottom:2px; scrollbar-width:thin;
+        }
+        .td-g {
+          display:flex; align-items:center; gap:7px; flex-shrink:0;
+          padding:8px 12px; border-radius:12px; text-decoration:none;
+          background:var(--lvl3); border:1px solid var(--line);
+          color:var(--text-2); font-size:0.8rem; font-weight:700;
+          transition:transform .18s var(--ease), background .18s, border-color .18s, color .18s;
+        }
+        .td-g:hover { transform:translateY(-2px); background:var(--lvl2); color:var(--text-1); }
+        .td-g-ic { font-size:0.98rem; line-height:1; }
+        .td-g-n { font-size:0.7rem; font-weight:700; color:var(--text-3); }
+        /* La coche n'apparaît QUE sur ce qui est fait. Un geste non posé n'est
+           pas une case vide qui attend : c'est juste un lien de plus. */
+        .td-g-check { display:none; font-size:0.78rem; line-height:1; }
+        .td-g.on {
+          background:rgba(132,194,94,0.13); border-color:rgba(132,194,94,0.32); color:var(--leaf-text,#a8d98a);
+        }
+        .td-g.on .td-g-check { display:inline; }
+        .td-g.on .td-g-l { opacity:.85; }
+        .td-g.half { border-color:rgba(231,177,92,0.3); background:rgba(231,177,92,0.08); }
+        .td-g.half .td-g-n { color:var(--gold-soft); }
+
+        /* ══ LE POSTE DE PILOTAGE : deux colonnes ═══════════════════════════ */
+        .dash { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; margin-bottom:22px; }
+        .dash-main { display:flex; flex-direction:column; gap:16px; min-width:0; }
+        .dash-side { display:flex; flex-direction:column; gap:14px; min-width:0; }
+        /* La bascule dépend de la place RÉELLE, pas de la taille de l'écran :
+           barre de nav (232) + panneau CYL (360) peuvent manger 592 px. */
+        @container dash (min-width: 880px) {
+          .dash { grid-template-columns:minmax(0,1fr) 306px; align-items:start; }
+          /* La colonne droite se consulte d'un coup d'œil : elle reste en vue
+             pendant qu'on travaille dans la colonne principale. */
+          .dash-side { position:sticky; top:0; }
+        }
+        .side-card {
+          background:var(--lvl2); border:1px solid var(--line);
+          border-radius:16px; padding:13px 14px;
+        }
+        .side-card.tree-card { padding:10px 10px 12px; }
+        .side-label {
+          display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+          font-size:0.67rem; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+          color:var(--text-3); margin-bottom:10px;
+        }
+        .side-label a { color:var(--leaf); text-decoration:none; font-size:0.66rem; font-weight:700; letter-spacing:0; text-transform:none; }
+        .side-label a:hover { text-decoration:underline; }
+        /* Dans la colonne, les jauges passent sur deux colonnes au lieu de
+           quatre, et les chips sur deux au lieu de sept : c'est la même donnée,
+           dans un gabarit qui tient dans 306 px. */
+        @container dash (min-width: 880px) {
+          .dash-side .rings-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
+          .dash-side .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:0; }
+          .dash-side .stat-chip { padding:10px 10px 9px; }
+          /* L'ID est là EXPRÈS : la règle d'origine est `#tree-stage.tree-stage`
+             (1,2,0). Une règle de classe, même plus tardive, ne pèse pas assez
+             et l'arbre garderait ses 260 px avec sa marge de 18 px dans une
+             colonne de 306. */
+          #tree-stage.tree-stage:not(.expanded) { height:232px; }
+        }
+        .dash-side .stats-row { margin-bottom:0; }
 
         /* Niveau 1 : la journée en cours. Le liseré gauche vert la rattache au
            langage de l'arbre et la distingue au premier regard. */
-        .today-card {
-          display:flex; align-items:center; gap:16px;
-          padding:14px 18px; border-radius:16px; margin-bottom:18px;
-          background:var(--lvl1); border:1px solid var(--line);
-          border-left:3px solid var(--leaf);
-          flex-wrap:wrap;
-        }
-        .today-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text-2); font-weight:700; flex-shrink:0; }
-        .today-items { display:flex; gap:8px; flex-wrap:wrap; flex:1; }
-        .today-item {
-          display:inline-flex; align-items:center; gap:6px;
-          padding:5px 11px; border-radius:999px; font-size:0.75rem; font-weight:600;
-          border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--text-2);
-          transition:all .2s;
-        }
-        .today-item.done { background:rgba(132,194,94,0.10); border-color:rgba(132,194,94,0.32); color:var(--leaf); }
-        .today-item.partial { background:rgba(231,177,92,0.08); border-color:rgba(231,177,92,0.28); color:var(--gold-soft); }
-        .today-dot { width:7px; height:7px; border-radius:50%; background:currentColor; opacity:0.8; flex-shrink:0; }
-        .today-pct { font-size:0.65rem; font-weight:700; opacity:0.7; }
-
-        /* ── Quick actions ── */
-        .quick-actions { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:22px; }
-        /* Niveau 3 : de la navigation. Discret au repos, franc au survol.
-           Le mouvement de survol est le MEME que celui des cartes de modules
-           (2 px) : deux amplitudes differentes pour un meme geste donnaient
-           l'impression de deux composants sans rapport. */
-        .qa-btn {
-          display:flex; flex-direction:column; align-items:center; gap:6px;
-          padding:14px 10px; border-radius:16px; text-decoration:none;
-          border:1px solid var(--line);
-          background:var(--lvl3);
-          transition:transform .2s var(--ease), border-color .2s, background .2s, box-shadow .2s;
-        }
-        .qa-btn:hover { transform:translateY(-2px); border-color:rgba(132,194,94,0.45); background:rgba(132,194,94,0.07); box-shadow:0 10px 26px -12px rgba(0,0,0,0.6); }
-        .qa-btn:focus-visible { outline:2px solid var(--leaf); outline-offset:2px; }
-        .qa-btn:active { transform:translateY(0) scale(0.98); }
-        .qa-btn, .qa-btn:visited { color:var(--text-2); }
-        .qa-icon { font-size:1.6rem; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
-        .qa-label { font-size:0.75rem; font-weight:700; color:var(--text-1); text-align:center; letter-spacing:.2px; }
-        /* Le nom de l'action domine, le gain passe au second plan : en or gras
-           il pesait autant que le libelle, et on lisait la recompense avant le
-           geste. Meme information, hierarchie inversee. */
-        .qa-xp { font-size:0.6rem; color:var(--text-3); font-weight:600; }
-        .qa-btn:hover .qa-xp { color:var(--gold); }
+        /* L'ancienne carte « Aujourd'hui » et les 7 « actions rapides » vivent
+           maintenant dans la barre du jour (.today-bar) : mêmes liens, plus
+           leur état, en haut de page au lieu d'être cachés en 7e position.
+           Le gain d'XP affiché sur chaque bouton a disparu au passage - on
+           lisait la récompense avant le geste. */
 
         /* ── Stats bar ── */
         /* 7 chips : auto-fit évite la dernière rangée orpheline d'une grille fixe */
@@ -228,11 +284,8 @@
         .xp-bar-inner { height:100%; background:linear-gradient(90deg,var(--leaf-deep),var(--leaf)); border-radius:4px; transition:width .8s ease; }
 
         /* ── Domain rings (XP) ── */
-        .rings-section { margin-bottom:22px; }
-        .rings-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .rings-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; }
-        .rings-link { font-size:0.68rem; color:var(--text-3); text-decoration:none; transition:color .2s; }
-        .rings-link:hover { color:var(--text-2); }
+        /* Les jauges sont passées dans la colonne de droite : leur en-tête est
+           désormais celui, commun, de .side-card. */
         .rings-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
         .ring-card {
           display:flex; flex-direction:column; align-items:center; gap:10px;
@@ -428,109 +481,66 @@
                 </button>
         </header>
     <main class="app-container">
-        <!-- ── Ligne d'accueil : discrète, ce n'est pas le sujet ── -->
-        <div class="welcome-row">
-          <div class="welcome-left">
-            <h1 id="greeting-h1">Bonjour</h1>
-            <div class="welcome-date" id="welcome-date"></div>
-            <div class="welcome-sub-text" id="welcome-sub">Prêt à avancer aujourd'hui ?<span id="user-title" style="color:var(--gold-soft);font-style:italic;margin-left:6px"></span></div>
+        <!-- ══ 1 · LA BARRE DU JOUR ══════════════════════════════════════════
+             Anneau de la journée + gestes du jour avec leur état.
+             Rendue par /js/app-today.js.
+
+             Elle REMPLACE trois blocs qui se répétaient : la ligne d'accueil,
+             les sept « actions rapides » (des liens vers les mêmes modules que
+             la grille du bas) et la carte « Aujourd'hui » - qui était cachée
+             par défaut, en 7e position, sous l'arbre.
+
+             Les anciens ids de la ligne d'accueil (greeting-h1, welcome-date,
+             welcome-sub, user-title, total-xp-badge) ont disparu avec elle :
+             app.js les écrit tous derrière un `if (el)`, rien ne casse.
+             `xp-corner-val`, lui, RESTE dans la page : la barre de navigation
+             s'en sert comme source pour son propre compteur d'XP. -->
+        <div id="today-bar" class="today-bar" aria-label="Ta journée"></div>
+
+        <!-- ══ 2 · LE POSTE DE PILOTAGE ══════════════════════════════════════
+             Deux colonnes : à gauche ce sur quoi on agit maintenant, à droite
+             ce qu'on consulte. L'arbre remonte ici - il est l'identité du
+             produit, il n'a rien à faire en milieu de page.
+
+             La bascule une/deux colonnes se fait en CONTAINER QUERY, pas en
+             media query : le panneau CYL prend 360 px à droite et la barre de
+             navigation 232 px à gauche, donc la largeur du viewport ne dit
+             rien de la place réellement disponible ici. -->
+        <div class="dash">
+          <div class="dash-main">
+            <!-- Le cerveau : tout ce qui passe par la tête se dépose ici, se
+                 range (Eisenhower), se rattache à une branche (Maslow) et part
+                 dans l'agenda. Rendu par /js/app-organizer.js. -->
+            <section id="organizer-hub" aria-label="ORGANIZER - ton espace de pensées et de priorités"></section>
+
+            <!-- CYL lit l'organizer + l'agenda et propose une lecture. -->
+            <div id="cyl-brief"></div>
+
+            <!-- Ta journée : Google Agenda + fiches échues, fusionnés. -->
+            <div id="agenda-card" class="agenda-card"></div>
           </div>
-          <div class="welcome-right">
-            <div class="total-xp-badge">⚡ <span id="total-xp-badge">0 XP</span></div>
-          </div>
-        </div>
 
-        <!-- ══ 1 · LE CERVEAU : ORGANIZER ══
-             Tout ce qui te passe par la tête se dépose ici (« À trier »),
-             se range dans la matrice Eisenhower, se rattache à une branche
-             de ta vie (Maslow) et part dans ton Google Agenda.
-             Rendu par /js/app-organizer.js. -->
-        <section id="organizer-hub" aria-label="ORGANIZER - ton espace de pensées et de priorités"></section>
+          <aside class="dash-side" aria-label="Ta progression">
+            <!-- Pas de role="button" : l'interaction (orbite, clic sur les
+                 nœuds) est gérée par le canvas injecté par living-tree.js, qui
+                 contient ses propres boutons. Annoncer un bouton inerte
+                 trompait le clavier. -->
+            <div class="side-card tree-card">
+              <div class="tree-caption">Ton arbre - il pousse là où tu agis</div>
+              <div id="tree-stage" class="tree-stage" aria-label="Ton arbre de vie"></div>
+            </div>
 
-        <!-- ══ 2 · CYL : le brief du jour ══
-             L'IA lit ton organizer + ton agenda et te propose une lecture.
-             Rendu par /js/cyl-brief.js. -->
-        <div id="cyl-brief"></div>
+            <div class="side-card">
+              <div class="side-label">
+                <span data-i18n="app.domains">Niveaux par domaine</span>
+                <a href="/profile/" id="link-profile">Profil →</a>
+              </div>
+              <div class="rings-grid" id="rings-grid"><!-- rempli par app.js --></div>
+            </div>
 
-        <!-- ══ 3 · TA JOURNÉE : Google Agenda + fiches échues, fusionnés ══ -->
-        <div id="agenda-card" class="agenda-card"></div>
-
-        <!-- ══ 4 · Raccourcis ══ -->
-        <div class="hub-shortcuts">
-          <a href="/organizer/" class="hub-sc" style="--sc:rgba(231,177,92,0.5)">
-            <span class="hub-sc-ic">🗂️</span>
-            <span><span class="hub-sc-t">Board complet</span>
-              <span class="hub-sc-s">Colonnes, canvas, liens</span></span>
-          </a>
-          <a href="/plan/" id="plan-cta" class="hub-sc" style="--sc:rgba(132,194,94,0.5)">
-            <span class="hub-sc-ic">🌅</span>
-            <span><span class="hub-sc-t">Aujourd'hui</span>
-              <span class="hub-sc-s">Rythme et base vitale</span></span>
-          </a>
-          <a href="/competences/" id="skills-cta" class="hub-sc" style="--sc:rgba(195,154,107,0.5)">
-            <span class="hub-sc-ic">🧗</span>
-            <span><span class="hub-sc-t" data-i18n="app.skills.title">Mes compétences</span>
-              <span class="hub-sc-s">Ce que tu sais faire</span></span>
-          </a>
-        </div>
-
-        <!-- ══ 5 · L'arbre : le reflet de ce que tu fais ══ -->
-        <div class="tree-caption">Ton arbre - il pousse là où tu agis vraiment</div>
-        <!-- Pas de role="button" : l'interaction (orbite, clic sur les nœuds) est
-             gérée par le canvas injecté par living-tree.js, qui contient ses
-             propres boutons. Annoncer un bouton inerte trompait le clavier. -->
-        <div id="tree-stage" class="tree-stage"
-             aria-label="Ton arbre de vie"></div>
-
-        <!-- ── Aujourd'hui : progression ── -->
-        <div class="today-card" id="today-progress-card" style="display:none">
-          <span class="today-label">Aujourd'hui</span>
-          <div class="today-items" id="today-items"></div>
-        </div>
-
-        <!-- ── Actions rapides ── -->
-        <div class="sec-label">Passer à l'action</div>
-        <div class="quick-actions">
-          <a href="/meditation/" class="qa-btn">
-            <span class="qa-icon">🧘</span>
-            <span class="qa-label">Méditer</span>
-            <span class="qa-xp">+15 XP</span>
-          </a>
-          <a href="/journal/" class="qa-btn">
-            <span class="qa-icon">✍️</span>
-            <span class="qa-label">Journal</span>
-            <span class="qa-xp">+10 XP</span>
-          </a>
-          <a href="/habitudes/" class="qa-btn">
-            <span class="qa-icon">✅</span>
-            <span class="qa-label">Habitudes</span>
-            <span class="qa-xp">+5 XP</span>
-          </a>
-          <a href="/autoevaluation/" class="qa-btn">
-            <span class="qa-icon">🎡</span>
-            <span class="qa-label">Évaluer</span>
-            <span class="qa-xp">Roue de vie</span>
-          </a>
-          <a href="/humeur/" class="qa-btn">
-            <span class="qa-icon">😌</span>
-            <span class="qa-label">Humeur</span>
-            <span class="qa-xp">+5 XP</span>
-          </a>
-          <a href="/sommeil/" class="qa-btn">
-            <span class="qa-icon">🌙</span>
-            <span class="qa-label">Sommeil</span>
-            <span class="qa-xp">+5 XP</span>
-          </a>
-          <a href="/gratitude/" class="qa-btn">
-            <span class="qa-icon">🌟</span>
-            <span class="qa-label">Gratitude</span>
-            <span class="qa-xp">+5 XP</span>
-          </a>
-        </div>
-
-        <!-- ── Stats ── -->
-        <div class="sec-label">Où tu en es</div>
-        <div class="stats-row" id="stats-row">
+            <div class="side-card">
+              <div class="side-label"><span>Où tu en es</span></div>
+              <div class="stats-row" id="stats-row">
           <div class="stat-chip streak">
             <div class="stat-chip-icon">🔥</div>
             <div class="stat-chip-value" id="stat-streak">-</div>
@@ -567,18 +577,10 @@
             <div class="stat-chip-value" id="stat-mylife" style="color:var(--moss)">-</div>
             <div class="stat-chip-label">Jalons posés</div>
           </div>
-        </div>
-
-        <!-- ── Niveaux par domaine ── -->
-        <div class="rings-section">
-          <div class="rings-header">
-            <span class="rings-label" data-i18n="app.domains">Niveaux par domaine</span>
-            <a href="/profile/" id="link-profile" class="rings-link">Voir profil complet →</a>
-          </div>
-          <div class="rings-grid" id="rings-grid">
-            <!-- filled by JS -->
-          </div>
-        </div>
+              </div>
+            </div>
+          </aside>
+        </div><!-- /.dash -->
 
         <!-- ── Action du jour ── -->
         <div id="action-today"></div>

@@ -1,5 +1,5 @@
 // service-worker.js - v210 (fin du mur Google a chaque reconnexion)
-const CACHE_NAME = 'changeyourlife-v210';
+const CACHE_NAME = 'changeyourlife-v213';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
@@ -38,6 +38,7 @@ const urlsToCache = [
   '/gratitude/',
   '/manifest.json',
   '/css/main.min.css',
+  '/css/cyl-panel.css',
   '/js/common.js',
   '/js/cyl-bg.js',
   '/js/home-boot.js',
@@ -68,6 +69,7 @@ const urlsToCache = [
   '/js/organizer.js',
   '/js/organizer-data.js',
   '/js/app-organizer.js',
+  '/js/app-today.js',
   '/js/cyl-brief.js',
   '/js/tree-model.js',
   '/js/tree-data.js',
@@ -79,7 +81,7 @@ const urlsToCache = [
   '/js/id-badge.js',
   '/js/pixel-badge.js',
   '/js/archi-build.js',
-  '/js/cyl-chat.js',
+  '/js/cyl-panel.js',
   '/js/cyl-avatar.js',
   '/js/giveaway.js',
   '/js/admin-giveaway.js',

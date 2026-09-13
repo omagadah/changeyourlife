@@ -40,37 +40,15 @@
                     const toast = document.getElementById('login-toast');
                     if(toast) { toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 4000); }
                 }
-                // ── Personalized greeting ──
-        const hour = new Date().getHours();
-        const greetWord = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
-        const greetEl = document.getElementById('greeting-h1');
-        const greetSub = document.getElementById('greeting-sub');
-
+        // Salutation, date, titre choisi et XP vivent maintenant dans la barre
+        // du jour (/js/app-today.js), qui les affiche autour de son anneau.
+        // Le code qui écrivait ici visait des éléments supprimés avec l'ancienne
+        // ligne d'accueil : il ne faisait plus rien.
         const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
                 const userData = userDoc.exists() ? userDoc.data() : {};
-                // update lastActive and reflect selectedTitle
                 try { await setDoc(userDocRef, { lastActive: new Date() }, { merge: true }); } catch(e) {}
-                try {
-                    const displayName = userData.displayName || userData.username || '';
-                    if (greetEl) greetEl.textContent = displayName ? `${greetWord}, ${displayName}` : `${greetWord}`;
-                    if (greetSub) greetSub.textContent = '';
-                    const subEl = document.getElementById('welcome-sub');
-                    const tEl = document.getElementById('user-title');
-                    const t = userData.selectedTitle || '';
-                    if (tEl && t) tEl.textContent = `· ${t}`;
-                    // Motivational sub based on time
-                    const subs = ['Prêt à avancer aujourd\'hui ?', 'Chaque jour compte.', 'Construis ta meilleure version.'];
-                    if (subEl && !t) subEl.childNodes[0].textContent = subs[new Date().getDay() % subs.length];
-                } catch(e) {}
-                const needsOnboarding = (!userDoc.exists() || userData.hasSeenTutorial !== true);
 
-                // ── Welcome date ──
-                const wd = document.getElementById('welcome-date');
-                if (wd) {
-                  const now = new Date();
-                  wd.textContent = now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
-                }
                 // ── Arbre de vie : bel arbre ez-tree qui grandit avec l'XP ──
                 try {
                   window._cyfLivingTree = initLivingTree(userData);
@@ -81,7 +59,16 @@
                 loadXPRings(userData);
                 loadActionDuJour(userData);
                 loadWheelWidget(db, user.uid);
-                loadTodayProgress(db, user.uid, userData);
+
+                // La barre du jour remplace l'ancienne carte « Aujourd'hui » :
+                // même lecture de l'état du jour, mais en tête de page, avec
+                // l'anneau, et étendue à 7 gestes au lieu de 4. Import
+                // dynamique : si le module échoue, le reste de la page tient.
+                import('/js/app-today.js')
+                  // Le `displayName` du bloc ci-dessus est un const enfermé
+                  // dans son try : on relit la donnée, on ne l'emprunte pas.
+                  .then((m) => m.mountToday(db, user.uid, userData, userData.displayName || userData.username || ''))
+                  .catch((e) => { try { console.warn('[app-today]', e && e.message || e); } catch(_) {} });
 
                 // Re-run init to ensure avatar + current path highlighting once auth is known
                 try { initUserMenu(); } catch(e) {}
@@ -362,64 +349,6 @@
           </div>`;
         }
 
-        // ── Today's progress card ──────────────────────────────────────────────
-        async function loadTodayProgress(db, uid, userData) {
-          const card = document.getElementById('today-progress-card');
-          const items = document.getElementById('today-items');
-          if (!card || !items) return;
-
-          const todayStr = new Date().toDateString();
-          const checks = [];
-
-          // Meditation
-          const med = userData.meditation || {};
-          const meditatedToday = med.lastSessionAt && new Date(med.lastSessionAt).toDateString() === todayStr;
-          checks.push({ label: '🧘 Méditation', done: meditatedToday });
-
-          // Habits
-          const habits = Array.isArray(userData.habits) ? userData.habits : [];
-          if (habits.length > 0) {
-            const done = habits.filter(h => h.lastDoneAt && new Date(h.lastDoneAt).toDateString() === todayStr).length;
-            const all = done === habits.length;
-            checks.push({ label: `✅ Habitudes`, done: all, partial: !all && done > 0, count: `${done}/${habits.length}` });
-          }
-
-          // Journal (try subcollection)
-          try {
-            const jSnap = await getDocs(query(collection(db,'users',uid,'journal'), limit(5)));
-            const writtenToday = jSnap.docs.some(d => {
-              const ts = d.data().createdAt;
-              const date = ts?.toDate ? ts.toDate() : (ts ? new Date(ts) : null);
-              return date && date.toDateString() === todayStr;
-            });
-            checks.push({ label: '📔 Journal', done: writtenToday });
-          } catch(e) {
-            checks.push({ label: '📔 Journal', done: false });
-          }
-
-          // Humeur
-          try {
-            const now = new Date();
-            const moodDateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            const moodDoc = await getDocs(query(collection(db,'users',uid,'moods'), limit(1)));
-            const loggedToday = moodDoc.docs.some(d => d.id === moodDateStr);
-            checks.push({ label: '😌 Humeur', done: loggedToday });
-          } catch(e) {
-            checks.push({ label: '😌 Humeur', done: false });
-          }
-
-          // Only show if user has some activity data
-          const hasData = meditatedToday || habits.length > 0;
-          if (!hasData) return;
-
-          items.innerHTML = checks.map(c => `
-            <span class="today-item${c.done?' done':c.partial?' partial':''}">
-              <span class="today-dot"></span>
-              ${c.label}${c.count ? ` <span class="today-pct">${c.count}</span>` : ''}
-            </span>
-          `).join('');
-          card.style.display = 'flex';
-        }
 
         // ── Citation du jour ───────────────────────────────────────────────────
         function loadQuoteDuJour() {
