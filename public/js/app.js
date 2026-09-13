@@ -55,8 +55,13 @@
                 // l'accueillir (tree-widget.js) n'a jamais existé.
                 try {
                   const seed = await import('/js/seed.js');
-                  if (seed.doitPlanter(userData)) {
-                    await seed.planterGraine(db, user.uid, userData);
+                  // « /?graine=1 » rejoue la naissance depuis n'importe quel
+                  // compte, en APERÇU : rien n'est écrit. C'est le seul moyen
+                  // de regarder cet écran sans créer un compte jetable, et
+                  // c'est aussi ce qui permettra de le montrer à quelqu'un.
+                  const apercu = new URLSearchParams(location.search).has('graine');
+                  if (apercu || seed.doitPlanter(userData)) {
+                    await seed.planterGraine(db, user.uid, userData, { apercu });
                     // L'écran a écrit dans Firestore : on repart de la donnée
                     // fraîche, sinon l'arbre et les compteurs afficheraient
                     // l'état d'avant la plantation.

@@ -174,7 +174,14 @@ function scene() {
 }
 
 // ── Le parcours ─────────────────────────────────────────────────────────────
-export function planterGraine(db, uid, userData) {
+// `apercu: true` rejoue l'ecran SANS RIEN ECRIRE : ni fiche, ni XP, ni drapeau.
+// C est indispensable pour pouvoir regarder la naissance depuis un compte deja
+// actif - la seule facon de la juger sans creer un compte jetable a chaque fois.
+// Et ca protege surtout l ORGANIZER : `enregistrer()` reecrit le board entier
+// a partir de userData, donc le rejouer sur une donnee pas fraiche ecraserait
+// de vraies fiches.
+export function planterGraine(db, uid, userData, opts) {
+  const apercu = !!(opts && opts.apercu);
   return new Promise((resolve) => {
     injecterCSS();
 
@@ -258,9 +265,11 @@ export function planterGraine(db, uid, userData) {
 
       ov.dataset.etat = 'arbre';
       tEl.textContent = 'Voilà ton arbre.';
-      pEl.textContent = source
-        ? "Il pousse là où tu agis. Ta première note est déjà déposée dans ton espace."
-        : "Il pousse là où tu agis. À toi de jouer.";
+      pEl.textContent = apercu
+        ? "Aperçu : rien n'a été enregistré, ton espace n'a pas bougé."
+        : source
+          ? "Il pousse là où tu agis. Ta première note est déjà déposée dans ton espace."
+          : "Il pousse là où tu agis. À toi de jouer.";
       champEl.innerHTML = `<div class="seed-fin-br">${br.emoji} Première branche : ${esc(br.label)}</div>`;
       okEl.textContent = 'Entrer';
       skipEl.style.display = 'none';
@@ -274,6 +283,9 @@ export function planterGraine(db, uid, userData) {
     }
 
     async function enregistrer(cle, source) {
+      // Mode aperçu : on a juste regardé l'écran, rien ne doit bouger en base.
+      if (apercu) return;
+
       const patch = {
         hasSeenTutorial: true,     // compat : d anciennes pages lisent ce drapeau
         tree: {
