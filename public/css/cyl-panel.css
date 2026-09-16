@@ -178,6 +178,29 @@ body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !importa
 }
 /* La poignee mobile suit, pour la meme raison. */
 .cylp-grab { position: relative; z-index: 6; }
+/* L'identité est un bouton : elle doit rester une ligne, pas ressembler à un
+   bouton de formulaire posé dans l'entête. */
+.cylp-id-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 6px 3px 3px;
+  margin-left: -3px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s;
+}
+.cylp-id-btn:hover { background: var(--surface-2, rgba(255, 255, 255, 0.05)); }
+.cylp-chev { font-size: 0.7rem; color: var(--text-3, #86806a); transition: transform 0.2s; display: inline-block; }
+.cylp.prefs-on .cylp-chev { transform: rotate(180deg); }
+.cylp.prefs-on .cylp-id-btn { background: rgba(132, 194, 94, 0.12); }
+
 .cylp-head-orb { width: 34px; height: 34px; flex-shrink: 0; }
 .cylp-head-id { flex: 1; min-width: 0; }
 .cylp-head-name {
@@ -369,6 +392,27 @@ body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !importa
 }
 .cylp-send:hover { filter: brightness(1.08); }
 .cylp-send:disabled { opacity: 0.4; cursor: default; }
+
+/* La mention : discrète mais présente. Elle est désactivable dans les réglages,
+   ce qui est un choix de confort - le cadre, lui, ne se désactive pas. */
+.cylp-mention {
+  padding: 0 12px 9px;
+  font-size: 0.66rem;
+  line-height: 1.4;
+  color: var(--text-3, #86806a);
+  text-align: center;
+  flex-shrink: 0;
+}
+.cylp-mention[hidden] { display: none; }
+
+/* Quand les réglages sont ouverts, la zone de saisie n'a plus d'objet. */
+.cylp.prefs-on .cylp-compose,
+.cylp.prefs-on .cylp-mention,
+.cylp.prefs-on .cylp-tabs { display: none; }
+
+/* Taille du texte de la conversation, pilotée par les réglages. */
+.cylp-msg { font-size: var(--cylp-fs, 0.82rem); }
+.cylp-input { font-size: var(--cylp-fs, 0.82rem); }
 
 /* Consentement, premiere ouverture. Exigence de conformite : conserve tel
    quel depuis l'ancienne bulle, meme cle de stockage (cyl_consent_v1). */

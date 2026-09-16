@@ -18,8 +18,13 @@
 // vie un outil qu il avait hier. Ce qui s ouvre est NOUVEAU (une apparence,
 // une vue, une capacite de CYL), et le coeur du produit reste entier a zero XP.
 
-// 800 XP = branche pleinement epanouie (valeur reprise de living-tree.js :
-// BRANCH_TARGET. Les deux fichiers doivent dire le meme nombre).
+// 800 XP = branche pleinement epanouie A L ECRAN (valeur reprise de
+// living-tree.js : BRANCH_TARGET. Les deux fichiers doivent dire le meme
+// nombre, c est lui qui pilote la taille du noeud).
+//
+// Le dernier palier, lui, est AU-DELA de ce nombre - et c est volontaire :
+// « Franc de pied » n est pas un arbre plus gros, c est un arbre sans tuteur.
+// Un changement de nature, pas de taille. L arbre est deja plein a 800.
 export const BRANCH_TARGET = 800;
 
 // Six etats, du plus nu au plus genereux. Les seuils se resserrent au debut
@@ -31,6 +36,24 @@ export const PALIERS = [
   { n: 3, seuil: 320, cle: 'rameau',   nom: 'Rameau',   desc: 'Ça se ramifie', icone: '🍃' },
   { n: 4, seuil: 550, cle: 'feuillue', nom: 'Feuillue', desc: 'Dense, visible de loin', icone: '🌳' },
   { n: 5, seuil: 800, cle: 'fruits',   nom: 'En fruits', desc: 'Elle donne quelque chose', icone: '🍎' },
+
+  // LE DERNIER PALIER : ON RETIRE LE TUTEUR.
+  // « Franc de pied » est le terme exact de l'arboriculture : un arbre non
+  // greffe, qui tient sur ses PROPRES racines. C'est litteralement la sortie
+  // de la minorite kantienne - « Sapere aude », ose te servir de ton propre
+  // entendement, sans la direction d'autrui.
+  //
+  // Ce que Kant decrit et ce que Milgram mesure sont la meme chose vue de deux
+  // cotes : deleguer son jugement est un SOULAGEMENT. Si une autorite pense a
+  // ma place, je n'ai plus d'effort a fournir. Ce n'est pas subi, c'est
+  // reposant - et c'est pour ca que ca marche.
+  //
+  // Un assistant de vie est structurellement candidat a devenir « le livre qui
+  // me tient lieu d'entendement ». Ce palier est la reponse du produit a sa
+  // propre tentation : arrive ici, le site a pour but d'etre devenu un SUPPORT,
+  // plus un guide. Il ne recompense pas la fidelite, il acte l'autonomie.
+  { n: 6, seuil: 1200, cle: 'francDePied', nom: 'Franc de pied', icone: '🌲',
+    desc: "Elle tient sur ses propres racines - tu n'as plus besoin d'ici pour ça" },
 ];
 
 // Ce qui s ouvre, et quand. Toujours ADDITIF (cf. en-tete).
@@ -145,6 +168,9 @@ export function franchissements(avant, apres, branches) {
 export function phraseDe(etatBranche) {
   const p = etatBranche;
   if (p.n === 0) return "Rien n'y pousse encore";
-  if (!p.suivant) return 'Épanouie';
+  // Au sommet, on ne parle plus de progression : il n'y a plus rien à viser,
+  // et afficher « 0 XP avant » là serait absurde.
+  if (!p.suivant) return 'Franc de pied - elle tient seule';
+  if (p.n === 5) return `En fruits · ${p.reste} XP avant de tenir sans tuteur`;
   return `${p.nom} · ${p.reste} XP avant ${p.suivant.nom.toLowerCase()}`;
 }

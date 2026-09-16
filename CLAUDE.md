@@ -227,7 +227,12 @@ atomique : une seule manquante fait échouer l'installation pour tout le monde).
 - Réponses en **français**, format **court**, pas de blabla
 - Pas de blocs de code longs sauf nécessaire
 - Pas d'emoji (sauf si demandé)
-- Avant action destructive ou push, demander confirmation
+- Avant action destructive, demander confirmation
+- **Push : autorisé sans demander** (décision owner du 2026-09-16). L'owner relit
+  directement sur `changeyourlife.ai`, pas en local : un lot terminé et vérifié
+  part immédiatement. Vérifier quand même l'identité `omagadah` avant.
+  Ça ne dispense d'aucun contrôle : `node --check`, précache du SW, bump du
+  `CACHE_NAME`, zéro tiret long.
 - Quand je dis « on continue » : tu reprends depuis le dernier session log
 
 ## Ressources

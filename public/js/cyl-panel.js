@@ -23,6 +23,7 @@
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { mountAvatar, setThinking } from '/js/cyl-avatar.js';
+import * as prefs from '/js/cyl-prefs.js';
 
 let auth;
 if (window._cyfFirebase) { ({ auth } = window._cyfFirebase); }
@@ -250,10 +251,28 @@ if (window.__cylPanel) { /* deja charge */ } else {
   // Lu au moment de l'envoi, pas au chargement : une page qui calcule ses
   // donnees en asynchrone (Firestore) peut le poser plus tard sans rien casser.
   function readContext() {
+    // Le réglage « Ce que CYL voit » se applique ICI, au plus près de l'envoi :
+    // couper le contexte doit le couper pour de bon, pas seulement l'afficher
+    // grisé dans un écran d'options.
+    const niveau = prefs.contextePermis();
+    if (niveau === 'aucun') return null;
+
     const raw = window.CYL_CONTEXT;
     const ctx = raw && typeof raw === 'object' ? raw : null;
     const page = (ctx && typeof ctx.page === 'string' && ctx.page) || routeKey();
-    const data = ctx && ctx.data && typeof ctx.data === 'object' ? ctx.data : null;
+    let data = ctx && ctx.data && typeof ctx.data === 'object' ? ctx.data : null;
+
+    // « Chiffres seuls » : on garde les compteurs, on retire tout libellé.
+    // Un titre de fiche en dit plus long qu'un nombre, c'est précisément la
+    // raison d'être de ce niveau intermédiaire.
+    if (niveau === 'chiffres' && data) {
+      const filtre = {};
+      for (const [k, v] of Object.entries(data)) {
+        if (typeof v === 'number') filtre[k] = v;
+        else if (Array.isArray(v)) filtre[k] = v.length;
+      }
+      data = Object.keys(filtre).length ? filtre : null;
+    }
     return { page, data };
   }
 
@@ -264,17 +283,25 @@ if (window.__cylPanel) { /* deja charge */ } else {
 
   // ── Etat ──────────────────────────────────────────────────────────────────
   let history = [];
-  try {
-    const raw = ss.get(HIST_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    if (Array.isArray(parsed)) {
-      history = parsed
-        .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-        .slice(-MAX_HIST);
-    }
-  } catch (_) { history = []; }
+  // « Garder la conversation d'une page à l'autre » : décoché, on n'ouvre même
+  // pas ce qui traîne en session, et on l'efface pour ne pas le laisser derrière.
+  if (!prefs.lire().memoire) { ss.del(HIST_KEY); }
+  else {
+    try {
+      const raw = ss.get(HIST_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed)) {
+        history = parsed
+          .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+          .slice(-MAX_HIST);
+      }
+    } catch (_) { history = []; }
+  }
 
-  function saveHist() { ss.set(HIST_KEY, JSON.stringify(history.slice(-MAX_HIST))); }
+  function saveHist() {
+    if (!prefs.lire().memoire) return;
+    ss.set(HIST_KEY, JSON.stringify(history.slice(-MAX_HIST)));
+  }
 
   const hasConsent = () => { try { return localStorage.getItem(CONSENT_KEY) === '1'; } catch (_) { return false; } };
 
@@ -308,11 +335,18 @@ if (window.__cylPanel) { /* deja charge */ } else {
       <div class="cylp-main">
         <div class="cylp-grab" aria-hidden="true"></div>
         <header class="cylp-head">
-          <div class="cylp-head-orb"></div>
-          <div class="cylp-head-id">
-            <div class="cylp-head-name">CYL</div>
-            <div class="cylp-head-sub"></div>
-          </div>
+          <!-- L'identité EST le bouton des réglages : c'est le geste attendu
+               (on clique sur le nom pour régler la chose qui le porte), et ça
+               évite une troisième icône dans une entête qui en a déjà deux. -->
+          <button class="cylp-id-btn" type="button" id="cylp-prefs-btn"
+                  aria-expanded="false" aria-controls="cylp-pane-prefs"
+                  title="Réglages de CYL">
+            <span class="cylp-head-orb"></span>
+            <span class="cylp-head-id">
+              <span class="cylp-head-name">CYL <span class="cylp-chev" aria-hidden="true">⌄</span></span>
+              <span class="cylp-head-sub"></span>
+            </span>
+          </button>
           <button class="cylp-ico cylp-clear" type="button" title="Nouvelle conversation" aria-label="Nouvelle conversation">⟳</button>
           <button class="cylp-ico cylp-min-btn" type="button" title="Reduire (Echap)" aria-label="Reduire le panneau">⇥</button>
         </header>
@@ -328,11 +362,18 @@ if (window.__cylPanel) { /* deja charge */ } else {
             <p class="cylp-acts-note">Des entrees en matiere, pas des consignes. Le choix reste le tien.</p>
             <div class="cylp-acts"></div>
           </div>
+          <!-- Les réglages : un troisième volet, pas une fenêtre par-dessus.
+               Ouverts, ils remplacent la conversation ; fermés, on revient
+               exactement où on en était. -->
+          <div class="cylp-pane" id="cylp-pane-prefs" role="region" aria-label="Réglages de CYL" tabindex="0" hidden>
+            <div class="cylp-prefs-host"></div>
+          </div>
         </div>
         <form class="cylp-compose">
           <textarea class="cylp-input" rows="1" placeholder="Parle a CYL... (Ctrl+K)" aria-label="Ton message pour CYL"></textarea>
           <button class="cylp-send" type="submit" title="Envoyer" aria-label="Envoyer">➤</button>
         </form>
+        <div class="cylp-mention" id="cylp-mention">CYL est une IA. Elle ne décide pas à ta place.</div>
         <div class="cylp-consent" role="dialog" aria-label="Avant de parler a CYL">
           <div class="cylp-consent-orb"></div>
           <div class="cylp-consent-title">Avant de commencer</div>
@@ -400,10 +441,17 @@ if (window.__cylPanel) { /* deja charge */ } else {
     // ETAT INITIAL : ouvert la ou CYL a le plus de sens (l'accueil de l'espace),
     // reduit ailleurs pour ne pas retrecir une page de travail dense sans
     // qu'on l'ait demande. Le choix de l'utilisateur, lui, prime toujours.
+    // Le réglage « À l'ouverture d'une page » prime sur l'heuristique : quelqu'un
+    // qui a demandé « toujours réduit » ne veut pas d'exception sur l'accueil.
+    const voulu = prefs.lire().etatDefaut;
     const saved = ss.get(STATE_KEY);
-    setState(saved === 'open' || saved === 'min' ? saved : (routeKey() === 'app' ? 'open' : 'min'), { silent: true });
+    let etat;
+    if (voulu === 'open' || voulu === 'min') etat = voulu;
+    else if (saved === 'open' || saved === 'min') etat = saved;
+    else etat = routeKey() === 'app' ? 'open' : 'min';
+    setState(etat, { silent: true });
 
-    const savedTab = ss.get(TAB_KEY);
+    const savedTab = ss.get(TAB_KEY) || prefs.lire().ongletDefaut;
     setTab(savedTab === 'acts' ? 'acts' : 'chat', { silent: true });
 
     // Hauteur de la feuille mobile retenue d'une page a l'autre.
@@ -493,17 +541,47 @@ if (window.__cylPanel) { /* deja charge */ } else {
     if (!opts || !opts.silent) ss.set(STATE_KEY, st);
   }
 
+  // Trois volets pour deux onglets : « prefs » n'a pas d'onglet à lui, il
+  // s'ouvre depuis l'entête et se referme sur le dernier onglet utilisé.
+  let ongletAvantPrefs = 'chat';
+
   function setTab(which, opts) {
+    const isPrefs = which === 'prefs';
     const isActs = which === 'acts';
-    panel.querySelector('#cylp-tab-chat').setAttribute('aria-selected', String(!isActs));
+    panel.querySelector('#cylp-tab-chat').setAttribute('aria-selected', String(!isActs && !isPrefs));
     panel.querySelector('#cylp-tab-acts').setAttribute('aria-selected', String(isActs));
-    panel.querySelector('#cylp-pane-chat').hidden = isActs;
+    panel.querySelector('#cylp-pane-chat').hidden = isActs || isPrefs;
     panel.querySelector('#cylp-pane-acts').hidden = !isActs;
-    if (!opts || !opts.silent) ss.set(TAB_KEY, isActs ? 'acts' : 'chat');
+    panel.querySelector('#cylp-pane-prefs').hidden = !isPrefs;
+    const btn = panel.querySelector('#cylp-prefs-btn');
+    if (btn) btn.setAttribute('aria-expanded', String(isPrefs));
+    panel.classList.toggle('prefs-on', isPrefs);
+    // On ne mémorise jamais « prefs » comme onglet de départ : personne ne veut
+    // rouvrir le site sur un écran de réglages.
+    if (!isPrefs && (!opts || !opts.silent)) ss.set(TAB_KEY, isActs ? 'acts' : 'chat');
+    if (!isPrefs) ongletAvantPrefs = isActs ? 'acts' : 'chat';
+  }
+
+  function basculerPrefs() {
+    const ouvert = !panel.querySelector('#cylp-pane-prefs').hidden;
+    if (ouvert) { setTab(ongletAvantPrefs); return; }
+    const hote = panel.querySelector('.cylp-prefs-host');
+    prefs.rendre(hote, {
+      // Le panneau est le seul à savoir ce qu'il enverrait vraiment : on montre
+      // le paquet réel, pas une reconstitution approximative.
+      apercuEnvoi: () => JSON.stringify({
+        messages: history.slice(-SEND_HIST).map((m) => ({ role: m.role, content: m.content })),
+        context: readContext(),
+        preferences: prefs.pourApi(),
+      }, null, 2),
+      effacerConversation: () => { history = []; ss.del(HIST_KEY); renderHistory(); },
+      consentementRevoque: () => { consentEl.classList.add('show'); },
+    });
+    setTab('prefs');
   }
 
   function paintBadge() {
-    const show = unread > 0;
+    const show = unread > 0 && prefs.lire().badge;
     for (const b of [railBadge, fabBadge]) {
       if (!b) continue;
       b.hidden = !show;
@@ -553,6 +631,8 @@ if (window.__cylPanel) { /* deja charge */ } else {
           idToken,
           messages: history.slice(-SEND_HIST).map((m) => ({ role: m.role, content: m.content })),
           context: readContext(),
+          // Style de réponse : quatre clés d'énumération, revalidées serveur.
+          preferences: prefs.pourApi(),
         }),
       });
       const data = await r.json().catch(() => ({}));
@@ -596,9 +676,15 @@ if (window.__cylPanel) { /* deja charge */ } else {
     panel.querySelector('#cylp-tab-chat').addEventListener('click', () => setTab('chat'));
     panel.querySelector('#cylp-tab-acts').addEventListener('click', () => setTab('acts'));
 
+    panel.querySelector('#cylp-prefs-btn').addEventListener('click', basculerPrefs);
+
     panel.querySelector('.cylp-compose').addEventListener('submit', (e) => { e.preventDefault(); send(); });
     inputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+      // « Envoyer avec » : Entrée, ou Ctrl+Entrée pour qui écrit des paragraphes.
+      const ctrl = prefs.lire().entree === 'ctrl';
+      if (e.key !== 'Enter') return;
+      if (ctrl) { if (e.ctrlKey || e.metaKey) { e.preventDefault(); send(); } return; }
+      if (!e.shiftKey) { e.preventDefault(); send(); }
     });
     // La zone grandit avec le texte, sans depasser le plafond de la feuille.
     inputEl.addEventListener('input', () => {
@@ -620,6 +706,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
     // intercepte quand on est deja en train d'ecrire dans CYL.
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) {
+        if (!prefs.lire().raccourci) return;   // désactivable : Ctrl+K sert ailleurs
         e.preventDefault();
         open();
       } else if (e.key === 'Escape' && panel.dataset.state === 'open') {
@@ -631,6 +718,18 @@ if (window.__cylPanel) { /* deja charge */ } else {
 
     // Une page peut publier son contexte apres coup (donnees Firestore).
     document.addEventListener('cyl:context', () => { renderContext(); renderActions(); });
+
+    // Un réglage changé se voit TOUT DE SUITE, y compris depuis l'autre porte
+    // d'entrée (la page des paramètres, dans un onglet ouvert en parallèle).
+    const appliquerPrefs = () => {
+      const p = prefs.lire();
+      const m = panel.querySelector('#cylp-mention');
+      if (m) m.hidden = !p.rappelPro;
+      inputEl.placeholder = p.raccourci ? 'Parle a CYL... (Ctrl+K)' : 'Parle a CYL...';
+      paintBadge();
+    };
+    document.addEventListener('cyl:prefs', appliquerPrefs);
+    appliquerPrefs();
 
     wireSheet();
   }

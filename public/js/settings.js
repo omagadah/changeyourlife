@@ -115,6 +115,18 @@ function initAuth() {
         if (user) {
             initUserMenu();
             updateGlobalAvatar((user.email || "U").charAt(0).toUpperCase());
+
+            // ── Réglages de CYL ────────────────────────────────────────────
+            // Même module que le panneau latéral : une seule source, deux
+            // portes d'entrée. amorcerDepuisCompte() ne sert qu'à un appareil
+            // neuf (rien en local) - ensuite chaque appareil est autonome,
+            // donc il n'y a jamais de conflit à arbitrer entre deux machines.
+            try {
+                const prefs = await import("/js/cyl-prefs.js");
+                await prefs.amorcerDepuisCompte(db, user.uid);
+                const hote = document.getElementById("cyl-prefs-host");
+                if (hote) prefs.rendre(hote, {});
+            } catch (e) { console.warn("[cyl-prefs]", e && e.message || e); }
             
             // ── Fallback admin (CHOIX INTENTIONNEL - pas une dette technique) ──
             // Firebase est en plan Spark (gratuit), donc Secret Manager indisponible.
