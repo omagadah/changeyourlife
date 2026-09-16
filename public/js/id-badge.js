@@ -149,7 +149,7 @@ export function initIdBadge(mount) {
   let vel = 0;          // vitesse angulaire
   const GRAV = 0.012;   // rappel vers 0
   const DAMP = 0.94;    // amortissement
-  let dragging = false, raf = 0, lastPointerAngle = 0;
+  let dragging = false, raf = 0, lastPointerAngle = 0, grabOffset = 0;
 
   function pivotPoint() {
     const r = pivot.getBoundingClientRect();
@@ -162,9 +162,12 @@ export function initIdBadge(mount) {
 
   function render() {
     pivot.style.transform = `translateX(-50%) rotate(${angle}rad)`;
-    // reflet + léger tilt 3D en fonction de l'inclinaison
+    // Reflet + tilt 3D. LE TILT ACCOMPAGNE LE GESTE, il ne le contrarie pas :
+    // en tirant la carte vers la droite, on découvre sa face droite. Le signe
+    // était inversé, ce qui donnait l'impression que la carte partait à
+    // l'envers de la main - exactement ce qui cassait la sensation de poids.
     const deg = angle * 180 / Math.PI;
-    card.style.transform = `rotateY(${CLAMP(-deg * 0.6, -16, 16)}deg)`;
+    card.style.transform = `rotateY(${CLAMP(deg * 0.6, -16, 16)}deg)`;
     card.style.setProperty('--glare', `${CLAMP(50 + deg * 2.2, 8, 92)}%`);
   }
 
@@ -185,14 +188,22 @@ export function initIdBadge(mount) {
     dragging = true;
     card.setPointerCapture && e.pointerId != null && card.setPointerCapture(e.pointerId);
     lastPointerAngle = angleFromPointer(e.clientX, e.clientY);
+    // ON ATTRAPE LA CARTE LA OU ELLE EST.
+    // Avant, `angle` prenait l'angle ABSOLU du pointeur : au premier mouvement,
+    // la carte sautait pour venir se placer sous le curseur, quel que soit
+    // l'endroit saisi. D'où la sensation de contre-sens - on ne tirait pas un
+    // objet, on téléportait un angle. L'écart saisi est mémorisé une fois, et
+    // c'est le DELTA du geste qui fait tourner le pendule.
+    grabOffset = angle - lastPointerAngle;
     vel = 0;
     ensureLoop();
   }
   function onMove(e) {
     if (!dragging) return;
     const a = angleFromPointer(e.clientX, e.clientY);
-    vel = (a - lastPointerAngle);          // vitesse = delta pour l'élan au lâcher
-    angle = CLAMP(a, -1.3, 1.3);
+    const vise = CLAMP(a + grabOffset, -1.3, 1.3);
+    vel = vise - angle;                    // vitesse reelle = ce que la main a fait
+    angle = vise;
     lastPointerAngle = a;
   }
   function onUp() {

@@ -1,0 +1,80 @@
+/* public/css/transitions.css - Les transitions entre pages.
+ *
+ * LE PROBLEME : le site est fait de vraies pages HTML. A chaque navigation le
+ * navigateur jette tout et repeint : fond, barre laterale, panneau CYL. D'ou
+ * le flash blanc puis le « saut » de l'ecran qui se remet en place - alors que
+ * la page d'arrivee a souvent le MEME fond, la MEME barre et le MEME panneau.
+ * On voyait donc disparaitre et reapparaitre des elements qui ne bougent pas.
+ *
+ * LA SOLUTION : les transitions de vue inter-documents. Le navigateur garde un
+ * instantane de la page sortante, le fond entre les deux, et ne montre jamais
+ * d'ecran vide. Zero JavaScript, zero routeur, zero framework : une at-rule.
+ *
+ * POURQUOI UN FICHIER A PART plutot qu'une ligne dans main.min.css : sept pages
+ * ne chargent pas main.min.css (login, signup, verify-email, 404, bienvenue,
+ * codex, autoevaluation). Or une transition inter-documents exige la regle sur
+ * les DEUX pages - celle qu'on quitte ET celle qui arrive. Il en manquait une
+ * seule et la transition sautait dans les deux sens.
+ *
+ * ET POURQUOI UN <link> DANS LE <head>, jamais une injection par JS : sur la
+ * page qui arrive, la regle doit etre connue AVANT le premier rendu. Un module
+ * charge en differe arriverait apres, et le navigateur aurait deja peint.
+ */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* ── Ce qui ne doit PAS bouger ──────────────────────────────────────────────
+   La barre de navigation et le panneau CYL sont identiques d'une page a
+   l'autre. Sans nom de transition, ils sont emportes dans le fondu du reste et
+   clignotent a chaque clic - c'est precisement le defaut le plus visible.
+   Nommes, le navigateur les reconnait des deux cotes et les laisse en place.
+   Un nom doit etre UNIQUE dans la page : ces deux elements le sont. */
+.cyl-sb { view-transition-name: cyl-nav; }
+.cylp { view-transition-name: cyl-panel; }
+.cyl-inst { view-transition-name: cyl-install; }
+.cylp-fab { view-transition-name: cyl-fab; }
+
+/* Ils traversent sans animation : c'est le contenu qui change, pas eux. */
+::view-transition-old(cyl-nav),
+::view-transition-new(cyl-nav),
+::view-transition-old(cyl-panel),
+::view-transition-new(cyl-panel),
+::view-transition-old(cyl-install),
+::view-transition-new(cyl-install),
+::view-transition-old(cyl-fab),
+::view-transition-new(cyl-fab) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ── Le fondu du contenu ────────────────────────────────────────────────────
+   Court exprès. Une transition de page qu'on REMARQUE est une transition
+   ratee : le but n'est pas de faire joli, c'est que rien ne saute. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.18s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* La page qui part s'efface, celle qui arrive apparait par-dessus : pas de
+   croisement a moitie transparent, qui donnerait justement l'effet de
+   clignotement qu'on cherche a supprimer. */
+::view-transition-old(root) { animation-name: cylFadeOut; }
+::view-transition-new(root) { animation-name: cylFadeIn; }
+
+@keyframes cylFadeOut { to { opacity: 0; } }
+@keyframes cylFadeIn { from { opacity: 0; } }
+
+/* ── Respect du reglage systeme ─────────────────────────────────────────────
+   On ne desactive pas la transition (sans elle, le flash revient) : on la rend
+   instantanee. Le resultat est le meme pour qui ne veut pas d'animation, sans
+   lui rendre le defaut qu'on vient de corriger. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01s !important;
+  }
+}
