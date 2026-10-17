@@ -1,5 +1,5 @@
-// service-worker.js - v218 (design system v3 : polices locales, icones SVG, fin de Vanta)
-const CACHE_NAME = 'changeyourlife-v218';
+// service-worker.js - v219 (gabarit v3 sur toutes les pages, aide, memoire de CYL, annee)
+const CACHE_NAME = 'changeyourlife-v219';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
@@ -81,10 +81,6 @@ const urlsToCache = [
   '/js/xp-reward.js',
   '/js/login-bg.js',
   '/js/login-init.js',
-  '/js/particle-avatar.js',
-  '/js/avatar-upload.js',
-  '/js/id-badge.js',
-  '/js/pixel-badge.js',
   '/js/archi-build.js',
   '/js/cyl-panel.js',
   '/js/cyl-avatar.js',
@@ -93,6 +89,11 @@ const urlsToCache = [
   '/js/ez-tree-build.js',
   '/js/living-tree.js',
   '/js/icons.js',
+  '/aide/',
+  '/cyl/',
+  '/annee/',
+  '/js/cyl-memoire.js',
+  '/js/annee.js',
   '/vendor/fonts/fonts.css',
   '/vendor/fonts/fraunces-italic-latin-ext.woff2',
   '/vendor/fonts/fraunces-italic-latin.woff2',

@@ -2,11 +2,18 @@
 // Une page par branche (body[data-branch]) : ses 5 sous-catégories deviennent
 // des actions concrètes → awardXp(branche) → l'arbre grandit. Contenu tiré de
 // l'i18n (window.CYL.t) donc traduit automatiquement.
+//
+// Le HTML de chaque page est minimal (un <main id="branche-root" class="page-shell">) :
+// ce module y rend l'en-tête v3 (.page-head) et le corps (.page-body). Les
+// libellés, icônes et couleurs des branches viennent d'organizer-data.js,
+// la même source que l'ORGANIZER, l'agenda et « Aujourd'hui ».
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar, setContext } from '/js/common.js';
+import { updateGlobalAvatar, setContext, toast, escapeHtml } from '/js/common.js';
+import { icon, ROUTE_ICON } from '/js/icons.js';
+import { BRANCH_BY_KEY } from '/js/organizer-data.js';
 
 let auth, db, uid;
 let dim = {};   // { "<branch>.<i>": "YYYY-MM-DD" } - sous-catégorie validée ce jour
@@ -14,36 +21,25 @@ let dim = {};   // { "<branch>.<i>": "YYYY-MM-DD" } - sous-catégorie validée c
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
 else { await import('/js/firebase.js'); ({ auth, db } = window._cyfFirebase); }
 try { initUserMenu(); } catch (e) {}
-if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); }
 
-const BRANCH_META = {
-  physio:          { emoji: '🌱', color: '#44bd48' },
-  securite:        { emoji: '🛡️', color: '#fbbf24' },
-  appartenance:    { emoji: '🤝', color: '#f87171' },
-  estime:          { emoji: '🏆', color: '#fb923c' },
-  cognitif:        { emoji: '🧠', color: '#bdafd6' },
-  esthetique:      { emoji: '🎨', color: '#d98cae' },
-  accomplissement: { emoji: '🚀', color: '#67c96a' },
-  transcendance:   { emoji: '✨', color: '#d6cde5' },
-};
+// Les outils d'une branche : des pages du site, donc l'icône est celle de la
+// barre latérale (ROUTE_ICON), pour que la même page porte la même icône partout.
 const TOOLS = {
-  physio:          [{ h: '/sommeil/', i: '🌙', l: 'Sommeil' }, { h: '/habitudes/', i: '✅', l: 'Habitudes' }, { h: '/plan/', i: '🌅', l: "Aujourd'hui" }],
-  securite:        [{ h: '/habitudes/', i: '✅', l: 'Habitudes' }, { h: '/plan/', i: '🌅', l: "Aujourd'hui" }],
-  appartenance:    [{ h: '/journal/', i: '📔', l: 'Journal' }, { h: '/gratitude/', i: '🌟', l: 'Gratitude' }],
-  estime:          [{ h: '/objectifs/', i: '🎯', l: 'Objectifs' }, { h: '/autoevaluation/', i: '🎡', l: 'Autoévaluation' }, { h: '/bilan/', i: '📊', l: 'Bilan' }],
-  cognitif:        [{ h: '/codex/', i: '📚', l: 'Codex' }, { h: '/journal/', i: '📔', l: 'Journal' }, { h: '/competences/', i: '🧗', l: 'Compétences' }],
-  esthetique:      [{ h: '/competences/', i: '🧗', l: 'Compétences' }, { h: '/journal/', i: '📔', l: 'Journal' }],
-  accomplissement: [{ h: '/objectifs/', i: '🎯', l: 'Objectifs' }, { h: '/plan/', i: '🌅', l: "Aujourd'hui" }, { h: '/competences/', i: '🧗', l: 'Compétences' }, { h: '/meditation/', i: '🧘', l: 'Méditation' }],
-  transcendance:   [{ h: '/gratitude/', i: '🌟', l: 'Gratitude' }, { h: '/meditation/', i: '🧘', l: 'Méditation' }, { h: '/journal/', i: '📔', l: 'Journal' }],
+  physio:          [{ h: '/sommeil/', l: 'Sommeil' }, { h: '/habitudes/', l: 'Habitudes' }, { h: '/plan/', l: "Aujourd'hui" }],
+  securite:        [{ h: '/habitudes/', l: 'Habitudes' }, { h: '/plan/', l: "Aujourd'hui" }],
+  appartenance:    [{ h: '/journal/', l: 'Journal' }, { h: '/gratitude/', l: 'Gratitude' }],
+  estime:          [{ h: '/objectifs/', l: 'Objectifs' }, { h: '/autoevaluation/', l: 'Roue de vie' }, { h: '/bilan/', l: 'Bilan' }],
+  cognitif:        [{ h: '/codex/', l: 'Codex' }, { h: '/journal/', l: 'Journal' }, { h: '/competences/', l: 'Compétences' }],
+  esthetique:      [{ h: '/competences/', l: 'Compétences' }, { h: '/journal/', l: 'Journal' }],
+  accomplissement: [{ h: '/objectifs/', l: 'Objectifs' }, { h: '/plan/', l: "Aujourd'hui" }, { h: '/competences/', l: 'Compétences' }, { h: '/meditation/', l: 'Méditation' }],
+  transcendance:   [{ h: '/gratitude/', l: 'Gratitude' }, { h: '/meditation/', l: 'Méditation' }, { h: '/journal/', l: 'Journal' }],
 };
 const SUB_XP = 15;
 const key = (document.body.getAttribute('data-branch') || 'physio');
-const meta = BRANCH_META[key] || BRANCH_META.physio;
+const meta = BRANCH_BY_KEY[key] || BRANCH_BY_KEY.physio;
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 function T(k, fb) { const v = window.CYL && window.CYL.t && window.CYL.t(k); return (v && v !== k) ? v : (fb != null ? fb : k); }
-function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-function toast(msg, cls) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = 'toast' + (cls ? ' ' + cls : ''); t.classList.add('show'); clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('show'), 2200); }
 
 injectCSS();
 
@@ -60,19 +56,19 @@ onAuthStateChanged(auth, async (user) => {
 
 async function doneSub(i) {
   const k = `${key}.${i}`;
-  if (dim[k] === todayStr()) { toast('Déjà validé aujourd\'hui ✓'); return; }
+  if (dim[k] === todayStr()) { toast('Déjà validé aujourd\'hui', { duration: 2200 }); return; }
   dim[k] = todayStr();
   render();
   try { await setDoc(doc(db, 'users', uid), { dim }, { merge: true }); } catch (e) {}
   try { const fn = window._cyfFirebase && window._cyfFirebase.awardXp; if (fn) await fn(key, SUB_XP); } catch (e) {}
-  toast(`+${SUB_XP} XP · ${T('branch.' + key + '.label', key)}`, 'xp');
+  toast(`+${SUB_XP} XP · ${T('branch.' + key + '.label', meta.label)}`, { type: 'success', duration: 2200 });
 }
 
 function render() {
   const root = document.getElementById('branche-root');
   if (!root) return;
   const col = meta.color;
-  const label = T(`branch.${key}.label`, key);
+  const label = T(`branch.${key}.label`, meta.label);
   const desc = T(`branch.${key}.desc`, '');
   document.title = label + ' - Change Your Life';
 
@@ -92,7 +88,9 @@ function render() {
     subs +=
       `<div class="dim-sub${done ? ' done' : ''}">` +
       `<div class="dim-sub-txt"><div class="dim-sub-name">${escapeHtml(name)}</div><div class="dim-sub-note">${escapeHtml(note)}</div></div>` +
-      `<button class="dim-act" data-i="${i}">${done ? '✓ Fait' : "J'y ai consacré du temps"}</button>` +
+      `<button type="button" class="btn sm dim-act" data-i="${i}" aria-pressed="${done ? 'true' : 'false'}">` +
+      (done ? `${icon('check', { size: 14 })}Fait` : "J'y ai consacré du temps") +
+      `</button>` +
       `</div>`;
   }
 
@@ -104,55 +102,54 @@ function render() {
 
   const tools = (TOOLS[key] || []);
   const toolsHtml = tools.length
-    ? tools.map((t) => `<a class="dim-tool" href="${t.h}"><span class="dim-tool-ic">${t.i}</span><span class="dim-tool-l">${t.l}</span><span class="dim-tool-go">Ouvrir →</span></a>`).join('')
-    : `<div class="dim-empty">Module dédié à venir - cette dimension grandira bientôt.</div>`;
+    ? tools.map((t) => `<a class="dim-tool" href="${t.h}"><span class="dim-tool-ic">${icon(ROUTE_ICON[t.h] || 'dot')}</span><span class="dim-tool-l">${escapeHtml(t.l)}</span><span class="dim-tool-go">${icon('arrowRight', { size: 14 })}</span></a>`).join('')
+    : `<div class="empty"><span class="empty-ic">${icon('sapling')}</span><h3>Module dédié à venir</h3><p>Cette dimension grandira bientôt avec ses propres outils.</p></div>`;
 
   root.innerHTML =
-    `<div class="dim-head" style="--c:${col}">` +
-      `<div class="dim-emoji">${meta.emoji}</div>` +
-      `<div><h1 class="dim-title" style="color:${col}">${escapeHtml(label)}</h1>` +
-      `<div class="dim-desc">${escapeHtml(desc)}</div></div>` +
-    `</div>` +
-    `<div class="dim-sec-label">Ce qui fait grandir cette branche</div>` +
-    `<div class="dim-subs">${subs}</div>` +
-    `<div class="dim-sec-label">Tes outils</div>` +
-    `<div class="dim-tools">${toolsHtml}</div>`;
+    `<header class="page-head">` +
+      `<div class="page-head-id">` +
+        `<h1 id="page-title"><span class="ic dim-ic">${icon(meta.ic || 'leaf', { size: 22 })}</span>${escapeHtml(label)}</h1>` +
+        (desc ? `<p class="page-sub">${escapeHtml(desc)}</p>` : '') +
+      `</div>` +
+    `</header>` +
+    `<div class="page-body">` +
+      `<div class="sec-label">Ce qui fait grandir cette branche</div>` +
+      `<div class="dim-subs">${subs || `<div class="empty"><p>Les sous-catégories de cette branche arrivent avec la traduction.</p></div>`}</div>` +
+      `<div class="sec-label">Tes outils</div>` +
+      `<div class="dim-tools">${toolsHtml}</div>` +
+    `</div>`;
 
   root.style.setProperty('--c', col);
+  root.setAttribute('aria-labelledby', 'page-title');
   root.querySelectorAll('.dim-act').forEach((b) => { b.onclick = () => doneSub(Number(b.dataset.i)); });
 }
 
 function injectCSS() {
   if (document.getElementById('dim-css')) return;
   const s = document.createElement('style'); s.id = 'dim-css';
+  // Uniquement ce qui est propre au contenu : le cadre, l'en-tête, les
+  // boutons et les états vides viennent de main.min.css. La couleur de la
+  // branche vit dans --c, posée sur le cadre par render().
   s.textContent = `
-    body{color:var(--text-1,#f1efec);}
-    .page-shell{position:fixed;inset:20px;background:var(--glass-bg);backdrop-filter:blur(15px);border-radius:20px;border:1px solid var(--glass-border);padding:24px;overflow-y:auto;}
-    .toast{position:fixed;top:22px;left:50%;transform:translate(-50%,-130px);background:rgba(16,185,129,.92);color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;z-index:99999;transition:transform .3s ease;font-size:.88rem;box-shadow:0 8px 28px rgba(0,0,0,.35);}
-    .toast.show{transform:translate(-50%,0);} .toast.xp{background:rgba(132,194,94,.92);}
-    .dim-head{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
-    .dim-emoji{font-size:2.6rem;filter:drop-shadow(0 0 18px var(--c,#44bd48));}
-    .dim-title{font-size:1.7rem;font-weight:800;letter-spacing:-.5px;margin:0;}
-    .dim-desc{font-size:0.9rem;color:var(--text-2,#c5c0b4);line-height:1.5;margin-top:3px;max-width:46rem;}
-    .dim-sec-label{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3,#a79f8c);margin:24px 0 12px;}
-    .dim-subs{display:flex;flex-direction:column;gap:9px;}
-    .dim-sub{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:13px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);position:relative;overflow:hidden;transition:background .18s;}
-    .dim-sub::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,#44bd48);opacity:.7;}
-    .dim-sub:hover{background:rgba(255,255,255,0.05);}
-    .dim-sub.done{background:rgba(34,197,94,0.06);border-color:rgba(34,197,94,0.2);}
-    .dim-sub-txt{flex:1;min-width:0;}
-    .dim-sub-name{font-size:0.95rem;font-weight:700;color:var(--text-1,#f1efec);}
-    .dim-sub-note{font-size:0.8rem;color:var(--text-2,#c5c0b4);margin-top:2px;}
-    .dim-act{flex-shrink:0;padding:8px 15px;border-radius:99px;border:1px solid var(--c,#44bd48);background:color-mix(in srgb,var(--c,#44bd48) 14%,transparent);color:var(--c,#44bd48);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;white-space:nowrap;}
-    .dim-act:hover{filter:brightness(1.15);transform:translateY(-1px);}
-    .dim-sub.done .dim-act{background:rgba(34,197,94,0.18);border-color:#22c55e;color:#86efac;}
-    .dim-tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
-    .dim-tool{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:13px;text-decoration:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);transition:transform .18s,background .18s,border-color .18s;}
-    .dim-tool:hover{transform:translateY(-2px);background:rgba(255,255,255,0.06);border-color:var(--c,#44bd48);}
-    .dim-tool-ic{font-size:1.4rem;} .dim-tool-l{flex:1;font-size:0.9rem;font-weight:700;color:var(--text-1,#f1efec);}
-    .dim-tool-go{font-size:0.76rem;font-weight:700;color:var(--c,#44bd48);white-space:nowrap;}
-    .dim-empty{font-size:0.85rem;color:var(--text-3,#a79f8c);font-style:italic;}
-    @media (max-width:600px){ .page-shell{inset:8px;padding:16px 14px;border-radius:16px;} .dim-act{padding:7px 11px;font-size:0.74rem;} }
+    .page-head h1 .dim-ic { color:var(--c, var(--leaf-text)); }
+    .dim-subs { display:flex; flex-direction:column; gap:9px; }
+    .dim-sub { display:flex; align-items:center; gap:14px; padding:13px 16px; border-radius:var(--r); background:var(--surface-1); border:1px solid var(--line); position:relative; overflow:hidden; }
+    .dim-sub::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--c, var(--leaf)); }
+    .dim-sub:hover { background:var(--surface-2); }
+    .dim-sub.done { background:rgba(132,194,94,.08); border-color:rgba(132,194,94,.3); }
+    .dim-sub-txt { flex:1; min-width:0; }
+    .dim-sub-name { font-size:.95rem; font-weight:600; color:var(--text-1); }
+    .dim-sub-note { font-size:.82rem; color:var(--text-2); margin-top:2px; }
+    .dim-act { flex-shrink:0; min-height:36px; border-color:color-mix(in srgb, var(--c, var(--leaf)) 55%, transparent); color:var(--c, var(--leaf-text)); white-space:nowrap; }
+    .dim-act:hover { background:color-mix(in srgb, var(--c, var(--leaf)) 14%, transparent); }
+    .dim-sub.done .dim-act { background:rgba(132,194,94,.14); border-color:rgba(132,194,94,.4); color:var(--leaf-text); }
+    .dim-tools { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px; }
+    .dim-tool { display:flex; align-items:center; gap:10px; min-height:44px; padding:12px 15px; border-radius:var(--r); text-decoration:none; background:var(--surface-1); border:1px solid var(--line); color:var(--text-1); transition:background var(--duration), border-color var(--duration); }
+    .dim-tool:hover { background:var(--surface-2); border-color:var(--c, var(--line-strong)); }
+    .dim-tool-ic { display:inline-flex; color:var(--c, var(--leaf-text)); }
+    .dim-tool-l { flex:1; font-size:.9rem; font-weight:600; }
+    .dim-tool-go { display:inline-flex; color:var(--text-3); }
+    @media (max-width:640px) { .dim-sub { flex-wrap:wrap; } .dim-act { width:100%; } }
   `;
   document.head.appendChild(s);
 }

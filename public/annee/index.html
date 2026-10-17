@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <script src="/js/theme-init.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Ton arbre cette année - Change Your Life</title>
+    <meta name="description" content="Ton année vue par ton arbre : ce qui a poussé, ce que tu as déposé, et une image à garder.">
+    <meta name="robots" content="noindex">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#0a0f0a">
+    <link rel="stylesheet" href="/css/main.min.css"/>
+    <link rel="stylesheet" href="/css/transitions.css"/>
+    <style>
+      /* Le récap annuel (aucune app bien-être ne le fait ; Spotify Wrapped en
+         a fait 500 millions de partages). Ici : pas de classement, pas de
+         score, pas de comparaison à d'autres. Ce qui a poussé, ce qui a été
+         déposé, et une image que l'on choisit de garder ou de montrer. */
+      .an { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:22px; align-items:start; }
+      .an-main { display:flex; flex-direction:column; gap:16px; min-width:0; }
+      .an-hero { padding:22px 24px; }
+      .an-hero h2 { font-size:clamp(1.6rem, 1.2rem + 1.4vw, 2.3rem); margin:0 0 6px; font-variation-settings:"opsz" 96, "SOFT" 40; }
+      .an-hero p { margin:0; }
+      .an-nums { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+      .an-num { padding:14px 16px; }
+      .an-num b { display:block; font-family:var(--font-display); font-size:2rem; font-weight:600; letter-spacing:-.02em; line-height:1; color:var(--text-1); font-variant-numeric:tabular-nums; font-variation-settings:"opsz" 48; }
+      .an-num span { display:block; font-size:.8rem; color:var(--text-2); margin-top:6px; }
+      .an-themes { display:flex; flex-direction:column; gap:8px; }
+      .an-theme { display:grid; grid-template-columns:28px 1fr auto; gap:10px; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-1); }
+      .an-theme .ic { color:var(--c, var(--leaf)); }
+      .an-theme b { font-weight:600; color:var(--text-1); }
+      .an-theme small { display:block; color:var(--text-3); font-size:.78rem; }
+      .an-theme em { font-style:normal; color:var(--text-2); font-size:.84rem; white-space:nowrap; }
+      .an-side { position:sticky; top:0; display:flex; flex-direction:column; gap:12px; }
+      .an-card { aspect-ratio:4 / 5; width:100%; border-radius:16px; border:1px solid var(--line); background:var(--bg); display:block; }
+      .an-side .btn { width:100%; }
+      .an-note { font-size:.8rem; color:var(--text-3); line-height:1.5; }
+      @media (max-width:900px) { .an { grid-template-columns:1fr; } .an-side { position:static; } }
+    </style>
+</head>
+<body>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="tree"></span>Ton arbre cette année</h1>
+        <p class="page-sub">Ce qui a poussé, ce que tu as déposé. Un constat, pas une note.</p>
+      </div>
+      <div class="page-actions">
+        <div class="seg" role="tablist" aria-label="Période" id="an-periode"></div>
+      </div>
+    </header>
+    <div class="page-body">
+      <div class="an" id="an">
+        <div class="an-main">
+          <div class="card an-hero"><div class="sk" style="height:28px;width:60%"></div></div>
+          <div class="an-nums"><div class="sk" style="height:76px"></div><div class="sk" style="height:76px"></div><div class="sk" style="height:76px"></div></div>
+        </div>
+        <aside class="an-side"><div class="sk an-card"></div></aside>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/js/annee.js"></script>
+</body>
+</html>

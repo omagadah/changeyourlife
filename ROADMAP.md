@@ -235,7 +235,7 @@ Quand des fiches attendent dans « À trier », CYL propose un rangement -
 - [ ] **Capture depuis partout** : raccourci clavier global + partage PWA
   (`share_target`) pour déverser une idée sans ouvrir le site.
 - [ ] **Vue « ma semaine »** : organizer + agenda sur 7 jours dans un seul écran.
-- [ ] **Retirer `/coach/`** (3e stack IA) ou le fusionner dans CYL.
+- [x] **Retirer `/coach/`** ✅ (2026-09-02)
 - [ ] **Rappels** : Web Push sur les fiches à échéance du jour (quick win, aucun
   connecteur externe).
 
@@ -476,11 +476,11 @@ de toute responsabilité sur les décisions des utilisateurs.
 Rapport et détail : [docs/AUDIT-UX-2026-10-17.md](docs/AUDIT-UX-2026-10-17.md).
 
 - [x] **Lot 1 - fondations v3** ✅ (2026-10-17) : polices locales, icônes SVG, fond CSS, palette v2 balayée, accueil connecté, barre, amorces CYL, année en pixels, thème au chargement.
-- [ ] **Lot 2 - un seul gabarit de page** : `page-shell` v3 + en-tête commun, les 30 pages l'adoptent, suppression du CSS inline, des sidebars internes (codex, settings) et des liens « ← Mon espace ».
-- [ ] **Lot 3 - une seule vérité XP / domaines** : `xpTotal()` dans `growth.js`, 4 domaines hérités mappés vers les 8 branches.
-- [ ] **Lot 4 - idées concurrentes** : l'arbre ne régresse jamais, série avec pardon, récap hebdo CYL, « ce que CYL sait de moi », rituel matin / soir + alerte de surcharge, Moments depuis l'agenda, Daily Chat → journal, protocole de crise public, récap annuel partageable.
-- [ ] **Lot 5 - mobile et accessibilité** : deux breakpoints, CYL fermé sous 900 px, cibles 44 px, h1 et labels partout, divs cliquables → boutons.
-- [ ] **Lot 6 - profil et /yourlife/** dans le vocabulaire de l'arbre.
+- [x] **Lot 2 - un seul gabarit de page** ✅ (2026-10-18) : `page-shell` v3 + en-tête commun, les 30 pages l'adoptent, suppression du CSS inline, des sidebars internes (codex, settings) et des liens « ← Mon espace ».
+- [x] **Lot 3 - une seule vérité XP / domaines** ✅ (2026-10-18) : `xpTotal()` dans `growth.js`, 4 domaines hérités mappés vers les 8 branches.
+- [x] **Lot 4 - idées concurrentes** ✅ (2026-10-18) : l'arbre ne régresse jamais, série avec pardon, récap hebdo CYL, « ce que CYL sait de moi », rituel matin / soir + alerte de surcharge, Moments depuis l'agenda, Daily Chat → journal, protocole de crise public, récap annuel partageable.
+- [x] **Lot 5 - mobile et accessibilité** ✅ (2026-10-18) : deux breakpoints, CYL fermé sous 900 px, cibles 44 px, h1 et labels partout, divs cliquables → boutons.
+- [x] **Lot 6 - profil et /yourlife/** ✅ (2026-10-18) dans le vocabulaire de l'arbre.
 
 ## Principes de priorisation
 

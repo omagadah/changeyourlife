@@ -6,6 +6,9 @@
 // une branche. Barre de temps + caméra cinématique conservées.
 
 import * as THREE from '/vendor/three/three.module.min.js';
+// Une traduction vient d'un cache PARTAGE ecrit par un modele : c'est une donnee
+// externe, jamais du HTML (audit securite 2026-10-17, chaine XSS stockee).
+const escT = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 import { createDemoModel, buildTree } from '/js/tree-model.js';
 // ez-tree (~4 Mo) chargé en DIFFÉRÉ via import() dynamique -> page rapide.
 
@@ -464,7 +467,7 @@ function initHud() {
     card.dataset.beat = String(idx);
     card.innerHTML =
       `<span class="ic">${b.icon}</span>` +
-      `<span class="bd"><span class="nm">${T(b.key, b.task)}</span><span class="xp">${b.xp}</span></span>` +
+      `<span class="bd"><span class="nm">${escT(T(b.key, b.task))}</span><span class="xp">${b.xp}</span></span>` +
       `<span class="ck">✓</span>`;
     stream.appendChild(card);
     while (stream.children.length > 5) stream.removeChild(stream.firstChild);

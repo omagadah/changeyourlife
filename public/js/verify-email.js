@@ -1,6 +1,10 @@
 // /verify-email/ - bootstrap : Vanta birds + OTP flow.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { onAuthStateChanged, signOut, reload } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { hydrateIcons } from '/js/icons.js';
+
+// Page publique sans common.js : on hydrate nous-memes l'icone de l'en-tete.
+try { hydrateIcons(document); } catch (_) {}
 
 
 if (!window._cyfFirebase) { await import('/js/firebase.js'); }

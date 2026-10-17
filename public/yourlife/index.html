@@ -1,349 +1,93 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Ma Vie - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Visualise et coche ta progression sur la Pyramide de Maslow - tes compétences de vie organisées en 5 niveaux." />
+  <meta charset="UTF-8">
+  <script src="/js/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Où j'en suis - Change Your Life</title>
+  <meta name="description" content="Ta position, branche par branche : le palier de chaque branche de ton arbre et les jalons que tu y as posés.">
+  <meta name="robots" content="noindex">
   <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="msapplication-TileColor" content="#0a0f0a">
-  <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <link rel="stylesheet" href="/css/transitions.css"/>
   <style>
-    body { color: #f1efec; }
+    /* Propre à cette page. Tokens uniquement ; la couleur de branche vient de BRANCHES. */
+    .yl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-    .page-wrap {
-      min-height: 100vh;
-      padding: 74px 24px 60px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+    /* ── Une branche ── */
+    .br { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .br-head { display: grid; grid-template-columns: 36px 1fr auto; gap: 4px 12px; align-items: center; }
+    .br-ic { grid-row: 1 / span 2; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+      background: var(--surface-2); color: var(--bc, var(--leaf)); }
+    .br-ic svg { width: 18px; height: 18px; }
+    .br-head h2 { margin: 0; font-size: 1.1rem; }
+    .br-xp { grid-column: 3; grid-row: 1; font-family: var(--font-display); font-variation-settings: "opsz" 32;
+      font-size: 1rem; font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums; }
+    .br-meta { grid-column: 2 / span 2; grid-row: 2; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
+      font-size: .78rem; color: var(--text-2); }
+    .br-meta .chip { min-height: 24px; font-size: .72rem; }
+    .br.dormante .br-ic { color: var(--text-3); }
+    .br-bar { height: 3px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+    .br-bar > i { display: block; height: 100%; width: 0; background: var(--bc, var(--leaf)); border-radius: 3px; transition: width var(--duration-slow) var(--ease); }
+    .br.dormante .br-bar > i { background: var(--text-3); }
 
-    .page-header { margin-bottom: 24px; }
-    .page-title { font-size: 1.7rem; font-weight: 800; margin-bottom: 4px; }
-    .page-sub { color: #a79f8c; font-size: 0.88rem; }
+    /* ── Jalons ── */
+    .jalons { display: flex; flex-direction: column; gap: 4px; }
+    .jalon { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px; }
+    .jalon > button.tog {
+      min-height: 44px; padding: 6px 10px; border-radius: var(--r-sm); border: 1px solid transparent;
+      background: transparent; color: var(--text-1); font: 500 .9rem/1.3 var(--font-body); cursor: pointer;
+      display: flex; align-items: center; gap: 10px; text-align: left;
+      transition: background var(--duration), border-color var(--duration);
+    }
+    .jalon > button.tog:hover { background: var(--surface-2); }
+    .jalon .box { width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px; border: 1.5px solid var(--line-strong);
+      display: grid; place-items: center; color: transparent; background: var(--field-bg); transition: background var(--duration), border-color var(--duration); }
+    .jalon .box svg { width: 13px; height: 13px; }
+    .jalon > button.tog[aria-pressed="true"] { color: var(--text-2); }
+    .jalon > button.tog[aria-pressed="true"] .box { background: var(--bc, var(--leaf)); border-color: var(--bc, var(--leaf)); color: #08130a; }
+    .jalon > button.tog[aria-pressed="true"] .lbl { text-decoration: line-through; text-decoration-color: var(--line-strong); }
+    .jalon .del { min-width: 36px; min-height: 36px; border-radius: 9px; border: none; background: transparent; color: var(--text-3);
+      display: grid; place-items: center; cursor: pointer; }
+    .jalon .del:hover { background: var(--surface-2); color: var(--red); }
+    .jalon .del svg { width: 14px; height: 14px; }
+    .jalon-empty { font-size: .82rem; color: var(--text-3); padding: 4px 10px; }
 
-    /* ── View switcher ── */
-    .view-switcher {
-      display: inline-flex; gap: 4px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 12px; padding: 5px;
-      margin-bottom: 28px;
-    }
-    .view-btn {
-      padding: 8px 16px; border-radius: 9px; border: none;
-      font-size: 0.82rem; font-weight: 600; cursor: pointer;
-      background: transparent; color: rgba(255,255,255,0.4);
-      transition: all .2s; white-space: nowrap;
-    }
-    .view-btn:hover { color: rgba(255,255,255,0.75); }
-    .view-btn.active {
-      background: rgba(255,255,255,0.11);
-      color: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    }
+    .yl-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    .yl-add .input { min-height: 38px; }
+    .yl-add .btn { min-height: 38px; }
 
-    /* ── View containers ── */
-    .view-panel { display: none; }
-    .view-panel.active { display: block; }
-
-    /* ── Pyramid ── */
-    .pyramid { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-
-    .level-row { width: 100%; border-radius: 16px; overflow: hidden; transition: transform .2s; }
-    .level-row:hover { transform: scale(1.005); }
-
-    .level-row[data-level="self-actualization"] { max-width: 400px; }
-    .level-row[data-level="esteem"]             { max-width: 580px; }
-    .level-row[data-level="love"]               { max-width: 750px; }
-    .level-row[data-level="safety"]             { max-width: 920px; }
-    .level-row[data-level="physiological"]      { max-width: 1100px; }
-
-    .level-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 18px; color: #fff; font-weight: 700;
-      font-size: 0.82rem; text-transform: uppercase; letter-spacing: .7px;
-    }
-    .level-header-left { display: flex; align-items: center; gap: 8px; }
-    .level-pct-badge { font-size: 0.75rem; background: rgba(0,0,0,0.25); padding: 2px 8px; border-radius: 999px; font-weight: 600; opacity: .9; }
-
-    .level-skills {
-      background: rgba(10,18,30,0.55);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-top: none;
-      border-bottom-left-radius: 16px;
-      border-bottom-right-radius: 16px;
-      padding: 12px 14px;
-      display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
-      min-height: 54px;
-    }
-
-    .skill-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 6px 13px; border-radius: 999px;
-      border: 1.5px solid rgba(255,255,255,0.13);
-      background: rgba(255,255,255,0.05);
-      color: #dfdcd5; cursor: pointer;
-      font-size: 0.81rem; font-weight: 500;
-      transition: all 0.18s; user-select: none; position: relative;
-    }
-    .skill-pill:hover { background: rgba(255,255,255,0.11); transform: scale(1.05); }
-    .skill-pill.done { font-weight: 700; color: #fff; }
-    .skill-check { font-size: 0.68rem; transition: opacity .2s; opacity: 0.5; }
-    .skill-pill.done .skill-check { opacity: 1; }
-
-    .skill-del, .skill-edit {
-      opacity: 0; font-size: 0.65rem;
-      cursor: pointer; background: none; border: none;
-      padding: 0 0 0 3px; line-height: 1; transition: opacity .15s;
-    }
-    .skill-del { color: rgba(255,255,255,0.35); }
-    .skill-edit { color: rgba(255,255,255,0.35); }
-    .skill-pill:hover .skill-del, .skill-pill:hover .skill-edit { opacity: 1; }
-    .skill-del:hover { color: #ef4444 !important; }
-    .skill-edit:hover { color: #8dca67 !important; }
-
-    .btn-add-skill {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 5px 11px; border-radius: 999px;
-      border: 1.5px dashed rgba(255,255,255,0.18);
-      background: transparent; color: rgba(255,255,255,0.35);
-      cursor: pointer; font-size: 0.75rem; transition: all .2s;
-    }
-    .btn-add-skill:hover { border-color: rgba(255,255,255,0.45); color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.04); }
-
-    .add-inline-form { display: inline-flex; align-items: center; gap: 4px; }
-    .add-skill-input {
-      padding: 4px 11px; border-radius: 999px;
-      border: 1.5px solid rgba(255,255,255,0.28);
-      background: rgba(255,255,255,0.08);
-      color: #f1efec; font-size: 0.8rem; outline: none; width: 140px;
-    }
-    .add-skill-input:focus { border-color: #8dca67; }
-    .add-confirm-btn {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: #8dca67; border: none; color: #fff;
-      cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;
-    }
-    .add-cancel-btn {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: rgba(255,255,255,0.08); border: none; color: #f1efec;
-      cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
-    }
-
-    /* ── Stats row ── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px; margin-top: 28px;
-    }
-    .stat-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 14px; padding: 16px;
-    }
-    .stat-card-icon { font-size: 1.3rem; margin-bottom: 6px; }
-    .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #f1efec; }
-    .stat-card-label { font-size: 0.72rem; color: #a79f8c; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
-    .mini-bar { height: 4px; background: rgba(255,255,255,0.09); border-radius: 10px; overflow: hidden; margin-top: 8px; }
-    .mini-bar-fill { height: 100%; border-radius: 10px; transition: width .7s ease; }
-
-    .level-prog-list { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
-    .level-prog-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 14px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 10px;
-    }
-    .level-prog-emoji { font-size: 1rem; width: 22px; text-align: center; }
-    .level-prog-label { font-size: 0.81rem; color: #cae6b8; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .level-prog-pct { font-size: 0.79rem; font-weight: 700; min-width: 36px; text-align: right; }
-    .level-prog-bar { width: 70px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
-    .level-prog-bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
-
-    /* ── Mindmap ── */
-    .mindmap-container {
-      width: 100%; min-height: 580px;
-      background: rgba(10,18,30,0.55);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px; overflow: hidden;
-      position: relative;
-    }
-    .mindmap-container svg { display: block; }
-    .mindmap-hint {
-      text-align: center; padding: 12px 0 4px;
-      font-size: 0.75rem; color: #78705c;
-    }
-
-    /* ── Timeline ── */
-    .timeline-wrap { max-width: 680px; margin: 0 auto; }
-    .timeline-empty {
-      text-align: center; padding: 60px 20px;
-      color: #78705c; font-size: 0.9rem;
-    }
-    .tl-group { margin-bottom: 32px; }
-    .tl-date {
-      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; color: #6faa4a;
-      margin-bottom: 12px; padding-left: 24px;
-    }
-    .tl-items { position: relative; padding-left: 24px; }
-    .tl-items::before {
-      content: ''; position: absolute;
-      left: 7px; top: 6px; bottom: 6px;
-      width: 2px; background: rgba(255,255,255,0.07); border-radius: 2px;
-    }
-    .tl-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px; margin-bottom: 8px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px; position: relative;
-      transition: background .2s;
-    }
-    .tl-item:hover { background: rgba(255,255,255,0.07); }
-    .tl-dot {
-      width: 14px; height: 14px; border-radius: 50%;
-      flex-shrink: 0; border: 2px solid var(--accent);
-      background: rgba(0,0,0,0.4);
-      position: absolute; left: -21px; top: 50%; transform: translateY(-50%);
-    }
-    .tl-level { font-size: 0.73rem; color: #a79f8c; margin-bottom: 2px; }
-    .tl-skill { font-size: 0.88rem; font-weight: 600; color: #f1efec; }
-    .tl-time { margin-left: auto; font-size: 0.72rem; color: #78705c; white-space: nowrap; }
-
-    /* ── Toast ── */
-    .toast {
-      position: fixed; top: 22px; left: 50%;
-      transform: translate(-50%, -130px);
-      background: rgba(16,185,129,0.92); color: #fff;
-      padding: 10px 20px; border-radius: 10px;
-      font-weight: 600; z-index: 99999;
-      transition: transform .3s ease; font-size: 0.88rem;
-      white-space: nowrap; pointer-events: none;
-    }
-    .toast.show { transform: translate(-50%, 0); }
-
-    /* ── Global score banner ── */
-    .global-score-banner {
-      display: flex; align-items: center; gap: 18px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 16px; padding: 16px 20px; margin-bottom: 22px;
-      flex-wrap: wrap;
-    }
-    .gsb-ring {
-      position: relative; width: 72px; height: 72px; flex-shrink: 0;
-    }
-    .gsb-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
-    .gsb-ring-bg  { stroke: rgba(255,255,255,0.07); fill: none; stroke-width: 5; }
-    .gsb-ring-fill { stroke: #8dca67; fill: none; stroke-width: 5; stroke-linecap: round;
-                     stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset .8s ease; }
-    .gsb-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .gsb-pct { font-size: 1.1rem; font-weight: 800; color: #fff; line-height: 1; }
-    .gsb-details { flex: 1; min-width: 140px; }
-    .gsb-title { font-size: 1rem; font-weight: 700; color: #f1efec; margin-bottom: 4px; }
-    .gsb-sub { font-size: 0.8rem; color: #a79f8c; line-height: 1.4; }
-    .gsb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .gsb-btn {
-      padding: 8px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05); color: #e1ded7; font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; transition: all .18s;
-    }
-    .gsb-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-    .gsb-btn.primary { background: rgba(132,194,94,0.15); border-color: rgba(132,194,94,0.4); color: #c2e2ae; }
-    .gsb-btn.primary:hover { background: rgba(132,194,94,0.25); }
-
-    @media (max-width: 720px) {
-      .level-row[data-level] { max-width: 100% !important; }
-      .page-wrap { padding: 68px 12px 48px; }
-      .stats-row { grid-template-columns: 1fr 1fr; }
-      .view-btn { padding: 7px 10px; font-size: 0.76rem; }
-      .global-score-banner { gap: 12px; }
-    }
+    @media (max-width: 900px) { .yl-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .br-head { grid-template-columns: 32px 1fr auto; } }
+    @media (prefers-reduced-motion: reduce) { .br-bar > i { transition: none; } }
   </style>
 </head>
 <body>
-  <div id="toast" class="toast"></div>
-
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;">
-        <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
-        <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-        <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-        <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-        <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-        <circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g>
-      </svg>
-    </button>
-  </nav>
-
-  <div class="page-wrap">
-    <div class="page-header">
-      <div class="page-title">Ma Vie</div>
-      <div class="page-sub">Pyramide de Maslow · Coche tes compétences au fil de ta progression</div>
-    </div>
-
-    <!-- Global score banner -->
-    <div class="global-score-banner" id="global-score-banner">
-      <div class="gsb-ring">
-        <svg viewBox="0 0 72 72" width="72" height="72">
-          <circle class="gsb-ring-bg" cx="36" cy="36" r="31.5"/>
-          <circle class="gsb-ring-fill" id="gsb-ring-fill" cx="36" cy="36" r="31.5"/>
-        </svg>
-        <div class="gsb-inner">
-          <div class="gsb-pct" id="gsb-pct">0%</div>
-        </div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="compass"></span>Où j'en suis</h1>
+        <p class="page-sub" id="yl-sub">Ton arbre, branche par branche : son palier, son XP, et les jalons que tu y as posés.</p>
       </div>
-      <div class="gsb-details">
-        <div class="gsb-title" id="gsb-title">Ma progression de vie</div>
-        <div class="gsb-sub" id="gsb-sub">Charge en cours…</div>
+      <div class="page-actions">
+        <span class="chip" id="yl-count" aria-live="polite"><span class="sk" style="width:120px;height:12px"></span></span>
+        <button class="btn quiet sm" type="button" id="yl-export"><span class="ic" data-icon="download"></span>Exporter</button>
       </div>
-      <div class="gsb-actions">
-        <button class="gsb-btn primary" id="btn-export-life">⬇ Exporter</button>
+    </header>
+    <div class="page-body">
+      <div class="yl-grid" id="yl-grid">
+        <span class="sk" style="height:180px"></span>
+        <span class="sk" style="height:180px"></span>
+        <span class="sk" style="height:180px"></span>
+        <span class="sk" style="height:180px"></span>
       </div>
     </div>
-
-    <!-- View switcher -->
-    <div class="view-switcher" role="group" aria-label="Changer de vue">
-      <button class="view-btn active" data-view="pyramid">Pyramide</button>
-      <button class="view-btn" data-view="mindmap">Carte Mentale</button>
-      <button class="view-btn" data-view="timeline">Chronologie</button>
-    </div>
-
-    <!-- Pyramid view -->
-    <div class="view-panel active" id="view-pyramid">
-      <div class="pyramid" id="pyramid"></div>
-      <div class="stats-row" id="stats-row"></div>
-      <div class="level-prog-list" id="level-prog-list"></div>
-    </div>
-
-    <!-- Mindmap view -->
-    <div class="view-panel" id="view-mindmap">
-      <div class="mindmap-hint">Clic sur une compétence pour la cocher · Carte interactive</div>
-      <div class="mindmap-container" id="mindmap-container"></div>
-      <div class="stats-row" id="stats-row-mm"></div>
-    </div>
-
-    <!-- Timeline view -->
-    <div class="view-panel" id="view-timeline">
-      <div class="timeline-wrap">
-        <div id="timeline-container"></div>
-      </div>
-      <div class="stats-row" id="stats-row-tl"></div>
-    </div>
-  </div>
-
+  </main>
   <script type="module" src="/js/yourlife.js"></script>
 </body>
 </html>

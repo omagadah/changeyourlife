@@ -96,6 +96,10 @@
           "value": "nosniff"
         },
         {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains"
+        },
+        {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
         },
@@ -129,6 +133,21 @@
       "source": "/app/",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/aide",
+      "destination": "/aide/",
+      "permanent": true
+    },
+    {
+      "source": "/annee",
+      "destination": "/annee/",
+      "permanent": true
+    },
+    {
+      "source": "/cyl",
+      "destination": "/cyl/",
+      "permanent": true
     },
     {
       "source": "/journal",
@@ -210,11 +229,13 @@
     }
   ],
   "functions": {
-    "api/translate.js": {
-      "maxDuration": 60
-    },
-    "api/health.js": {
-      "maxDuration": 30
-    }
+    "api/translate.js": { "maxDuration": 60 },
+    "api/health.js": { "maxDuration": 30 },
+    "api/chat.js": { "maxDuration": 30 },
+    "api/cyl-brief.js": { "maxDuration": 30 },
+    "api/send-verification.js": { "maxDuration": 15 },
+    "api/verify-code.js": { "maxDuration": 10 },
+    "api/giveaway-draw.js": { "maxDuration": 15 },
+    "api/delete-account.js": { "maxDuration": 30 }
   }
 }

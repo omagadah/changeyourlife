@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset="UTF-8">
+  <script src="/js/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Cognitif - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Ta branche Cognitif : savoir, curiosité, compréhension, apprentissage, lucidité." />
-  <link rel="stylesheet" href="/css/main.min.css" />
+  <meta name="description" content="Ta branche Cognitif : savoir, curiosité, compréhension, apprentissage, lucidité.">
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="robots" content="noindex" />
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <link rel="stylesheet" href="/css/transitions.css"/>
 </head>
 <body data-branch="cognitif">
-  <div id="toast" class="toast"></div>
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
-  </nav>
-  <main id="branche-root" class="page-shell page-shell-nav" data-branch="cognitif"></main>
+  <!-- L'en-tête et le corps sont rendus par /js/branche.js (même module pour les 8 branches). -->
+  <main id="branche-root" class="page-shell" data-branch="cognitif"></main>
   <script type="module" src="/js/i18n.js"></script>
   <script type="module" src="/js/branche.js"></script>
 </body>

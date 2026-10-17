@@ -17,6 +17,7 @@ const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 const { cleanText } = require('./_text.js');
 
+const { modeleAnthropic, invalider, fetchWithTimeout } = require('./_models.js');
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
 const BRANCH_LABELS = {
@@ -176,7 +177,7 @@ module.exports = async function handler(req, res) {
 
   // ── Appel Claude ───────────────────────────────────────────────────────────
   try {
-    const r = await fetch(ANTHROPIC_URL, {
+    const r = await fetchWithTimeout(ANTHROPIC_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -184,7 +185,7 @@ module.exports = async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001',
+        model: await modeleAnthropic(ANTHROPIC_KEY),
         max_tokens: 600,
         system: SYSTEM_PROMPT,
         messages: [{
@@ -193,10 +194,11 @@ module.exports = async function handler(req, res) {
             describe({ cards, events }),
         }],
       }),
-    });
+    }, 25_000);
     if (!r.ok) {
       const errText = await r.text();
       console.error('[cyl-brief] Anthropic error:', r.status, errText.slice(0, 240));
+      if (r.status === 404) invalider('anthropic');
       return res.status(502).json({ error: 'CYL est momentanement indisponible' });
     }
     const data = await r.json();
@@ -225,6 +227,7 @@ module.exports = async function handler(req, res) {
         .slice(0, 3),
     });
   } catch (e) {
+    if (e && e.name === 'AbortError') return res.status(504).json({ error: 'CYL met trop de temps à répondre.' });
     console.error('[cyl-brief] handler error:', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });
   }

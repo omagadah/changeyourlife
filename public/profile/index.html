@@ -1,803 +1,178 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mon Profil - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-    <meta name="description" content="Votre profil Change Your Life - gérez vos informations personnelles, votre avatar et vos préférences de confidentialité.">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" href="/favicon.ico">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <meta name="theme-color" content="#0a0f0a">
-    <meta name="msapplication-TileColor" content="#0a0f0a">
-    <link rel="stylesheet" href="/css/main.min.css"/>
-    <style>
-      /* ── Layout ──────────────────────────────────────────────── */
-      html, body { overflow: auto; }
-      body { min-height: 100vh; background: var(--bg); }
-      .profile-page {
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 86px 24px 64px;
-        animation: fadeUp 0.5s var(--ease) both;
-      }
-      @media (max-width: 600px) {
-        .profile-page { padding: 76px 14px 40px; }
-      }
+  <meta charset="UTF-8">
+  <script src="/js/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Profil - Change Your Life</title>
+  <meta name="description" content="Ton profil Change Your Life : qui tu es ici, où en est ton arbre, et ton compte.">
+  <meta name="robots" content="noindex">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a0f0a">
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <link rel="stylesheet" href="/css/transitions.css"/>
+  <style>
+    /* Propre à cette page. Tokens uniquement. */
+    .pf-blocks { display: flex; flex-direction: column; gap: 22px; max-width: 760px; }
 
-      /* ── Hero card = carte d'identité METALLIQUE ARGENTÉE animée ─── */
-      @property --cyl-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-      .hero-card {
-        position: relative;
-        border-radius: var(--r-xl);
-        overflow: hidden;
-        margin-bottom: 28px;
-        border: 1.6px solid transparent;
-        /* padding-box = corps sombre · border-box = liseré métal argenté rotatif */
-        background:
-          linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
-          conic-gradient(from var(--cyl-angle),
-            #6e6e6e 0%, #d9d9d9 12%, #ffffff 20%, #9a9a9a 32%,
-            #5f5f5f 46%, #e8e8e8 60%, #b8b8b8 72%, #7a7a7a 86%, #6e6e6e 100%) border-box;
-        box-shadow: var(--shadow), 0 0 22px rgba(200,200,210,0.10);
-        animation: cylMetalSpin 9s linear infinite;
-      }
-      @keyframes cylMetalSpin { to { --cyl-angle: 360deg; } }
-      /* Fallback navigateurs sans @property : liseré métal statique */
-      @supports not (background: conic-gradient(from 0deg, red, red)) {
-        .hero-card { border-color: rgba(210,210,215,0.35); background: var(--bg-surface); animation: none; }
-      }
-      /* Voile de brillance métallique par-dessus la carte (statique, subtil) */
-      .hero-card::after {
-        content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
-        background: linear-gradient(115deg, rgba(255,255,255,0.06) 0%, transparent 22%, transparent 78%, rgba(255,255,255,0.05) 100%);
-      }
-      @media (prefers-reduced-motion: reduce) { .hero-card { animation: none; } }
-      .hero-banner {
-        height: 120px;
-        background:
-          radial-gradient(circle at 20% 30%, rgba(132,194,94,0.45), transparent 55%),
-          radial-gradient(circle at 80% 70%, rgba(189,175,214,0.35), transparent 55%),
-          linear-gradient(135deg, #2a2720 0%, #2d2a22 100%);
-      }
-      .hero-body {
-        position: relative;
-        padding: 0 28px 24px;
-        display: flex; flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-      }
-      .hero-avatar {
-        width: 112px; height: 112px;
-        border-radius: 50%;
-        margin-top: -56px;
-        background: var(--bg-elevated);
-        border: 4px solid var(--bg-surface);
-        /* Anneau métallique argenté autour de l'avatar (raccord avec la carte) */
-        box-shadow:
-          0 0 0 1.5px rgba(230,230,235,0.55),
-          0 0 0 5px var(--bg-surface),
-          0 0 0 6.5px rgba(150,150,158,0.45),
-          0 10px 26px rgba(0,0,0,0.45);
-        display: flex; align-items: center; justify-content: center;
-        overflow: hidden;
-        font-size: 2.4rem; font-weight: 800;
-        color: var(--text-1);
-        position: relative; z-index: 5;
-      }
-      .hero-avatar img,
-      .hero-avatar svg {
-        width: 100%; height: 100%;
-        display: block; object-fit: cover;
-      }
-      /* Badge pixel-art (sceau) - haut droite du hero */
-      .pixel-badge {
-        position: absolute; top: 14px; right: 14px; z-index: 3;
-        width: 84px; height: 84px; border-radius: 50%; padding: 4px;
-        background: conic-gradient(from 210deg, #e7b15c, #84c25e, #b8dea0, #e7b15c);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.45);
-        animation: badgeGlow 3.4s ease-in-out infinite;
-      }
-      @keyframes badgeGlow {
-        0%,100% { box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 16px rgba(231,177,92,0.3); }
-        50% { box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 26px rgba(127,209,255,0.45); }
-      }
-      @media (prefers-reduced-motion: reduce) { .pixel-badge { animation: none; } }
-      @media (max-width: 600px) { .pixel-badge { width: 64px; height: 64px; top: 10px; right: 10px; } }
-      .hero-info {
-        display: flex; flex-direction: column; gap: 6px;
-      }
-      .hero-name {
-        font-size: 1.4rem; font-weight: 800;
-        color: var(--text-1); letter-spacing: -0.4px;
-        line-height: 1.1;
-      }
-      .hero-meta {
-        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-      }
-      .hero-title {
-        font-size: 0.85rem; color: var(--blue-light);
-        font-style: italic;
-      }
-      .hero-handle {
-        font-size: 0.78rem; color: var(--text-3);
-        padding: 3px 10px; border-radius: 999px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid var(--glass-border);
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      }
-      .hero-stats {
-        display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px;
-      }
-      .hero-stat {
-        font-size: 0.78rem; color: var(--text-2);
-        display: inline-flex; align-items: center; gap: 6px;
-      }
-      .hero-stat strong { color: var(--text-1); font-weight: 700; }
-      .hero-bio {
-        font-size: 0.86rem; color: var(--text-2); line-height: 1.5;
-        margin-top: 6px; max-width: 560px;
-      }
-      .hero-link {
-        display: inline-flex; align-items: center; gap: 6px; margin-top: 4px;
-        font-size: 0.8rem; font-weight: 600; color: var(--blue-light);
-        text-decoration: none; width: fit-content;
-      }
-      .hero-link::before { content: '🔗'; font-size: 0.85rem; }
-      .hero-link:hover { text-decoration: underline; }
+    /* ── Identité ── */
+    .pf-id { display: grid; grid-template-columns: 96px 1fr; gap: 18px 22px; align-items: start; }
+    .pf-avatar {
+      width: 96px; height: 96px; border-radius: 50%; overflow: hidden;
+      background: var(--surface-3); border: 1px solid var(--line-strong);
+      display: grid; place-items: center;
+      font-family: var(--font-display); font-size: 2.2rem; font-weight: 600; color: var(--text-1);
+      font-variation-settings: "opsz" 48;
+    }
+    .pf-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pf-avatar-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .pf-avatar-actions .btn { width: 100%; }
+    .pf-avatar-actions input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+    .pf-form { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    .pf-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .pf-form .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+    .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-      /* ── Tabs ────────────────────────────────────────────────── */
-      .tabs {
-        display: flex; gap: 4px;
-        background: var(--bg-surface);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r);
-        padding: 4px;
-        margin-bottom: 20px;
-        overflow-x: auto;
-      }
-      .tab {
-        flex-shrink: 0;
-        padding: 9px 18px; border-radius: var(--r-sm);
-        background: transparent; border: none;
-        color: var(--text-2); font-size: 0.86rem; font-weight: 600;
-        cursor: pointer;
-        transition: var(--duration) var(--ease);
-        font-family: inherit;
-        display: inline-flex; align-items: center; gap: 7px;
-      }
-      .tab:hover { color: var(--text-1); background: rgba(255,255,255,0.04); }
-      .tab.active {
-        background: var(--blue);
-        color: #fff;
-        box-shadow: 0 4px 14px var(--blue-glow);
-      }
+    /* ── Ton arbre ── */
+    .pf-total { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+    .pf-total .t-num { font-size: 1.9rem; line-height: 1; }
+    .pf-total small { font-size: .82rem; color: var(--text-2); }
+    .br-list { display: flex; flex-direction: column; gap: 4px; }
+    .br-row {
+      display: grid; grid-template-columns: 32px 1fr auto; grid-template-rows: auto auto;
+      gap: 2px 12px; align-items: center; padding: 10px 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    .br-row:last-child { border-bottom: none; }
+    .br-ic { grid-row: 1 / span 2; width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
+      background: var(--surface-2); color: var(--bc, var(--leaf)); }
+    .br-ic svg { width: 17px; height: 17px; }
+    .br-name { font-size: .92rem; font-weight: 600; color: var(--text-1); }
+    .br-palier { font-size: .78rem; color: var(--text-2); }
+    .br-xp { grid-column: 3; grid-row: 1; font-family: var(--font-display); font-variation-settings: "opsz" 32;
+      font-size: 1rem; font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums; text-align: right; }
+    .br-bar { grid-column: 2 / span 2; grid-row: 2; height: 3px; border-radius: 3px; background: var(--surface-3); overflow: hidden; align-self: end; margin-top: 6px; }
+    .br-bar > i { display: block; height: 100%; width: 0; background: var(--bc, var(--leaf)); border-radius: 3px; transition: width var(--duration-slow) var(--ease); }
+    .br-row.dormante .br-ic { color: var(--text-3); }
+    .br-row.dormante .br-bar > i { background: var(--text-3); }
 
-      /* ── Sections ────────────────────────────────────────────── */
-      .section { display: none; animation: fadeUp 0.35s var(--ease) both; }
-      .section.active { display: flex; flex-direction: column; gap: 18px; }
+    .ouv-list { display: flex; flex-direction: column; gap: 8px; }
+    .ouv { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 10px 12px;
+      border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-1); }
+    .ouv .ic { color: var(--leaf-text); margin-top: 2px; }
+    .ouv b { display: block; font-size: .88rem; color: var(--text-1); font-weight: 600; }
+    .ouv p { margin: 2px 0 0; font-size: .8rem; color: var(--text-2); line-height: 1.45; }
+    .ouv.off { opacity: .6; }
+    .ouv.off .ic { color: var(--text-3); }
+    .ouv.off .cond { color: var(--text-3); font-size: .76rem; display: block; margin-top: 3px; }
 
-      /* ── Card (réutilisable) ─────────────────────────────────── */
-      .card {
-        background: var(--bg-surface);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-lg);
-        padding: 24px;
-        transition: border-color var(--duration);
-      }
-      .card:hover { border-color: var(--glass-border-hover); }
-      .card-header {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 18px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid var(--glass-border);
-      }
-      .card-header__title {
-        display: flex; align-items: center; gap: 10px;
-      }
-      .card-header__icon {
-        width: 32px; height: 32px;
-        border-radius: var(--r-sm);
-        background: rgba(132,194,94,0.12);
-        color: var(--blue-light);
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 1rem;
-      }
-      .card-title {
-        font-size: 1rem; font-weight: 700;
-        color: var(--text-1); letter-spacing: -0.2px;
-      }
-      .card-subtitle {
-        font-size: 0.82rem; color: var(--text-2);
-        margin-top: 2px;
-      }
+    /* ── Compte ── */
+    .pf-account { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .pf-account .spacer { flex: 1; }
+    .pf-account .note { flex-basis: 100%; font-size: .8rem; color: var(--text-3); margin: 4px 0 0; }
 
-      /* ── Form fields ─────────────────────────────────────────── */
-      .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-      @media (max-width: 600px) { .field-grid { grid-template-columns: 1fr; } }
-
-      .field { display: flex; flex-direction: column; gap: 7px; }
-      .field-label {
-        font-size: 0.78rem; font-weight: 600;
-        color: var(--text-2);
-        text-transform: uppercase; letter-spacing: 0.5px;
-      }
-      .field-help {
-        font-size: 0.74rem; color: var(--text-3);
-        margin-top: -2px;
-      }
-      .field-input,
-      .field-textarea {
-        width: 100%; padding: 11px 14px;
-        border-radius: var(--r-sm);
-        border: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.03);
-        color: var(--text-1); font-size: 0.92rem;
-        font-family: inherit;
-        outline: none;
-        transition: border-color var(--duration), background var(--duration), box-shadow var(--duration);
-      }
-      .field-input:focus,
-      .field-textarea:focus {
-        border-color: rgba(132,194,94,0.5);
-        background: rgba(132,194,94,0.06);
-        box-shadow: 0 0 0 3px rgba(132,194,94,0.12);
-      }
-      .field-input:disabled {
-        opacity: 0.5; cursor: not-allowed;
-        background: rgba(255,255,255,0.02);
-      }
-      .field-input::placeholder,
-      .field-textarea::placeholder { color: var(--text-3); }
-      .field-textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
-
-      .field-counter {
-        font-size: 0.72rem; color: var(--text-3);
-        text-align: right; font-variant-numeric: tabular-nums;
-      }
-
-      /* ── Avatar editor ───────────────────────────────────────── */
-      .avatar-tools {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-      }
-      @media (max-width: 600px) { .avatar-tools { grid-template-columns: 1fr; } }
-      .file-drop {
-        position: relative; overflow: hidden;
-        border: 1.5px dashed var(--glass-border);
-        border-radius: var(--r);
-        padding: 22px 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color var(--duration) var(--ease), background var(--duration), transform var(--duration), box-shadow var(--duration);
-        background: rgba(255,255,255,0.02);
-      }
-      .file-drop:hover {
-        border-color: rgba(132,194,94,0.45);
-        background: rgba(132,194,94,0.06);
-      }
-      /* état drag survolé : la zone respire et s'illumine */
-      .file-drop.dragover {
-        border-color: rgba(96,174,255,0.9);
-        background: rgba(132,194,94,0.12);
-        transform: scale(1.015);
-        box-shadow: 0 0 0 3px rgba(132,194,94,0.14), 0 10px 30px rgba(132,194,94,0.18);
-      }
-      .file-drop.dragover .file-drop__icon { transform: translateY(-4px) scale(1.12); opacity: 1; }
-      .file-drop input[type="file"] {
-        position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;
-      }
-      .file-drop__icon {
-        font-size: 1.8rem; opacity: 0.6;
-        margin-bottom: 6px;
-        transition: transform .25s var(--ease-spring, cubic-bezier(.34,1.56,.64,1)), opacity .2s;
-      }
-      .file-drop__title {
-        font-size: 0.88rem; font-weight: 600; color: var(--text-1);
-      }
-      .file-drop__hint {
-        font-size: 0.74rem; color: var(--text-3); margin-top: 2px;
-      }
-      /* Barre de progression animée (upload) */
-      .file-drop__progress {
-        position: absolute; left: 0; bottom: 0; height: 3px; width: 0%;
-        background: linear-gradient(90deg, #6cb43f, #a7d689);
-        transition: width .1s linear; opacity: 0;
-      }
-      .file-drop.uploading .file-drop__progress { opacity: 1; }
-      /* Vignette de prévisualisation qui apparaît après import */
-      .file-drop__preview {
-        position: absolute; top: 10px; right: 10px;
-        width: 40px; height: 40px; border-radius: 10px; object-fit: cover;
-        border: 1.5px solid rgba(230,230,235,0.5);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-        opacity: 0; transform: scale(0.6) translateY(-4px);
-        transition: opacity .3s var(--ease), transform .35s var(--ease-spring, cubic-bezier(.34,1.56,.64,1));
-      }
-      .file-drop.done .file-drop__preview { opacity: 1; transform: scale(1) translateY(0); }
-      .file-drop.done { border-color: rgba(34,197,94,0.5); background: rgba(34,197,94,0.06); }
-      .file-drop.done .file-drop__icon::after { content: ' ✓'; color: #86efac; }
-      .initial-row {
-        display: flex; gap: 10px; align-items: stretch;
-      }
-      .initial-input {
-        flex: 0 0 64px;
-        text-align: center;
-        font-size: 1.2rem; font-weight: 700;
-      }
-
-      /* ── Buttons ─────────────────────────────────────────────── */
-      .btn {
-        display: inline-flex; align-items: center; justify-content: center;
-        gap: 8px;
-        padding: 10px 18px; border-radius: var(--r-sm); border: none;
-        font-size: 0.88rem; font-weight: 700;
-        cursor: pointer; font-family: inherit;
-        transition: var(--duration) var(--ease);
-        letter-spacing: -0.1px;
-      }
-      .btn--primary {
-        background: var(--blue); color: #fff;
-        box-shadow: 0 4px 14px var(--blue-glow);
-      }
-      .btn--primary:hover {
-        background: #71bd42;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(132,194,94,0.45);
-      }
-      .btn--ghost {
-        background: rgba(255,255,255,0.04);
-        color: var(--text-2);
-        border: 1px solid var(--glass-border);
-      }
-      .btn--ghost:hover {
-        background: rgba(255,255,255,0.08);
-        color: var(--text-1);
-        border-color: var(--glass-border-hover);
-      }
-      .btn--block { width: 100%; }
-      .btn:active { transform: translateY(0) scale(0.98); }
-
-      /* ── Save bar (sticky) ───────────────────────────────────── */
-      .save-bar {
-        position: sticky; bottom: 16px;
-        margin-top: 24px;
-        background: var(--glass-bg);
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-lg);
-        padding: 14px 20px;
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 14px;
-        box-shadow: var(--shadow);
-        z-index: 10;
-      }
-      .save-bar__hint { font-size: 0.84rem; color: var(--text-2); }
-
-      /* ── Levels & XP ─────────────────────────────────────────── */
-      .levels-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-      }
-      @media (max-width: 600px) { .levels-grid { grid-template-columns: 1fr; } }
-      .level-card {
-        background: rgba(255,255,255,0.025);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r);
-        padding: 16px;
-        transition: var(--duration);
-      }
-      .level-card:hover {
-        background: rgba(255,255,255,0.04);
-        border-color: var(--glass-border-hover);
-      }
-      .level-head {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 10px;
-      }
-      .level-name {
-        font-size: 0.92rem; font-weight: 700; color: var(--text-1);
-        display: inline-flex; align-items: center; gap: 8px;
-      }
-      .level-emoji { font-size: 1.1rem; }
-      .level-meta {
-        font-size: 0.76rem; color: var(--text-2);
-        font-variant-numeric: tabular-nums;
-      }
-      .progress { height: 6px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
-      .progress > .bar {
-        height: 100%; width: 0%; border-radius: 99px;
-        transition: width 0.7s var(--ease);
-      }
-      .bar.body  { background: linear-gradient(90deg, var(--corps), #40b744); }
-      .bar.etre  { background: linear-gradient(90deg, var(--etre),  #a0d381); }
-      .bar.heart { background: linear-gradient(90deg, var(--coeur), #f43f5e); }
-      .bar.order { background: linear-gradient(90deg, var(--ordre), #f59e0b); }
-
-      .total-xp-pill {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 5px 12px; border-radius: 999px;
-        background: rgba(132,194,94,0.12);
-        border: 1px solid rgba(132,194,94,0.25);
-        color: var(--blue-light);
-        font-size: 0.78rem; font-weight: 600;
-      }
-
-      .badges-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-        gap: 10px;
-      }
-      .badge-cell {
-        display: flex; flex-direction: column; align-items: center;
-        gap: 4px; padding: 12px 8px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r);
-        text-align: center;
-        transition: var(--duration);
-      }
-      .badge-cell.unlocked {
-        background: rgba(251,191,36,0.08);
-        border-color: rgba(251,191,36,0.3);
-      }
-      .badge-cell.locked { opacity: 0.4; }
-      .badge-cell__emoji { font-size: 1.5rem; }
-      .badge-cell__label { font-size: 0.7rem; color: var(--text-2); font-weight: 600; }
-
-      .titles-grid {
-        display: flex; flex-wrap: wrap; gap: 8px;
-      }
-
-      /* ── Preferences (CTA card) ──────────────────────────────── */
-      .cta-card {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 16px; padding: 22px 24px;
-        background:
-          linear-gradient(135deg, rgba(132,194,94,0.1), rgba(189,175,214,0.06));
-        border: 1px solid rgba(132,194,94,0.2);
-      }
-      .cta-card h3 {
-        font-size: 1rem; font-weight: 700; color: var(--text-1);
-        margin-bottom: 4px;
-      }
-      .cta-card p {
-        font-size: 0.85rem; color: var(--text-2);
-      }
-
-      /* ── Toast (unifié) ──────────────────────────────────────── */
-      .toast {
-        position: fixed; top: 80px; left: 50%;
-        transform: translate(-50%, -150%);
-        background: var(--bg-elevated);
-        border: 1px solid var(--glass-border);
-        color: var(--text-1);
-        padding: 12px 22px; border-radius: var(--r);
-        font-weight: 600; font-size: 0.88rem;
-        z-index: 99999;
-        transition: transform 0.45s var(--ease-spring);
-        box-shadow: var(--shadow);
-        pointer-events: none;
-      }
-      .toast.show { transform: translate(-50%, 0); }
-      .toast.toast--success { border-color: rgba(34,197,94,0.4); }
-      .toast.toast--error   { border-color: rgba(239,68,68,0.4); color: #fca5a5; }
-
-      /* ── Dev mode hint ───────────────────────────────────────── */
-      .dev-note {
-        font-size: 0.74rem; color: var(--text-3);
-        margin-top: 10px; padding: 8px 12px;
-        border-radius: var(--r-sm);
-        background: rgba(251,191,36,0.06);
-        border: 1px solid rgba(251,191,36,0.2);
-      }
-    </style>
+    @media (max-width: 640px) {
+      .pf-id { grid-template-columns: 1fr; justify-items: start; }
+      .pf-avatar-actions { flex-direction: row; }
+      .pf-form .row { grid-template-columns: 1fr; }
+      .br-row { grid-template-columns: 28px 1fr auto; }
+    }
+    @media (prefers-reduced-motion: reduce) { .br-bar > i { transition: none; } }
+  </style>
 </head>
 <body>
-    <script src="/js/theme-init.js"></script>
-
-    <nav class="site-nav">
-      <a href="/" class="site-nav__back">← Mon espace</a>
-      <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-        <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;">
-          <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
-          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-          <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-          <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-          <circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g>
-        </svg>
-      </button>
-    </nav>
-
-    <main class="profile-page">
-
-      <!-- HERO -->
-      <section class="hero-card">
-        <div class="hero-banner" id="hero-banner"></div>
-        <div class="pixel-badge" id="pixel-badge" title="Ton sceau pixel-art"></div>
-        <div class="hero-body">
-          <div class="hero-avatar" id="avatar-preview-container">A</div>
-          <div class="hero-info">
-            <div class="hero-name" id="username-display">-</div>
-            <div class="hero-meta">
-              <span class="hero-title" id="title-display"></span>
-              <span class="hero-handle" id="player-id">Player #-</span>
-            </div>
-            <div class="hero-stats">
-              <span class="hero-stat">⚡ <strong id="hero-stat-xp">0</strong> XP total</span>
-              <span class="hero-stat">🏆 <strong id="hero-stat-badges">0</strong> badges</span>
-              <span class="hero-stat">🌳 Niv. <strong id="hero-stat-avg">0</strong> moyen</span>
-            </div>
-            <p class="hero-bio" id="hero-bio-display" hidden></p>
-            <a class="hero-link" id="hero-website-display" target="_blank" rel="noopener noreferrer" hidden></a>
-          </div>
-        </div>
-      </section>
-
-      <!-- TABS -->
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-tab="identity" role="tab" aria-selected="true">
-          <span>👤</span> Identité
-        </button>
-        <button class="tab" data-tab="levels" role="tab" aria-selected="false">
-          <span>⚡</span> Niveaux & badges
-        </button>
-        <button class="tab" data-tab="preferences" role="tab" aria-selected="false">
-          <span>⚙️</span> Préférences
-        </button>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="user"></span>Profil</h1>
+        <p class="page-sub">Qui tu es ici, où en est ton arbre, et ton compte.</p>
       </div>
+    </header>
+    <div class="page-body">
+      <div class="pf-blocks">
 
-      <!-- ─────────── IDENTITÉ ─────────── -->
-      <div id="tab-identity" class="section active" role="tabpanel">
-
-        <!-- Badge d'identité interactif (lanyard) -->
-        <article class="card" style="background:transparent;border:none;padding:6px 0 0;overflow:visible">
-          <div id="id-badge-mount"></div>
-        </article>
-
-        <!-- Informations publiques -->
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">👤</span>
-              <div>
-                <div class="card-title">Informations publiques</div>
-                <div class="card-subtitle">Visibles par les autres utilisateurs.</div>
+        <!-- 1. Identité -->
+        <section class="card" aria-labelledby="h-identite">
+          <div class="sec-label" id="h-identite">Identité</div>
+          <form class="pf-id" id="pf-form" novalidate>
+            <div>
+              <div class="pf-avatar" id="pf-avatar" aria-hidden="true">·</div>
+              <div class="pf-avatar-actions">
+                <label class="btn sm" for="pf-avatar-file"><span class="ic" data-icon="edit"></span>Photo</label>
+                <input type="file" id="pf-avatar-file" accept="image/*">
+                <button class="btn sm quiet" type="button" id="pf-avatar-clear" hidden>Retirer</button>
               </div>
             </div>
-          </header>
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="username">Nom d'utilisateur</label>
-              <input type="text" id="username" class="field-input" placeholder="Ton nom public" autocomplete="username"/>
-              <span class="field-help">3-20 caractères. Modifiable à tout moment.</span>
+            <div class="pf-form">
+              <div class="row">
+                <div class="field">
+                  <label for="pf-name">Nom affiché</label>
+                  <input class="input" type="text" id="pf-name" autocomplete="nickname" maxlength="60" placeholder="Ton prénom, ou ce que tu veux">
+                </div>
+                <div class="field">
+                  <label for="pf-title">Titre <span class="t-muted">(facultatif)</span></label>
+                  <input class="input" type="text" id="pf-title" maxlength="12" placeholder="Ex. Explorateur">
+                </div>
+              </div>
+              <div class="field">
+                <label for="pf-bio">Bio</label>
+                <textarea class="textarea" id="pf-bio" maxlength="280" placeholder="Ce que tu fais, ce qui compte pour toi, où tu en es."></textarea>
+                <span class="field-hint"><span id="pf-bio-count">0</span> / 280</span>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label for="pf-website">Site web</label>
+                  <input class="input" type="url" id="pf-website" inputmode="url" placeholder="https://">
+                </div>
+                <div class="field">
+                  <label for="pf-email">Email</label>
+                  <input class="input" type="email" id="pf-email" readonly>
+                  <span class="field-hint">Se change dans les paramètres.</span>
+                </div>
+              </div>
+              <div class="actions">
+                <button class="btn primary" type="submit" id="pf-save"><span class="ic" data-icon="check"></span>Enregistrer</button>
+              </div>
             </div>
-            <div class="field">
-              <label class="field-label" for="profile-title">Titre affiché</label>
-              <input type="text" id="profile-title" class="field-input" maxlength="12" placeholder="Ex: Explorateur"/>
-              <span class="field-help">12 caractères max. Affiché à côté de ton nom.</span>
-            </div>
+          </form>
+        </section>
+
+        <!-- 2. Ton arbre -->
+        <section class="card" aria-labelledby="h-arbre">
+          <div class="sec-label" id="h-arbre">Ton arbre</div>
+          <div class="pf-total">
+            <span class="t-num" id="pf-xp-total"><span class="sk" style="width:64px;height:28px"></span></span>
+            <small>XP, toutes branches confondues</small>
           </div>
-        </article>
-
-        <!-- Bio -->
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">📝</span>
-              <div>
-                <div class="card-title">Bio</div>
-                <div class="card-subtitle">Présente-toi en quelques mots.</div>
-              </div>
-            </div>
-          </header>
-          <div class="field">
-            <textarea id="profile-bio" class="field-textarea" placeholder="Ce que tu fais, ce qui te passionne, où tu en es..." maxlength="280"></textarea>
-            <span class="field-counter"><span id="bio-counter">0</span>/280</span>
+          <div class="br-list" id="pf-branches">
+            <span class="sk" style="height:44px"></span>
+            <span class="sk" style="height:44px"></span>
+            <span class="sk" style="height:44px"></span>
           </div>
-        </article>
-
-        <!-- Liens -->
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">🔗</span>
-              <div>
-                <div class="card-title">Coordonnées</div>
-                <div class="card-subtitle">Email lecture seule. Le site est optionnel et public.</div>
-              </div>
-            </div>
-          </header>
-          <div class="field-grid">
-            <div class="field">
-              <label class="field-label" for="profile-website">Site web</label>
-              <input type="url" id="profile-website" class="field-input" placeholder="https://..."/>
-            </div>
-            <div class="field">
-              <label class="field-label" for="profile-email">Email</label>
-              <input type="text" id="profile-email" class="field-input" disabled/>
-              <span class="field-help">Géré dans <a href="/settings/" style="color:var(--blue-light)">Paramètres → Sécurité</a>.</span>
-            </div>
+          <div class="sec-label" style="margin-top:22px">Ce qui s'est ouvert</div>
+          <div class="ouv-list" id="pf-ouvertures">
+            <span class="sk" style="height:48px"></span>
           </div>
-        </article>
+        </section>
 
-        <!-- Avatar -->
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">🎨</span>
-              <div>
-                <div class="card-title">Avatar</div>
-                <div class="card-subtitle">Image, initiale ou avatar généré aléatoirement.</div>
-              </div>
-            </div>
-            <button id="random-avatar-btn" class="btn btn--ghost" type="button">Aléatoire</button>
-          </header>
-
-          <div class="avatar-tools">
-            <label class="file-drop" for="avatar-file-input" id="avatar-drop">
-              <img class="file-drop__preview" id="avatar-drop-preview" alt=""/>
-              <div class="file-drop__icon">🖼️</div>
-              <div class="file-drop__title">Importer une photo</div>
-              <div class="file-drop__hint">Glisse-dépose ou clique · PNG, JPG, WebP - max 2 Mo</div>
-              <input type="file" id="avatar-file-input" accept="image/*"/>
-              <div class="file-drop__progress" id="avatar-drop-progress"></div>
-            </label>
-
-            <div class="field">
-              <label class="field-label" for="avatar-initial-input">Avatar par initiale</label>
-              <div class="initial-row">
-                <input id="avatar-initial-input" class="field-input initial-input" placeholder="A" maxlength="2"/>
-                <button id="generate-initial-avatar" class="btn btn--ghost" type="button" style="flex:1">Générer</button>
-              </div>
-              <span class="field-help">1 ou 2 lettres. Couleur de fond générée automatiquement.</span>
-            </div>
+        <!-- 3. Compte -->
+        <section class="card" aria-labelledby="h-compte">
+          <div class="sec-label" id="h-compte">Compte</div>
+          <div class="pf-account">
+            <a class="btn" href="/settings/"><span class="ic" data-icon="sliders"></span>Paramètres</a>
+            <button class="btn quiet" type="button" id="pf-logout"><span class="ic" data-icon="logout"></span>Se déconnecter</button>
+            <span class="spacer"></span>
+            <a class="btn quiet danger" href="/settings/">Supprimer mon compte</a>
+            <p class="note">La suppression se fait dans Paramètres, onglet Sécurité.</p>
           </div>
-        </article>
+        </section>
 
-        <!-- Sticky save bar -->
-        <div class="save-bar">
-          <div class="save-bar__hint">Modifications non sauvegardées</div>
-          <button id="save-profile-button" class="btn btn--primary" type="button">Enregistrer le profil</button>
-        </div>
       </div>
-
-      <!-- ─────────── NIVEAUX & XP ─────────── -->
-      <div id="tab-levels" class="section" role="tabpanel">
-
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">⚡</span>
-              <div>
-                <div class="card-title">Progression par domaine</div>
-                <div class="card-subtitle">XP gagné dans chaque axe de Change Your Life.</div>
-              </div>
-            </div>
-            <div id="profile-total-xp" class="total-xp-pill">⚡ 0 XP total</div>
-          </header>
-
-          <div class="levels-grid">
-            <div class="level-card">
-              <div class="level-head">
-                <span class="level-name"><span class="level-emoji">💪</span> Corps</span>
-                <span class="level-meta" id="lvl-body-label">Niv. 0 · 0 XP</span>
-              </div>
-              <div class="progress"><div id="lvl-body" class="bar body"></div></div>
-              <div id="dev-body" style="display:none;margin-top:10px">
-                <button class="btn btn--ghost" data-xp-domain="body" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
-              </div>
-            </div>
-            <div class="level-card">
-              <div class="level-head">
-                <span class="level-name"><span class="level-emoji">🌌</span> Être</span>
-                <span class="level-meta" id="lvl-etre-label">Niv. 0 · 0 XP</span>
-              </div>
-              <div class="progress"><div id="lvl-etre" class="bar etre"></div></div>
-              <div id="dev-etre" style="display:none;margin-top:10px">
-                <button class="btn btn--ghost" data-xp-domain="etre" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
-              </div>
-            </div>
-            <div class="level-card">
-              <div class="level-head">
-                <span class="level-name"><span class="level-emoji">❤️</span> Cœur</span>
-                <span class="level-meta" id="lvl-heart-label">Niv. 0 · 0 XP</span>
-              </div>
-              <div class="progress"><div id="lvl-heart" class="bar heart"></div></div>
-              <div id="dev-heart" style="display:none;margin-top:10px">
-                <button class="btn btn--ghost" data-xp-domain="heart" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
-              </div>
-            </div>
-            <div class="level-card">
-              <div class="level-head">
-                <span class="level-name"><span class="level-emoji">📐</span> Ordre</span>
-                <span class="level-meta" id="lvl-order-label">Niv. 0 · 0 XP</span>
-              </div>
-              <div class="progress"><div id="lvl-order" class="bar order"></div></div>
-              <div id="dev-order" style="display:none;margin-top:10px">
-                <button class="btn btn--ghost" data-xp-domain="order" type="button" style="font-size:0.78rem;padding:6px 12px">+10 XP (dev)</button>
-              </div>
-            </div>
-          </div>
-          <div class="dev-note" id="dev-note" style="display:none">Mode dev actif - boutons XP visibles uniquement sur localhost.</div>
-        </article>
-
-        <!-- Badges -->
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">🏆</span>
-              <div>
-                <div class="card-title">Badges débloqués</div>
-                <div class="card-subtitle">Récompenses à débloquer en utilisant les modules.</div>
-              </div>
-            </div>
-            <div class="total-xp-pill" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.25);color:#fde68a">
-              <span id="badges-count">0</span> obtenus
-            </div>
-          </header>
-          <div id="badges-grid" class="badges-grid"></div>
-        </article>
-
-        <!-- Titles -->
-        <article class="card">
-          <header class="card-header">
-            <div class="card-header__title">
-              <span class="card-header__icon">🎖️</span>
-              <div>
-                <div class="card-title">Titres</div>
-                <div class="card-subtitle">Sélectionne le titre affiché à côté de ton nom.</div>
-              </div>
-            </div>
-          </header>
-          <div id="titles-grid" class="titles-grid"></div>
-        </article>
-      </div>
-
-      <!-- ─────────── PRÉFÉRENCES ─────────── -->
-      <div id="tab-preferences" class="section" role="tabpanel">
-        <style>
-          .univers-choice { display:flex; gap:10px; flex-wrap:wrap; }
-          .univers-opt, .world-opt { padding:10px 18px; border-radius:99px; cursor:pointer; font-weight:700; font-size:.9rem;
-            font-family:inherit; border:1px solid var(--glass-border); background:var(--bg-elevated); color:var(--text-1); }
-          .univers-opt.active, .world-opt.active { border-color:#84c25e; background:linear-gradient(135deg,rgba(132,194,94,.18),rgba(111,154,82,.06)); color:#a7e08a; }
-        </style>
-        <article class="card" style="margin-bottom:18px">
-          <header class="card-header"><div class="card-header__title"><span class="card-header__icon">🌳</span>
-            <h3 class="card-header__title">Ton univers</h3></div></header>
-          <p style="color:var(--text-2);font-size:.86rem;margin:6px 0 10px">Choisis ton décor. Appliqué sur la page d'accueil (et bientôt partout).</p>
-          <div class="univers-choice" style="margin-bottom:14px">
-            <button class="world-opt" data-world="arbre">🌳 Arbre vivant</button>
-            <button class="world-opt" data-world="archi">🏙️ Architecture</button>
-          </div>
-          <p style="color:var(--text-2);font-size:.8rem;margin:0 0 8px">Essence de l'arbre :</p>
-          <div class="univers-choice">
-            <button class="univers-opt" data-tree="chene">🌳 Chêne</button>
-            <button class="univers-opt" data-tree="frene">🍃 Frêne</button>
-          </div>
-          <p style="color:var(--text-3);font-size:.78rem;margin-top:12px">D'autres univers arrivent (espace, océan...).</p>
-        </article>
-        <article class="card cta-card">
-          <div>
-            <h3>Paramètres &amp; Préférences</h3>
-            <p>Thème, animations, notifications, sécurité du compte, données privées - tout est centralisé dans la page Paramètres.</p>
-          </div>
-          <a href="/settings/" class="btn btn--primary" style="white-space:nowrap;text-decoration:none;flex-shrink:0">
-            Ouvrir les Paramètres →
-          </a>
-        </article>
-      </div>
-
-    </main>
-
-    <div id="toast" class="toast">Profil mis à jour</div>
-
-    <script type="module" src="/js/profile.js"></script>
-    <script type="module" src="/js/profile-init.js"></script>
-    <script type="module" src="/js/avatar-upload.js"></script>
-    <script type="module" src="/js/id-badge.js"></script>
+    </div>
+  </main>
+  <script type="module" src="/js/profile.js"></script>
 </body>
 </html>

@@ -1,684 +1,327 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <script src="/js/theme-init.js"></script>
-    <!-- Deploy test: Vérification connexion Vercel - 2025-11-12T10:00:00Z | Ce commentaire sert à déclencher un build -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Paramètres - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-    <meta name="description" content="Tableau de bord et paramètres de votre compte Change Your Life - préférences, notifications, données personnelles.">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" href="/favicon.ico">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <meta name="theme-color" content="#0a0f0a">
-    <meta name="msapplication-TileColor" content="#0a0f0a">
-    <link rel="stylesheet" href="/css/main.min.css">
-    <style>
-      /* Settings - aligned with design system v2 (cohérent avec /profile/) */
-      html, body { overflow: hidden; }
-      body { background: var(--bg); color: var(--text-1); }
+  <meta charset="UTF-8">
+  <script src="/js/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Paramètres - Change Your Life</title>
+  <meta name="description" content="Tableau de bord et paramètres de ton compte Change Your Life : préférences, CYL, sécurité, données personnelles.">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a0f0a">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <link rel="stylesheet" href="/css/transitions.css"/>
+  <style>
+    /* Paramètres : des onglets en haut du corps, une section visible à la fois. */
+    .settings-tabs { margin-bottom:18px; flex-wrap:wrap; }
+    .settings-tabs > [hidden] { display:none; }
+    .settings-section { display:none; }
+    .settings-section.active { display:block; }
+    .settings-section > .card + .card, .settings-section > .card + .danger-zone { margin-top:18px; }
+    .settings-section > .note { margin-bottom:18px; }
+    .sec-intro { margin:0 0 18px; }
+    .sec-intro h2 { margin:0 0 4px; }
+    .sec-intro p { margin:0; color:var(--text-2); font-size:.9rem; }
 
-      .dashboard-container {
-        position: relative; z-index: 1;
-        display: flex;
-        height: 100vh;
-      }
+    /* ── Vue d'ensemble : quatre repères, pas une note ── */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:18px; }
+    .stat-card { border-left:3px solid var(--sc, var(--line-strong)); }
+    .stat-value { font-family:var(--font-display); font-variation-settings:"opsz" 48; font-size:1.9rem; font-weight:600; letter-spacing:-.02em; line-height:1.1; margin-bottom:4px; font-variant-numeric:tabular-nums; }
+    .chart-card { max-width:720px; }
+    .chart-canvas-wrap { position:relative; width:100%; height:280px; }
+    .chart-canvas-wrap canvas { width:100% !important; height:100% !important; }
 
-      /* ── Sidebar ─────────────────────────────────────────────── */
-      .sidebar {
-        width: 244px; flex-shrink: 0;
-        background: var(--bg-surface);
-        border-right: 1px solid var(--glass-border);
-        display: flex; flex-direction: column;
-        padding: 18px 14px; overflow-y: auto;
-      }
-      .logo-section {
-        display: flex; align-items: center; gap: 10px;
-        padding: 4px 8px; margin-bottom: 22px;
-      }
-      .logo-section svg { width: 26px; height: 26px; flex-shrink: 0; }
-      .logo-section h1 {
-        font-size: 0.95rem; font-weight: 800;
-        background: linear-gradient(135deg, var(--blue-light), var(--etre));
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        background-clip: text;
-        letter-spacing: -0.3px;
-      }
-      .back-link {
-        display: flex; align-items: center; gap: 8px;
-        color: var(--text-2); text-decoration: none;
-        font-size: 0.83rem; font-weight: 600;
-        padding: 8px 12px; border-radius: var(--r-sm);
-        border: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.03);
-        transition: var(--duration) var(--ease);
-        margin-bottom: 16px;
-      }
-      .back-link:hover {
-        color: var(--text-1);
-        background: rgba(255,255,255,0.07);
-        border-color: var(--glass-border-hover);
-      }
+    /* ── Groupes de réglages ── */
+    .settings-group-title { margin:0 0 14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+    .setting-item { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); }
+    .setting-item:last-child { border-bottom:none; padding-bottom:0; }
+    .setting-item:first-of-type { padding-top:0; }
+    .setting-info h4 { font-size:.94rem; font-weight:600; color:var(--text-1); margin:0 0 3px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .setting-info p { font-size:.84rem; color:var(--text-2); line-height:1.5; margin:0; }
 
-      .nav-menu { flex: 1; overflow-y: auto; }
-      .nav-section { margin-bottom: 18px; }
-      .nav-section-title {
-        font-size: 0.68rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.8px;
-        color: var(--text-3);
-        padding: 6px 12px; margin-bottom: 4px;
-      }
-      .nav-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 9px 12px; border-radius: var(--r-sm);
-        color: var(--text-2);
-        cursor: pointer;
-        transition: var(--duration) var(--ease);
-        font-size: 0.86rem; font-weight: 500;
-        margin-bottom: 2px;
-      }
-      .nav-item:hover {
-        background: rgba(132,194,94,0.08);
-        color: var(--text-1);
-      }
-      .nav-item.active {
-        background: rgba(132,194,94,0.16);
-        color: var(--text-1); font-weight: 700;
-        box-shadow: inset 2px 0 0 var(--blue);
-      }
-      .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; opacity: 0.8; }
+    /* ── Interrupteur : 44 px de large, lisible au clavier ── */
+    .toggle-switch { position:relative; width:46px; height:26px; flex-shrink:0; display:block; }
+    .toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+    .toggle-slider { position:absolute; cursor:pointer; inset:0; background:var(--surface-3); border:1px solid var(--line-strong); border-radius:999px; transition:background var(--duration), border-color var(--duration); }
+    .toggle-slider::before { content:''; position:absolute; height:18px; width:18px; left:3px; top:3px; background:var(--text-2); border-radius:50%; transition:transform var(--duration), background var(--duration); }
+    .toggle-switch input:checked + .toggle-slider { background:var(--blue); border-color:var(--blue); }
+    .toggle-switch input:checked + .toggle-slider::before { transform:translateX(20px); background:#fff; }
+    .toggle-switch input:focus-visible + .toggle-slider { outline:2px solid var(--blue); outline-offset:2px; }
 
-      /* ── Main content ────────────────────────────────────────── */
-      .main-content {
-        flex: 1; overflow-y: auto;
-        padding: 28px 36px 40px;
-        animation: fadeUp 0.4s var(--ease) both;
-      }
-      @media (max-width: 800px) {
-        .sidebar { display: none; }
-        .main-content { padding: 22px 16px; }
-      }
+    /* ── Formulaires et petits blocs (aussi utilisés par la modale admin du JS) ── */
+    .input-group { margin-bottom:16px; }
+    .input-label { display:block; margin-bottom:6px; color:var(--text-2); font-size:.78rem; font-weight:600; }
+    .grid-2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:18px; }
+    .grid-2 h4 { margin:0 0 10px; font-size:.95rem; }
+    .note { padding:12px 16px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface-1); color:var(--text-2); font-size:.86rem; line-height:1.55; }
+    .note + .note { margin-top:12px; }
+    .note code, .admin-uid code { padding:1px 6px; border-radius:4px; background:var(--surface-3); font-family:var(--font-mono); font-size:.85em; }
+    .note a { color:var(--leaf-text); }
+    .pill { display:inline-flex; align-items:center; padding:2px 10px; border-radius:999px; background:var(--surface-3); border:1px solid var(--line); color:var(--text-1); font-size:.74rem; font-weight:600; }
+    .pill.soon { color:var(--gold-text); border-color:rgba(231,177,92,.35); background:rgba(231,177,92,.1); }
+    .subtle { color:var(--text-2); font-size:.84rem; }
+    .btn-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .danger-zone { border-color:rgba(239,68,68,.3); }
+    .danger-zone h3 { color:var(--red); margin:0 0 8px; }
+    .danger-zone p { color:var(--text-2); font-size:.86rem; line-height:1.5; margin:0 0 16px; }
+    .admin-uid { font-size:.8rem; color:var(--text-2); }
+    .admin-user-row { padding:8px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+    .admin-user-row:hover { color:var(--text-1); }
+    .admin-user-row span { color:var(--text-3); }
+    #admin-search-results { margin-top:12px; color:var(--text-2); font-size:.9rem; }
 
-      .content-header { margin-bottom: 28px; }
-      .content-header h2 {
-        font-size: 1.6rem; font-weight: 800;
-        color: var(--text-1);
-        letter-spacing: -0.5px; margin-bottom: 6px;
-      }
-      .content-header p {
-        color: var(--text-2); font-size: 0.9rem;
-      }
-
-      /* ── Stat cards (Dashboard section) ──────────────────────── */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 14px; margin-bottom: 24px;
-      }
-      .stat-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-lg);
-        padding: 20px;
-        transition: var(--duration);
-        border-left: 3px solid rgba(255,255,255,0.06);
-      }
-      .stat-card:hover {
-        transform: translateY(-2px);
-        border-color: var(--glass-border-hover);
-        box-shadow: var(--shadow);
-      }
-      .stat-header {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 14px;
-      }
-      .stat-icon {
-        width: 38px; height: 38px;
-        border-radius: var(--r-sm);
-        display: flex; align-items: center; justify-content: center;
-      }
-      .stat-icon.blue   { background: rgba(132,194,94,0.16); }
-      .stat-icon.purple { background: rgba(189,175,214,0.16); }
-      .stat-icon.green  { background: rgba(34,197,94,0.16); }
-      .stat-icon.orange { background: rgba(251,191,36,0.16); }
-      .stat-card:has(.stat-icon.blue)   { border-left-color: var(--blue); }
-      .stat-card:has(.stat-icon.purple) { border-left-color: var(--etre); }
-      .stat-card:has(.stat-icon.green)  { border-left-color: var(--green); }
-      .stat-card:has(.stat-icon.orange) { border-left-color: var(--ordre); }
-      .stat-trend {
-        font-size: 0.74rem; font-weight: 600;
-        padding: 3px 10px; border-radius: 999px;
-      }
-      .stat-trend.up   { background: rgba(34,197,94,0.12);  color: var(--green); }
-      .stat-trend.down { background: rgba(239,68,68,0.12);  color: var(--red); }
-      .stat-value {
-        font-size: 1.9rem; font-weight: 800;
-        color: var(--text-1); letter-spacing: -0.5px;
-        margin-bottom: 3px;
-      }
-      .stat-label {
-        color: var(--text-2);
-        font-size: 0.74rem; font-weight: 600;
-        text-transform: uppercase; letter-spacing: 0.5px;
-      }
-
-      /* ── Chart card ──────────────────────────────────────────── */
-      .chart-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-lg);
-        padding: 22px;
-        margin-bottom: 24px;
-        max-width: 720px;
-      }
-      .chart-canvas-wrap {
-        position: relative;
-        width: 100%;
-        height: 280px;
-      }
-      .chart-canvas-wrap canvas { width: 100% !important; height: 100% !important; }
-      .chart-header {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
-      }
-      .chart-title {
-        font-size: 1rem; font-weight: 700;
-        color: var(--text-1); letter-spacing: -0.2px;
-      }
-      .chart-filters { display: flex; gap: 6px; }
-      .filter-btn {
-        padding: 6px 14px; border-radius: var(--r-sm);
-        border: 1px solid var(--glass-border);
-        background: transparent;
-        color: var(--text-2);
-        cursor: pointer;
-        transition: var(--duration) var(--ease);
-        font-size: 0.8rem; font-weight: 600;
-        font-family: inherit;
-      }
-      .filter-btn:hover {
-        background: rgba(132,194,94,0.08);
-        color: var(--text-1);
-      }
-      .filter-btn.active {
-        background: rgba(132,194,94,0.18);
-        color: var(--text-1);
-        border-color: rgba(132,194,94,0.4);
-      }
-
-      /* ── Settings sections + groups ──────────────────────────── */
-      .settings-section { display: none; }
-      .settings-section.active { display: block; animation: fadeUp 0.35s var(--ease) both; }
-
-      .settings-group {
-        background: var(--bg-surface);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-lg);
-        padding: 24px;
-        margin-bottom: 18px;
-        transition: border-color var(--duration);
-      }
-      .settings-group:hover { border-color: var(--glass-border-hover); }
-      .settings-group-title {
-        font-size: 1rem; font-weight: 700;
-        color: var(--text-1);
-        letter-spacing: -0.2px;
-        margin-bottom: 18px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid var(--glass-border);
-      }
-
-      .setting-item {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 16px;
-        padding: 14px 0;
-        border-bottom: 1px solid var(--glass-border);
-      }
-      .setting-item:last-child { border-bottom: none; padding-bottom: 0; }
-      .setting-item:first-child { padding-top: 0; }
-      .setting-info h4 {
-        font-size: 0.92rem; font-weight: 600;
-        color: var(--text-1); margin-bottom: 3px;
-      }
-      .setting-info p {
-        font-size: 0.82rem; color: var(--text-2);
-        line-height: 1.5;
-      }
-
-      /* ── Toggle switch (modern) ──────────────────────────────── */
-      .toggle-switch {
-        position: relative; width: 44px; height: 24px;
-        flex-shrink: 0;
-      }
-      .toggle-switch input {
-        opacity: 0; width: 0; height: 0; position: absolute;
-      }
-      .toggle-slider {
-        position: absolute; cursor: pointer; inset: 0;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid var(--glass-border);
-        border-radius: 999px;
-        transition: var(--duration) var(--ease);
-      }
-      .toggle-slider:before {
-        content: '';
-        position: absolute; height: 16px; width: 16px;
-        left: 3px; bottom: 3px;
-        background: var(--text-2);
-        border-radius: 50%;
-        transition: var(--duration) var(--ease);
-      }
-      input:checked + .toggle-slider {
-        background: var(--blue); border-color: var(--blue);
-      }
-      input:checked + .toggle-slider:before {
-        transform: translateX(20px);
-        background: #fff;
-      }
-
-      /* ── Buttons (aligné avec /profile/) ─────────────────────── */
-      .btn {
-        display: inline-flex; align-items: center; justify-content: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: var(--r-sm); border: none;
-        font-size: 0.88rem; font-weight: 700;
-        cursor: pointer; font-family: inherit;
-        transition: var(--duration) var(--ease);
-        letter-spacing: -0.1px;
-      }
-      .btn-primary {
-        background: var(--blue); color: #fff;
-        box-shadow: 0 4px 14px var(--blue-glow);
-      }
-      .btn-primary:hover {
-        background: #71bd42;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(132,194,94,0.45);
-      }
-      .btn-secondary {
-        background: rgba(255,255,255,0.05);
-        color: var(--text-1);
-        border: 1px solid var(--glass-border);
-      }
-      .btn-secondary:hover {
-        background: rgba(255,255,255,0.1);
-        border-color: var(--glass-border-hover);
-      }
-      .btn-danger {
-        background: rgba(239,68,68,0.12);
-        color: var(--red);
-        border: 1px solid rgba(239,68,68,0.35);
-      }
-      .btn-danger:hover {
-        background: rgba(239,68,68,0.2);
-        border-color: rgba(239,68,68,0.5);
-      }
-      .btn:active { transform: translateY(0) scale(0.98); }
-
-      /* ── Forms ───────────────────────────────────────────────── */
-      .input-group { margin-bottom: 18px; }
-      .input-label {
-        display: block; margin-bottom: 7px;
-        color: var(--text-2);
-        font-size: 0.74rem; font-weight: 600;
-        text-transform: uppercase; letter-spacing: 0.5px;
-      }
-      .input-field {
-        width: 100%; padding: 11px 14px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-sm);
-        color: var(--text-1);
-        font-size: 0.92rem; font-family: inherit;
-        outline: none;
-        transition: border-color var(--duration), background var(--duration), box-shadow var(--duration);
-      }
-      .input-field:focus {
-        border-color: rgba(132,194,94,0.5);
-        background: rgba(132,194,94,0.06);
-        box-shadow: 0 0 0 3px rgba(132,194,94,0.12);
-      }
-      .input-field::placeholder { color: var(--text-3); }
-
-      /* ── Helpers ─────────────────────────────────────────────── */
-      .grid-2 {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 18px;
-      }
-
-      .note {
-        padding: 12px 16px;
-        border-radius: var(--r-sm);
-        border: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.02);
-        color: var(--text-2);
-        font-size: 0.84rem; line-height: 1.55;
-      }
-      .note code {
-        padding: 1px 6px; border-radius: 4px;
-        background: rgba(0,0,0,0.3);
-        font-family: ui-monospace, "SF Mono", Menlo, monospace;
-        font-size: 0.85em;
-      }
-      .note a { color: var(--blue-light); }
-
-      .hint-card {
-        padding: 12px 16px;
-        border-radius: var(--r-sm);
-        background: rgba(132,194,94,0.06);
-        border: 1px dashed rgba(132,194,94,0.35);
-        color: var(--text-1);
-        font-size: 0.88rem;
-        margin-bottom: 18px;
-      }
-      .hint-card a { color: var(--blue-light); text-decoration: underline; }
-
-      .danger-zone {
-        background: rgba(239,68,68,0.05);
-        border: 1px solid rgba(239,68,68,0.25);
-        border-radius: var(--r-lg);
-        padding: 22px;
-        margin-top: 18px;
-      }
-      .danger-zone h3 {
-        color: var(--red);
-        font-size: 1rem; font-weight: 700;
-        margin-bottom: 8px;
-      }
-      .danger-zone p {
-        color: var(--text-2);
-        font-size: 0.85rem;
-        line-height: 1.5;
-        margin-bottom: 16px;
-      }
-
-      .pill {
-        display: inline-flex; align-items: center;
-        padding: 3px 10px; border-radius: 999px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid var(--glass-border);
-        color: var(--text-1);
-        font-size: 0.78rem; font-weight: 600;
-      }
-
-      .subtle { color: var(--text-2); font-size: 0.82rem; }
-    </style>
+    @media (max-width:640px) {
+      .setting-item { align-items:flex-start; }
+    }
+  </style>
 </head>
 <body>
-<header class="header">
-  <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-    <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;">
-      <g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
-      <line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-      <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-      <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-      <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-      <circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g>
-    </svg>
-  </button>
-</header>
-<div class="dashboard-container">
-<aside class="sidebar">
-<div class="logo-section">
-<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/></svg>
-<h1>ChangeYourLife.ai</h1>
-</div>
-<a href="/" class="back-link">← Mon espace</a>
-<nav class="nav-menu">
-<div class="nav-section">
-<div class="nav-section-title">Dashboard</div>
-<div class="nav-item active" data-section="dashboard">
-<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-<span>Vue d'ensemble</span>
-</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Paramètres</div>
-<div class="nav-item" data-section="preferences">
-<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-<span>Préférences</span>
-</div>
-<div class="nav-item" data-section="cyl">
-  <span style="width:17px;text-align:center;opacity:.85">✦</span>
-  <span>CYL</span>
-</div>
-<div class="nav-item" data-section="security">
-<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-<span>Sécurité</span>
-</div>
-</div>
-<div class="nav-section" id="admin-nav-section" style="display: none;">
-<div class="nav-section-title">Administration</div>
-<div class="nav-item" data-section="admin">
-<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-<span>Panel Admin</span>
-</div>
-</div>
-</nav>
-</aside>
-<main class="main-content">
-<section id="dashboard" class="settings-section active">
-<div class="content-header">
-<h2>Vue d'ensemble</h2>
-<p>Quelques repères, sans note sur ta vie.</p>
-</div>
-<div class="stats-grid">
-<div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div></div><div class="stat-value" id="stat-humeur">0</div><div class="stat-label">Humeur moyenne du journal (/10)</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon purple"></div></div><div class="stat-value" id="stat-habitudes">0</div><div class="stat-label">Objectifs complétés</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div></div><div class="stat-value" id="stat-focus">0</div><div class="stat-label">Minutes de méditation</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon orange"></div></div><div class="stat-value" id="stat-journal">0</div><div class="stat-label">Entrées journal</div></div>
-</div>
-<div class="chart-card">
-<div class="chart-header">
-<h3 class="chart-title" id="chart-title">Humeur du journal (7 derniers jours)</h3>
-<div class="chart-filters">
-<button class="filter-btn active">7J</button>
-<button class="filter-btn">30J</button>
-<button class="filter-btn">3M</button>
-</div>
-</div>
-<div class="chart-canvas-wrap"><canvas id="monkyChart"></canvas></div>
-</div>
-</section>
-<section id="preferences" class="settings-section">
-<div class="content-header"><h2>Préférences</h2><p>Personnalise ton expérience</p></div>
-<div class="hint-card">
-    Pour gérer ton avatar, ton nom public et ton titre, rends-toi dans <a href="/profile">Mon Profil</a>. Ici, tu ne trouveras que les préférences d’affichage et de notifications.
- </div>
-<div class="settings-group">
-<h3 class="settings-group-title">Apparence</h3>
-<div class="setting-item">
-  <div class="setting-info">
-    <h4>Thème sombre <span class="pill" style="margin-left:8px;font-size:0.68rem;background:rgba(251,191,36,0.12);color:#fde68a;border-color:rgba(251,191,36,0.3)">Bientôt</span></h4>
-    <p>Le mode clair est en cours de design. ChangeYourLife.ai reste en mode sombre pour le moment.</p>
-  </div>
-  <label class="toggle-switch" style="opacity:0.4;pointer-events:none">
-    <input type="checkbox" id="dark-theme" checked disabled>
-    <span class="toggle-slider"></span>
-  </label>
-</div>
-<div class="setting-item">
-  <div class="setting-info">
-    <h4>Animations</h4>
-    <p>Activer les animations de l'interface (Vanta birds, transitions douces).</p>
-  </div>
-  <label class="toggle-switch">
-    <input type="checkbox" id="animations" checked>
-    <span class="toggle-slider"></span>
-  </label>
-</div>
-</div>
-<div class="settings-group">
-<h3 class="settings-group-title">Notifications</h3>
-<div class="setting-item">
-  <div class="setting-info">
-    <h4>Rappels quotidiens <span class="pill" style="margin-left:8px;font-size:0.68rem;background:rgba(251,191,36,0.12);color:#fde68a;border-color:rgba(251,191,36,0.3)">Bientôt</span></h4>
-    <p>Recevoir une notification push pour méditer, écrire ton journal et faire le bilan du jour. Préférence enregistrée - la livraison push sera activée ultérieurement.</p>
-  </div>
-  <label class="toggle-switch">
-    <input type="checkbox" id="daily-reminders">
-    <span class="toggle-slider"></span>
-  </label>
-</div>
-<div class="setting-item">
-  <div class="setting-info">
-    <h4>Résumé hebdomadaire par email <span class="pill" style="margin-left:8px;font-size:0.68rem;background:rgba(251,191,36,0.12);color:#fde68a;border-color:rgba(251,191,36,0.3)">Bientôt</span></h4>
-    <p>Recevoir chaque dimanche un récap de ta semaine (entrées journal, méditation, humeur). Préférence enregistrée - l'envoi email sera activé ultérieurement.</p>
-  </div>
-  <label class="toggle-switch">
-    <input type="checkbox" id="email-notifications">
-    <span class="toggle-slider"></span>
-  </label>
-</div>
-</div>
-</section>
-<!-- Les réglages de CYL sont montés par /js/cyl-prefs.js, le MEME module que le
-     panneau latéral utilise. Rien n'est recopié ici : deux rendus divergeraient
-     dès le premier réglage ajouté, et ce serait toujours celui qu'on oublie. -->
-<section id="cyl" class="settings-section">
-<div class="content-header"><h2>CYL</h2><p>Comment elle te parle, ce qu'elle voit, et ce que tu gardes</p></div>
-<div class="hint-card">
-  Ces réglages sont aussi accessibles depuis le panneau : clique sur « CYL » en haut de la colonne de droite. Ils sont enregistrés sur cet appareil, et repris automatiquement sur un appareil neuf.
-</div>
-<div id="cyl-prefs-host"></div>
-</section>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="sliders"></span>Paramètres</h1>
+        <p class="page-sub">Quelques repères, tes préférences, CYL et la sécurité de ton compte.</p>
+      </div>
+    </header>
 
-<section id="security" class="settings-section">
-<div class="content-header"><h2>Sécurité</h2><p>Protège ton compte</p></div>
-<div id="security-sso-info" class="settings-group" style="display:none;">
-    <h3 class="settings-group-title">Authentification via un fournisseur</h3>
-    <div class="note">Tu es connecté via Google ou GitHub. Pour modifier ton email ou ton mot de passe, rends-toi dans les paramètres de ton compte Google ou GitHub. Ces changements ne peuvent pas être effectués depuis ChangeYourLife.ai.</div>
-    <div style="margin-top:12px;" class="note">Tu peux toujours gérer ton profil (avatar, nom public, thème) depuis <a href="/profile">Mon Profil</a>.</div>
-    <div id="security-sso-provider" style="margin-top:8px;color:#afa99c;font-size:0.9rem;"></div>
-    </div>
+    <div class="page-body">
+      <div class="seg settings-tabs" role="tablist" aria-label="Sections des paramètres">
+        <button type="button" class="nav-item active" role="tab" aria-selected="true" aria-controls="dashboard" id="tab-dashboard" data-section="dashboard"><span class="ic" data-icon="chart"></span>Vue d'ensemble</button>
+        <button type="button" class="nav-item" role="tab" aria-selected="false" aria-controls="preferences" id="tab-preferences" data-section="preferences"><span class="ic" data-icon="palette"></span>Préférences</button>
+        <button type="button" class="nav-item" role="tab" aria-selected="false" aria-controls="cyl" id="tab-cyl" data-section="cyl"><span class="ic" data-icon="sparkles"></span>CYL</button>
+        <button type="button" class="nav-item" role="tab" aria-selected="false" aria-controls="security" id="tab-security" data-section="security"><span class="ic" data-icon="shield"></span>Sécurité</button>
+        <button type="button" class="nav-item" role="tab" aria-selected="false" aria-controls="admin" id="admin-nav-section" data-section="admin" hidden><span class="ic" data-icon="users"></span>Admin</button>
+      </div>
 
-<div id="security-cred-section" class="settings-group" style="display:none;">
-    <h3 class="settings-group-title">Identifiants du compte</h3>
-    <div class="grid-2">
-        <div>
-            <h4 style="margin-bottom:8px;">Changer d'email</h4>
-            <div class="input-group">
+      <section id="dashboard" class="settings-section active" role="tabpanel" aria-labelledby="tab-dashboard">
+        <div class="sec-intro">
+          <h2>Vue d'ensemble</h2>
+          <p>Quelques repères, sans note sur ta vie.</p>
+        </div>
+        <div class="stats-grid">
+          <div class="card stat-card" style="--sc:var(--leaf)"><div class="stat-value" id="stat-humeur">0</div><div class="t-eyebrow">Humeur moyenne du journal (/10)</div></div>
+          <div class="card stat-card" style="--sc:var(--etre)"><div class="stat-value" id="stat-habitudes">0</div><div class="t-eyebrow">Objectifs complétés</div></div>
+          <div class="card stat-card" style="--sc:var(--green)"><div class="stat-value" id="stat-focus">0</div><div class="t-eyebrow">Minutes de méditation</div></div>
+          <div class="card stat-card" style="--sc:var(--ordre)"><div class="stat-value" id="stat-journal">0</div><div class="t-eyebrow">Entrées journal</div></div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head">
+            <h3 id="chart-title">Humeur du journal (7 derniers jours)</h3>
+            <div class="seg" role="group" aria-label="Période">
+              <button type="button" class="filter-btn active">7J</button>
+              <button type="button" class="filter-btn">30J</button>
+              <button type="button" class="filter-btn">3M</button>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="monkyChart" aria-label="Courbe de l'humeur du journal" role="img"></canvas></div>
+        </div>
+      </section>
+
+      <section id="preferences" class="settings-section" role="tabpanel" aria-labelledby="tab-preferences">
+        <div class="sec-intro">
+          <h2>Préférences</h2>
+          <p>Personnalise ton expérience.</p>
+        </div>
+        <p class="note">Pour ton avatar, ton nom public et ton titre, rends-toi dans <a href="/profile/">Mon profil</a>. Ici, tu ne trouveras que les préférences d'affichage et de notifications.</p>
+        <div class="card">
+          <h3 class="settings-group-title">Apparence</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Thème clair</h4>
+              <p>Un fond crème et une encre chaude. Le bouton de thème dans la barre latérale fait la même chose.</p>
+            </div>
+            <label class="toggle-switch" for="light-theme" aria-label="Activer le thème clair">
+              <input type="checkbox" id="light-theme">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Animations</h4>
+              <p>Les transitions douces et le fond animé. Désactive-les si tu préfères une interface immobile.</p>
+            </div>
+            <label class="toggle-switch" for="animations" aria-label="Activer les animations">
+              <input type="checkbox" id="animations" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="settings-group-title">Notifications</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Rappels quotidiens <span class="pill soon">Bientôt</span></h4>
+              <p>Recevoir une notification pour méditer, écrire ton journal et faire le bilan du jour. Ta préférence est enregistrée ; la livraison push arrivera plus tard.</p>
+            </div>
+            <label class="toggle-switch" for="daily-reminders" aria-label="Activer les rappels quotidiens">
+              <input type="checkbox" id="daily-reminders">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Résumé hebdomadaire par email <span class="pill soon">Bientôt</span></h4>
+              <p>Recevoir chaque dimanche un récap de ta semaine (journal, méditation, humeur). Ta préférence est enregistrée ; l'envoi arrivera plus tard.</p>
+            </div>
+            <label class="toggle-switch" for="email-notifications" aria-label="Activer le résumé hebdomadaire par email">
+              <input type="checkbox" id="email-notifications">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Les réglages de CYL sont montés par /js/cyl-prefs.js, le MÊME module que le
+           panneau latéral utilise. Rien n'est recopié ici. -->
+      <section id="cyl" class="settings-section" role="tabpanel" aria-labelledby="tab-cyl">
+        <div class="sec-intro">
+          <h2>CYL</h2>
+          <p>Comment elle te parle, ce qu'elle voit, et ce que tu gardes.</p>
+        </div>
+        <p class="note">Ces réglages sont aussi accessibles depuis le panneau : clique sur « CYL » en haut de la colonne de droite. Ils sont enregistrés sur cet appareil, et repris automatiquement sur un appareil neuf.</p>
+        <div id="cyl-prefs-host"></div>
+      </section>
+
+      <section id="security" class="settings-section" role="tabpanel" aria-labelledby="tab-security">
+        <div class="sec-intro">
+          <h2>Sécurité</h2>
+          <p>Protège ton compte.</p>
+        </div>
+        <div id="security-sso-info" class="card" style="display:none;">
+          <h3 class="settings-group-title">Authentification via un fournisseur</h3>
+          <p class="note">Tu es connecté via Google ou GitHub. Pour modifier ton email ou ton mot de passe, rends-toi dans les paramètres de ton compte Google ou GitHub : ces changements ne peuvent pas être faits depuis ChangeYourLife.ai.</p>
+          <p class="note">Tu peux toujours gérer ton profil (avatar, nom public) depuis <a href="/profile/">Mon profil</a>.</p>
+          <div id="security-sso-provider" class="subtle" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="security-cred-section" class="card" style="display:none;">
+          <h3 class="settings-group-title">Identifiants du compte</h3>
+          <div class="grid-2">
+            <div>
+              <h4>Changer d'email</h4>
+              <div class="input-group">
                 <label class="input-label" for="new-email">Nouvel email</label>
-                <input type="email" id="new-email" class="input-field" placeholder="exemple@domaine.com">
-            </div>
-            <div class="input-group">
+                <input type="email" id="new-email" class="input" autocomplete="email" placeholder="exemple@domaine.com">
+              </div>
+              <div class="input-group">
                 <label class="input-label" for="current-password-email">Mot de passe actuel (pour vérification)</label>
-                <input type="password" id="current-password-email" class="input-field" placeholder="Votre mot de passe">
+                <input type="password" id="current-password-email" class="input" autocomplete="current-password" placeholder="Ton mot de passe">
+              </div>
+              <button type="button" class="btn primary" id="update-email-btn">Mettre à jour l'email</button>
             </div>
-            <button class="btn btn-primary" id="update-email-btn">Mettre à jour l'email</button>
-        </div>
-        <div>
-            <h4 style="margin-bottom:8px;">Changer le mot de passe</h4>
-            <div class="input-group">
+            <div>
+              <h4>Changer le mot de passe</h4>
+              <div class="input-group">
                 <label class="input-label" for="current-password">Mot de passe actuel</label>
-                <input type="password" id="current-password" class="input-field" placeholder="Mot de passe actuel">
-            </div>
-            <div class="input-group">
+                <input type="password" id="current-password" class="input" autocomplete="current-password" placeholder="Mot de passe actuel">
+              </div>
+              <div class="input-group">
                 <label class="input-label" for="new-password">Nouveau mot de passe</label>
-                <input type="password" id="new-password" class="input-field" placeholder="Nouveau mot de passe">
-            </div>
-            <div class="input-group">
+                <input type="password" id="new-password" class="input" autocomplete="new-password" placeholder="Nouveau mot de passe">
+              </div>
+              <div class="input-group">
                 <label class="input-label" for="confirm-password">Confirmer le nouveau mot de passe</label>
-                <input type="password" id="confirm-password" class="input-field" placeholder="Confirmer le mot de passe">
+                <input type="password" id="confirm-password" class="input" autocomplete="new-password" placeholder="Confirmer le mot de passe">
+              </div>
+              <button type="button" class="btn" id="update-password-btn">Mettre à jour le mot de passe</button>
             </div>
-            <button class="btn btn-secondary" id="update-password-btn">Mettre à jour le mot de passe</button>
+          </div>
         </div>
-    </div>
-    <div id="security-feedback" style="margin-top:16px;display:none;padding:12px;border-radius:8px;"></div>
-</div>
-<div class="danger-zone">
-<h3>Zone de danger</h3>
-<p style="margin-bottom: 16px; color: #afa99c;">La suppression de ton compte est définitive et irréversible. Toutes tes données seront perdues.</p>
-<button class="btn btn-danger" id="delete-account-btn">Supprimer mon compte</button>
-</div>
-</section>
-<section id="admin" class="settings-section">
-<div class="content-header">
-    <h2>Panel Administrateur</h2>
-    <p>Outils réservés aux administrateurs</p>
-    <div id="admin-user-info" style="margin-top:12px;padding:14px 18px;background:rgba(132,194,94,0.08);border-radius:12px;border:1px solid rgba(132,194,94,0.25);color:var(--blue-light);font-weight:600;font-size:0.92rem;display:none;">
-        <span id="admin-email"></span>
-        <br>
-        <span style="font-size:0.8rem;color:#afa99c;font-weight:400;">UID: <code id="admin-uid-display" style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;"></code></span>
-    </div>
-</div>
-<div class="settings-group">
-    <h3 class="settings-group-title">Outils Admin</h3>
-    <div class="input-group">
-        <label class="input-label">UID Utilisateur</label>
-        <input type="text" class="input-field" placeholder="Entrez l'UID d'un utilisateur..." id="admin-uid">
-    </div>
-    <button class="btn btn-primary" id="download-user-data-btn">Télécharger les données</button>
-    <div id="admin-feedback" style="margin-top:16px;padding:12px;border-radius:8px;font-weight:500;display:none;"></div>
-</div>
-<div class="settings-group">
-    <h3 class="settings-group-title">Exports & Filtres</h3>
-    <div class="grid-2">
-        <div>
-            <div class="input-group">
-                <label class="input-label">Période d'activité</label>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn btn-secondary" data-admin-range="7">7J</button>
-                    <button class="btn btn-secondary" data-admin-range="30">30J</button>
-                    <button class="btn btn-secondary" data-admin-range="90">90J</button>
+        <div class="card">
+          <h3>Tes données</h3>
+          <p>Tout ce que ton compte contient, au format JSON : profil, arbre, journal, humeurs, sommeil, gratitude, bilans, roue de vie, notes du Codex. Fabriqué à la demande, rien n'est conservé.</p>
+          <button type="button" class="btn" id="export-my-data-btn"><span class="ic" data-icon="download"></span>Télécharger mes données</button>
+        </div>
+        <div class="card danger-zone">
+          <h3>Zone de danger</h3>
+          <p>La suppression de ton compte est définitive. Toutes tes données sont effacées, y compris celles que seul le serveur voit (codes de vérification, compteurs, participation au tirage).</p>
+          <button type="button" class="btn danger" id="delete-account-btn">Supprimer mon compte</button>
+        </div>
+      </section>
+
+      <section id="admin" class="settings-section" role="tabpanel" aria-labelledby="admin-nav-section">
+        <div class="sec-intro">
+          <h2>Administration</h2>
+          <p>Outils réservés aux administrateurs et modérateurs.</p>
+        </div>
+        <p id="admin-user-info" class="note" style="display:none;">
+          <span id="admin-email"></span><br>
+          <span class="admin-uid">UID : <code id="admin-uid-display"></code></span>
+        </p>
+        <div class="card">
+          <h3 class="settings-group-title">Outils admin</h3>
+          <div class="input-group">
+            <label class="input-label" for="admin-uid">UID utilisateur</label>
+            <input type="text" class="input" placeholder="Entre l'UID d'un utilisateur…" id="admin-uid">
+          </div>
+          <p class="t-muted" style="font-size:.84rem;margin:0">Le téléchargement des données d'un utilisateur se fait sur demande écrite, pas depuis cette page.</p>
+        </div>
+        <div class="card">
+          <h3 class="settings-group-title">Exports et filtres</h3>
+          <div class="grid-2">
+            <div>
+              <div class="input-group">
+                <span class="input-label" id="admin-range-label">Période d'activité</span>
+                <div class="btn-row" role="group" aria-labelledby="admin-range-label">
+                  <button type="button" class="btn sm" data-admin-range="7">7J</button>
+                  <button type="button" class="btn sm" data-admin-range="30">30J</button>
+                  <button type="button" class="btn sm" data-admin-range="90">90J</button>
                 </div>
+              </div>
+              <p class="note">La période affecte le calcul des utilisateurs actifs et l'export CSV ci-contre.</p>
             </div>
-            <div class="note">La période affecte le calcul des utilisateurs actifs et l'export CSV ci-contre.</div>
-        </div>
-        <div>
-            <div class="input-group">
-                <label class="input-label">Export CSV (utilisateurs actifs sur la période)</label>
-                <button class="btn btn-primary" id="export-csv-btn">Exporter CSV</button>
+            <div>
+              <div class="input-group">
+                <span class="input-label">Export CSV (utilisateurs actifs sur la période)</span>
+                <button type="button" class="btn primary" id="export-csv-btn"><span class="ic" data-icon="download"></span>Exporter CSV</button>
+              </div>
+              <p class="note">Champs exportés : uid, email, displayName, lastActive, niveaux (body/etre/heart/order), nbBadges.</p>
             </div>
-            <div class="note">Champs exportés: uid, email, displayName, lastActive, niveaux (body/etre/heart/order), nbBadges.</div>
+          </div>
         </div>
-    </div>
-</div>
-<div class="settings-group">
-    <h3 class="settings-group-title">Gestion des utilisateurs</h3>
-    <div class="input-group">
-        <label class="input-label">Rechercher un utilisateur</label>
-        <input type="text" class="input-field" placeholder="Email ou nom..." id="search-user">
-    </div>
-    <button class="btn btn-secondary" id="search-user-btn">Rechercher</button>
-    <div id="admin-search-results" style="margin-top:12px;color:#afa99c;font-size:0.9rem;"></div>
-</div>
-<div class="settings-group">
-    <h3 class="settings-group-title">Statistiques Admin</h3>
-    <div class="stats-grid" style="margin-top:16px;">
-    <div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div></div><div class="stat-value" id="admin-users">0</div><div class="stat-label">Utilisateurs inscrits</div></div>
-    <div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div></div><div class="stat-value" id="admin-active">0</div><div class="stat-label">Utilisateurs actifs</div></div>
-    </div>
-</div>
-<div class="settings-group">
-    <h3 class="settings-group-title">Rôles & Modération</h3>
-    <div class="note" style="margin-bottom:10px;">Ajoutez/retirez des modérateurs via leur UID.</div>
-    <div class="grid-2">
-        <div>
-            <div class="input-group">
-                <label class="input-label">UID Utilisateur</label>
-                <input type="text" class="input-field" placeholder="UID..." id="mod-uid">
+        <div class="card">
+          <h3 class="settings-group-title">Gestion des utilisateurs</h3>
+          <div class="input-group">
+            <label class="input-label" for="search-user">Rechercher un utilisateur</label>
+            <input type="text" class="input" placeholder="Email ou nom…" id="search-user">
+          </div>
+          <button type="button" class="btn" id="search-user-btn"><span class="ic" data-icon="search"></span>Rechercher</button>
+          <div id="admin-search-results"></div>
+        </div>
+        <div class="card">
+          <h3 class="settings-group-title">Statistiques admin</h3>
+          <div class="stats-grid" style="margin-bottom:0;">
+            <div class="card stat-card" style="--sc:var(--leaf)"><div class="stat-value" id="admin-users">0</div><div class="t-eyebrow">Utilisateurs inscrits</div></div>
+            <div class="card stat-card" style="--sc:var(--green)"><div class="stat-value" id="admin-active">0</div><div class="t-eyebrow">Utilisateurs actifs</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="settings-group-title">Rôles et modération</h3>
+          <p class="note" style="margin-bottom:12px;">Ajoute ou retire des modérateurs via leur UID.</p>
+          <div class="grid-2">
+            <div>
+              <div class="input-group">
+                <label class="input-label" for="mod-uid">UID utilisateur</label>
+                <input type="text" class="input" placeholder="UID…" id="mod-uid">
+              </div>
+              <div class="btn-row">
+                <button type="button" class="btn primary" id="add-mod-btn">Ajouter modérateur</button>
+                <button type="button" class="btn" id="remove-mod-btn">Retirer modérateur</button>
+              </div>
             </div>
-            <div style="display:flex; gap:8px;">
-                <button class="btn btn-primary" id="add-mod-btn">Ajouter Modérateur</button>
-                <button class="btn btn-secondary" id="remove-mod-btn">Retirer Modérateur</button>
+            <div>
+              <p class="note">Rôles gérés via Firebase Custom Claims (Cloud Function <code>setUserRole</code>). Le miroir <code>roles/{uid}</code> est en lecture seule côté client. Pour amorcer le premier admin, configurer <code>ROOT_ADMIN_UID</code> dans les variables d'environnement des Cloud Functions.</p>
             </div>
+          </div>
         </div>
-        <div>
-            <div class="note">Rôles gérés via Firebase Custom Claims (Cloud Function <code>setUserRole</code>). Le miroir <code>roles/{uid}</code> est en lecture seule côté client. Pour bootstrap le 1er admin, configurer <code>ROOT_ADMIN_UID</code> dans les env vars Firebase Functions.</div>
-        </div>
+      </section>
     </div>
-    <div id="admin-roles-feedback" style="margin-top:12px;padding:10px;border-radius:8px;display:none;"></div>
-</div>
-</section>
-</main>
-</div>
-<script src="/vendor/chart/chart.umd.min.js"></script>
-<script type="module" src="/js/settings.js"></script>
+  </main>
+
+  <script src="/vendor/chart/chart.umd.min.js"></script>
+  <script type="module" src="/js/settings.js"></script>
 </body>
 </html>

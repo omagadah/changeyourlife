@@ -9,7 +9,8 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback, setContext, toast as cylToast } from '/js/common.js';
+import { icon } from '/js/icons.js';
 import {
   BRANCHES, BRANCH_BY_KEY, guessBranch,
   cardCreatedAt, cardUpdatedAt, fmtAge, fmtFull, addComment, removeComment, cardFeed,
@@ -48,7 +49,8 @@ const COL_COLORS = { [TRI_ID]: '#b4ad94', ui: '#e0785f', ni: '#e7b15c', up: '#6f
 const now = () => Date.now();
 const uid6 = (p) => (p || 'c') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-function toast(msg, cls) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = 'toast' + (cls ? ' ' + cls : ''); t.classList.add('show'); clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('show'), 2200); }
+// Le retour visuel passe par le toast commun (common.js) : plus de #toast local.
+function toast(msg, cls) { cylToast(msg, { type: cls === 'xp' ? 'success' : 'info', duration: 2400 }); }
 function fmtDate(ts) { try { return new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }); } catch (_) { return ''; } }
 function fmtLogTime(ts) { try { return new Date(ts).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (_) { return ''; } }
 function stripEmoji(s) { return String(s || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}✅✔️]/gu, '').trim(); }
@@ -151,7 +153,9 @@ function updateLockUI() {
     b.classList.toggle('locked', locked);
     b.setAttribute('aria-pressed', locked ? 'true' : 'false');
     b.title = (locked ? 'Déverrouiller' : 'Verrouiller') + ' ' + nom;
-    const ic = b.querySelector('.org-lock-ic'); if (ic) ic.textContent = locked ? '🔒' : '🔓';
+    // Pas de cadenas dans le jeu d'icônes : le bouclier dit « protégé »,
+    // le crayon dit « modifiable ».
+    const ic = b.querySelector('.org-lock-ic'); if (ic) ic.innerHTML = icon(locked ? 'lock' : 'unlock', { size: 14 });
   };
   set('org-lock-cols', board.lockCols, 'les colonnes');
   set('org-lock-cards', board.lockCards, 'les fiches');
@@ -167,10 +171,10 @@ function renderColumn(c, into) {
       `<span class="org-col-dot"></span>` +
       `<div class="org-col-title" spellcheck="false">${escapeHtml(c.title)}</div>` +
       `<span class="org-col-count">${c.cards.length}</span>` +
-      (c.id === TRI_ID || c.id === FINISH_ID || board.lockCols ? '' : `<button class="org-col-menu" title="Supprimer la colonne">⋯</button>`) +
+      (c.id === TRI_ID || c.id === FINISH_ID || board.lockCols ? '' : `<button type="button" class="org-col-menu" title="Supprimer la colonne" aria-label="Supprimer la colonne">${icon('x', { size: 14 })}</button>`) +
     `</div>` +
     `<div class="org-cards" data-col="${c.id}"></div>` +
-    (board.lockCards ? '' : `<button class="org-add">+ Ajouter une fiche</button>`);
+    (board.lockCards ? '' : `<button type="button" class="org-add">${icon('plus', { size: 14 })} Ajouter une fiche</button>`);
   // titre éditable en direct (sauf si colonnes verrouillées)
   const titleEl = el.querySelector('.org-col-title');
   titleEl.setAttribute('contenteditable', board.lockCols ? 'false' : 'true');
@@ -229,7 +233,9 @@ function renderCard(card) {
   const b = card.branch && BRANCH_BY_KEY[card.branch];
   if (b) { el.style.borderLeft = '3px solid ' + b.color; el.title = 'Nourrit : ' + b.label; }
   const title = document.createElement('div'); title.className = 'org-card-title';
-  title.textContent = (b ? b.emoji + ' ' : '') + card.title;
+  // La branche se lit sur le bord gauche coloré (et dans le title) : pas
+  // d'emoji en préfixe du titre.
+  title.textContent = card.title;
   el.appendChild(title);
   const badges = badgesHtml(card);
   if (badges.length) { const b = document.createElement('div'); b.className = 'org-card-badges'; b.innerHTML = badges.join(''); el.appendChild(b); }
@@ -311,7 +317,8 @@ function renderCanvas() {
   // couche SVG des connecteurs, SOUS les fiches (insérée en premier)
   const svg = document.createElementNS(SVGNS, 'svg');
   svg.setAttribute('class', 'org-links'); svg.setAttribute('width', '1'); svg.setAttribute('height', '1');
-  svg.innerHTML = `<defs><marker id="org-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="rgba(159,197,255,0.75)"/></marker></defs>`;
+  svg.innerHTML = `<defs><marker id="org-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>`;
+  svg.style.color = 'var(--text-3)';
   world.appendChild(svg);
   board.columns.forEach((c) => c.cards.forEach((card) => world.appendChild(buildNode(card, c))));
   applyTransform();
@@ -536,7 +543,7 @@ function reorderColumns() {
 function openAdd(c, btn) {
   const wrap = document.createElement('div'); wrap.className = 'org-add-input';
   wrap.innerHTML = `<textarea placeholder="Une idée, une tâche..."></textarea>` +
-    `<div class="org-add-row"><button class="org-add-ok">Ajouter</button><button class="org-add-cancel">Annuler</button></div>`;
+    `<div class="org-add-row"><button type="button" class="btn sm primary org-add-ok">Ajouter</button><button type="button" class="btn sm quiet org-add-cancel">Annuler</button></div>`;
   btn.replaceWith(wrap);
   const ta = wrap.querySelector('textarea'); ta.focus();
   const commit = () => {
@@ -610,7 +617,7 @@ function openCard(cardId) {
       <textarea class="org-d-input" id="d-desc" placeholder="Détaille cette idée...">${escapeHtml(card.desc || '')}</textarea>
       <div class="org-d-label">Quelle part de ta vie ça nourrit</div>
       <div class="org-d-branches" id="d-branches">
-        ${BRANCHES.map((b) => `<button class="org-d-br${card.branch === b.key ? ' on' : ''}" data-b="${b.key}" style="--bc:${b.color}" title="${escapeHtml(b.label)}">${b.emoji}<span>${escapeHtml(b.label)}</span></button>`).join('')}
+        ${BRANCHES.map((b) => `<button type="button" class="org-d-br${card.branch === b.key ? ' on' : ''}" data-b="${b.key}" style="--bc:${b.color}" aria-pressed="${card.branch === b.key ? 'true' : 'false'}" title="${escapeHtml(b.label)}">${icon(b.ic)}<span>${escapeHtml(b.label)}</span></button>`).join('')}
       </div>
       <div class="org-d-label">Échéance</div>
       <input type="date" class="org-d-input" id="d-due" value="${dueVal}" />
@@ -623,13 +630,13 @@ function openCard(cardId) {
       <div class="org-d-label">Commentaires et activité</div>
       <div class="org-comment-new">
         <textarea class="org-d-input" id="d-newcom" rows="2" placeholder="Écris un commentaire..."></textarea>
-        <button class="org-btn" id="d-addcom">Commenter</button>
+        <button type="button" class="btn sm" id="d-addcom">Commenter</button>
       </div>
       <div class="org-logs" id="d-logs"></div>
       <div class="org-d-actions">
-        <button class="org-btn cal" id="d-cal">↗ Ajouter à l'Agenda</button>
-        <button class="org-btn del" id="d-del">Supprimer</button>
-        <button class="org-btn close" id="d-close">Fermer</button>
+        <button type="button" class="btn" id="d-cal">${icon('calendar')} Ajouter à l'Agenda</button>
+        <button type="button" class="btn danger del" id="d-del">Supprimer</button>
+        <button type="button" class="btn primary" id="d-close">Fermer</button>
       </div>
     </div>`;
   m.classList.remove('hidden');
@@ -689,7 +696,7 @@ function renderChecks(card, cardId) {
   box.innerHTML = '';
   (card.checklist || []).forEach((s) => {
     const row = document.createElement('div'); row.className = 'org-check';
-    row.innerHTML = `<input type="checkbox"${s.done ? ' checked' : ''}><span class="${s.done ? 'done' : ''}">${escapeHtml(s.t)}</span><button class="del">✕</button>`;
+    row.innerHTML = `<input type="checkbox"${s.done ? ' checked' : ''}><span class="${s.done ? 'done' : ''}">${escapeHtml(s.t)}</span><button type="button" class="del" aria-label="Retirer cette étape">${icon('x', { size: 13 })}</button>`;
     row.querySelector('input').onchange = (e) => { s.done = e.target.checked; if (s.done) log(card, 'Étape : ' + s.t); save(); openCard(cardId); render(); };
     row.querySelector('.del').onclick = () => { card.checklist = card.checklist.filter((x) => x.id !== s.id); save(); openCard(cardId); render(); };
     box.appendChild(row);
@@ -707,7 +714,7 @@ function renderLogs(card) {
     if (e.kind === 'comment') {
       return `<div class="org-log com" data-com="${escapeHtml(e.id)}">${quand}`
         + `<span class="org-log-txt">${escapeHtml(e.t)}</span>`
-        + '<button class="org-log-del" aria-label="Supprimer ce commentaire" title="Supprimer">✕</button></div>';
+        + `<button type="button" class="org-log-del" aria-label="Supprimer ce commentaire" title="Supprimer">${icon('x', { size: 13 })}</button></div>`;
     }
     return `<div class="org-log">${quand}<span>${escapeHtml(e.t)}</span></div>`;
   }).join('');

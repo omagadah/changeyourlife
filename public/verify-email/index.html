@@ -2,167 +2,100 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Vérification email - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Vérifiez votre adresse email pour finaliser la création de votre compte Change Your Life.">
+  <meta name="description" content="Vérifie ton adresse email pour finaliser la création de ton compte Change Your Life.">
   <meta name="robots" content="noindex">
   <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="msapplication-TileColor" content="#0a0f0a">
   <link rel="stylesheet" href="/css/main.min.css"/>
-    <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; display: flex; justify-content: center; align-items: center; background: #1f1c17; overflow: hidden; }
+  <link rel="stylesheet" href="/css/transitions.css"/>
+  <style>
+    /* Vérification : un en-tête, une carte centrée, six cases. Tokens uniquement. */
+    .page-head { max-width:70ch; margin-left:auto; margin-right:auto; }
+    .verify { max-width:480px; margin:0 auto; text-align:center; }
+    .email-badge { margin:8px 0 28px; word-break:break-all; }
 
-    .card {
-      position: relative; z-index: 1;
-      background: rgba(21,32,19, 0.92);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(132,194,94,0.25);
-      border-radius: 24px;
-      padding: 44px 40px;
-      max-width: 480px; width: 92%;
-      text-align: center;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
-      animation: fadein .5s ease;
-    }
-    @keyframes fadein { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-
-    .logo-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 64px; height: 64px; border-radius: 18px;
-      background: linear-gradient(135deg, #6cb43f, #71bd42);
-      font-size: 1.6rem; margin-bottom: 20px;
-      box-shadow: 0 8px 24px rgba(132,194,94,0.4);
-    }
-
-    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 10px; }
-
-    .subtitle { color: #bfb9ac; font-size: 0.92rem; line-height: 1.65; margin-bottom: 6px; }
-
-    .email-badge {
-      display: inline-block;
-      background: rgba(132,194,94,0.15);
-      border: 1px solid rgba(132,194,94,0.35);
-      color: #b6dd9d;
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      margin-bottom: 32px;
-      word-break: break-all;
-    }
-
-    /* ── OTP input ── */
-    .otp-row {
-      display: flex; gap: 10px; justify-content: center; margin-bottom: 12px;
-    }
-    .otp-box {
-      width: 56px; height: 68px;
-      font-size: 1.8rem; font-weight: 700; text-align: center;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      color: #fff;
-      outline: none;
-      transition: border-color .2s, background .2s, box-shadow .2s;
-      caret-color: #6cb43f;
-    }
-    .otp-box:focus {
-      border-color: #6cb43f;
-      background: rgba(132,194,94,0.1);
-      box-shadow: 0 0 0 3px rgba(132,194,94,0.2);
-    }
-    .otp-box.filled { border-color: rgba(0,170,255,0.5); }
-    .otp-box.error { border-color: #ef4444; background: rgba(239,68,68,0.08); animation: shake .3s ease; }
-    .otp-box.success { border-color: #59a862; background: rgba(16,185,129,0.1); }
+    /* ── Les six cases ── */
+    .otp-row { display:flex; gap:10px; justify-content:center; margin-bottom:12px; }
+    .otp-box { width:56px; height:68px; font-family:var(--font-display); font-size:1.8rem; font-weight:600; text-align:center;
+      background:var(--field-bg); border:2px solid var(--line-strong); border-radius:var(--r); color:var(--text-1);
+      transition:border-color var(--duration), background var(--duration), box-shadow var(--duration); caret-color:var(--leaf); }
+    .otp-box:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
+    .otp-box.filled { border-color:var(--glass-border-hover); }
+    .otp-box.error { border-color:var(--red); background:rgba(239,68,68,.08); animation:shake .3s ease; }
+    .otp-box.success { border-color:var(--green); background:rgba(34,197,94,.1); }
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
 
-    .otp-hint { font-size: 0.78rem; color: #78705c; margin-bottom: 24px; min-height: 1.2em; }
-
-    .error-msg { font-size: 0.85rem; color: #ef4444; margin-bottom: 16px; min-height: 1.2em; }
-
-    .btn {
-      display: block; width: 100%;
-      padding: 14px 20px; border-radius: 12px; border: none;
-      font-size: 1rem; font-weight: 600; cursor: pointer;
-      transition: all 0.2s; margin-bottom: 12px;
-    }
-    .btn-primary { background: linear-gradient(135deg, #6cb43f, #5f9e38); color: #fff; box-shadow: 0 4px 16px rgba(132,194,94,0.3); }
-    .btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, #71bd42, #6cb43f); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(132,194,94,0.4); }
-    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-    .btn-secondary { background: rgba(255,255,255,0.06); color: #bfb9ac; border: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; }
-    .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: #fff; }
-    .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .cooldown { font-size: 0.8rem; color: #78705c; margin-top: -4px; margin-bottom: 14px; min-height: 1.2em; }
-
-    .divider { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 0 16px; }
-
-    .signout-link { font-size: 0.82rem; color: #78705c; cursor: pointer; background: none; border: none; text-decoration: underline; transition: color .2s; }
-    .signout-link:hover { color: #bfb9ac; }
-
-    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; animation: pulse 1.6s ease-in-out infinite; margin-right: 6px; vertical-align: middle; }
+    .otp-hint { font-size:.8rem; color:var(--text-3); margin-bottom:22px; min-height:1.2em; }
+    .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gold); animation:pulse 1.6s ease-in-out infinite; margin-right:6px; vertical-align:middle; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .error-msg { font-size:.86rem; color:var(--red); margin-bottom:14px; min-height:1.2em; }
 
-    .notification {
-      position: fixed; top: 20px; left: 50%;
-      transform: translate(-50%, -100px);
-      padding: 12px 24px; border-radius: 12px;
-      font-weight: 600; z-index: 2000; font-size: 0.9rem;
-      opacity: 0; visibility: hidden;
-      transition: transform .4s ease, opacity .4s ease, visibility .4s;
-      pointer-events: none;
+    .verify .btn { width:100%; min-height:44px; margin-bottom:10px; }
+    .cooldown { font-size:.8rem; color:var(--text-3); margin:-2px 0 12px; min-height:1.2em; }
+    .divider { height:1px; background:var(--line); margin:8px 0 16px; }
+    .signout-link { font:inherit; font-size:.84rem; color:var(--text-3); cursor:pointer; background:none; border:none; text-decoration:underline; text-underline-offset:2px; min-height:44px; }
+    .signout-link:hover { color:var(--text-1); }
+
+    /* Retour en haut de page, piloté par verify-email.js (classes show / success / info / error). */
+    .notification { position:fixed; top:20px; left:50%; transform:translate(-50%, -100px); padding:12px 20px; border-radius:var(--r-sm);
+      font-weight:600; z-index:2000; font-size:.9rem; opacity:0; visibility:hidden; pointer-events:none;
+      background:var(--sheet-bg); color:var(--text-1); border:1px solid var(--line-strong); box-shadow:var(--shadow);
+      transition:transform .35s var(--ease), opacity .35s ease, visibility .35s; }
+    .notification.show { transform:translate(-50%, 0); opacity:1; visibility:visible; }
+    .notification.success { border-color:var(--green); }
+    .notification.info { border-color:var(--leaf); }
+    .notification.error { border-color:var(--red); color:var(--red); }
+
+    @media (max-width:640px) {
+      .otp-row { gap:7px; }
+      .otp-box { width:auto; flex:1 1 0; min-width:0; max-width:54px; height:60px; font-size:1.5rem; }
     }
-    .notification.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
-    .notification.success { background: rgba(16,185,129,0.92); color: #fff; }
-    .notification.info { background: rgba(132,194,94,0.92); color: #fff; }
-    .notification.error { background: rgba(239,68,68,0.92); color: #fff; }
-
-    @media (max-width: 480px) {
-      .card { padding: 34px 18px; border-radius: 18px; }
-      h1 { font-size: 1.35rem; }
-      .logo-badge { width: 56px; height: 56px; font-size: 1.4rem; margin-bottom: 16px; }
-      .otp-row { gap: 7px; }
-      .otp-box { width: auto; flex: 1 1 0; min-width: 0; max-width: 54px; height: 60px; font-size: 1.5rem; }
+    @media (prefers-reduced-motion: reduce) {
+      .status-dot, .otp-box.error { animation:none; }
+      .notification { transition:none; }
     }
   </style>
 </head>
 <body>
-  <div id="notification" class="notification"></div>
+  <div id="notification" class="notification" role="status" aria-live="polite"></div>
 
-  <div class="card">
-    <div class="logo-badge">📧</div>
-    <h1>Vérifiez votre email</h1>
-    <p class="subtitle">Un code à 6 chiffres a été envoyé à :</p>
-    <div class="email-badge" id="user-email-display">…</div>
+  <main class="page-shell scroll" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="send"></span>Vérifie ton email</h1>
+        <p class="page-sub">Un code à 6 chiffres vient de partir vers ton adresse. Entre-le ci-dessous pour ouvrir ton espace.</p>
+      </div>
+    </header>
 
-    <!-- OTP input -->
-    <div class="otp-row" id="otp-row">
-      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="0" autocomplete="off">
-      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="1" autocomplete="off">
-      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="2" autocomplete="off">
-      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="3" autocomplete="off">
-      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="4" autocomplete="off">
-      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-index="5" autocomplete="off">
+    <div class="verify">
+      <div class="chip email-badge" id="user-email-display">…</div>
+
+      <div class="otp-row" id="otp-row" role="group" aria-label="Code de vérification à 6 chiffres">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-index="0" autocomplete="one-time-code" aria-label="Chiffre 1">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-index="1" autocomplete="off" aria-label="Chiffre 2">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-index="2" autocomplete="off" aria-label="Chiffre 3">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-index="3" autocomplete="off" aria-label="Chiffre 4">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-index="4" autocomplete="off" aria-label="Chiffre 5">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-index="5" autocomplete="off" aria-label="Chiffre 6">
+      </div>
+      <div class="otp-hint" id="otp-hint"><span class="status-dot" aria-hidden="true"></span> En attente de ton code…</div>
+      <div class="error-msg" id="error-msg" role="alert"></div>
+
+      <button type="button" class="btn primary" id="verify-btn" disabled>Vérifier mon email</button>
+
+      <button type="button" class="btn" id="resend-btn">Renvoyer le code</button>
+      <div class="cooldown" id="cooldown-msg"></div>
+
+      <div class="divider"></div>
+      <button type="button" class="signout-link" id="signout-btn">Se déconnecter et revenir à la connexion</button>
     </div>
-    <div class="otp-hint" id="otp-hint"><span class="status-dot"></span> En attente de votre code…</div>
-    <div class="error-msg" id="error-msg"></div>
-
-    <button class="btn btn-primary" id="verify-btn" disabled>Vérifier mon email</button>
-
-    <button class="btn btn-secondary" id="resend-btn">Renvoyer le code</button>
-    <div class="cooldown" id="cooldown-msg"></div>
-
-    <div class="divider"></div>
-    <button class="signout-link" id="signout-btn">Se déconnecter et revenir à la connexion</button>
-  </div>
+  </main>
 
   <script type="module" src="/js/verify-email.js"></script>
 </body>

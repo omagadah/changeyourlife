@@ -2,11 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Humeur - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Tracker d'humeur quotidien - suivez vos émotions au fil des jours et repérez les schémas qui influencent votre bien-être.">
+  <meta name="description" content="Suivi d'humeur quotidien - note comment tu te sens au fil des jours et repère ce qui joue sur ton bien-être.">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -15,299 +14,173 @@
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
   <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/transitions.css" />
   <style>
-    body { color:var(--text-1); }
-    .page-shell {
-      position:fixed; inset:20px;
-      background:var(--glass-bg); backdrop-filter:blur(15px);
-      border-radius:20px; border:1px solid var(--glass-border);
-      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
-    }
-    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
-    .header-sub { font-size:0.82rem; color:var(--text-2); margin-top:2px; }
-    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+    /* L'echelle d'humeur, la meme que l'annee en pixels (.px[data-v]) */
+    .page-shell { --m1:#b3312c; --m2:#d97b3a; --m3:#c9a227; --m4:#6f9a52; --m5:#44bd48; }
+    .content-area { display: flex; flex-direction: column; gap: 22px; }
 
-    /* ── Toast ── */
-    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
-    .toast.show { transform:translate(-50%,0); }
-    .toast.xp { background:rgba(132,194,94,.92); }
+    /* L'humeur du jour */
+    .today-mood-card { position: relative; overflow: hidden; }
+    .today-mood-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--mood-accent, var(--line-strong)); transition: background .4s; }
+    .mood-question { font-size: 1rem; margin: 0 0 14px; }
+    .mood-row { justify-content: center; margin-bottom: 16px; }
+    .mood-row > button { width: 64px; padding: 8px 4px 7px; }
+    .mood-row > button.on { border-color: var(--mbcolor, var(--line-strong)); background: color-mix(in srgb, var(--mbcolor, var(--text-3)) 14%, transparent); }
+    .mood-emoji { font-size: 1.7rem; line-height: 1; }
+    .mood-row > button.on small { color: var(--text-1); }
+    .mood-row[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+    .mood-note-wrap { margin-bottom: 12px; }
+    .domain-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .domain-row[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+    .domain-pill { cursor: pointer; font-family: inherit; min-height: 32px; }
+    .domain-pill.on { color: var(--dpcolor); border-color: var(--dpcolor); background: color-mix(in srgb, var(--dpcolor) 14%, transparent); }
+    .save-mood-btn { width: 100%; min-height: 44px; }
 
-    /* ── Section titles ── */
-    .section-title {
-      font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
-      color:var(--text-3); font-weight:700; margin-bottom:12px;
-      display:flex; align-items:center; gap:8px;
-    }
-    .section-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+    /* Reperes */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .stat-block { text-align: center; padding: 14px 12px; border-bottom: 2px solid var(--sb-color, var(--line)); }
+    .stat-block-value { font-size: 1.6rem; line-height: 1.1; }
+    .stat-block-label { font-size: .68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
 
-    /* ── Today's mood card ── */
-    .today-mood-card {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:16px; padding:22px 22px 20px;
-      position:relative; overflow:hidden;
-    }
-    .today-mood-card::before {
-      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
-      background:var(--mood-accent, var(--text-3)); border-radius:16px 0 0 16px;
-      transition:background .4s;
-    }
-    .mood-question { font-size:1rem; font-weight:700; color:var(--text-1); margin-bottom:16px; }
-    .mood-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:18px; }
-    .mood-btn {
-      display:flex; flex-direction:column; align-items:center; gap:5px;
-      width:62px; cursor:pointer; background:rgba(255,255,255,0.03);
-      border:1.5px solid rgba(255,255,255,0.08); border-radius:14px;
-      padding:10px 6px 8px; transition:all .18s cubic-bezier(.4,0,.2,1);
-      position:relative;
-    }
-    .mood-btn:hover { transform:translateY(-3px); background:rgba(255,255,255,0.07); }
-    .mood-btn.selected {
-      border-color:var(--mbcolor, var(--text-3));
-      background:color-mix(in srgb, var(--mbcolor, var(--text-3)) 12%, transparent);
-      transform:translateY(-4px);
-      box-shadow:0 4px 18px color-mix(in srgb, var(--mbcolor, var(--text-3)) 30%, transparent);
-    }
-    .mood-emoji { font-size:1.8rem; line-height:1; }
-    .mood-label { font-size:0.62rem; font-weight:700; color:var(--text-3); text-align:center; white-space:nowrap; }
-    .mood-btn.selected .mood-label { color:var(--mbcolor, var(--text-1)); }
+    /* 30 derniers jours */
+    .heatmap-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .heatmap-legend { display: inline-flex; align-items: center; gap: 4px; font-size: .68rem; color: var(--text-3); }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .heatmap-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-top: 12px; }
+    .heatmap-cell { aspect-ratio: 1; border-radius: 5px; background: var(--surface-2); position: relative; }
+    .heatmap-cell[data-mood="1"] { background: var(--m1); }
+    .heatmap-cell[data-mood="2"] { background: var(--m2); }
+    .heatmap-cell[data-mood="3"] { background: var(--m3); }
+    .heatmap-cell[data-mood="4"] { background: var(--m4); }
+    .heatmap-cell[data-mood="5"] { background: var(--m5); }
+    .heatmap-cell .cell-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--sheet-bg); border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 8px; font-size: .7rem; color: var(--text-1); white-space: nowrap; z-index: 10; pointer-events: none; }
+    .heatmap-cell:hover .cell-tooltip, .heatmap-cell:focus-visible .cell-tooltip { display: block; }
+    .pixels-note { font-size: .72rem; color: var(--text-3); }
+    .px.vide { visibility: hidden; }
 
-    /* ── Note input ── */
-    .mood-note-wrap { margin-bottom:14px; }
-    .mood-note {
-      width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.08); border-radius:10px;
-      color:var(--text-1); font-size:0.86rem; padding:10px 13px; resize:none;
-      font-family:inherit; line-height:1.5; transition:border-color .2s;
-    }
-    .mood-note:focus { outline:none; border-color:rgba(96,164,255,0.35); background:rgba(255,255,255,0.05); }
-    .mood-note::placeholder { color:var(--text-3); }
+    /* Historique */
+    .entries-list { display: flex; flex-direction: column; gap: 8px; }
+    .entry-row { display: flex; align-items: center; gap: 12px; background: var(--surface-1); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; position: relative; overflow: hidden; }
+    .entry-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--entry-mood-color, var(--line-strong)); }
+    .entry-emoji { font-size: 1.4rem; flex-shrink: 0; }
+    .entry-meta { flex: 1; min-width: 0; }
+    .entry-date { font-size: .72rem; color: var(--text-3); font-weight: 600; margin-bottom: 2px; }
+    .entry-note { font-size: .84rem; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .entry-note em { color: var(--text-3); }
+    .entry-domain { color: var(--dpcolor, var(--text-2)); border-color: color-mix(in srgb, var(--dpcolor, var(--text-3)) 30%, transparent); }
 
-    /* ── Domain selector ── */
-    .domain-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-    .domain-pill {
-      padding:5px 13px; border-radius:999px; font-size:0.73rem; font-weight:700;
-      border:1.5px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);
-      color:var(--text-2); cursor:pointer; transition:all .15s;
+    @media (max-width: 900px) {
+      .heatmap-grid { grid-template-columns: repeat(10, 1fr); }
     }
-    .domain-pill:hover { background:rgba(255,255,255,0.07); }
-    .domain-pill.selected {
-      background:color-mix(in srgb, var(--dpcolor) 15%, transparent);
-      border-color:var(--dpcolor);
-      color:var(--dpcolor);
+    @media (max-width: 640px) {
+      .heatmap-grid { grid-template-columns: repeat(6, 1fr); }
+      .stats-row { gap: 8px; }
+      .mood-row > button { width: 56px; }
     }
-
-    .save-mood-btn {
-      width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#548d31,var(--blue)); color:#fff;
-      font-size:0.9rem; font-weight:700; font-family:inherit;
-      transition:filter .2s, transform .1s;
-    }
-    .save-mood-btn:hover { filter:brightness(1.1); }
-    .save-mood-btn:active { transform:scale(0.98); }
-    .save-mood-btn:disabled { opacity:0.45; cursor:not-allowed; }
-
-    /* ── Heatmap calendar ── */
-    .heatmap-card {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:16px; padding:20px;
-    }
-    .heatmap-legend { display:flex; align-items:center; gap:6px; margin-bottom:14px; justify-content:flex-end; }
-    .heatmap-legend-label { font-size:0.65rem; color:var(--text-3); }
-    .legend-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
-    .heatmap-grid {
-      display:grid; grid-template-columns:repeat(10,1fr); gap:5px;
-    }
-    .heatmap-cell {
-      aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.05);
-      cursor:default; transition:transform .15s;
-      position:relative;
-    }
-    .heatmap-cell:hover { transform:scale(1.3); z-index:2; }
-    .heatmap-cell[data-mood="1"] { background:#ef4444; opacity:.8; }
-    .heatmap-cell[data-mood="2"] { background:#f97316; opacity:.8; }
-    .heatmap-cell[data-mood="3"] { background:#eab308; opacity:.8; }
-    .heatmap-cell[data-mood="4"] { background:#22c55e; opacity:.8; }
-    .heatmap-cell[data-mood="5"] { background:#44bd48; opacity:.8; }
-    .heatmap-cell .cell-tooltip {
-      display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
-      background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
-      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:var(--text-1);
-      white-space:nowrap; z-index:10; pointer-events:none;
-    }
-    .heatmap-cell:hover .cell-tooltip { display:block; }
-
-    /* ── Stats row ── */
-    .stats-row {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
-    }
-    .stat-block {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:14px; padding:16px 14px; text-align:center;
-      border-bottom:2px solid var(--sb-color, rgba(255,255,255,0.08));
-    }
-    .stat-block-icon { font-size:1.2rem; margin-bottom:4px; }
-    .stat-block-value { font-size:1.6rem; font-weight:800; color:var(--text-1); line-height:1.1; }
-    .stat-block-label { font-size:0.63rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
-
-    /* ── Recent entries ── */
-    .entries-list { display:flex; flex-direction:column; gap:9px; }
-    .entry-row {
-      display:flex; align-items:center; gap:13px;
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:12px; padding:12px 15px;
-      position:relative; overflow:hidden;
-      transition:background .15s;
-    }
-    .entry-row::before {
-      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
-      background:var(--entry-mood-color, rgba(255,255,255,0.1)); border-radius:12px 0 0 12px;
-    }
-    .entry-row:hover { background:rgba(255,255,255,0.04); }
-    .entry-emoji { font-size:1.5rem; flex-shrink:0; }
-    .entry-meta { flex:1; min-width:0; }
-    .entry-date { font-size:0.7rem; color:var(--text-3); font-weight:600; margin-bottom:2px; }
-    .entry-note { font-size:0.83rem; color:#e0ddd6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .entry-domain { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:999px; flex-shrink:0; background:rgba(255,255,255,0.06); color:var(--text-2); }
-
-    /* ── Empty state ── */
-    .empty-entries { text-align:center; padding:28px 20px; color:var(--text-3); font-size:0.85rem; }
-
-    /* ── Responsive ── */
-    @media (max-width:600px) {
-      .heatmap-grid { grid-template-columns:repeat(7,1fr); }
-      .stats-row { grid-template-columns:repeat(3,1fr); }
-      .mood-btn { width:52px; }
+    @media (prefers-reduced-motion: reduce) {
+      .today-mood-card::before { transition: none; }
     }
   </style>
 </head>
 <body>
-  <div class="toast" id="toast"></div>
-
-  <script type="module" src="/js/humeur.js"></script>
-
-  <header class="header">
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
-        <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
-          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-        </g>
-      </svg>
-    </button>
-  </header>
-
-  <div class="page-shell">
-    <div class="header-bar">
-      <div class="header-left">
-        <h1>Humeur du jour</h1>
-        <div class="header-sub">Suis ton bien-être émotionnel au quotidien</div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="smile"></span>Humeur</h1>
+        <p class="page-sub">Comment tu te sens, jour après jour. Pas de note, juste une trace.</p>
       </div>
-      <div id="streak-badge" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:999px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);font-size:0.78rem;font-weight:700;color:#fbbf24;display:none">
-        🔥 <span id="streak-count">0</span> jour(s) de suite
+      <div class="page-actions">
+        <span class="chip gold" id="streak-badge" style="display:none"><span class="ic" data-icon="flame" data-icon-size="13"></span><span id="streak-count">0</span>&nbsp;jour(s) de suite</span>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="content-area">
+
+        <!-- L'humeur du jour -->
+        <section class="card today-mood-card" id="today-mood-card" aria-labelledby="mood-question">
+          <h2 class="mood-question" id="mood-question">Comment tu te sens aujourd'hui ?</h2>
+          <div class="pick mood-row" id="mood-row" role="group" aria-label="Choisir ton humeur">
+            <button type="button" class="mood-btn" data-mood="1" style="--mbcolor:var(--m1)" aria-pressed="false"><span class="mood-emoji" aria-hidden="true">😞</span><small>Difficile</small></button>
+            <button type="button" class="mood-btn" data-mood="2" style="--mbcolor:var(--m2)" aria-pressed="false"><span class="mood-emoji" aria-hidden="true">😟</span><small>Bas</small></button>
+            <button type="button" class="mood-btn" data-mood="3" style="--mbcolor:var(--m3)" aria-pressed="false"><span class="mood-emoji" aria-hidden="true">😐</span><small>Neutre</small></button>
+            <button type="button" class="mood-btn" data-mood="4" style="--mbcolor:var(--m4)" aria-pressed="false"><span class="mood-emoji" aria-hidden="true">🙂</span><small>Bien</small></button>
+            <button type="button" class="mood-btn" data-mood="5" style="--mbcolor:var(--m5)" aria-pressed="false"><span class="mood-emoji" aria-hidden="true">😄</span><small>Excellent</small></button>
+          </div>
+
+          <div class="field mood-note-wrap">
+            <label for="mood-note">Une note sur ton état d'esprit (facultatif)</label>
+            <textarea class="textarea" id="mood-note" rows="2" placeholder="Ce qui a compté aujourd'hui" style="min-height:64px"></textarea>
+          </div>
+
+          <div class="domain-row" id="domain-row" role="group" aria-label="Domaine concerné (facultatif)">
+            <button type="button" class="chip domain-pill" data-domain="corps" style="--dpcolor:var(--corps)" aria-pressed="false">Corps</button>
+            <button type="button" class="chip domain-pill" data-domain="coeur" style="--dpcolor:var(--coeur)" aria-pressed="false">Cœur</button>
+            <button type="button" class="chip domain-pill" data-domain="etre" style="--dpcolor:var(--etre)" aria-pressed="false">Être</button>
+            <button type="button" class="chip domain-pill" data-domain="ordre" style="--dpcolor:var(--ordre)" aria-pressed="false">Ordre</button>
+          </div>
+
+          <button class="btn primary save-mood-btn" type="button" id="save-mood-btn" disabled>Enregistrer mon humeur</button>
+        </section>
+
+        <!-- Reperes -->
+        <section aria-label="Repères">
+          <div class="sec-label">Repères</div>
+          <div class="stats-row">
+            <div class="card stat-block" style="--sb-color:var(--gold)">
+              <div class="stat-block-value t-num" id="stat-streak">0</div>
+              <div class="stat-block-label">Jours de suite</div>
+            </div>
+            <div class="card stat-block" id="stat-avg-block" style="--sb-color:var(--leaf)" hidden>
+              <div class="stat-block-value t-num" id="stat-avg"></div>
+              <div class="stat-block-label">Moyenne sur 7 jours</div>
+            </div>
+            <div class="card stat-block" style="--sb-color:var(--moss)">
+              <div class="stat-block-value t-num" id="stat-total">0</div>
+              <div class="stat-block-label">Jours notés</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 30 derniers jours -->
+        <section class="card" aria-label="30 derniers jours">
+          <div class="heatmap-head">
+            <div class="sec-label" style="margin:0;flex:1">30 derniers jours</div>
+            <span class="heatmap-legend" aria-hidden="true">
+              <span>Difficile</span>
+              <span class="legend-dot" style="background:var(--m1)"></span>
+              <span class="legend-dot" style="background:var(--m2)"></span>
+              <span class="legend-dot" style="background:var(--m3)"></span>
+              <span class="legend-dot" style="background:var(--m4)"></span>
+              <span class="legend-dot" style="background:var(--m5)"></span>
+              <span>Excellent</span>
+            </span>
+          </div>
+          <div class="heatmap-grid" id="heatmap-grid"></div>
+        </section>
+
+        <!-- L'annee en pixels : un carre par jour sur 365 jours -->
+        <section class="card" aria-label="Ton année en pixels">
+          <div class="heatmap-head" style="margin-bottom:12px">
+            <div class="sec-label" style="margin:0;flex:1">Ton année en pixels</div>
+            <span class="pixels-note" id="pixels-note"></span>
+          </div>
+          <div class="pixels" id="pixels-grid" aria-label="Humeur de chaque jour des 365 derniers jours"></div>
+        </section>
+
+        <!-- Historique -->
+        <section aria-label="Historique récent">
+          <div class="sec-label">Historique récent</div>
+          <div class="entries-list" id="entries-list">
+            <span class="sk" style="height:52px"></span>
+            <span class="sk" style="height:52px"></span>
+          </div>
+        </section>
+
       </div>
     </div>
-
-    <div class="content-area">
-
-      <!-- Today's mood -->
-      <div class="today-mood-card" id="today-mood-card">
-        <div class="mood-question" id="mood-question">Comment tu te sens aujourd'hui ?</div>
-        <div class="mood-row" id="mood-row">
-          <div class="mood-btn" data-mood="1" style="--mbcolor:#ef4444">
-            <span class="mood-emoji">😞</span>
-            <span class="mood-label">Difficile</span>
-          </div>
-          <div class="mood-btn" data-mood="2" style="--mbcolor:#f97316">
-            <span class="mood-emoji">😟</span>
-            <span class="mood-label">Bas</span>
-          </div>
-          <div class="mood-btn" data-mood="3" style="--mbcolor:#eab308">
-            <span class="mood-emoji">😐</span>
-            <span class="mood-label">Neutre</span>
-          </div>
-          <div class="mood-btn" data-mood="4" style="--mbcolor:#22c55e">
-            <span class="mood-emoji">🙂</span>
-            <span class="mood-label">Bien</span>
-          </div>
-          <div class="mood-btn" data-mood="5" style="--mbcolor:#44bd48">
-            <span class="mood-emoji">😄</span>
-            <span class="mood-label">Excellent</span>
-          </div>
-        </div>
-
-        <div class="mood-note-wrap">
-          <textarea class="mood-note" id="mood-note" rows="2" placeholder="Une note sur ton état d'esprit… (optionnel)"></textarea>
-        </div>
-
-        <div class="domain-row" id="domain-row">
-          <div class="domain-pill" data-domain="corps" style="--dpcolor:#44bd48">Corps</div>
-          <div class="domain-pill" data-domain="coeur" style="--dpcolor:#f87171">Cœur</div>
-          <div class="domain-pill" data-domain="etre" style="--dpcolor:#bdafd6">Être</div>
-          <div class="domain-pill" data-domain="ordre" style="--dpcolor:#fbbf24">Ordre</div>
-        </div>
-
-        <button class="save-mood-btn" id="save-mood-btn" disabled>Enregistrer mon humeur</button>
-      </div>
-
-      <!-- Stats -->
-      <div>
-        <div class="section-title">Statistiques</div>
-        <div class="stats-row">
-          <div class="stat-block" style="--sb-color:#fbbf24">
-            <div class="stat-block-icon">🔥</div>
-            <div class="stat-block-value" id="stat-streak">0</div>
-            <div class="stat-block-label">Jours de suite</div>
-          </div>
-          <div class="stat-block" style="--sb-color:#22c55e">
-            <div class="stat-block-icon">📊</div>
-            <div class="stat-block-value" id="stat-avg">-</div>
-            <div class="stat-block-label">Moyenne (7j)</div>
-          </div>
-          <div class="stat-block" style="--sb-color:#a4d486">
-            <div class="stat-block-icon">📅</div>
-            <div class="stat-block-value" id="stat-total">0</div>
-            <div class="stat-block-label">Entrées totales</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 30-day heatmap -->
-      <div class="heatmap-card">
-        <div class="section-title" style="margin-bottom:8px;">
-          30 derniers jours
-          <span style="margin-left:auto;display:flex;align-items:center;gap:5px;">
-            <span style="font-size:0.65rem;color:#78705c;font-weight:400;text-transform:none;letter-spacing:0">😞</span>
-            <div class="legend-dot" style="background:#ef4444"></div>
-            <div class="legend-dot" style="background:#f97316"></div>
-            <div class="legend-dot" style="background:#eab308"></div>
-            <div class="legend-dot" style="background:#22c55e"></div>
-            <div class="legend-dot" style="background:#44bd48"></div>
-            <span style="font-size:0.65rem;color:#78705c;font-weight:400;text-transform:none;letter-spacing:0">😄</span>
-          </span>
-        </div>
-        <div class="heatmap-grid" id="heatmap-grid"></div>
-      </div>
-
-      <!-- L'annee en pixels : un carre par jour sur 365 jours -->
-      <div class="heatmap-card" style="margin-top:14px">
-        <div class="section-title" style="margin-bottom:8px;">Ton année en pixels <span id="pixels-note" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;font-size:0.7rem;color:var(--text-3)"></span></div>
-        <div class="pixels" id="pixels-grid" aria-label="Humeur de chaque jour des 365 derniers jours"></div>
-        <style>.px.vide{visibility:hidden}</style>
-      </div>
-
-      <!-- Recent entries -->
-      <div>
-        <div class="section-title">Historique récent</div>
-        <div class="entries-list" id="entries-list">
-          <div class="empty-entries">Aucune entrée encore - commence dès aujourd'hui !</div>
-        </div>
-      </div>
-
-    </div><!-- /content-area -->
-  </div><!-- /page-shell -->
+  </main>
 
   <script type="module" src="/js/humeur.js"></script>
 </body>

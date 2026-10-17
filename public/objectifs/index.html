@@ -2,13 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Objectifs & Progrès - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <link rel="stylesheet" href="/css/main.min.css" />
-  <meta name="robots" content="index,follow" />
-  <meta name="description" content="Définissez et suivez vos objectifs avec sous-tâches et progression détaillée." />
+  <title>Objectifs - Change Your Life</title>
+  <meta name="description" content="Tes objectifs, leurs jalons et leur progression : des intentions qui deviennent des gestes concrets." />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -16,298 +13,168 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/transitions.css" />
   <style>
-    body { color:#f1efec; }
+    .content-area { display: grid; gap: 16px; align-content: start; }
 
-    .page-shell {
-      position: fixed; inset: 20px;
-      background: var(--glass-bg); backdrop-filter: blur(15px);
-      border-radius: 20px; border: 1px solid var(--glass-border);
-      padding: 20px; display: grid;
-      grid-template-rows: auto auto auto 1fr;
-      gap: 14px; overflow: hidden;
-    }
+    /* Reperes et filtres */
+    .stats-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stats-bar .chip .sp-val { font-family: var(--font-display); font-size: .98rem; font-weight: 600; color: var(--text-1); }
+    .stats-bar .chip.red { color: var(--red); border-color: rgba(239,68,68,.3); }
+    .domain-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .domain-tab { cursor: pointer; font-family: inherit; min-height: 32px; }
+    .domain-tab.active { color: var(--tab-color, var(--leaf-text)); background: color-mix(in srgb, var(--tab-color, var(--leaf)) 16%, transparent); border-color: color-mix(in srgb, var(--tab-color, var(--leaf)) 50%, transparent); }
 
-    /* ── Header ── */
-    .header-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .header-bar h1 { margin: 0; font-size: 1.4rem; }
+    /* Demarrage rapide */
+    .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .template-card { background: var(--surface-1); border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; cursor: pointer; text-align: center; font: inherit; color: var(--text-1); transition: background var(--duration), border-color var(--duration); }
+    .template-card:hover { background: var(--surface-2); border-color: var(--line-strong); }
+    .template-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--surface-3); color: var(--tpl-color, var(--leaf-text)); margin: 0 auto 6px; }
+    .template-name { font-size: .84rem; font-weight: 600; display: block; }
 
-    /* ── Stats bar ── */
-    .stats-bar {
-      display: flex; gap: 10px; flex-wrap: wrap;
-    }
-    .stat-pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 14px; border-radius: 12px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      font-size: 0.78rem; font-weight: 600; color: #cae6b8;
-      transition: all .2s;
-    }
-    .stat-pill .sp-val { font-size: 1rem; font-weight: 800; color: #fff; }
-    .stat-pill.green { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.2); color: #6ee7b7; }
-    .stat-pill.green .sp-val { color: #34d399; }
-    .stat-pill.amber { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); color: #fde68a; }
-    .stat-pill.amber .sp-val { color: #fbbf24; }
-    .stat-pill.red { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
-    .stat-pill.red .sp-val { color: #f87171; }
-
-    /* ── Domain filter tabs ── */
-    .domain-tabs {
-      display: flex; gap: 6px; flex-wrap: wrap;
-    }
-    .domain-tab {
-      padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-      background: transparent; color: rgba(255,255,255,0.45);
-      font-size: 0.78rem; font-weight: 700; cursor: pointer;
-      transition: all .18s; letter-spacing: .2px;
-    }
-    .domain-tab:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
-    .domain-tab.active {
-      color: #fff;
-      background: color-mix(in srgb, var(--tab-color, #8dca67) 18%, transparent);
-      border-color: color-mix(in srgb, var(--tab-color, #8dca67) 55%, transparent);
-    }
-
-    /* ── Goals grid ── */
-    .content-area { overflow-y: auto; display: grid; gap: 14px; align-content: start; }
+    /* Un objectif */
     .goals-grid { display: grid; gap: 14px; }
-
-    /* ── Goal card ── */
-    .goal-card {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 18px 18px 14px 22px;
-      transition: all 0.22s var(--ease); position: relative; overflow: hidden;
-    }
-    .goal-card::before {
-      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
-      background: var(--goal-color, rgba(255,255,255,0.2)); border-radius:16px 0 0 16px;
-      opacity: 0.7; transition: opacity 0.2s, width 0.2s;
-    }
-    .goal-card:hover { background: rgba(255,255,255,0.05); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
-    .goal-card:hover::before { opacity: 1; width: 5px; }
-    .goal-card.completed { opacity: 0.55; }
+    .goal-card { padding: 16px 18px 14px 22px; position: relative; overflow: hidden; }
+    .goal-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--goal-color, var(--line-strong)); opacity: .8; }
+    .goal-card.completed { opacity: .6; }
     .goal-card.completed .goal-title { text-decoration: line-through; }
-    .goal-card.overdue { border-color: rgba(239,68,68,0.3); }
-
+    .goal-card.overdue { border-color: rgba(239,68,68,.3); }
     .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 10px; }
-    .goal-title { font-weight: 700; font-size: 1.05rem; flex: 1; letter-spacing: -0.2px; }
-    .goal-domain {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 9px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0;
-      background: color-mix(in srgb, var(--goal-color) 15%, transparent);
-      border: 1px solid color-mix(in srgb, var(--goal-color) 40%, transparent);
-      color: var(--goal-color);
-    }
-    .goal-desc { font-size: 0.86rem; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
+    .goal-title { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; flex: 1; }
+    .goal-domain { color: var(--goal-color); border-color: color-mix(in srgb, var(--goal-color) 40%, transparent); background: color-mix(in srgb, var(--goal-color) 12%, transparent); text-transform: uppercase; letter-spacing: .04em; font-size: .72rem; }
+    .goal-desc { font-size: .88rem; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
 
-    /* ── Progress ── */
-    .progress-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
-    .progress-text { font-size: 0.78rem; color: var(--text-2); font-weight: 600; }
-    .progress-pct { font-size:0.78rem; font-weight:700; color: var(--goal-color); }
-    .overdue-tag { font-size:0.72rem; color:#ef4444; font-weight:700; }
+    .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .progress-text { font-size: .8rem; color: var(--text-2); font-weight: 600; }
+    .progress-pct { font-size: .8rem; font-weight: 700; color: var(--goal-color); }
+    .overdue-tag { font-size: .74rem; color: var(--red); font-weight: 700; }
+    .progress-bar { background: var(--surface-3); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 10px; }
+    .progress-fill { background: var(--goal-color); height: 100%; transition: width .5s var(--ease); }
 
-    .progress-bar { background: rgba(255,255,255,0.07); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 10px; position: relative; }
-    .progress-fill { background: linear-gradient(90deg, var(--goal-color), color-mix(in srgb, var(--goal-color) 70%, white)); height: 100%; transition: width 0.5s var(--ease); }
-
-    /* ── Slider ── */
     .progress-slider-wrap { margin-bottom: 10px; display: none; }
     .progress-slider-wrap.open { display: flex; align-items: center; gap: 10px; }
-    .progress-slider {
-      flex: 1; -webkit-appearance: none; appearance: none;
-      height: 4px; border-radius: 4px; outline: none; cursor: pointer;
-      background: linear-gradient(90deg, var(--goal-color, #8dca67) var(--pct, 0%), rgba(255,255,255,0.12) var(--pct, 0%));
-    }
-    .progress-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
-      background: var(--goal-color, #8dca67); cursor: pointer;
-      box-shadow: 0 0 0 3px rgba(0,0,0,0.4);
-    }
-    .progress-slider::-moz-range-thumb {
-      width: 16px; height: 16px; border-radius: 50%; border: none;
-      background: var(--goal-color, #8dca67); cursor: pointer;
-    }
-    .slider-pct-label { font-size:0.8rem; font-weight:700; min-width:36px; text-align:right; color: var(--goal-color); }
+    .progress-slider { flex: 1; accent-color: var(--goal-color, var(--leaf)); cursor: pointer; min-height: 28px; }
+    .slider-pct-label { font-size: .82rem; font-weight: 700; min-width: 36px; text-align: right; color: var(--goal-color); }
 
-    /* ── Sub-tasks ── */
+    /* Jalons */
     .subtasks-section { margin: 8px 0 12px; }
-    .subtasks-toggle {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size:0.75rem; font-weight:700; color:#a79f8c;
-      background:none; border:none; cursor:pointer; padding:0;
-      transition: color .15s;
-    }
-    .subtasks-toggle:hover { color:#cae6b8; }
-    .subtasks-toggle .arrow { transition: transform .2s; display:inline-block; }
+    .subtasks-toggle { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; font-size: .78rem; font-weight: 700; color: var(--text-2); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .subtasks-toggle:hover { color: var(--text-1); }
+    .subtasks-toggle .arrow { transition: transform .2s; display: inline-flex; }
     .subtasks-toggle.open .arrow { transform: rotate(90deg); }
-
+    .subtasks-toggle .st-count { color: var(--text-3); font-weight: 600; margin-left: 2px; }
     .subtasks-list { margin-top: 8px; display: none; flex-direction: column; gap: 5px; }
     .subtasks-list.open { display: flex; }
+    .subtask-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 8px; background: var(--surface-1); border: 1px solid var(--line); }
+    .subtask-item:hover { background: var(--surface-2); }
+    .subtask-check { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; flex-shrink: 0; display: grid; place-items: center; padding: 0; color: transparent; position: relative; }
+    .subtask-check::before { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--line-strong); }
+    .subtask-check svg { position: relative; }
+    .subtask-check:focus-visible { outline: 2px solid var(--leaf); outline-offset: 1px; border-radius: 6px; }
+    .subtask-check.done { color: var(--bg); }
+    .subtask-check.done::before { background: var(--goal-color, var(--leaf)); border-color: var(--goal-color, var(--leaf)); }
+    .subtask-label { flex: 1; font-size: .86rem; cursor: pointer; }
+    .subtask-label.done { text-decoration: line-through; color: var(--text-3); }
+    .subtask-date { font-size: .72rem; font-weight: 600; margin-left: auto; padding: 2px 7px; border-radius: 6px; background: var(--surface-3); color: var(--text-2); flex-shrink: 0; white-space: nowrap; }
+    .subtask-date.overdue { color: var(--red); background: rgba(239,68,68,.14); }
+    .subtask-date.soon { color: var(--gold-text); background: rgba(231,177,92,.14); }
+    .subtask-del { width: 32px; height: 32px; flex-shrink: 0; color: var(--text-3); }
+    .subtask-del:hover { color: var(--red); }
+    .subtask-add-row { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+    .subtask-add-input { flex: 1; min-width: 140px; min-height: 36px; font-size: .84rem; border-style: dashed; }
+    .subtask-add-date { width: 150px; min-height: 36px; font-size: .8rem; color-scheme: dark; }
+    body.light-mode .subtask-add-date { color-scheme: light; }
+    .next-milestone { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; margin: 10px 0 4px; background: rgba(132,194,94,.08); border: 1px solid rgba(132,194,94,.22); }
+    .next-milestone-emoji { display: inline-flex; flex-shrink: 0; color: var(--leaf-text); }
+    .next-milestone-label { flex: 1; min-width: 0; font-size: .84rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .next-milestone-date { font-size: .76rem; color: var(--leaf-text); font-weight: 700; flex-shrink: 0; }
+    .next-milestone.overdue { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.25); }
+    .next-milestone.overdue .next-milestone-date, .next-milestone.overdue .next-milestone-emoji { color: var(--red); }
+    .next-milestone.soon { background: rgba(231,177,92,.08); border-color: rgba(231,177,92,.28); }
+    .next-milestone.soon .next-milestone-date, .next-milestone.soon .next-milestone-emoji { color: var(--gold-text); }
 
-    .subtask-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 6px 8px; border-radius: 8px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-      transition: background .15s;
+    .goal-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .goal-actions .btn.active-slider { background: rgba(132,194,94,.14); border-color: rgba(132,194,94,.5); color: var(--leaf-text); }
+    .goal-actions .btn.danger-confirm { background: rgba(239,68,68,.12); border-color: var(--red); color: var(--red); }
+
+    .modal .field { margin-bottom: 14px; }
+
+    @media (max-width: 900px) {
+      .templates-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
     }
-    .subtask-item:hover { background: rgba(255,255,255,0.06); }
-    .subtask-check {
-      width: 16px; height: 16px; border-radius: 4px;
-      border: 1.5px solid rgba(255,255,255,0.25); background: transparent;
-      cursor: pointer; flex-shrink: 0; display:flex; align-items:center; justify-content:center;
-      transition: all .15s;
+    @media (max-width: 640px) {
+      .goal-card { padding: 14px 12px 12px 16px; }
+      .subtask-add-date { width: 100%; }
     }
-    .subtask-check.done {
-      background: var(--goal-color, #8dca67);
-      border-color: var(--goal-color, #8dca67);
-    }
-    .subtask-check.done::after { content: '✓'; color: #fff; font-size: 10px; font-weight:800; }
-    .subtask-label { flex: 1; font-size: 0.83rem; color: #e1ded7; cursor: pointer; }
-    .subtask-label.done { text-decoration: line-through; color: #8a806a; }
-    .subtask-del { background:none; border:none; color:rgba(255,255,255,0.2); cursor:pointer; font-size:1rem; padding:0 2px; transition:color .15s; }
-    .subtask-del:hover { color: #ef4444; }
-
-    .subtask-add-row { display:flex; gap:6px; margin-top:4px; }
-    .subtask-add-input {
-      flex:1; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.15);
-      border-radius: 7px; padding: 5px 10px; color: #f1efec; font-size:0.82rem;
-      outline:none; transition:border-color .2s;
-    }
-    .subtask-add-input:focus { border-color: rgba(132,194,94,.5); }
-    .subtask-add-input::placeholder { color:#60594a; }
-    .subtask-add-btn {
-      padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.06); color: #f1efec; cursor:pointer; font-size:0.82rem;
-      transition: all .15s;
-    }
-    .subtask-add-btn:hover { background: rgba(255,255,255,0.12); }
-
-    /* ── Actions ── */
-    .goal-actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
-    .btn-icon { padding: 7px 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-size: 0.82rem; transition: all 0.2s; font-weight:600; }
-    .btn-icon:hover { background: rgba(255,255,255,0.12); transform: scale(1.03); }
-    .btn-icon.danger-confirm { background:rgba(239,68,68,.15); border-color:#ef4444; color:#ef4444; }
-    .btn-icon.active-slider { background:rgba(132,194,94,0.15); border-color:rgba(132,194,94,0.5); color:#c2e2ae; }
-
-    /* ── Templates ── */
-    .templates-section { margin-bottom: 0; }
-    .templates-section-title { font-size:0.78rem; color:#a79f8c; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; font-weight:700; }
-    .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-    .template-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; cursor: pointer; text-align: center; transition: all 0.2s; }
-    .template-card:hover { background: rgba(255,255,255,0.1); transform: scale(1.03); }
-    .template-icon { font-size: 1.6rem; margin-bottom: 4px; }
-    .template-name { font-size: 0.82rem; font-weight: 600; }
-
-    /* ── Shared btns ── */
-    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size:0.88rem; }
-    .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: #8dca67; border-color: #65a93b; box-shadow:0 4px 14px rgba(132,194,94,.3); }
-    .btn.primary:hover { background: #7bc14f; }
-
-    /* ── Modal ── */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal.active { display: flex; }
-    .modal-content { background: rgba(18,26,40,0.98); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 26px; max-width: 520px; width: 94%; max-height: 90vh; overflow-y:auto; }
-    .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.85rem; color: #c5c0b4; margin-bottom: 5px; font-weight:600; }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 9px; padding: 10px 12px; color: #f1efec; font-family: inherit; font-size:0.9rem;
-      outline:none; transition:border-color .2s;
-    }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: rgba(132,194,94,.5); }
-    .form-group textarea { resize: vertical; min-height: 76px; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-
-    /* ── Empty state ── */
-    #empty-state { text-align:center; padding:60px 20px; color:#c5c0b4; display:none; }
-
-    /* ── Toast ── */
-    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
-    .toast.show { transform:translate(-50%,0); }
-    .toast.error { background:rgba(239,68,68,.92); }
-
-    /* ── Mobile ── */
-    @media (max-width:600px) {
-      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
-      .header-bar { flex-direction:column; align-items:flex-start; }
-      .goal-actions { margin-left:0; }
-      .templates-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-      .modal-content { padding:18px 14px; }
+    @media (prefers-reduced-motion: reduce) {
+      .progress-fill, .subtasks-toggle .arrow, .template-card { transition: none; }
     }
   </style>
 </head>
 <body>
-  <div id="toast" class="toast"></div>
-
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-    </button>
-  </nav>
-
-  <main class="page-shell page-shell-nav">
-
-    <!-- Header -->
-    <div class="header-bar">
-      <div>
-        <h1>Objectifs & Progrès</h1>
-        <div style="font-size:0.82rem;color:#a79f8c;margin-top:2px">Transforme tes intentions en actions concrètes</div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="target"></span>Objectifs</h1>
+        <p class="page-sub">Des intentions qui deviennent des gestes concrets, jalon après jalon.</p>
       </div>
-      <button class="btn primary" id="btn-new-goal">+ Nouvel objectif</button>
-    </div>
-
-    <!-- Stats bar -->
-    <div class="stats-bar" id="stats-bar"></div>
-
-    <!-- Domain filter tabs -->
-    <div class="domain-tabs" id="domain-tabs"></div>
-
-    <!-- Content -->
-    <div class="content-area">
-      <div class="templates-section" id="templates-section">
-        <div class="templates-section-title">⚡ Démarrage rapide</div>
-        <div class="templates-grid" id="templates-grid"></div>
+      <div class="page-actions">
+        <button class="btn primary" type="button" id="btn-new-goal"><span class="ic" data-icon="plus"></span>Nouvel objectif</button>
       </div>
-      <div class="goals-grid" id="goals-grid"></div>
-      <div id="empty-state">
-        <div style="font-size:3rem;margin-bottom:12px">🎯</div>
-        <div style="font-size:1.1rem;margin-bottom:8px">Aucun objectif dans ce domaine</div>
-        <div style="font-size:0.88rem">Clique sur "+ Nouvel objectif" pour commencer</div>
+    </header>
+
+    <div class="page-body">
+      <div class="content-area">
+        <div class="stats-bar" id="stats-bar" aria-label="Repères"></div>
+        <div class="domain-tabs" id="domain-tabs" role="group" aria-label="Filtrer par domaine"></div>
+
+        <section class="templates-section" id="templates-section" aria-label="Démarrage rapide">
+          <div class="sec-label">Démarrage rapide</div>
+          <div class="templates-grid" id="templates-grid"></div>
+        </section>
+
+        <div class="goals-grid" id="goals-grid"></div>
+
+        <div class="empty" id="empty-state" hidden>
+          <span class="empty-ic"><span class="ic" data-icon="target"></span></span>
+          <h3>Aucun objectif ici</h3>
+          <p>Un objectif, c'est une intention avec un cap. Commence par un seul, et découpe-le en jalons.</p>
+          <button class="btn primary" type="button" id="btn-empty-new"><span class="ic" data-icon="plus"></span>Nouvel objectif</button>
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- Modal -->
-  <div class="modal" id="modal-goal">
-    <div class="modal-content">
-      <div class="modal-title" id="modal-title">Nouvel objectif</div>
-      <div class="form-group">
-        <label>Titre</label>
-        <input type="text" id="input-title" placeholder="Ex: Courir 5km sans m'arrêter" />
+  <!-- Ajout / modification -->
+  <div class="modal-veil" id="modal-goal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <h2 id="modal-title">Nouvel objectif</h2>
+      <p class="t-muted" style="margin:0 0 16px;font-size:.86rem">Un cap clair, une date si tu veux, et des jalons ensuite.</p>
+      <div class="field">
+        <label for="input-title">Titre</label>
+        <input class="input" type="text" id="input-title" placeholder="Ex : courir 5 km sans m'arrêter" />
       </div>
-      <div class="form-group">
-        <label>Description (optionnel)</label>
-        <textarea id="input-desc" placeholder="Détails, motivation, contexte…"></textarea>
+      <div class="field">
+        <label for="input-desc">Description (facultatif)</label>
+        <textarea class="textarea" id="input-desc" placeholder="Détails, motivation, contexte" style="min-height:76px"></textarea>
       </div>
-      <div class="form-group">
-        <label>Domaine</label>
-        <select id="input-domain">
-          <option value="body">🏃 Corps</option>
-          <option value="heart">❤️ Cœur</option>
-          <option value="etre">✨ Être</option>
-          <option value="order">📋 Ordre</option>
+      <div class="field">
+        <label for="input-domain">Domaine</label>
+        <select class="select" id="input-domain">
+          <option value="body">Corps</option>
+          <option value="heart">Cœur</option>
+          <option value="etre">Être</option>
+          <option value="order">Ordre</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Date cible (optionnel)</label>
-        <input type="date" id="input-deadline" />
+      <div class="field">
+        <label for="input-deadline">Date cible (facultatif)</label>
+        <input class="input" type="date" id="input-deadline" />
       </div>
       <div class="modal-actions">
-        <button class="btn" id="btn-cancel-modal">Annuler</button>
-        <button class="btn primary" id="btn-save-goal">Sauvegarder</button>
+        <button class="btn quiet" type="button" id="btn-cancel-modal">Annuler</button>
+        <button class="btn primary" type="button" id="btn-save-goal">Enregistrer</button>
       </div>
     </div>
   </div>

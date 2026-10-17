@@ -1,33 +1,22 @@
 // /humeur/ - tracker quotidien d'humeur + heatmap + stats.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
 import { auth, db } from '/js/firebase.js';
+import { serieAvecPardon } from '/js/growth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initUserMenu } from '/js/userMenu.js';
 import { showXpFloat } from '/js/xp.js';
-import { setContext } from '/js/common.js';
+import { setContext, toast, escapeHtml } from '/js/common.js';
 
-window.addEventListener('DOMContentLoaded', () => {
-});
-
-window.CYF_NAV_LINKS = [
-  { href: '/journal/',   label: '📔 Journal' },
-  { href: '/habitudes/', label: '⚡ Habitudes' },
-  { href: '/humeur/',    label: '🌡️ Humeur' },
-  { href: '/bilan/',     label: '📊 Bilan Hebdo' },
-];
 try { initUserMenu(); } catch(e) {}
 
-const MOOD_COLORS = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#44bd48' };
+// L'echelle d'humeur (--m1..--m5) et les domaines sont des tokens poses par
+// la page : le theme clair les suit, et l'annee en pixels partage la meme.
+const MOOD_COLORS = { 1:'var(--m1)', 2:'var(--m2)', 3:'var(--m3)', 4:'var(--m4)', 5:'var(--m5)' };
 const MOOD_EMOJIS = { 1:'😞', 2:'😟', 3:'😐', 4:'🙂', 5:'😄' };
 const MOOD_LABELS = { 1:'Difficile', 2:'Bas', 3:'Neutre', 4:'Bien', 5:'Excellent' };
-const DOMAIN_COLORS = { corps:'#44bd48', coeur:'#f87171', etre:'#bdafd6', ordre:'#fbbf24' };
+const DOMAIN_COLORS = { corps:'var(--corps)', coeur:'var(--coeur)', etre:'var(--etre)', ordre:'var(--ordre)' };
 const DOMAIN_LABELS = { corps:'Corps', coeur:'Cœur', etre:'Être', ordre:'Ordre' };
-
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c =>
-    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-}
 
 let currentUser;
 let selectedMood = null;
@@ -54,8 +43,7 @@ onAuthStateChanged(auth, async (user) => {
 function selectMood(level, el) {
   if (todayAlreadyLogged) return;
   selectedMood = level;
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
+  markPressed('.mood-btn', el);
   const color = MOOD_COLORS[level];
   document.getElementById('today-mood-card').style.setProperty('--mood-accent', color);
   document.getElementById('save-mood-btn').disabled = false;
@@ -64,8 +52,16 @@ function selectMood(level, el) {
 function selectDomain(domain, el) {
   if (todayAlreadyLogged) return;
   selectedDomain = selectedDomain === domain ? null : domain;
-  document.querySelectorAll('.domain-pill').forEach(p => p.classList.remove('selected'));
-  if (selectedDomain) el.classList.add('selected');
+  markPressed('.domain-pill', selectedDomain ? el : null);
+}
+
+// Un choix est un bouton presse : aria-pressed porte l'etat, le style suit.
+function markPressed(selector, active) {
+  document.querySelectorAll(selector).forEach(b => {
+    const on = b === active;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
 }
 
 // ── Load entries from Firestore ──
@@ -115,23 +111,17 @@ function todayDateStr() {
 }
 
 function showAlreadyLogged(entry) {
-  document.getElementById('mood-question').textContent = `Déjà enregistré aujourd'hui - ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
-  document.getElementById('mood-row').style.opacity = '0.4';
-  document.getElementById('mood-row').style.pointerEvents = 'none';
+  document.getElementById('mood-question').textContent = `Aujourd'hui : ${MOOD_EMOJIS[entry.mood]} ${MOOD_LABELS[entry.mood]}`;
+  document.getElementById('mood-row').setAttribute('aria-disabled', 'true');
   document.getElementById('mood-note').value = entry.note || '';
   document.getElementById('mood-note').disabled = true;
-  document.getElementById('domain-row').style.opacity = '0.4';
-  document.getElementById('domain-row').style.pointerEvents = 'none';
+  document.getElementById('domain-row').setAttribute('aria-disabled', 'true');
   document.getElementById('save-mood-btn').disabled = true;
-  document.getElementById('save-mood-btn').textContent = '✓ Humeur enregistrée';
+  document.getElementById('save-mood-btn').textContent = 'Humeur enregistrée';
   document.getElementById('today-mood-card').style.setProperty('--mood-accent', MOOD_COLORS[entry.mood]);
   // Pre-select the mood btn visually
-  const btn = document.querySelector(`.mood-btn[data-mood="${entry.mood}"]`);
-  if (btn) btn.classList.add('selected');
-  if (entry.domain) {
-    const dp = document.querySelector(`.domain-pill[data-domain="${entry.domain}"]`);
-    if (dp) dp.classList.add('selected');
-  }
+  markPressed('.mood-btn', document.querySelector(`.mood-btn[data-mood="${entry.mood}"]`));
+  markPressed('.domain-pill', entry.domain ? document.querySelector(`.domain-pill[data-domain="${entry.domain}"]`) : null);
 }
 
 // ── Save mood ──
@@ -164,12 +154,12 @@ async function saveMood() {
     renderEntries();
     computeStats();
     showXpFloat(5, document.getElementById('save-mood-btn'));
-    showToast('+5 XP · Humeur enregistrée !', 'xp');
+    toast('+5 XP. Humeur enregistrée.', { type: 'success' });
   } catch(err) {
     console.error(err);
     btn.disabled = false;
     btn.textContent = 'Enregistrer mon humeur';
-    showToast('Erreur, réessaie.', '');
+    toast('Impossible d\'enregistrer. Réessaie.', { type: 'error' });
   }
 }
 
@@ -242,7 +232,7 @@ function renderEntries() {
     .slice(0, 10);
 
   if (!sorted.length) {
-    list.innerHTML = '<div class="empty-entries">Aucune entrée encore - commence dès aujourd\'hui !</div>';
+    list.innerHTML = '<div class="empty"><h3>Aucune entrée pour l\'instant</h3><p>Note ton humeur ci-dessus : l\'historique commence avec aujourd\'hui.</p></div>';
     return;
   }
 
@@ -251,15 +241,15 @@ function renderEntries() {
     const [y,m,d] = dateStr.split('-');
     const dateLabel = formatDate(new Date(+y, +m-1, +d));
     const domLabel = e.domain ? DOMAIN_LABELS[e.domain] : '';
-    const domStyle = e.domain ? `color:${DOMAIN_COLORS[e.domain]};background:color-mix(in srgb,${DOMAIN_COLORS[e.domain]} 12%,transparent);border-color:color-mix(in srgb,${DOMAIN_COLORS[e.domain]} 30%,transparent)` : '';
+    const domStyle = e.domain ? `--dpcolor:${DOMAIN_COLORS[e.domain]}` : '';
     return `
       <div class="entry-row" style="--entry-mood-color:${color}">
-        <span class="entry-emoji">${MOOD_EMOJIS[e.mood]}</span>
+        <span class="entry-emoji" aria-hidden="true">${MOOD_EMOJIS[e.mood]}</span>
         <div class="entry-meta">
           <div class="entry-date">${dateLabel} · ${MOOD_LABELS[e.mood]}</div>
-          <div class="entry-note">${e.note ? escapeHtml(e.note) : '<em style="opacity:.5">Sans note</em>'}</div>
+          <div class="entry-note">${e.note ? escapeHtml(e.note) : '<em>Sans note</em>'}</div>
         </div>
-        ${domLabel ? `<span class="entry-domain" style="${domStyle}">${domLabel}</span>` : ''}
+        ${domLabel ? `<span class="chip entry-domain" style="${domStyle}">${domLabel}</span>` : ''}
       </div>`;
   }).join('');
 }
@@ -276,14 +266,9 @@ function formatDate(d) {
 function computeStats() {
   const keys = Object.keys(allEntries).sort().reverse();
 
-  // Streak
-  let streak = 0;
+  // Série avec pardon (growth.js) : un jour manqué par semaine ne casse rien.
   const today = new Date();
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today); d.setDate(d.getDate()-i);
-    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if (allEntries[ds]) { streak++; } else { break; }
-  }
+  const streak = serieAvecPardon((k) => !!allEntries[k]).jours;
   document.getElementById('stat-streak').textContent = streak;
   document.getElementById('streak-count').textContent = streak;
   if (streak > 0) document.getElementById('streak-badge').style.display = 'inline-flex';
@@ -295,25 +280,17 @@ function computeStats() {
     const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     if (allEntries[ds]) last7.push(allEntries[ds].mood);
   }
-  const avg = last7.length ? (last7.reduce((a,b)=>a+b,0)/last7.length).toFixed(1) : '-';
-  document.getElementById('stat-avg').textContent = avg;
-  if (avg !== '-') {
-    const avgNum = parseFloat(avg);
-    const avgColor = avgNum >= 4 ? '#22c55e' : avgNum >= 3 ? '#eab308' : '#f87171';
-    document.getElementById('stat-avg').style.color = avgColor;
-  }
+  // Sans donnee, la moyenne se tait : le bloc entier disparait.
+  const avgBlock = document.getElementById('stat-avg-block');
+  if (last7.length) {
+    const avgNum = last7.reduce((a,b)=>a+b,0)/last7.length;
+    document.getElementById('stat-avg').textContent = avgNum.toFixed(1);
+    document.getElementById('stat-avg').style.color = MOOD_COLORS[Math.max(1, Math.min(5, Math.round(avgNum)))];
+    if (avgBlock) avgBlock.hidden = false;
+  } else if (avgBlock) { avgBlock.hidden = true; }
 
   // Total
   document.getElementById('stat-total').textContent = keys.length;
-}
-
-// ── Toast ──
-function showToast(msg, cls) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast${cls?' '+cls:''}`;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 // ── Event listeners (remplacent les onclick inline pour CSP stricte) ──

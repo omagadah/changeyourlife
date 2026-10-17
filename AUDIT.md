@@ -1,10 +1,28 @@
 # AUDIT - changeyourlife.ai
 
-> Dernier passage : **2026-08-26** · SW **v201** · branche `main`
+> Dernier passage : **2026-10-18** · SW **v219** · branche `main`
+> (passe sécurité et conformité du 2026-10-18, voir la section ajoutée en tête ;
+> le reste du document est l'état du 2026-08-26)
 > Méthode : reprise du rapport du 2026-08-16, vérification de chacun de ses
 > restants contre le code actuel (27 commits entre les deux), puis nouveau
 > scan : sécurité front/API, npm, CSP, Firebase, PWA, cohérence des références
 > (37 pages × src/href, 70 modules × imports ESM), a11y, code mort.
+
+## Passe du 2026-10-18 - sécurité et conformité
+
+Revue complète (api, règles Firestore, Cloud Functions, vercel.json, front, RGPD,
+dépendances, 60 commits d'historique). Rapport détaillé et correctifs dans
+[docs/sessions/2026-10-18.md](docs/sessions/2026-10-18.md), section 7.
+
+| | Trouvés | Corrigés | Restants |
+|---|---|---|---|
+| Critique | 1 (XSS stockée via /api/translate) | 1 | 0 |
+| Important | 10 | 8 | 2 (deps de `functions/`, actions owner : CRON_SECRET, ALERT_EMAIL, boîte RGPD, ROOT_ADMIN_UID) |
+| Mineur | 12 | 10 | 2 (rate-limits non atomiques, vendors Chart.js / Sortable) |
+
+Conforme et vérifié : auth par ID token sur tous les endpoints, OTP, contexte
+de page borné, CSP sans CDN, aucun secret dans le code ni l'historique, aucun
+`eval`, contenu utilisateur échappé, précache SW complet, en-têtes HTTP.
 
 ## Résumé
 

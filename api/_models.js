@@ -33,7 +33,7 @@
 // couterait un aller-retour pour rien. Il est donc garde en memoire de
 // l instance, comme l etait deja le « modele qui a marche ».
 const TTL_MS = 30 * 60 * 1000;
-const cache = { groq: { at: 0, list: null }, gemini: { at: 0, list: null } };
+const cache = { groq: { at: 0, list: null }, gemini: { at: 0, list: null }, anthropic: { at: 0, list: null } };
 
 /** fetch avec plafond de temps : sans lui, un fournisseur qui ne repond pas
  *  bloque la fonction jusqu au timeout de la plateforme (300 s constatees). */
@@ -184,11 +184,57 @@ async function candidats(provider, apiKey, opts = {}) {
   return out.slice(0, max);
 }
 
+// ── Anthropic (CYL) ─────────────────────────────────────────────────────────
+// Meme principe que Groq et Gemini : chat.js et cyl-brief.js portaient tous
+// deux un nom de modele code en dur (claude-haiku-4-5-20251001), c est a dire
+// exactement le defaut qui a tue la traduction deux fois. L annuaire
+// GET /v1/models dit ce qui est servi ; on choisit dedans.
+//
+// Famille : ANTHROPIC_FAMILY (defaut « haiku » : le chat de CYL est court,
+// frequent, et tourne sur un plan Hobby - le cout par appel prime). Un modele
+// epingle par ANTHROPIC_MODEL passe toujours devant, sans redeployer.
+const REPLI_ANTHROPIC = ['claude-haiku-5-5', 'claude-haiku-4-5'];
+
+async function listAnthropic(apiKey, budgetMs) {
+  const now = Date.now();
+  if (cache.anthropic.list && now - cache.anthropic.at < TTL_MS) return cache.anthropic.list;
+  const r = await fetchWithTimeout('https://api.anthropic.com/v1/models?limit=100', {
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+  }, budgetMs);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const data = await r.json();
+  const list = (data.data || [])
+    .filter((m) => m && typeof m.id === 'string' && /^claude-/.test(m.id))
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+    .map((m) => m.id);
+  if (!list.length) throw new Error('annuaire vide');
+  cache.anthropic = { at: now, list };
+  return list;
+}
+
+/**
+ * Le modele Anthropic a utiliser, choisi dans l annuaire.
+ * @param {string} apiKey
+ * @param {{ budgetMs?: number, famille?: string }} [opts]
+ */
+async function modeleAnthropic(apiKey, opts = {}) {
+  const epingle = (process.env.ANTHROPIC_MODEL || '').trim();
+  if (epingle) return epingle;
+  const famille = String(opts.famille || process.env.ANTHROPIC_FAMILY || 'haiku').toLowerCase();
+  let liste = [];
+  try { liste = await listAnthropic(apiKey, opts.budgetMs || 4000); }
+  catch (e) { console.error('[models] annuaire anthropic injoignable :', e?.message || e); }
+  // Le plus recent de la famille demandee ; sinon le plus recent de tous ;
+  // sinon le repli code en dur (annuaire injoignable).
+  const deFamille = liste.filter((id) => id.includes('-' + famille + '-') || id.endsWith('-' + famille));
+  return deFamille[0] || liste[0] || REPLI_ANTHROPIC[0];
+}
+
 /** Oublie les annuaires memorises. Utile si un modele meurt en cours de vie
  *  d instance : on reinterroge au lieu de s acharner sur une liste perimee. */
 function invalider(provider) {
   if (provider) cache[provider] = { at: 0, list: null };
-  else { cache.groq = { at: 0, list: null }; cache.gemini = { at: 0, list: null }; }
+  else { cache.groq = { at: 0, list: null }; cache.gemini = { at: 0, list: null }; cache.anthropic = { at: 0, list: null }; }
 }
 
-module.exports = { candidats, invalider, fetchWithTimeout };
+module.exports = { candidats, invalider, fetchWithTimeout, modeleAnthropic, listAnthropic };

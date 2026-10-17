@@ -228,7 +228,7 @@ export function normalizeVantaAndHeader() {
 
 // ── Helpers partagés : escapeHtml · toast · saveWithFeedback · offline ───────
 // Source unique de vérité (avant : ~17 toasts + ~10 escapeHtml recopiés dans
-// chaque page — surface XSS et écritures Firestore perdues en silence).
+// chaque page - surface XSS et écritures Firestore perdues en silence).
 // Import : `import { escapeHtml, toast, saveWithFeedback } from '/js/common.js';`
 // Ou via le namespace global (scripts non-module) : `window.cyl.toast(...)`.
 
@@ -354,7 +354,7 @@ export function toast(message, opts = {}) {
 export async function saveWithFeedback(run, opts = {}) {
   const {
     successMsg = null,
-    errorMsg = "Impossible d'enregistrer. Vérifie ta connexion — ton texte est conservé.",
+    errorMsg = "Impossible d'enregistrer. Vérifie ta connexion - ton texte est conservé.",
     retry = true,
   } = opts;
   try {
@@ -380,7 +380,7 @@ if (typeof window !== 'undefined') {
       if (banner) return;
       banner = document.createElement('div');
       banner.id = 'cyl-offline-banner';
-      banner.textContent = 'Tu es hors ligne — tes changements ne seront enregistrés qu’au retour de la connexion.';
+      banner.textContent = 'Tu es hors ligne - tes changements ne seront enregistrés qu’au retour de la connexion.';
       banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:29000;padding:9px 16px;'
         + 'text-align:center;font-size:.88rem;color:#1a1206;background:#e7b15c;'
         + 'box-shadow:0 2px 12px rgba(0,0,0,.25);';
@@ -452,6 +452,14 @@ if (typeof window !== 'undefined') {
   // .app-container n'existe pas encore et l'espace serait pris pour la vitrine.
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
+})();
+// ── Icones declaratives : <span class="ic" data-icon="calendar"></span> (cf. icons.js)
+(function () {
+  const go = function () {
+    import('/js/icons.js').then(function (m) { m.hydrateIcons(document); }).catch(function () {});
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go, { once: true });
+  else go();
 })();
 // ── Service worker : enregistrement global ───────────────────────────────────
 // RÉINTRODUIT (audit 2026-08-26). La refonte du fond animé (4af1833) a réécrit

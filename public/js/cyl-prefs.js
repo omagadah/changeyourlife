@@ -262,6 +262,8 @@ function injecterCSS() {
   s.id = 'cyl-prefs-css';
   s.textContent = `
   .cyp { display:flex; flex-direction:column; gap:18px; }
+  .cyp-mem { display:block; padding:9px 12px; border-radius:10px; border:1px dashed var(--line-strong, rgba(221,205,160,.22)); color:var(--text-2, #b4ad94); font-size:.8rem; font-weight:600; text-decoration:none; }
+  .cyp-mem:hover { color:var(--text-1, #f4efe1); border-color:rgba(132,194,94,.4); }
   .cyp-g { display:flex; flex-direction:column; gap:10px; }
   .cyp-gt { font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
     color:var(--text-3,#86806a); }
@@ -323,6 +325,14 @@ export function rendre(hote, api) {
   const p = lire();
   hote.classList.add('cyp');
   hote.replaceChildren();
+
+  // La transparence d'abord : ce que CYL recoit, d'ou ca vient, et comment
+  // l'effacer, sur une page a part (cf. /cyl/).
+  const lien = document.createElement('a');
+  lien.className = 'cyp-mem';
+  lien.href = '/cyl/';
+  lien.textContent = 'Ce que CYL sait de moi';
+  hote.appendChild(lien);
 
   for (const g of GROUPES) {
     const gEl = document.createElement('div');

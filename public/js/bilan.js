@@ -4,17 +4,11 @@ import { auth, db } from '/js/firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { initUserMenu } from '/js/userMenu.js';
-import { setContext } from '/js/common.js';
+import { setContext, toast } from '/js/common.js';
+import { icon } from '/js/icons.js';
+import { xpParBranche, palierDe } from '/js/growth.js';
+import { BRANCHES } from '/js/organizer-data.js';
 
-window.addEventListener('DOMContentLoaded', () => {
-});
-
-window.CYF_NAV_LINKS = [
-  { href: '/journal/',   label: '📔 Journal' },
-  { href: '/habitudes/', label: '⚡ Habitudes' },
-  { href: '/humeur/',    label: '🌡️ Humeur' },
-  { href: '/bilan/',     label: '📊 Bilan Hebdo' },
-];
 try { initUserMenu(); } catch(e) {}
 
 let currentUser;
@@ -84,7 +78,7 @@ async function renderWeek() {
 
   // Week range label
   document.getElementById('week-range').textContent =
-    `${formatDate(monday, true)} → ${formatDate(sunday, true)}`;
+    `${formatDate(monday, true)} au ${formatDate(sunday, true)}`;
 
   // Load bilan if exists
   weekBilanData = null;
@@ -99,7 +93,7 @@ async function renderWeek() {
     if (el) el.value = weekBilanData?.[k] || '';
   });
   const saveBtn = document.getElementById('save-btn');
-  if (weekBilanData) saveBtn.textContent = 'Mettre à jour mon bilan';
+  saveBtn.textContent = weekBilanData ? 'Mettre à jour mon bilan' : 'Enregistrer mon bilan';
 
   // Render activity from user data
   renderActivityGrid(monday);
@@ -193,18 +187,15 @@ async function renderStats(monday, sunday) {
   document.getElementById('stat-habits').textContent = habitsDoneCount;
 
   // XP by domain (current totals, just show them in bars)
-  const xpCorps = userData.xp_body || 0;
-  const xpCoeur = userData.xp_heart || 0;
-  const xpEtre  = userData.xp_etre || 0;
-  const xpOrdre = userData.xp_order || 0;
-  const maxXp = Math.max(xpCorps, xpCoeur, xpEtre, xpOrdre, 1);
+  renderBranches(userData);
 
-  setTimeout(() => {
-    setBar('xp-bar-corps', 'xp-val-corps', xpCorps, maxXp);
-    setBar('xp-bar-coeur', 'xp-val-coeur', xpCoeur, maxXp);
-    setBar('xp-bar-etre', 'xp-val-etre', xpEtre, maxXp);
-    setBar('xp-bar-ordre', 'xp-val-ordre', xpOrdre, maxXp);
-  }, 100);
+  // Relire la semaine avec CYL : prefill, jamais envoye tout seul.
+  const btnCyl = document.getElementById('btn-cyl-semaine');
+  if (btnCyl) btnCyl.onclick = () => {
+    const texte = `Peux-tu relire ma semaine avec moi ? Cette semaine : ${journalCount} entrée${journalCount > 1 ? 's' : ''} de journal, ${medCount} séance${medCount > 1 ? 's' : ''} de méditation, ${habitsDoneCount} habitude${habitsDoneCount > 1 ? 's' : ''} cochée${habitsDoneCount > 1 ? 's' : ''}, ${moodEntries.length} humeur${moodEntries.length > 1 ? 's' : ''} notée${moodEntries.length > 1 ? 's' : ''}. Qu'est-ce que tu remarques ?`;
+    try { document.dispatchEvent(new CustomEvent('cyl:chat-open', { detail: { prefill: texte } })); } catch (_) {}
+    if (window.cylChat && window.cylChat.open) { try { window.cylChat.open(); } catch (_) {} }
+  };
 
   // Highlights
   buildHighlights(journalCount, medCount, habitsDoneCount, moodEntries, habits.length);
@@ -229,13 +220,13 @@ function setBar(barId, valId, val, max) {
 
 function buildHighlights(journal, med, habits, moods, totalHabits) {
   const list = [];
-  if (journal > 0) list.push({ icon:'📔', text:`${journal} entrée${journal>1?'s':''} de journal écrite${journal>1?'s':''}`, val:journal, color:'#bdafd6' });
-  if (med > 0) list.push({ icon:'🧘', text:`${med} séance${med>1?'s':''} de méditation`, val:med, color:'#44bd48' });
-  if (habits > 0) list.push({ icon:'✅', text:`${habits} habitude${habits>1?'s':''} complétée${habits>1?'s':''}`, val:`${habits}${totalHabits ? '/'+totalHabits : ''}`, color:'#22c55e' });
+  // Les couleurs sont des tokens, les icones viennent de icons.js.
+  if (journal > 0) list.push({ icon:'book', text:`${journal} entrée${journal>1?'s':''} de journal écrite${journal>1?'s':''}`, val:journal, color:'var(--etre)' });
+  if (med > 0) list.push({ icon:'leaf', text:`${med} séance${med>1?'s':''} de méditation`, val:med, color:'var(--corps)' });
+  if (habits > 0) list.push({ icon:'checks', text:`${habits} habitude${habits>1?'s':''} tenue${habits>1?'s':''}`, val:`${habits}${totalHabits ? '/'+totalHabits : ''}`, color:'var(--leaf)' });
   if (moods.length > 0) {
     const avg = (moods.reduce((a,b) => a + b.mood, 0) / moods.length).toFixed(1);
-    const avgEmoji = avg >= 4 ? '😄' : avg >= 3 ? '😐' : '😟';
-    list.push({ icon:avgEmoji, text:`Humeur moyenne : ${avg}/5`, val:moods.length + ' jours', color:'#f87171' });
+    list.push({ icon:'smile', text:`Humeur moyenne : ${avg}/5`, val:moods.length + ' jour' + (moods.length > 1 ? 's' : ''), color:'var(--coeur)' });
   }
 
   const section = document.getElementById('highlights-section');
@@ -245,7 +236,7 @@ function buildHighlights(journal, med, habits, moods, totalHabits) {
   section.style.display = 'block';
   listEl.innerHTML = list.map(h => `
     <div class="highlight-item" style="--hl-color:${h.color}">
-      <span class="highlight-icon">${h.icon}</span>
+      <span class="highlight-icon" aria-hidden="true">${icon(h.icon)}</span>
       <span class="highlight-text">${h.text}</span>
       <span class="highlight-val">${h.val}</span>
     </div>
@@ -276,24 +267,37 @@ async function saveBilan() {
     weekBilanData = data;
     // XP via Cloud Function addXp → branche Estime (le rituel de réflexion hebdo)
     if (isNewBilan) { try { await window._cyfFirebase.awardXp('estime', 20); } catch(_) {} }
-    btn.textContent = '✓ Bilan sauvegardé';
-    showToast('Bilan de la semaine enregistré !');
+    btn.textContent = 'Bilan enregistré';
+    toast('Bilan de la semaine enregistré.', { type: 'success' });
     setTimeout(() => { btn.disabled = false; btn.textContent = 'Mettre à jour mon bilan'; }, 2000);
   } catch(e) {
     console.error(e);
     btn.disabled = false;
-    btn.textContent = 'Sauvegarder mon bilan';
-    showToast('Erreur, réessaie.');
+    btn.textContent = 'Enregistrer mon bilan';
+    toast('Impossible d\'enregistrer. Réessaie.', { type: 'error' });
   }
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show';
-  setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 // ── Event listener save-btn (remplace onclick inline pour CSP stricte) ──
 const saveBtnEl = document.getElementById('save-btn');
 if (saveBtnEl) saveBtnEl.addEventListener('click', () => saveBilan());
+
+
+// ── Les 8 branches (growth.js), a la place des 4 domaines herites ──────────
+function renderBranches(userData) {
+  const host = document.getElementById('xp-domains-card');
+  if (!host) return;
+  const xp = xpParBranche(userData || {});
+  const max = Math.max(1, ...BRANCHES.map((b) => xp[b.key] || 0));
+  host.innerHTML = BRANCHES.map((b) => {
+    const v = xp[b.key] || 0;
+    const p = palierDe(v);
+    return `<div class="xp-br" style="--bc:${b.color}">
+      <span class="ic">${icon(b.ic, { size: 16 })}</span>
+      <span><b>${b.label}</b><small>${p.nom}</small></span>
+      <em>${v.toLocaleString('fr-FR')} XP</em>
+      <i><span data-w="${Math.round((v / max) * 100)}"></span></i>
+    </div>`;
+  }).join('');
+  setTimeout(() => host.querySelectorAll('[data-w]').forEach((el) => { el.style.width = el.dataset.w + '%'; }), 120);
+}

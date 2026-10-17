@@ -1,287 +1,218 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta charset="UTF-8">
+  <script src="/js/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ORGANIZER - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="ORGANIZER : déverse toutes tes idées, trie-les par priorité (matrice d'Eisenhower), planifie, et vois-toi accomplir - chaque fiche terminée fait grandir ton arbre." />
-  <link rel="stylesheet" href="/css/main.min.css" />
+  <meta name="description" content="ORGANIZER : déverse toutes tes idées, trie-les par priorité (matrice d'Eisenhower), planifie, et vois-toi accomplir - chaque fiche terminée fait grandir ton arbre.">
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="robots" content="noindex" />
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <link rel="stylesheet" href="/css/transitions.css"/>
   <style>
-    body { color:var(--text-1,#f1efec); }
-    .page-shell { position:fixed; inset:20px; background:var(--glass-bg); backdrop-filter:blur(15px); border-radius:20px; border:1px solid var(--glass-border); padding:18px 18px 10px; display:grid; grid-template-rows:auto 1fr; gap:14px; overflow:hidden; }
-    .org-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .org-head h1 { font-size:1.45rem; letter-spacing:-.4px; }
-    .org-sub { font-size:0.84rem; color:var(--text-2,#c5c0b4); margin-top:3px; max-width:46rem; }
-    .org-addcol { padding:9px 16px; border-radius:99px; border:1px dashed rgba(255,255,255,0.25); background:rgba(255,255,255,0.04); color:var(--text-2,#c5c0b4); font-weight:700; font-size:0.84rem; cursor:pointer; font-family:inherit; white-space:nowrap; }
-    .org-addcol:hover { background:rgba(255,255,255,0.09); color:#fff; }
-    .org-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .org-lock { display:inline-flex; align-items:center; gap:6px; padding:9px 14px; border-radius:99px;
-      border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.04); color:var(--text-2,#c5c0b4);
-      font-weight:700; font-size:0.82rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .18s; }
-    .org-lock .org-lock-ic { font-size:0.95rem; line-height:1; }
-    .org-lock:hover { background:rgba(255,255,255,0.09); color:#fff; }
-    .org-lock.locked { background:rgba(245,158,11,0.16); border-color:rgba(245,158,11,0.5); color:#fcd34d; }
-    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; box-shadow:0 8px 28px rgba(0,0,0,.35); }
-    .toast.show { transform:translate(-50%,0); } .toast.xp { background:linear-gradient(135deg,#e7b15c,#c3944f); color:#2a1e08; }
-
-    /* ── Board ── */
-    .org-wrap { display:flex; gap:0; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:stretch; }
-    .org-board { display:flex; gap:14px; align-items:stretch; height:100%; }
-    .org-sep { flex:0 0 1px; align-self:stretch; margin:6px 14px; width:2px; border-radius:2px;
-      background:linear-gradient(180deg,transparent,rgba(255,255,255,0.18),transparent); }
-    .org-col { flex:0 0 290px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
-      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); }
-    /* Colonne « Idées à trier » : figée à gauche, mise en avant */
-    .org-tri { flex:0 0 296px; display:flex; flex-direction:column; max-height:100%; border-radius:16px;
-      background:linear-gradient(180deg,rgba(180,173,148,0.12),rgba(180,173,148,0.04)); border:1px solid rgba(180,173,148,0.30);
-      box-shadow:0 0 0 1px rgba(180,173,148,0.08) inset; }
-    /* ── Le geste de déplacement ───────────────────────────────────────────
-       Mêmes repères que le mini-organizer de l'accueil, pour que le geste
-       s'apprenne une seule fois. Les teintes passent du navy #a7d585 (reste
-       de l'ancienne charte) au vert feuille du design system. */
-
-    /* La colonne visée s'allume, et elle seule. Cette classe était définie ici
-       depuis le début mais n'était JAMAIS posée par le JS : elle est désormais
-       gérée par markOrgTarget() dans organizer.js. */
-    .org-col.drag-over, .org-tri.drag-over {
-      border-color:rgba(132,194,94,0.6); background:rgba(132,194,94,0.07);
-      box-shadow:0 0 0 1px rgba(132,194,94,0.22) inset, 0 10px 30px -14px rgba(132,194,94,0.55); }
-
-    /* L'ENCOCHE : l'emplacement exact où la fiche va tomber. Un creux en
-       pointillés, contenu masqué - et non une copie pâle de la fiche, qu'on
-       lisait comme un doublon plutôt que comme une destination.
-
-       NEUTRE POUR LA MISE EN PAGE : organizer.js pose un `border-left:3px` EN
-       INLINE sur chaque fiche (la couleur de sa branche). Un `border` en
-       raccourci avec !important le ramenait à 1px, donc la fiche rétrécissait
-       de 2px à chaque repositionnement de l'encoche, juste sous le curseur -
-       et un décalage de mise en page pendant un dragover fait décrocher le
-       glisser natif. Le bord gauche garde donc ses 3px. */
-    .org-slot { opacity:1 !important; background:rgba(132,194,94,0.09) !important;
-      border:1px dashed rgba(132,194,94,0.75) !important;
-      border-left:3px dashed rgba(132,194,94,0.75) !important; box-shadow:none !important; }
-    .org-slot > * { visibility:hidden; }
-
-    /* La fiche pendant qu'on la tire. En glisser natif, cette classe n'est
-       posée que le temps du CLICHÉ pris par le navigateur : un fond opaque et
-       une bordure franche s'y rendent bien, une grosse ombre y est rognée et un
-       transform y fausserait le point de saisie. */
-    .org-drag { cursor:grabbing; opacity:1 !important;
-      background:#26301f !important; border-color:rgba(132,194,94,0.85) !important; }
-    .org-chosen { cursor:grabbing; }
-    .org-col-ghost { opacity:0.4; }
-
-    /* Pendant le geste : le survol ordinaire s'efface pour que la seule
-       surbrillance visible soit celle de la colonne visée. */
-    body.org-dragging .org-card:hover { box-shadow:none; }
-
-    /* À l'arrivée : la fiche s'illumine une fois. */
-    @keyframes orgLanded {
-      0%   { box-shadow:0 0 0 0 rgba(132,194,94,0.55); }
-      100% { box-shadow:0 0 0 12px rgba(132,194,94,0); }
-    }
-    .org-landed { animation:orgLanded 0.9s cubic-bezier(0.22,0.8,0.3,1) both; }
-    /* Rien a neutraliser sur .org-drag : son deplacement est pilote par
-       SortableJS en inline, pas par une regle CSS. */
-    @media (prefers-reduced-motion: reduce) {
-      .org-landed { animation:none; }
-    }
-    .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
-    .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc,#b0a999); flex-shrink:0; box-shadow:0 0 8px var(--cc,#b0a999); }
-    .org-col-title { flex:1; font-size:0.82rem; font-weight:800; color:#f1efec; line-height:1.25; cursor:text; }
-    .org-col-count { font-size:0.72rem; font-weight:700; color:var(--text-3,#a79f8c); background:rgba(255,255,255,0.06); padding:1px 8px; border-radius:99px; }
-    .org-col-menu { border:none; background:none; color:var(--text-3,#a79f8c); cursor:pointer; font-size:1rem; padding:0 4px; border-radius:6px; }
-    .org-col-menu:hover { color:#fff; background:rgba(255,255,255,0.08); }
-    .org-cards { flex:1; overflow-y:auto; padding:4px 10px; display:flex; flex-direction:column; gap:8px; min-height:24px; }
-    .org-add { margin:8px 10px 12px; padding:9px 12px; border-radius:10px; border:1px dashed rgba(255,255,255,0.15); background:transparent; color:var(--text-3,#a79f8c); font-size:0.82rem; cursor:pointer; text-align:left; font-family:inherit; }
-    .org-add:hover { background:rgba(255,255,255,0.05); color:#e1ded8; }
-    .org-add-input { margin:6px 10px 12px; }
-    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:10px; border:1px solid rgba(132,194,94,0.45); background:rgba(255,255,255,0.06); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; outline:none; }
-    .org-add-row { display:flex; gap:8px; margin-top:6px; }
-    .org-add-row button { padding:7px 14px; border-radius:9px; border:none; cursor:pointer; font-weight:700; font-size:0.8rem; font-family:inherit; }
-    .org-add-ok { background:linear-gradient(135deg,#84c25e,#4a7a3a); color:#08130a; } .org-add-ok:hover{ filter:brightness(1.1); }
-    .org-add-cancel { background:rgba(255,255,255,0.06); color:var(--text-2,#c5c0b4); }
-
-    /* ── Card ── */
-    .org-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:11px 12px; cursor:grab;
-      position:relative; transition:background .15s, transform .12s, box-shadow .15s; }
-    .org-card:hover { background:rgba(255,255,255,0.08); box-shadow:0 6px 18px rgba(0,0,0,0.28); }
-    .org-card:active { cursor:grabbing; }
-    .org-card.dragging { opacity:0.45; }
-    .org-card.done .org-card-title { text-decoration:line-through; opacity:0.7; }
-    .org-card-title { font-size:0.88rem; color:#f3f2f0; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
-    .org-card-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-    .org-badge { display:inline-flex; align-items:center; gap:4px; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:99px; background:rgba(255,255,255,0.07); color:#c3beb2; }
-    .org-badge.due-soon { background:rgba(251,191,36,0.15); color:#fcd34d; }
-    .org-badge.due-late { background:rgba(239,68,68,0.16); color:#fca5a5; }
-    /* L'âge de la fiche : discret par défaut, il ne doit pas voler la vedette
-       au titre. Passé un mois sans bouger, il se colore : c'est précisément
-       l'information qu'on cherchait en ouvrant la colonne « à trier ». */
-    .org-badge.age { background:transparent; color:#847b66; padding-left:0; }
-    .org-badge.age.old { background:rgba(231,177,92,0.13); color:#e7b15c; padding-left:7px; }
-    .org-badge.done-at { background:rgba(74,222,128,0.13); color:#86efac; }
-
-    /* ── Modal ── */
-    .org-modal { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;
-      background:rgba(3,8,18,0.6); backdrop-filter:blur(8px); }
-    .org-modal.hidden { display:none; }
-    .org-card-detail { width:100%; max-width:540px; max-height:90vh; overflow-y:auto; background:rgba(12,22,40,0.98); border:1px solid rgba(255,255,255,0.1);
-      border-radius:18px; padding:22px; box-shadow:0 30px 80px rgba(0,0,0,0.6); }
-    .org-d-title { width:100%; font-size:1.1rem; font-weight:800; color:#f8f7f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-      border-radius:10px; padding:10px 12px; font-family:inherit; resize:vertical; min-height:44px; outline:none; }
-    .org-d-label { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3,#a79f8c); margin:18px 0 8px; }
-    .org-d-input { width:100%; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1efec; font-family:inherit; font-size:0.9rem; padding:9px 11px; outline:none; }
-    .org-d-input:focus { border-color:rgba(132,194,94,0.55); }
-    textarea.org-d-input { resize:vertical; min-height:70px; }
-    /* Rattachement d'une fiche à une branche Maslow (elle nourrit cette part de vie) */
-    .org-d-branches { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-    .org-d-br { display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 4px; border-radius:11px; cursor:pointer;
-      border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#c3beb2; font-family:inherit; font-size:1rem; transition:all .16s; }
-    .org-d-br span { font-size:0.56rem; font-weight:700; text-align:center; line-height:1.1; }
-    .org-d-br:hover { background:rgba(255,255,255,0.08); }
-    .org-d-br.on { border-color:var(--bc); background:color-mix(in srgb, var(--bc) 18%, transparent); color:#fff; }
-    .org-check { display:flex; align-items:center; gap:9px; padding:5px 0; }
-    .org-check input[type=checkbox] { width:17px; height:17px; accent-color:#22c55e; cursor:pointer; flex-shrink:0; }
-    .org-check span { flex:1; font-size:0.88rem; color:#ebe9e5; }
-    .org-check span.done { text-decoration:line-through; color:#a79f8c; }
-    .org-check .del { cursor:pointer; color:#a79f8c; border:none; background:none; font-size:0.8rem; }
-    .org-check .del:hover { color:#f87171; }
-    .org-prog { height:4px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; margin:4px 0 8px; }
-    .org-prog div { height:100%; background:#22c55e; border-radius:4px; transition:width .4s; }
-    .org-logs { display:flex; flex-direction:column; gap:5px; max-height:230px; overflow-y:auto; }
-    .org-log { font-size:0.76rem; color:#b4ad9e; display:flex; gap:8px; }
-    .org-log .t { color:#847b66; white-space:nowrap; flex-shrink:0; }
-    /* Un commentaire se distingue d'une trace système : il est encadré, plus
-       lisible, et supprimable. Le fil reste unique (comme Trello). */
-    .org-log.com { align-items:flex-start; padding:7px 9px; border-radius:9px;
-      background:rgba(255,255,255,0.05); border:1px solid rgba(221,205,160,0.14); color:#e1ded8; }
-    .org-log-txt { flex:1; white-space:pre-wrap; word-break:break-word; }
-    .org-log-del { border:none; background:none; cursor:pointer; color:#847b66;
-      font-size:0.75rem; line-height:1; padding:2px 4px; flex-shrink:0; }
-    .org-log-del:hover { color:#f87171; }
-    .org-comment-new { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
-    .org-comment-new .org-btn { align-self:flex-start; background:rgba(132,194,94,0.16);
-      color:#a8d98a; border:1px solid rgba(132,194,94,0.34); }
-    /* Bandeau de dates sous le titre de la fiche. */
-    .org-d-meta { display:flex; flex-wrap:wrap; align-items:center; gap:7px;
-      font-size:0.73rem; color:#847b66; margin:2px 0 4px; }
-    .org-d-meta b { color:#b4ad9e; font-weight:700; }
-    .org-d-meta i { color:#5c5648; font-style:normal; }
-    .org-d-actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
-    .org-btn { padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:0.85rem; font-family:inherit; }
-    .org-btn.move { background:rgba(255,255,255,0.06); color:#e1ded8; }
-    .org-btn.cal { background:rgba(66,133,244,0.16); color:#badfa3; border:1px solid rgba(66,133,244,0.4); }
-    .org-btn.del { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.3); margin-left:auto; }
-    .org-btn.close { background:linear-gradient(135deg,#84c25e,#4a7a3a); color:#08130a; }
-    .org-d-move { border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1efec; font-family:inherit; font-size:0.85rem; padding:9px 11px; }
-    .org-d-move option { background:#1d1b17; }
-
-    @media (max-width:600px){ .page-shell{ inset:8px; padding:12px 10px 6px; border-radius:16px; } .org-col{ flex-basis:80vw; } }
-
-    /* ── Bascule de vue Board / Canvas ── */
-    .org-viewtoggle { display:inline-flex; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:99px; padding:3px; }
-    .org-viewtoggle button { border:none; background:none; color:var(--text-2,#c5c0b4); font-weight:700; font-size:0.82rem; padding:6px 14px; border-radius:99px; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }
-    .org-viewtoggle button.active { background:linear-gradient(135deg,#84c25e,#4a7a3a); color:#08130a; box-shadow:0 4px 14px rgba(132,194,94,0.35); }
+    /* ORGANIZER : le board et la toile remplissent le cadre, ils ne défilent
+       pas avec la page. Le corps devient donc une colonne flex sans défilement. */
+    .page-body { display:flex; flex-direction:column; overflow:hidden; padding-bottom:4px; }
+    .org-lock.locked { background:rgba(231,177,92,.14); border-color:rgba(231,177,92,.45); color:var(--gold-text); }
 
     /* ── Scène (contient les 2 vues) ── */
-    .org-stage { position:relative; height:100%; min-height:0; overflow:hidden; }
-    .org-wrap.full { height:100%; }
-    .org-wrap[hidden], .org-canvas-wrap[hidden] { display:none; }   /* display:flex écrase [hidden] sinon */
+    .org-stage { position:relative; flex:1; min-height:0; overflow:hidden; }
+    .org-wrap { display:flex; gap:0; overflow-x:auto; overflow-y:hidden; height:100%; padding-bottom:8px; align-items:stretch; }
+    .org-wrap[hidden], .org-canvas-wrap[hidden] { display:none; }
+    .org-board { display:flex; gap:14px; align-items:stretch; height:100%; }
+    .org-sep { flex:0 0 1px; align-self:stretch; margin:6px 14px; width:1px; background:var(--line-strong); }
+    .org-col { flex:0 0 290px; display:flex; flex-direction:column; max-height:100%; border-radius:var(--r-lg);
+      background:var(--surface-1); border:1px solid var(--line); }
+    /* Colonne « Idées à trier » : figée à gauche, mise en avant */
+    .org-tri { flex:0 0 296px; display:flex; flex-direction:column; max-height:100%; border-radius:var(--r-lg);
+      background:var(--surface-2); border:1px solid var(--line-strong); }
 
-    /* ── Vue Canvas (toile infinie, workflow IA) ── */
-    .org-canvas-wrap { position:absolute; inset:0; overflow:hidden; border-radius:14px; cursor:grab; touch-action:none;
-      background-color:rgba(255,255,255,0.012);
-      background-image:radial-gradient(circle, rgba(255,255,255,0.11) 1.3px, transparent 1.3px);
+    /* ── Le geste de déplacement ──
+       La colonne visée s'allume, et elle seule (markOrgTarget dans organizer.js). */
+    .org-col.drag-over, .org-tri.drag-over { border-color:rgba(132,194,94,.6); background:rgba(132,194,94,.07); }
+    /* L'ENCOCHE : l'emplacement exact où la fiche va tomber. Un creux en
+       pointillés, contenu masqué. NEUTRE POUR LA MISE EN PAGE : organizer.js
+       pose un border-left:3px en inline (couleur de branche) ; on le garde. */
+    .org-slot { opacity:1 !important; background:rgba(132,194,94,.09) !important;
+      border:1px dashed rgba(132,194,94,.75) !important;
+      border-left:3px dashed rgba(132,194,94,.75) !important; box-shadow:none !important; }
+    .org-slot > * { visibility:hidden; }
+    /* La fiche pendant qu'on la tire : fond opaque pour le cliché du navigateur. */
+    .org-drag { cursor:grabbing; opacity:1 !important; background:var(--bg-elevated) !important; border-color:rgba(132,194,94,.85) !important; }
+    .org-chosen { cursor:grabbing; }
+    .org-col-ghost { opacity:.4; }
+    body.org-dragging .org-card:hover { background:var(--surface-1); }
+    @keyframes orgLanded { 0% { box-shadow:0 0 0 0 rgba(132,194,94,.55); } 100% { box-shadow:0 0 0 12px rgba(132,194,94,0); } }
+    .org-landed { animation:orgLanded .9s cubic-bezier(.22,.8,.3,1) both; }
+    /* Arrivée depuis le mini-module de l'accueil : la colonne visée se signale. */
+    .org-col-landed { animation:orgLand 1.6s ease-out; }
+    @keyframes orgLand {
+      0%   { box-shadow:0 0 0 2px rgba(231,177,92,.9); }
+      70%  { box-shadow:0 0 0 2px rgba(231,177,92,.55); }
+      100% { box-shadow:none; }
+    }
+
+    .org-col-head { display:flex; align-items:center; gap:8px; padding:13px 14px 10px; }
+    .org-col-dot { width:9px; height:9px; border-radius:50%; background:var(--cc, var(--text-3)); flex-shrink:0; }
+    .org-col-title { flex:1; font-size:.84rem; font-weight:700; color:var(--text-1); line-height:1.25; cursor:text; }
+    .org-col-count { font-size:.72rem; font-weight:700; color:var(--text-3); background:var(--surface-3); padding:1px 8px; border-radius:99px; }
+    .org-col-menu { border:none; background:none; color:var(--text-3); cursor:pointer; font-size:1rem; padding:0 6px; min-height:28px; border-radius:6px; }
+    .org-col-menu:hover { color:var(--text-1); background:var(--surface-3); }
+    .org-cards { flex:1; overflow-y:auto; padding:4px 10px; display:flex; flex-direction:column; gap:8px; min-height:24px; }
+    .org-add { margin:8px 10px 12px; min-height:40px; padding:9px 12px; border-radius:var(--r-sm); border:1px dashed var(--line-strong); background:transparent; color:var(--text-3); font:inherit; font-size:.82rem; cursor:pointer; text-align:left; }
+    .org-add:hover { background:var(--surface-2); color:var(--text-1); }
+    .org-add-input { margin:6px 10px 12px; }
+    .org-add-input textarea { width:100%; resize:vertical; min-height:54px; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:var(--field-bg); color:var(--text-1); font:inherit; font-size:.85rem; padding:9px 11px; }
+    .org-add-input textarea:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
+    .org-add-row { display:flex; gap:8px; margin-top:6px; }
+
+    /* ── Card ── */
+    .org-card { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); padding:11px 12px; cursor:grab;
+      position:relative; transition:background var(--duration), border-color var(--duration); }
+    .org-card:hover { background:var(--surface-3); border-color:var(--line-strong); }
+    .org-card:active { cursor:grabbing; }
+    .org-card.dragging { opacity:.45; }
+    .org-card.done .org-card-title { text-decoration:line-through; opacity:.7; }
+    .org-card-title { font-size:.88rem; color:var(--text-1); line-height:1.4; white-space:pre-wrap; word-break:break-word; }
+    .org-card-badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .org-badge { display:inline-flex; align-items:center; gap:4px; font-size:.7rem; font-weight:600; padding:2px 7px; border-radius:99px; background:var(--surface-3); color:var(--text-2); }
+    .org-badge.due-soon { background:rgba(251,191,36,.15); color:var(--gold-text); }
+    .org-badge.due-late { background:rgba(239,68,68,.16); color:var(--red); }
+    /* L'âge de la fiche : discret, puis coloré passé un mois sans bouger. */
+    .org-badge.age { background:transparent; color:var(--text-3); padding-left:0; }
+    .org-badge.age.old { background:rgba(231,177,92,.13); color:var(--gold-text); padding-left:7px; }
+    .org-badge.done-at { background:rgba(132,194,94,.14); color:var(--leaf-text); }
+
+    /* ── Fiche détaillée (modale) ── */
+    .org-modal { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; background:var(--veil); }
+    .org-modal.hidden { display:none; }
+    .org-card-detail { width:100%; max-width:540px; max-height:90vh; overflow-y:auto; background:var(--sheet-bg); border:1px solid var(--line-strong);
+      border-radius:var(--r-lg); padding:22px; box-shadow:var(--shadow-lg); }
+    .org-d-title { width:100%; font-family:var(--font-display); font-size:1.15rem; font-weight:600; color:var(--text-1); background:var(--field-bg); border:1px solid var(--line-strong);
+      border-radius:var(--r-sm); padding:10px 12px; resize:vertical; min-height:44px; }
+    .org-d-title:focus, .org-d-input:focus, .org-d-move:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
+    .org-d-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--text-3); margin:18px 0 8px; }
+    .org-d-input { width:100%; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:var(--field-bg); color:var(--text-1); font:inherit; font-size:.9rem; padding:9px 11px; }
+    textarea.org-d-input { resize:vertical; min-height:70px; }
+    /* Rattachement d'une fiche à une branche Maslow (elle nourrit cette part de vie) */
+    .org-d-branches { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
+    .org-d-br { display:flex; flex-direction:column; align-items:center; gap:4px; min-height:44px; padding:9px 4px; border-radius:var(--r-sm); cursor:pointer;
+      border:1px solid var(--line); background:var(--surface-1); color:var(--text-2); font:inherit; transition:background var(--duration), border-color var(--duration); }
+    .org-d-br svg { width:18px; height:18px; color:var(--bc, var(--text-2)); }
+    .org-d-br span { font-size:.62rem; font-weight:600; text-align:center; line-height:1.1; }
+    .org-d-br:hover { background:var(--surface-2); }
+    .org-d-br.on, .org-d-br[aria-pressed="true"] { border-color:var(--bc); background:color-mix(in srgb, var(--bc) 18%, transparent); color:var(--text-1); }
+    .org-check { display:flex; align-items:center; gap:9px; padding:5px 0; }
+    .org-check input[type=checkbox] { width:18px; height:18px; accent-color:var(--leaf); cursor:pointer; flex-shrink:0; }
+    .org-check span { flex:1; font-size:.88rem; color:var(--text-1); }
+    .org-check span.done { text-decoration:line-through; color:var(--text-3); }
+    .org-check .del { cursor:pointer; color:var(--text-3); border:none; background:none; min-width:32px; min-height:32px; display:inline-grid; place-items:center; border-radius:6px; }
+    .org-check .del:hover { color:var(--red); background:var(--surface-2); }
+    .org-prog { height:4px; background:var(--surface-3); border-radius:4px; overflow:hidden; margin:4px 0 8px; }
+    .org-prog div { height:100%; background:var(--leaf); border-radius:4px; transition:width .4s; }
+    .org-logs { display:flex; flex-direction:column; gap:5px; max-height:230px; overflow-y:auto; }
+    .org-log { font-size:.78rem; color:var(--text-2); display:flex; gap:8px; }
+    .org-log .t { color:var(--text-3); white-space:nowrap; flex-shrink:0; }
+    /* Un commentaire se distingue d'une trace système : encadré, supprimable. */
+    .org-log.com { align-items:flex-start; padding:7px 9px; border-radius:9px; background:var(--surface-2); border:1px solid var(--line); color:var(--text-1); }
+    .org-log-txt { flex:1; white-space:pre-wrap; word-break:break-word; }
+    .org-log-del { border:none; background:none; cursor:pointer; color:var(--text-3); min-width:28px; min-height:28px; display:inline-grid; place-items:center; border-radius:6px; flex-shrink:0; }
+    .org-log-del:hover { color:var(--red); background:var(--surface-3); }
+    .org-comment-new { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+    .org-comment-new .btn { align-self:flex-start; }
+    /* Bandeau de dates sous le titre de la fiche. */
+    .org-d-meta { display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:.74rem; color:var(--text-3); margin:6px 0 4px; }
+    .org-d-meta b { color:var(--text-2); font-weight:600; }
+    .org-d-meta i { color:var(--text-3); font-style:normal; }
+    .org-d-actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
+    .org-d-actions .del { margin-left:auto; }
+    .org-d-move { width:100%; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:var(--field-bg); color:var(--text-1); font:inherit; font-size:.85rem; padding:9px 11px; }
+
+    /* ── Vue Canvas (toile infinie, workflow) ── */
+    .org-canvas-wrap { position:absolute; inset:0; overflow:hidden; border-radius:var(--r); cursor:grab; touch-action:none;
+      background-color:var(--surface-1);
+      background-image:radial-gradient(circle, var(--line-strong) 1.2px, transparent 1.2px);
       background-size:24px 24px; }
     .org-canvas-wrap.panning { cursor:grabbing; }
     .org-canvas-world { position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
-    .org-node { position:absolute; width:210px; box-sizing:border-box; background:rgba(16,26,46,0.92);
-      border:1px solid rgba(255,255,255,0.10); border-left:3px solid var(--nc,#b0a999); border-radius:13px;
-      padding:11px 13px; cursor:grab; box-shadow:0 8px 24px rgba(0,0,0,0.34); backdrop-filter:blur(4px);
-      transition:box-shadow .15s, border-color .15s; user-select:none; }
-    .org-node:hover { box-shadow:0 12px 30px rgba(0,0,0,0.5), 0 0 0 1px var(--nc,#b0a999); }
-    .org-node.done { opacity:0.68; }
+    .org-node { position:absolute; width:210px; box-sizing:border-box; background:var(--bg-elevated);
+      border:1px solid var(--line); border-left:3px solid var(--nc, var(--text-3)); border-radius:var(--r-sm);
+      padding:11px 13px; cursor:grab; box-shadow:var(--shadow-sm); transition:border-color var(--duration); user-select:none; }
+    .org-node:hover { border-color:var(--nc, var(--line-strong)); }
+    .org-node.done { opacity:.68; }
     .org-node.done .org-node-title { text-decoration:line-through; }
-    .org-node-col { display:inline-flex; align-items:center; gap:5px; font-size:0.63rem; font-weight:800;
-      text-transform:uppercase; letter-spacing:.4px; color:var(--nc,#b0a999); margin-bottom:5px; }
-    .org-node-col i { width:7px; height:7px; border-radius:50%; background:var(--nc,#b0a999); box-shadow:0 0 7px var(--nc,#b0a999); }
-    .org-node-title { font-size:0.86rem; color:#f3f2f0; line-height:1.38; word-break:break-word; }
+    .org-node-col { display:inline-flex; align-items:center; gap:5px; font-size:.64rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.05em; color:var(--nc, var(--text-3)); margin-bottom:5px; }
+    .org-node-col i { width:7px; height:7px; border-radius:50%; background:var(--nc, var(--text-3)); }
+    .org-node-title { font-size:.86rem; color:var(--text-1); line-height:1.38; word-break:break-word; }
     .org-node-badges { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
     .org-canvas-toolbar { position:absolute; top:12px; right:12px; z-index:5; display:flex; gap:8px; }
-    .org-canvas-toolbar button { display:inline-flex; align-items:center; gap:6px; padding:8px 13px; border-radius:99px;
-      border:1px solid rgba(255,255,255,0.16); background:rgba(12,22,40,0.85); color:var(--text-2,#c5c0b4);
-      font-weight:700; font-size:0.8rem; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .15s; backdrop-filter:blur(6px); }
-    .org-canvas-toolbar button:hover { background:rgba(255,255,255,0.1); color:#fff; }
-    .org-canvas-hint { position:absolute; bottom:10px; left:14px; font-size:0.72rem; color:var(--text-3,#a79f8c); pointer-events:none; user-select:none; }
+    .org-canvas-toolbar .btn { background:var(--bg-surface); }
+    .org-canvas-hint { position:absolute; bottom:10px; left:14px; right:14px; font-size:.74rem; color:var(--text-3); pointer-events:none; user-select:none; }
 
-    /* ── Connecteurs (flèches entre fiches, façon workflow IA) ── */
+    /* ── Connecteurs (flèches entre fiches) ── */
     .org-links { position:absolute; left:0; top:0; overflow:visible; pointer-events:none; }
-    .org-link { fill:none; stroke:rgba(159,197,255,0.5); stroke-width:2.4; }
+    .org-link { fill:none; stroke:var(--text-3); stroke-width:2.2; opacity:.7; }
     .org-link-hit { fill:none; stroke:transparent; stroke-width:16; pointer-events:stroke; cursor:pointer; }
-    .org-link-g:hover .org-link { stroke:#b8dea0; }
-    .org-link.temp { stroke:rgba(127,209,255,0.85); stroke-dasharray:6 6; }
+    .org-link-g:hover .org-link { stroke:var(--leaf); opacity:1; }
+    .org-link.temp { stroke:var(--leaf); stroke-dasharray:6 6; }
     .org-node-port { position:absolute; right:-7px; top:50%; transform:translateY(-50%); width:15px; height:15px;
-      border-radius:50%; background:var(--nc,#b0a999); border:2px solid rgba(16,26,46,0.95); cursor:crosshair;
-      opacity:0; transition:opacity .15s; box-shadow:0 0 9px var(--nc,#b0a999); z-index:2; }
+      border-radius:50%; background:var(--nc, var(--text-3)); border:2px solid var(--bg-surface); cursor:crosshair;
+      opacity:0; transition:opacity var(--duration); z-index:2; }
     .org-node:hover .org-node-port, .org-canvas-wrap.linking .org-node-port { opacity:1; }
     .org-canvas-wrap.linking .org-node { cursor:crosshair; }
 
-    /* Arrivee depuis le mini-module de l accueil : la colonne visee se signale
-       une seconde et demie, puis redevient normale. Sans ce reperage, on
-       atterrit sur un board identique a lui-meme et on cherche.  */
-    .org-col-landed { animation: orgLand 1.6s ease-out; }
-    @keyframes orgLand {
-      0%   { box-shadow: 0 0 0 2px rgba(231,177,92,.9), 0 0 26px rgba(231,177,92,.5); }
-      70%  { box-shadow: 0 0 0 2px rgba(231,177,92,.55), 0 0 18px rgba(231,177,92,.25); }
-      100% { box-shadow: none; }
+    @media (max-width:640px) {
+      .org-col, .org-tri { flex-basis:80vw; }
+      .org-d-branches { grid-template-columns:repeat(2, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .org-landed, .org-col-landed { animation:none; }
     }
   </style>
 </head>
 <body>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
-  </nav>
-  <main class="page-shell page-shell-nav">
-    <div class="org-head">
-      <div>
-        <h1>ORGANIZER</h1>
-        <div class="org-sub">Déverse toutes tes idées, trie-les par priorité, planifie - chaque fiche terminée fait grandir ton arbre.</div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="inbox"></span>ORGANIZER</h1>
+        <p class="page-sub">Déverse toutes tes idées, trie-les par priorité, planifie : chaque fiche terminée fait grandir ton arbre.</p>
       </div>
-      <div class="org-actions">
-        <div class="org-viewtoggle" id="org-viewtoggle" role="tablist" aria-label="Vue">
-          <button data-view="board" class="active" role="tab" aria-selected="true">▦ Board</button>
-          <button data-view="canvas" role="tab" aria-selected="false">⬚ Canvas</button>
+      <div class="page-actions">
+        <div class="seg" id="org-viewtoggle" role="tablist" aria-label="Vue">
+          <button type="button" data-view="board" class="active" role="tab" aria-selected="true"><span class="ic" data-icon="grid"></span>Board</button>
+          <button type="button" data-view="canvas" role="tab" aria-selected="false"><span class="ic" data-icon="compass"></span>Canvas</button>
         </div>
-        <button class="org-lock" id="org-lock-cols" title="Verrouiller les colonnes" aria-pressed="false">
-          <span class="org-lock-ic">🔓</span> Colonnes
+        <button type="button" class="btn sm org-lock" id="org-lock-cols" title="Verrouiller les colonnes" aria-pressed="false">
+          <span class="org-lock-ic ic" aria-hidden="true"></span>Colonnes
         </button>
-        <button class="org-lock" id="org-lock-cards" title="Verrouiller les fiches" aria-pressed="false">
-          <span class="org-lock-ic">🔓</span> Fiches
+        <button type="button" class="btn sm org-lock" id="org-lock-cards" title="Verrouiller les fiches" aria-pressed="false">
+          <span class="org-lock-ic ic" aria-hidden="true"></span>Fiches
         </button>
-        <button class="org-addcol" id="org-add-col">+ Colonne</button>
+        <button type="button" class="btn sm" id="org-add-col"><span class="ic" data-icon="plus"></span>Colonne</button>
       </div>
-    </div>
-    <div class="org-stage" id="org-stage">
-      <div class="org-wrap full" id="org-wrap">
-        <div class="org-tri" id="org-tri"></div>
-        <div class="org-sep" aria-hidden="true"></div>
-        <div class="org-board" id="org-board"></div>
-      </div>
-      <div class="org-canvas-wrap" id="org-canvas-wrap" hidden>
-        <div class="org-canvas-toolbar">
-          <button id="org-canvas-reorg" title="Aligner les fiches par colonne">⊹ Réorganiser</button>
-          <button id="org-canvas-fit" title="Recentrer la vue">⤢ Recentrer</button>
+    </header>
+
+    <div class="page-body">
+      <div class="org-stage" id="org-stage">
+        <div class="org-wrap full" id="org-wrap">
+          <div class="org-tri" id="org-tri"></div>
+          <div class="org-sep" aria-hidden="true"></div>
+          <div class="org-board" id="org-board"></div>
         </div>
-        <div class="org-canvas-world" id="org-canvas-world"></div>
-        <div class="org-canvas-hint">Glisse le fond pour te déplacer · molette pour zoomer · glisse une fiche pour la ranger · tire le point d'une fiche pour la relier · clic sur un lien pour l'effacer</div>
+        <div class="org-canvas-wrap" id="org-canvas-wrap" hidden>
+          <div class="org-canvas-toolbar">
+            <button type="button" class="btn sm" id="org-canvas-reorg" title="Aligner les fiches par colonne"><span class="ic" data-icon="sort"></span>Réorganiser</button>
+            <button type="button" class="btn sm" id="org-canvas-fit" title="Recentrer la vue"><span class="ic" data-icon="minimize"></span>Recentrer</button>
+          </div>
+          <div class="org-canvas-world" id="org-canvas-world"></div>
+          <div class="org-canvas-hint">Glisse le fond pour te déplacer · molette pour zoomer · glisse une fiche pour la ranger · tire le point d'une fiche pour la relier · clic sur un lien pour l'effacer</div>
+        </div>
       </div>
     </div>
   </main>

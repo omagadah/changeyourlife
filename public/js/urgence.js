@@ -93,6 +93,7 @@
       '<div class="urg-opt">' +
         '<a class="urg-b call" href="tel:3114"><span class="ic">☎️</span><span>Prévention du suicide<small>National, gratuit, anonyme, 24h/24</small></span><span class="num">3114</span></a>' +
         '<a class="urg-b call" href="tel:15"><span class="ic">🚑</span><span>SAMU - urgence vitale<small>Si tu es en danger immédiat</small></span><span class="num">15</span></a>' +
+        '<a class="urg-ghost" href="/aide/" style="display:block;text-align:center;margin-top:8px">Toutes les ressources, et ce que CYL fait quand ça ne va pas</a>' +
         '<a class="urg-b call" href="tel:112"><span class="ic">🆘</span><span>Urgences (Europe)<small>Depuis n\'importe quel téléphone</small></span><span class="num">112</span></a>' +
         '<a class="urg-b call" href="sms:114"><span class="ic">💬</span><span>Par SMS (sourds / malentendants)<small>Écris au 114</small></span><span class="num">114</span></a>' +
       '</div>' +

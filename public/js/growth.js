@@ -113,6 +113,67 @@ export function derniereActionDe(userData, cle) {
   return (b && Number(b.lastActionAt)) || 0;
 }
 
+// ── L'XP TOTAL : une seule somme pour tout le site ─────────────────────────
+// Avant le 2026-10-17 il existait six calculs differents (barre du jour sur
+// des champs jamais ecrits, barre laterale a zero, profil sur 4 domaines
+// herites, bilan par estimation, arbre par max de deux sources...). L'XP est
+// la somme des 8 branches de `tree.branches`. Si ce schema n'existe pas
+// encore pour un compte (anterieur a la refonte de l'arbre), on remonte
+// l'ancien `levels` via le meme pont que la migration.
+export const LEGACY_TO_BRANCH = {
+  body: 'physio', corps: 'physio',
+  heart: 'appartenance', coeur: 'appartenance',
+  etre: 'cognitif', mind: 'cognitif',
+  order: 'securite', ordre: 'securite',
+};
+export function brancheDeDomaine(domaine) {
+  if (!domaine) return null;
+  const d = String(domaine).toLowerCase();
+  if (LEGACY_TO_BRANCH[d]) return LEGACY_TO_BRANCH[d];
+  return ['physio','securite','appartenance','estime','cognitif','esthetique','accomplissement','transcendance'].includes(d) ? d : null;
+}
+export function xpParBranche(userData) {
+  const out = {};
+  const br = userData && userData.tree && userData.tree.branches;
+  if (br && typeof br === 'object') {
+    for (const k of Object.keys(br)) out[k] = Number((br[k] && br[k].xp) || 0);
+    return out;
+  }
+  const lv = (userData && userData.levels) || {};
+  for (const [old, v] of Object.entries(lv)) {
+    const k = LEGACY_TO_BRANCH[old] || old;
+    out[k] = (out[k] || 0) + Number(typeof v === 'number' ? v : (v && v.xp) || 0);
+  }
+  return out;
+}
+export function xpTotal(userData) {
+  return Object.values(xpParBranche(userData)).reduce((s, x) => s + (Number(x) || 0), 0);
+}
+
+// ── La série, avec pardon ───────────────────────────────────────────────────
+// Une série qui casse au premier jour manqué décourage (c'est la mécanique la
+// plus citée comme manipulatrice dans la veille du 2026-10-17). Ici : un jour
+// manqué par fenêtre de sept jours ne casse rien, et le jour en cours n'est
+// jamais compté comme manqué (il n'est pas fini). Au deuxième trou, on arrête.
+//   estFait(cleJour) -> bool, cleJour au format YYYY-MM-DD.
+// Renvoie { jours, pardon } : pardon = true si un jour manqué a été absorbé.
+export function cleJour(d) {
+  const x = d instanceof Date ? d : new Date(d);
+  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+}
+export function serieAvecPardon(estFait, aujourdHui) {
+  const today = aujourdHui ? new Date(aujourdHui) : new Date();
+  let jours = 0, pardon = false, dernierPardon = -99;
+  for (let i = 0; i < 400; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    if (estFait(cleJour(d))) { jours += 1; continue; }
+    if (i === 0) continue;                       // la journée n'est pas finie
+    if (i - dernierPardon > 7) { dernierPardon = i; pardon = true; continue; }  // un trou absorbé
+    break;
+  }
+  return { jours, pardon };
+}
+
 // ── L'état de tout l'arbre ──────────────────────────────────────────────────
 // `branches` doit venir de l'appelant (organizer-data.js en est la source de
 // vérité) pour qu'il n'existe qu'une seule liste de branches dans le projet.

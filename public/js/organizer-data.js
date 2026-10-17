@@ -47,14 +47,16 @@ export const DEFAULT_COLUMNS = [
 // le hub ORGANIZER, l'agenda et le brief CYL. Avant, trois palettes navy v2
 // concurrentes coloraient la meme branche differemment (AUDIT 2026-08-16).
 export const BRANCHES = [
-  { key: 'physio',          label: 'Physiologique',   emoji: '🌱', color: '#84c25e' },
-  { key: 'securite',        label: 'Sécurité',        emoji: '🛡️', color: '#e7b15c' },
-  { key: 'appartenance',    label: 'Appartenance',    emoji: '🤝', color: '#e0785f' },
-  { key: 'estime',          label: 'Estime',          emoji: '🏆', color: '#c39a6b' },
-  { key: 'cognitif',        label: 'Cognitif',        emoji: '📚', color: '#9d8ec4' },
-  { key: 'esthetique',      label: 'Esthétique',      emoji: '🎨', color: '#d98cae' },
-  { key: 'accomplissement', label: 'Accomplissement', emoji: '🚀', color: '#6f9a52' },
-  { key: 'transcendance',   label: 'Transcendance',   emoji: '✨', color: '#f1cd92' },
+  // `ic` = nom dans /js/icons.js. `emoji` reste pour les anciens appels, mais
+  // plus rien de commun ne l'affiche en guise d'icone (audit 2026-10-17).
+  { key: 'physio',          label: 'Physiologique',   emoji: '🌱', ic: 'leaf',     color: '#84c25e' },
+  { key: 'securite',        label: 'Sécurité',        emoji: '🛡️', ic: 'shield',   color: '#e7b15c' },
+  { key: 'appartenance',    label: 'Appartenance',    emoji: '🤝', ic: 'users',    color: '#e0785f' },
+  { key: 'estime',          label: 'Estime',          emoji: '🏆', ic: 'award',    color: '#c39a6b' },
+  { key: 'cognitif',        label: 'Cognitif',        emoji: '📚', ic: 'book',     color: '#9d8ec4' },
+  { key: 'esthetique',      label: 'Esthétique',      emoji: '🎨', ic: 'palette',  color: '#d98cae' },
+  { key: 'accomplissement', label: 'Accomplissement', emoji: '🚀', ic: 'mountain', color: '#6f9a52' },
+  { key: 'transcendance',   label: 'Transcendance',   emoji: '✨', ic: 'sun',      color: '#f1cd92' },
 ];
 export const BRANCH_BY_KEY = Object.fromEntries(BRANCHES.map((b) => [b.key, b]));
 

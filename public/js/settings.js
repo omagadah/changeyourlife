@@ -4,7 +4,7 @@
 import { onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser, reauthenticateWithPopup, GoogleAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, deleteDoc, collection, query, where, limit, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
-import { updateGlobalAvatar, saveWithFeedback } from "/js/common.js";
+import { updateGlobalAvatar, saveWithFeedback, toast } from "/js/common.js";
 import { initUserMenu } from "/js/userMenu.js";
 
 let auth, db, functions;
@@ -29,15 +29,7 @@ function showAdminInfo(user) {
 
 // Feedback visuel pour les actions admin
 function showAdminFeedback(message, success = true) {
-    const feedbackDiv = document.getElementById('admin-feedback');
-    if (feedbackDiv) {
-        feedbackDiv.textContent = message;
-        feedbackDiv.style.backgroundColor = success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-        feedbackDiv.style.color = success ? '#59a862' : '#ef4444';
-        feedbackDiv.style.border = success ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)';
-        feedbackDiv.style.display = 'block';
-        setTimeout(() => { feedbackDiv.style.display = 'none'; }, 3500);
-    }
+    toast(message, { type: success ? 'success' : 'error', duration: 3500 });
 }
 
 // Chargement des stats dashboard depuis Firestore
@@ -153,7 +145,10 @@ function initAuth() {
             const isAdmin = myRole === 'admin';
             const isMod   = myRole === 'mod' || isAdmin;
             if (isAdmin || isMod) {
-                document.getElementById("admin-nav-section").style.display = "block";
+                // L'onglet Admin est un bouton du segment : on le dévoile, sans
+                // forcer un display qui casserait la rangée.
+                const adminTab = document.getElementById("admin-nav-section");
+                if (adminTab) adminTab.hidden = false;
                 showAdminInfo(user);
             }
             
@@ -204,8 +199,9 @@ function initNavigation() {
     document.querySelectorAll(".nav-item").forEach(item => {
         item.addEventListener("click", () => {
             const section = item.getAttribute("data-section");
-            document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+            document.querySelectorAll(".nav-item").forEach(i => { i.classList.remove("active"); i.setAttribute("aria-selected", "false"); });
             item.classList.add("active");
+            item.setAttribute("aria-selected", "true");
             document.querySelectorAll(".settings-section").forEach(s => s.classList.remove("active"));
             document.getElementById(section)?.classList.add("active");
         });
@@ -243,7 +239,7 @@ function initChart() {
     function updateTitle(period) {
         if (!titleEl) return;
         const suffix = titleByPeriod[period] || '7 derniers jours';
-        titleEl.textContent = `Évolution ChangeYourLife.ai (${suffix})`;
+        titleEl.textContent = `Humeur du journal (${suffix})`;
     }
     if (chartInstance) chartInstance.destroy();
     chartInstance = new Chart(ctx, {
@@ -312,14 +308,7 @@ function initChart() {
 
 // Gestion des actions Sécurité (email / mot de passe)
 function setSecurityFeedback(msg, ok = true) {
-    const el = document.getElementById('security-feedback');
-    if (!el) return;
-    el.textContent = msg;
-    el.style.display = 'block';
-    el.style.background = ok ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
-    el.style.border = ok ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(239,68,68,0.35)';
-    el.style.color = ok ? '#59a862' : '#ef4444';
-    setTimeout(() => { el.style.display = 'none'; }, 4000);
+    toast(msg, { type: ok ? 'success' : 'error', duration: 4000 });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -331,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!user) return;
             const newEmail = (document.getElementById('new-email') || {}).value?.trim();
             const currentPwd = (document.getElementById('current-password-email') || {}).value;
-            if (!newEmail) { setSecurityFeedback("Veuillez entrer un nouvel email", false); return; }
+            if (!newEmail) { setSecurityFeedback("Entre un nouvel email", false); return; }
             try {
                 if (currentPwd) {
                     const cred = EmailAuthProvider.credential(user.email, currentPwd);
@@ -342,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error(e);
                 if (e?.code === 'auth/requires-recent-login') {
-                    setSecurityFeedback("Action sensible: veuillez vous reconnecter puis réessayer.", false);
+                    setSecurityFeedback("Action sensible : reconnecte-toi puis réessaie.", false);
                 } else if (e?.code === 'auth/email-already-in-use') {
                     setSecurityFeedback("Cet email est déjà utilisé.", false);
                 } else {
@@ -372,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error(e);
                 if (e?.code === 'auth/requires-recent-login') {
-                    setSecurityFeedback("Action sensible: veuillez vous reconnecter puis réessayer.", false);
+                    setSecurityFeedback("Action sensible : reconnecte-toi puis réessaie.", false);
                 } else {
                     setSecurityFeedback("Échec de la mise à jour du mot de passe.", false);
                 }
@@ -381,28 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Gestion du bouton de téléchargement des données
-document.addEventListener('DOMContentLoaded', () => {
-    const downloadBtn = document.getElementById('download-user-data-btn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', () => {
-            const uidInput = document.getElementById('admin-uid');
-            const uid = uidInput?.value.trim();
-            
-            if (!uid) {
-                showAdminFeedback('Veuillez entrer un UID utilisateur', false);
-                return;
-            }
-            
-            showAdminFeedback('Téléchargement en cours...');
-            
-            // Simulation - À remplacer par une vraie requête API
-            setTimeout(() => {
-                showAdminFeedback(`Données de l'utilisateur ${uid} téléchargées avec succès !`);
-            }, 2000);
-        });
-    }
-});
 
 // Initialisation de Firebase via singleton centralisé
 if (window._cyfFirebase) {
@@ -427,19 +394,21 @@ async function initSettingsToggles(uid) {
         const ref = doc(db, 'users', uid);
         const snap = await getDoc(ref);
         const prefs = (snap.exists() && snap.data().prefs) || {};
-        // Defaults
-        const theme = (prefs.theme || localStorage.getItem('theme') || 'dark');
+        // Defaults. Le thème est un réglage d'appareil : localStorage d'abord
+        // (c'est ce que pose le bouton de la barre), le compte sert de repli.
+        const theme = (localStorage.getItem('theme') || prefs.theme || 'dark');
         const animations = (prefs.animEnabled !== false); // default true
         const weeklyEmails = (prefs.weeklyEmails === true); // default false
         const dailyReminders = (prefs.dailyReminders === true); // default false
 
         // Reflect UI
-        const themeCk = document.getElementById('dark-theme');
+        const themeCk = document.getElementById('light-theme');
         const animCk = document.getElementById('animations');
         const dailyCk = document.getElementById('daily-reminders');
         const emailCk = document.getElementById('email-notifications');
-        if (themeCk) themeCk.checked = (theme !== 'light'); // checked = dark
+        if (themeCk) themeCk.checked = (theme === 'light'); // checked = clair
         if (animCk) animCk.checked = animations;
+        applyMotion(animations);
         if (dailyCk) dailyCk.checked = dailyReminders;
         if (emailCk) emailCk.checked = weeklyEmails;
 
@@ -450,13 +419,21 @@ async function initSettingsToggles(uid) {
 
         // Wire events
         if (themeCk) themeCk.addEventListener('change', async () => {
-            const newTheme = themeCk.checked ? 'dark' : 'light';
+            const newTheme = themeCk.checked ? 'light' : 'dark';
             applyTheme(newTheme);
-            localStorage.setItem('theme', newTheme);
+            try { localStorage.setItem('theme', newTheme); } catch (_) {}
+            // Même événement que le bouton de la barre (userMenu.js) : tout ce
+            // qui écoute le thème suit.
+            try { window.dispatchEvent(new CustomEvent('cyf:theme-changed', { detail: newTheme })); } catch (_) {}
             await saveWithFeedback(() => setDoc(ref, { prefs: { theme: newTheme } }, { merge: true }), { errorMsg: "Ton thème n'a pas pu être enregistré. Vérifie ta connexion." });
+        });
+        // Si le thème change ailleurs (bouton de la barre), l'interrupteur suit.
+        window.addEventListener('cyf:theme-changed', (e) => {
+            if (themeCk) themeCk.checked = (e && e.detail) === 'light';
         });
         if (animCk) animCk.addEventListener('change', async () => {
             const val = !!animCk.checked;
+            applyMotion(val);
             await saveWithFeedback(() => setDoc(ref, { prefs: { animEnabled: val } }, { merge: true }), { errorMsg: "Ta préférence d'animations n'a pas pu être enregistrée." });
         });
         if (dailyCk) dailyCk.addEventListener('change', async () => {
@@ -478,84 +455,85 @@ function applyTheme(theme) {
         else document.body.classList.remove('light-mode');
     } catch(e) { /* ignore */ }
 }
+// Animations désactivées -> body.no-motion. Rien d'autre ne lit cette classe
+// pour l'instant : c'est un point d'accroche, pas encore un câblage global.
+function applyMotion(enabled) {
+    try { document.body.classList.toggle('no-motion', !enabled); } catch (e) { /* ignore */ }
+}
 
-// ----- Danger Zone: suppression du compte -----
+// ----- Tes données : export, puis suppression (api/delete-account.js) -----
+// AVANT : le navigateur effacait ce que les regles Firestore lui ouvrent, et
+// laissait derriere lui verificationCodes (avec l'email), chatRate, briefRate,
+// roles et la participation au tirage. L'Admin SDK voit tout. Le client ne
+// fait plus que se re-authentifier (connexion recente exigee par l'API) et
+// appeler.
+async function reauthentifier(user) {
+    const providers = (user.providerData || []).map(p => p.providerId);
+    if (providers.includes('google.com')) return reauthenticateWithPopup(user, new GoogleAuthProvider());
+    if (providers.includes('github.com')) return reauthenticateWithPopup(user, new GithubAuthProvider());
+    if (providers.includes('password')) {
+        const pwd = window.prompt('Entre ton mot de passe pour confirmer :');
+        if (!pwd) throw new Error('cancelled');
+        return reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pwd));
+    }
+    throw new Error('no-provider');
+}
+async function appelerCompte(user, action) {
+    const idToken = await user.getIdToken(true);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 40_000);
+    try {
+        const r = await fetch('/api/delete-account', {
+            method: 'POST', headers: { 'content-type': 'application/json' }, signal: ctrl.signal,
+            body: JSON.stringify({ idToken, action }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw Object.assign(new Error(data.error || 'echec'), { code: data.code });
+        return data;
+    } finally { clearTimeout(t); }
+}
 document.addEventListener('DOMContentLoaded', () => {
+    const expBtn = document.getElementById('export-my-data-btn');
+    if (expBtn) expBtn.addEventListener('click', async () => {
+        const user = auth && auth.currentUser;
+        if (!user) return;
+        expBtn.disabled = true;
+        try {
+            const data = await appelerCompte(user, 'export');
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'changeyourlife-mes-donnees-' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            toast('Tes données sont téléchargées.', { type: 'success' });
+        } catch (e) {
+            toast(e && e.message ? e.message : "L'export a échoué. Réessaie.", { type: 'error' });
+        } finally { expBtn.disabled = false; }
+    });
+
     const delBtn = document.getElementById('delete-account-btn');
     if (!delBtn) return;
     delBtn.addEventListener('click', async () => {
         const user = auth && auth.currentUser;
         if (!user) return;
-        if (!window.confirm('Voulez-vous vraiment supprimer votre compte ? Cette action est irréversible.')) return;
-        const confirm2 = window.prompt('Tapez "SUPPRIMER" pour confirmer');
+        if (!window.confirm('Tu veux vraiment supprimer ton compte ? Cette action est irréversible.')) return;
+        const confirm2 = window.prompt('Tape « SUPPRIMER » pour confirmer');
         if ((confirm2 || '').toUpperCase() !== 'SUPPRIMER') return;
         delBtn.disabled = true;
-        let dataDeleted = false;
         try {
-            // Donnees perso d'abord. Si l'effacement de users/{uid} echoue, on stoppe
-            // AVANT de supprimer le compte Auth : sinon les donnees resteraient
-            // orphelines alors que l'utilisateur croit tout supprime (la promesse
-            // "donnees supprimees" doit rester fiable). Le miroir roles/{uid} est
-            // read-only cote client (nettoye serveur) -> best-effort silencieux.
-            //
-            // 1. Sous-collections : deleteDoc(users/{uid}) ne les supprime PAS
-            //    (comportement Firestore). On purge chacune explicitement.
-            // Un echec ici doit ARRETER la suppression : sinon on supprime le
-            // compte Auth en promettant « donnees supprimees » alors qu'elles
-            // restent orphelines (cas typique : rules pas encore deployees).
-            const purgeFailed = [];
-            for (const sub of ['journal', 'moods', 'bilans', 'sleep', 'gratitude']) {
-                try {
-                    const snap = await getDocs(collection(db, 'users', user.uid, sub));
-                    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
-                } catch(e) {
-                    if (e?.code === 'permission-denied') purgeFailed.push(sub);
-                }
-            }
-            // 2. Collections racine rattachees par uid (roue de vie, codex).
-            for (const coll of ['assessments', 'codexNotes']) {
-                try {
-                    const snap = await getDocs(query(collection(db, coll), where('uid', '==', user.uid)));
-                    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
-                } catch(e) {
-                    if (e?.code === 'permission-denied') purgeFailed.push(coll);
-                }
-            }
-            if (purgeFailed.length) {
-                throw new Error('Suppression incomplète (' + purgeFailed.join(', ') + '). Compte NON supprimé - réessaie plus tard.');
-            }
-            // 3. Le document principal en dernier.
-            await deleteDoc(doc(db, 'users', user.uid));
-            dataDeleted = true;
-            try { await deleteDoc(doc(db, 'roles', user.uid)); } catch(_) {}
-            try {
-                await deleteUser(user);
-            } catch (e) {
-                if (e?.code === 'auth/requires-recent-login') {
-                    // reauth by provider
-                    const providers = (user.providerData || []).map(p => p.providerId);
-                    if (providers.includes('google.com')) {
-                        await reauthenticateWithPopup(user, new GoogleAuthProvider());
-                    } else if (providers.includes('github.com')) {
-                        await reauthenticateWithPopup(user, new GithubAuthProvider());
-                    } else if (providers.includes('password')) {
-                        const pwd = window.prompt('Veuillez entrer votre mot de passe pour confirmer:');
-                        if (!pwd) throw new Error('cancelled');
-                        const cred = EmailAuthProvider.credential(user.email, pwd);
-                        await reauthenticateWithCredential(user, cred);
-                    } else {
-                        throw e;
-                    }
-                    await deleteUser(user);
-                } else { throw e; }
-            }
-            try { localStorage.removeItem('userAvatarUrl'); } catch(_) {}
-            window.location.href = '/signup';
+            // Connexion recente exigee par l'API (auth_time < 5 min).
+            await reauthentifier(user);
+            await appelerCompte(user, 'delete');
+            try { localStorage.removeItem('userAvatarUrl'); localStorage.removeItem('userBadgeUrl'); } catch (_) {}
+            try { document.cookie = 'cyl_in=; Max-Age=0; path=/; Secure; SameSite=Lax'; } catch (_) {}
+            window.location.href = '/';
         } catch (err) {
+            if (err && err.message === 'cancelled') { delBtn.disabled = false; return; }
             console.error('delete account failed', err);
-            alert(dataDeleted
-                ? "Tes données ont bien été effacées, mais la fermeture du compte n'a pas pu aller au bout. Reconnecte-toi et réessaie."
-                : "Échec de la suppression. Tes données n'ont pas été touchées - réessaie plus tard.");
+            toast(err && err.code === 'RECENT_LOGIN'
+                ? 'Reconnecte-toi puis réessaie : la suppression exige une connexion récente.'
+                : "Échec de la suppression. Tes données n'ont pas été touchées, réessaie plus tard.", { type: 'error', duration: 6000 });
             delBtn.disabled = false;
         }
     });
@@ -584,8 +562,9 @@ function bindAdminHandlers() {
         btn.addEventListener('click', async () => {
             const days = parseInt(btn.getAttribute('data-admin-range') || '7', 10);
             ADMIN_FILTER_DAYS = days;
-            document.querySelectorAll('[data-admin-range]').forEach(b => b.classList.remove('btn-primary'));
-            btn.classList.add('btn-primary');
+            document.querySelectorAll('[data-admin-range]').forEach(b => { b.classList.remove('primary'); b.setAttribute('aria-pressed', 'false'); });
+            btn.classList.add('primary');
+            btn.setAttribute('aria-pressed', 'true');
             try { await updateAdminStats(); } catch(e) {}
         });
     });
@@ -618,11 +597,10 @@ function bindAdminHandlers() {
                     const row = document.createElement('div');
                     row.dataset.userUid = uid;
                     row.className = 'admin-user-row';
-                    row.style.cssText = 'padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer';
+
                     const strong = document.createElement('strong');
                     strong.textContent = u.displayName || '(sans nom)';
                     const emailSpan = document.createElement('span');
-                    emailSpan.style.color = '#807a6b';
                     emailSpan.textContent = u.email || '';
                     const uidSmall = document.createElement('small');
                     uidSmall.textContent = 'UID: ' + uid;
@@ -679,9 +657,9 @@ function ensureModalRoot() {
     if (!el) {
         el = document.createElement('div');
         el.id = 'admin-modal-root';
-        el.style.position = 'fixed'; el.style.inset = '0'; el.style.display = 'none'; el.style.alignItems = 'center'; el.style.justifyContent = 'center'; el.style.background = 'rgba(0,0,0,0.5)'; el.style.zIndex = '99999';
-        el.innerHTML = `<div id="admin-modal" style="max-width:640px;width:92%;background:rgba(31,41,55,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:18px;color:#f1efec">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3>Détail utilisateur</h3><button id="admin-modal-close" class="btn btn-secondary">Fermer</button></div>
+        el.className = 'modal-veil';
+        el.innerHTML = `<div id="admin-modal" class="modal" style="width:min(640px,100%)">
+            <div class="card-head"><h3>Détail utilisateur</h3><button type="button" id="admin-modal-close" class="btn sm">Fermer</button></div>
             <div id="admin-modal-content" style="max-height:60vh;overflow:auto"></div>
         </div>`;
         document.body.appendChild(el);
@@ -724,12 +702,12 @@ async function openUserDetailModal(uid) {
                         <div><span class="pill">${isAdminTarget ? 'admin' : (isMod ? 'mod' : 'user')}</span></div>
                     </div>
                     <div class="input-group"><div class="input-label">Modifier</div>
-                        <button id="toggle-mod" class="btn ${isMod? 'btn-secondary':'btn-primary'}" ${isAdminTarget ? 'disabled' : ''}>${isMod?'Retirer modérateur':'Promouvoir modérateur'}</button>
+                        <button type="button" id="toggle-mod" class="btn ${isMod ? '' : 'primary'}" ${isAdminTarget ? 'disabled' : ''}>${isMod?'Retirer modérateur':'Promouvoir modérateur'}</button>
                     </div>
                     <div class="note">Les rôles sont gérés via Custom Claims (Cloud Function <code>setUserRole</code>). Le miroir <code>roles/{uid}</code> est en lecture seule côté client.</div>
                 </div>
             </div>
-            <div class="settings-group" style="margin-top:12px">
+            <div class="card" style="margin-top:12px">
                 <h3 class="settings-group-title">Niveaux</h3>
                 <div class="grid-2">
                     <div>Corps: <strong>${Number(lvn.body)||0}</strong></div>
@@ -764,8 +742,7 @@ async function openUserDetailModal(uid) {
     const addBtn = document.getElementById('add-mod-btn');
     const remBtn = document.getElementById('remove-mod-btn');
     const uidInput = document.getElementById('mod-uid');
-    const fb = document.getElementById('admin-roles-feedback');
-    function setFB(msg, ok=true){ if(!fb) return; fb.style.display='block'; fb.textContent=msg; fb.style.background= ok? 'rgba(16,185,129,0.12)':'rgba(239,68,68,0.12)'; fb.style.border= ok? '1px solid rgba(16,185,129,0.35)':'1px solid rgba(239,68,68,0.35)'; fb.style.color= ok? '#59a862':'#ef4444'; setTimeout(()=>{fb.style.display='none';},3500); }
+    function setFB(msg, ok=true){ toast(msg, { type: ok ? 'success' : 'error', duration: 3500 }); }
     if (addBtn && uidInput) addBtn.addEventListener('click', async () => {
         const target=(uidInput.value||'').trim(); if(!target) return;
         try { const setUserRole = httpsCallable(functions, 'setUserRole'); await setUserRole({ uid: target, role: 'mod' }); setFB('Modérateur promu.'); }

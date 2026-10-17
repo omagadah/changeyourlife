@@ -5,7 +5,7 @@
 // Variables d'environnement Vercel requises :
 //   ANTHROPIC_API_KEY ou API_ANTHROPIC_CHATBOT  (clé Anthropic, https://console.anthropic.com/)
 //   FIREBASE_SERVICE_ACCOUNT (déjà configurée pour le coach)
-// Optionnel : ANTHROPIC_MODEL (défaut : claude-haiku-4-5-20251001)
+// Optionnel : ANTHROPIC_MODEL (epingle un modele) · ANTHROPIC_FAMILY (defaut haiku) - cf. _models.js
 //
 // La clé est lue sous l'un OU l'autre nom (compat avec la variable nommée
 // "API_ANTHROPIC_CHATBOT" côté Vercel).
@@ -15,6 +15,7 @@ const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 const { cleanText } = require('./_text.js');
 
+const { modeleAnthropic, invalider, fetchWithTimeout } = require('./_models.js');
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
 // Modules du site que CYL peut recommander (clé → route).
@@ -55,7 +56,7 @@ MODULES DISPONIBLES (clé : à quoi ça sert) :
 - habitudes : suivi d'habitudes · sommeil : suivi du sommeil · humeur : suivi de l'humeur · gratitude : journal de gratitude
 - bilan : bilan hebdomadaire · autoevaluation : roue de vie · codex : base de connaissance + notes
 - organizer : tableau de tâches (type Trello/Eisenhower) · plan : plan du jour / objectifs vitaux · competences : compétences qui montent en niveau
-- agenda : Google Agenda en grand · yourlife : pyramide de Maslow interactive
+- agenda : Google Agenda en grand · yourlife (« Où j'en suis ») : les 8 branches de l'arbre et leurs jalons
 - Branches de l'arbre (Maslow) : physio (sommeil/nutrition/mouvement), securite (logement/finances/santé), appartenance (famille/amis/amour), estime (confiance/réussite), cognitif (savoir/apprentissage), esthetique (beauté/créativité), accomplissement (projets/maîtrise), transcendance (sens/spiritualité/contribution)
 
 RÈGLES :
@@ -107,7 +108,7 @@ const PAGE_LABELS = {
   agenda: 'son agenda', objectifs: 'ses objectifs', bilan: 'son bilan hebdomadaire',
   humeur: 'son suivi d humeur', sommeil: 'son suivi de sommeil', habitudes: 'ses habitudes',
   gratitude: 'son journal de gratitude', journal: 'son journal', meditation: 'la meditation',
-  yourlife: 'sa pyramide de Maslow', frise: 'sa frise chronologique',
+  yourlife: "ses branches et ses jalons (Où j'en suis)", frise: 'sa frise chronologique',
   autoevaluation: 'sa roue de vie', competences: 'ses competences', codex: 'son codex',
   profile: 'son profil', settings: 'ses parametres',
   physio: 'sa branche Physiologique', securite: 'sa branche Securite',
@@ -211,7 +212,8 @@ module.exports = async function handler(req, res) {
 
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || process.env.API_ANTHROPIC_CHATBOT;
   if (!ANTHROPIC_KEY) {
-    return res.status(500).json({ error: 'Clé Anthropic non configurée (ANTHROPIC_API_KEY ou API_ANTHROPIC_CHATBOT)', setup: 'https://console.anthropic.com/' });
+    console.error('[chat] cle Anthropic absente (ANTHROPIC_API_KEY ou API_ANTHROPIC_CHATBOT)');
+    return res.status(500).json({ error: 'Configuration serveur manquante' });
   }
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     return res.status(500).json({ error: 'Configuration serveur manquante', code: 'MISSING_SA' });
@@ -254,8 +256,20 @@ module.exports = async function handler(req, res) {
     if (dayCount >= DAILY_MAX) {
       return res.status(429).json({ error: "Limite de messages atteinte pour aujourd'hui. On reprend demain." });
     }
+    // Plafond GLOBAL : N comptes verifies hostiles = N fois le plafond par
+    // compte. Le compteur partage borne la facture quoi qu'il arrive.
+    const GLOBAL_DAILY_MAX = 2000;
+    const gRef = db.collection('chatRate').doc('_global');
+    const g = (await gRef.get()).data() || {};
+    const gc = g.day === day ? (g.count || 0) : 0;
+    if (gc >= GLOBAL_DAILY_MAX) {
+      return res.status(429).json({ error: "CYL a beaucoup parlé aujourd'hui. On reprend demain." });
+    }
     calls.push(now);
-    await rateRef.set({ calls, lastAt: new Date(), day, dayCount: dayCount + 1 }, { merge: true });
+    await Promise.all([
+      rateRef.set({ calls, lastAt: new Date(), day, dayCount: dayCount + 1 }, { merge: true }),
+      gRef.set({ day, count: gc + 1 }),
+    ]);
   } catch (e) {
     console.error('[chat] rate-limit error:', e?.message || e);
     return res.status(503).json({ error: 'Service temporairement indisponible' });
@@ -266,10 +280,19 @@ module.exports = async function handler(req, res) {
     role: m.role === 'assistant' ? 'assistant' : 'user',
     content: String(m.content || '').slice(0, 4000),
   }));
+  // L'historique vient du client : il doit commencer et finir par l'utilisateur
+  // (un tour assistant forge en tete ferait echouer l'API, un tour assistant en
+  // queue serait un prefill), et rester borne en volume total.
+  if (!safeMessages.length || safeMessages[0].role !== 'user' || safeMessages[safeMessages.length - 1].role !== 'user') {
+    return res.status(400).json({ error: 'messages invalides' });
+  }
+  if (safeMessages.reduce((n, m) => n + m.content.length, 0) > 12000) {
+    return res.status(413).json({ error: 'conversation trop longue' });
+  }
 
   // ── Appel Claude ───────────────────────────────────────────────────────────
   try {
-    const r = await fetch(ANTHROPIC_URL, {
+    const r = await fetchWithTimeout(ANTHROPIC_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -277,15 +300,16 @@ module.exports = async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001',
+        model: await modeleAnthropic(ANTHROPIC_KEY),
         max_tokens: 700,
         system: SYSTEM_PROMPT + describeContext(context) + describeStyle(preferences),
         messages: safeMessages,
       }),
-    });
+    }, 25_000);
     if (!r.ok) {
       const errText = await r.text();
       console.error('[chat] Anthropic error:', r.status, errText.slice(0, 240));
+      if (r.status === 404) invalider('anthropic');
       return res.status(502).json({ error: 'CYL est momentanément indisponible' });
     }
     const data = await r.json();
@@ -303,6 +327,7 @@ module.exports = async function handler(req, res) {
     // Nettoyage final : la consigne de prompt est une demande, ceci est la garantie.
     return res.status(200).json({ reply: cleanText(reply), modules, safety });
   } catch (e) {
+    if (e && e.name === 'AbortError') return res.status(504).json({ error: 'CYL met trop de temps à répondre. Réessaie.' });
     console.error('[chat] handler error:', e?.message || e);
     return res.status(500).json({ error: 'Erreur interne' });
   }

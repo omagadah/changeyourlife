@@ -1,7 +1,8 @@
 // /meditation/ - sessions guidées + respiration + sons d'ambiance + stats.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar, setContext } from '/js/common.js';
+import { updateGlobalAvatar, setContext, toast, escapeHtml } from '/js/common.js';
 import { showXpFloat } from '/js/xp.js';
+import { icon } from '/js/icons.js';
 import { initUserMenu } from '/js/userMenu.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -22,20 +23,29 @@ window.addEventListener('DOMContentLoaded', () => {
   try { updateGlobalAvatar(); } catch(e){}
 });
 
+// `icon` reste l'emoji historique : il est ECRIT dans l'historique Firestore
+// de chaque seance terminee (modele inchange). L'affichage, lui, passe par
+// `ic` (icons.js) et `color` par les tokens du theme.
 const sessions = [
-  { id:'calm',      title:'Calme & Sérénité',       desc:'Apaise ton esprit, relâche les tensions',       duration:5,  icon:'🌊', type:'guided',    color:'#44bd48' },
-  { id:'focus',     title:'Focus & Concentration',   desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', type:'guided',    color:'#6cb43f' },
-  { id:'sleep',     title:'Sommeil profond',          desc:'Prépare-toi à une nuit réparatrice',           duration:15, icon:'🌙', type:'guided',    color:'#bdafd6' },
-  { id:'gratitude', title:'Gratitude & Positivité',  desc:'Cultive la reconnaissance et la joie',          duration:7,  icon:'✨', type:'guided',    color:'#fbbf24' },
-  { id:'breathing', title:'Respiration 4-7-8',       desc:'Technique rapide pour réduire le stress',       duration:5,  icon:'💨', type:'breathing', color:'#a4d486' },
-  { id:'coherence', title:'Cohérence cardiaque',      desc:'5 s inspire, 5 s expire - apaise le système nerveux', duration:5, icon:'🫁', type:'breathing', color:'#4fc153',
+  { id:'calm',      title:'Calme & Sérénité',       desc:'Apaise ton esprit, relâche les tensions',       duration:5,  icon:'🌊', ic:'water',    type:'guided',    color:'var(--leaf)' },
+  { id:'focus',     title:'Focus & Concentration',   desc:'Clarifie ton mental, améliore ta productivité', duration:10, icon:'🎯', ic:'target',   type:'guided',    color:'var(--moss)' },
+  { id:'sleep',     title:'Sommeil profond',          desc:'Prépare-toi à une nuit réparatrice',           duration:15, icon:'🌙', ic:'moon',     type:'guided',    color:'var(--etre)' },
+  { id:'gratitude', title:'Gratitude & Positivité',  desc:'Cultive la reconnaissance et la joie',          duration:7,  icon:'✨', ic:'sparkles', type:'guided',    color:'var(--gold)' },
+  { id:'breathing', title:'Respiration 4-7-8',       desc:'Technique rapide pour réduire le stress',       duration:5,  icon:'💨', ic:'leaf',     type:'breathing', color:'var(--leaf-text)' },
+  { id:'coherence', title:'Cohérence cardiaque',      desc:'5 s inspire, 5 s expire - apaise le système nerveux', duration:5, icon:'🫁', ic:'heart', type:'breathing', color:'var(--corps)',
     pattern:[ { text:'Inspire doucement…', label:'Inspiration', cls:'inhale', duration:5000, dot:0 }, { text:'Expire doucement…', label:'Expiration', cls:'exhale', duration:5000, dot:2 } ] },
-  { id:'sos',       title:'SOS stress',               desc:'3 minutes pour redescendre, tout de suite',     duration:3,  icon:'🆘', type:'breathing', color:'#fb7185' },
-  { id:'body-scan', title:'Scan corporel',            desc:'Relâche chaque partie de ton corps',            duration:12, icon:'🧘', type:'guided',    color:'#f87171' },
-  { id:'philo',     title:'Réflexion philosophique',  desc:'Une question à contempler en silence',          duration:8,  icon:'🌌', type:'reflection',color:'#d6cde5' },
-  { id:'nature',    title:'Évasion nature',           desc:'Laisse un paysage t\'emporter au calme',        duration:10, icon:'🏞️', type:'guided',    color:'#34d399' },
-  { id:'custom',    title:'Durée personnalisée',      desc:'Choisis ton propre rythme',                     duration:20, icon:'⏱️', type:'guided',    color:'#34d399' },
+  { id:'sos',       title:'SOS stress',               desc:'3 minutes pour redescendre, tout de suite',     duration:3,  icon:'🆘', ic:'lifebuoy', type:'breathing', color:'var(--coeur)' },
+  { id:'body-scan', title:'Scan corporel',            desc:'Relâche chaque partie de ton corps',            duration:12, icon:'🧘', ic:'user',     type:'guided',    color:'var(--coeur)' },
+  { id:'philo',     title:'Réflexion philosophique',  desc:'Une question à contempler en silence',          duration:8,  icon:'🌌', ic:'compass',  type:'reflection',color:'var(--etre)' },
+  { id:'nature',    title:'Évasion nature',           desc:'Laisse un paysage t\'emporter au calme',        duration:10, icon:'🏞️', ic:'mountain', type:'guided',    color:'var(--leaf-deep)' },
+  { id:'custom',    title:'Durée personnalisée',      desc:'Choisis ton propre rythme',                     duration:20, icon:'⏱️', ic:'clock',    type:'guided',    color:'var(--text-3)' },
 ];
+// Une entree d'historique porte l'emoji d'origine : on retrouve sa seance
+// par l'identifiant ou le titre pour lui rendre son icone.
+function sessionIconFor(h) {
+  const s = sessions.find((x) => x.id === h.id) || sessions.find((x) => x.title === h.title);
+  return icon(s ? s.ic : 'leaf', { size: 15 });
+}
 
 // Questions de réflexion (mode philosophique) - une au hasard à la sélection.
 const REFLECTIONS = [
@@ -142,8 +152,8 @@ function createNoiseBuf(ctx, seconds) {
 // Wire sound buttons
 document.querySelectorAll('.amb-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.amb-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    document.querySelectorAll('.amb-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+    btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true');
     currentAmbient = btn.dataset.sound;
     if (timer) startAmbient(currentAmbient); // only start if session active
   });
@@ -152,11 +162,8 @@ document.getElementById('amb-volume')?.addEventListener('input', e => {
   if (ambGain) ambGain.gain.setValueAtTime((e.target.value / 100) * 0.6, getAmbCtx().currentTime);
 });
 
-function showToast(msg, err = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast${err?' error':''} show`;
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+// Le retour visuel passe par le toast commun (common.js), plus de #toast local.
+function showToast(msg, err = false) { toast(msg, { type: err ? 'error' : 'success' }); }
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = '/login'; return; }
@@ -243,13 +250,14 @@ function initCylWelcome() {
 
 function renderSessions() {
   const grid = document.getElementById('sessions-grid');
+  // Des boutons, pas des div : une seance se choisit aussi au clavier.
   grid.innerHTML = sessions.map(s => `
-    <div class="session-card" data-id="${s.id}" style="--card-color:${s.color}">
-      <div class="session-duration">${s.id === 'custom' ? '?' : s.duration} min</div>
-      <div class="session-icon">${s.icon}</div>
-      <div class="session-title">${s.title}</div>
-      <div class="session-desc">${s.desc}</div>
-    </div>
+    <button type="button" class="session-card" data-id="${s.id}" style="--card-color:${s.color}">
+      <span class="chip session-duration">${s.id === 'custom' ? 'à toi' : s.duration + ' min'}</span>
+      <span class="session-icon" aria-hidden="true">${icon(s.ic)}</span>
+      <span class="session-title">${escapeHtml(s.title)}</span>
+      <span class="session-desc">${escapeHtml(s.desc)}</span>
+    </button>
   `).join('');
   grid.querySelectorAll('.session-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -343,7 +351,7 @@ function syncVoiceBtn() {
   if (!voice.available) { b.style.display = 'none'; return; }
   const m = voice.isMuted();
   b.classList.toggle('off', m);
-  b.textContent = m ? '🔇 Voix' : '🔊 Voix';
+  b.innerHTML = icon(m ? 'x' : 'mic') + (m ? 'Voix coupée' : 'Voix');
   b.setAttribute('aria-pressed', String(!m));
 }
 document.getElementById('btn-voice')?.addEventListener('click', () => {
@@ -443,8 +451,8 @@ async function completeSession() {
   // lui annoncer que sa seance d'endormissement est finie serait absurde.
   if (currentSession && currentSession.id === 'sleep') { voice.stop(); guide.reset(); }
   breathingActive = false;
-  document.getElementById('timer').textContent = '✓';
-  document.getElementById('timer-label').textContent = 'Terminé !';
+  document.getElementById('timer').innerHTML = icon('check', { size: 40, stroke: 2 });
+  document.getElementById('timer-label').textContent = 'Terminé';
   document.getElementById('timer-ring-fill').style.strokeDashoffset = 0;
   document.getElementById('btn-start').style.display = 'inline-block';
   document.getElementById('btn-pause').style.display = 'none';
@@ -452,9 +460,9 @@ async function completeSession() {
   document.getElementById('breathing-guide').classList.remove('active');
   document.getElementById('breathing-rings')?.classList.remove('inhale','hold','exhale');
   document.querySelectorAll('.session-card').forEach(c => c.classList.remove('playing'));
-  showToast(`Session terminée - ${currentSession.duration} min ✓`);
+  showToast(`Séance terminée : ${currentSession.duration} min`);
   const _la = document.getElementById('la-line');
-  if (_la) _la.textContent = 'Belle séance 🌿 Prends un instant - comment te sens-tu maintenant ?';
+  if (_la) _la.textContent = 'Belle séance. Prends un instant : comment tu te sens maintenant ?';
   try { showXpFloat(15, document.getElementById('timer')); } catch(e) {}
 
   try {
@@ -463,14 +471,16 @@ async function completeSession() {
     const med = snap.exists() ? (snap.data().meditation || {}) : {};
     const today = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const avantHier = new Date(Date.now() - 2 * 86400000).toDateString();
     const lastDay = med.lastSessionAt ? new Date(med.lastSessionAt).toDateString() : null;
     let streak = med.streak || 0;
-    if (lastDay === today) { /* already practiced today */ }
-    else if (lastDay === yesterday) { streak += 1; }
+    if (lastDay === today) { /* déjà pratiqué aujourd'hui */ }
+    // Pardon : un jour manqué ne remet pas la série à 1. Deux, si.
+    else if (lastDay === yesterday || lastDay === avantHier) { streak += 1; }
     else { streak = 1; }
 
     // Save to history (keep last 20)
-    const historyEntry = { title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
+    const historyEntry = { id: currentSession.id, title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
     const history = (med.history || []).slice(0, 19);
     history.unshift(historyEntry);
 
@@ -486,7 +496,7 @@ async function completeSession() {
   } catch(e) {
     try {
       const userRef = doc(db, 'users', uid);
-      const historyEntry = { title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
+      const historyEntry = { id: currentSession.id, title: currentSession.title, icon: currentSession.icon, duration: currentSession.duration, completedAt: Date.now() };
       await setDoc(userRef, { meditation: { totalSessions:1, totalMinutes:currentSession.duration, lastSessionAt:Date.now(), streak:1, history:[historyEntry] }}, {merge:true});
       try { await window._cyfFirebase.awardXp('body', 15); } catch(_){}
       await loadStats();
@@ -530,9 +540,9 @@ function renderHistory(history) {
     const isYesterday = d.toDateString() === new Date(Date.now()-86400000).toDateString();
     const dateStr = isToday ? `Aujourd'hui · ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}` : isYesterday ? `Hier · ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}` : d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
     return `<div class="history-item">
-      <div class="history-icon">${h.icon||'🧘'}</div>
+      <div class="history-icon" aria-hidden="true">${sessionIconFor(h)}</div>
       <div class="history-info">
-        <div class="history-name">${h.title}</div>
+        <div class="history-name">${escapeHtml(h.title)}</div>
         <div class="history-date">${dateStr}</div>
       </div>
       <div class="history-dur">${h.duration} min</div>

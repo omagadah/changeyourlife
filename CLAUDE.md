@@ -2,7 +2,7 @@
 
 > Contexte permanent pour Claude Code travaillant sur changeyourlife.ai.
 > Lu automatiquement à chaque session. Si tu modifies des conventions du projet, mets à jour ce fichier.
-> Dernière vérification contre le code : **2026-10-17** (SW v218).
+> Dernière vérification contre le code : **2026-10-18** (SW v219).
 
 ## ⚠️ Vision produit - à lire en premier
 
@@ -18,7 +18,9 @@ diagnostic de l'espace connecté, huit axes, ordre d'exécution.
 
 L'état de l'interface et les lots de refonte restants sont dans
 **[docs/AUDIT-UX-2026-10-17.md](docs/AUDIT-UX-2026-10-17.md)** (design system v3,
-veille concurrents, six lots ordonnés).
+veille concurrents, six lots ordonnés, tous livrés le 2026-10-18). Le gabarit de
+page est dans **[docs/GABARIT-V3.md](docs/GABARIT-V3.md)** : toute page de
+l'espace le suit.
 
 ## Projet
 - **Nom** : Change Your Life · `changeyourlife.ai`
@@ -81,7 +83,7 @@ Point de confusion fréquent, à connaître avant de toucher à `vercel.json` :
 - Conséquence : ne jamais décider quoi que ce soit à partir de l'adresse « / ».
   C'est le **contenu servi** qui tranche (`.app-container` n'existe que sur l'espace).
 
-## Modules frontend (37 pages HTML · 7 API serverless · 3 Cloud Functions)
+## Modules frontend (40 pages HTML · 7 API serverless · 3 Cloud Functions)
 
 > API `/api/*` : `chat` (CYL/Anthropic), `cyl-brief` (brief du jour),
 > `translate` (Groq+Gemini, modeles resolus via l annuaire du fournisseur -
@@ -111,6 +113,9 @@ Point de confusion fréquent, à connaître avant de toucher à `vercel.json` :
 | Agenda | `/agenda/` | Vue semaine + sync Google Calendar (OAuth) |
 | Compétences | `/competences/` | Compétences qui montent en niveau avec l'usage |
 | Branches Maslow | `/physio/` … `/transcendance/` | 8 pages de drill-down par branche |
+| Aide | `/aide/` | Page PUBLIQUE : numéros d'urgence (3114, 15, 112, 114, 3919, 119), respiration, ce que CYL fait et ne fait pas (protocole de crise) |
+| Mémoire de CYL | `/cyl/` | « Ce que CYL sait de moi » : accord, réglages, arbre, repères, conversation, serveur, avec effacement ligne par ligne |
+| Ton année | `/annee/` | Récap annuel : ce qui a poussé, chiffres, carte PNG générée sur l'appareil |
 | Admin giveaway | `/admin/giveaway/` | Back-office tirage (réservé admin) |
 | Légal | `/legal/`, `/cgu/`, `/confidentialite/` | Mentions, CGU, confidentialité |
 
@@ -173,7 +178,9 @@ Co-Authored-By: Claude <modèle> <noreply@anthropic.com>
   (`order:`), ça casse le tab-order et les lecteurs d'écran.
 - **WebGL** : `prefers-reduced-motion` doit être lu en JS (`matchMedia`), la
   media query CSS n'atteint pas un canvas.
-- **JAMAIS de nom de modèle IA codé en dur.** Groq et Google déprécient en
+- **JAMAIS de nom de modèle IA codé en dur.** Vaut aussi pour Anthropic
+  (`modeleAnthropic()` dans `api/_models.js`, famille via `ANTHROPIC_FAMILY`,
+  épingle via `ANTHROPIC_MODEL`). Groq et Google déprécient en
   continu : la traduction est tombée DEUX FOIS pour ça, la seconde en restant
   morte 13 jours sans que personne le voie. `api/_models.js` interroge
   l'annuaire du fournisseur et choisit dans ce qui existe. Tout appel à un

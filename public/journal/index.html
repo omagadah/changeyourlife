@@ -2,11 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Journal - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Votre journal de bord personnel - réflexions quotidiennes, émotions et insights pour mieux vous connaître." />
+  <meta name="description" content="Ton journal de bord personnel - réflexions quotidiennes, émotions et repères pour mieux te connaître." />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -15,352 +14,244 @@
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
   <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/transitions.css" />
   <style>
-    body { color: #f1efec; }
+    /* Deux colonnes : la liste des entrées, puis la lecture ou l'écriture. */
+    .jr-grid { height: 100%; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; }
+    .jr-col { min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface-1); overflow: hidden; }
+    .jr-col-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .jr-col-body { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px; }
+    .jr-col-body.column { display: flex; flex-direction: column; }
 
-    .layout {
-      position: fixed; top: 56px; bottom: 20px; left: 20px; right: 20px;
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 16px;
-    }
-    @media (max-width: 820px) {
-      .layout { grid-template-columns: 1fr; grid-template-rows: 220px 1fr; top: 52px; }
-    }
+    /* Compteur et repères en tête de liste */
+    .jr-count { font-size: .82rem; color: var(--text-2); }
+    .jr-stats { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .jr-stats:empty { display: none; }
 
-    .panel {
-      background: var(--glass-bg);
-      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      display: flex; flex-direction: column;
-      overflow: hidden;
-    }
-    .panel-header {
-      padding: 18px 20px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      flex-shrink: 0;
-    }
-    .panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+    /* Recherche */
+    .jr-search { margin-top: 10px; position: relative; }
+    .jr-search .input { padding-right: 36px; min-height: 36px; font-size: .86rem; }
+    .jr-search .search-clear { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border: none; background: transparent; color: var(--text-2); cursor: pointer; display: none; align-items: center; justify-content: center; border-radius: 8px; }
+    .jr-search .search-clear:hover { color: var(--text-1); background: var(--surface-2); }
 
-    .sidebar-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
-    .sidebar-sub { font-size: 0.78rem; color: #a79f8c; }
-    .sidebar-stats-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-    .sidebar-stat-pill {
-      display:inline-flex; align-items:center; gap:4px;
-      padding:3px 10px; border-radius:999px; font-size:0.7rem; font-weight:600;
-      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#a79f8c;
-    }
-    .sidebar-stat-pill.streak { background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.2); color:#fbbf24; }
-    .sidebar-stat-pill.mood { background:rgba(189,175,214,0.08); border-color:rgba(189,175,214,0.2); color:#d6cde5; }
+    /* Filtres : des pastilles cliquables */
+    .filter-section-label { font-size: .68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .09em; margin: 10px 0 4px; font-weight: 700; }
+    .filter-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+    .filter-pill { cursor: pointer; font-family: inherit; min-height: 30px; }
+    .filter-pill.clear-btn { color: var(--red); }
+    .jr-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
-    .btn-new {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      width: 100%; margin-top: 10px; padding: 9px;
-      border-radius: 10px; border: 1px dashed rgba(132,194,94,0.45);
-      background: rgba(132,194,94,0.07); color: #cae6b8;
-      font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-new:hover { background: rgba(132,194,94,0.18); border-color: #8dca67; }
-
-    .entry-item {
-      padding: 11px 13px 11px 17px; border-radius: 13px;
-      border: 1px solid rgba(255,255,255,0.07);
-      background: rgba(255,255,255,0.03);
-      cursor: pointer; transition: all 0.18s; margin-bottom: 6px;
-      position: relative; overflow: hidden;
-    }
-    .entry-item::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 4px; background: var(--entry-color, rgba(255,255,255,0.1));
-      border-radius: 13px 0 0 13px; opacity: 0.6;
-      transition: opacity .18s, width .18s;
-    }
-    .entry-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.13); transform: translateX(2px); }
-    .entry-item:hover::before { opacity: 1; width: 4px; }
-    .entry-item.active { background: rgba(132,194,94,0.09); border-color: rgba(132,194,94,0.3); }
-    .entry-item.active::before { opacity: 1; width: 4px; }
-
-    .entry-word-badge {
-      display: inline-flex; align-items: center;
-      padding: 1px 6px; border-radius: 6px; font-size: 0.68rem; font-weight: 600;
-      background: rgba(255,255,255,0.05); color: var(--text-3);
-      letter-spacing: 0.2px; flex-shrink: 0;
-    }
-    .search-bar { margin-top: 8px; position: relative; }
-    .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#f1efec; font-size:0.82rem; outline:none; transition:border-color .2s; }
-    .search-bar input:focus { border-color:rgba(132,194,94,.5); }
-    .search-bar input::placeholder { color:#6e6654; }
-    .search-clear { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#a79f8c; cursor:pointer; font-size:1rem; padding:0; display:none; }
-    .filter-pills { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
-    .filter-pill { padding:3px 8px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#a79f8c; cursor:pointer; font-size:0.75rem; transition:all .15s; }
-    .filter-pill:hover { background:rgba(255,255,255,0.08); }
-    .filter-pill.active { background:rgba(132,194,94,0.2); border-color:#8dca67; color:#cae6b8; }
-    .filter-pill.clear-btn { border-color:rgba(239,68,68,.3); color:#ef4444; }
-    .edited-badge { font-size:0.72rem; color:#a79f8c; font-style:italic; margin-left:6px; }
-    .entry-item-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
-    .entry-emoji { font-size: 1.1rem; }
-    .entry-date { font-size: 0.72rem; color: #a79f8c; flex: 1; }
-    .entry-domain-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .entry-preview { font-size: 0.8rem; color: #cae6b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .empty-list { text-align: center; padding: 36px 16px; color: #a79f8c; font-size: 0.88rem; }
-    .empty-list-icon { font-size: 2.2rem; margin-bottom: 8px; }
-
+    /* Humeur sur 7 jours */
     .mood-chart-wrap { margin-top: 10px; }
     .mood-chart { display: flex; gap: 5px; align-items: flex-end; height: 44px; padding: 0 2px; }
     .mood-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .mood-bar-bg { width: 14px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 32px; display: flex; align-items: flex-end; }
-    .mood-bar-fill { width: 100%; background: #8dca67; border-radius: 4px; }
-    .mood-bar-label { font-size: 0.7rem; color: #a79f8c; }
+    .mood-bar-bg { width: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; height: 32px; display: flex; align-items: flex-end; }
+    .mood-bar-fill { width: 100%; background: var(--leaf); border-radius: 4px; }
+    .mood-bar-label { font-size: .7rem; color: var(--text-3); }
 
-    .emotions { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .emotion-btn {
-      padding: 5px 10px; border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04); color: #f1efec;
-      cursor: pointer; font-size: 0.8rem; transition: all 0.15s;
-      display: flex; align-items: center; gap: 4px;
+    /* Une entrée dans la liste */
+    .entry-item { width: 100%; text-align: left; font: inherit; padding: 10px 12px 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-1); color: var(--text-1); cursor: pointer; margin-bottom: 6px; position: relative; overflow: hidden; transition: background var(--duration), border-color var(--duration); }
+    .entry-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--entry-color, var(--line-strong)); opacity: .6; }
+    .entry-item:hover { background: var(--surface-2); border-color: var(--line-strong); }
+    .entry-item.active { background: rgba(132,194,94,.09); border-color: rgba(132,194,94,.3); }
+    .entry-item.active::before { opacity: 1; }
+    .entry-item-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+    .entry-emoji { font-size: 1.05rem; }
+    .entry-date { font-size: .74rem; color: var(--text-2); flex: 1; }
+    .entry-word-badge { font-size: .68rem; font-weight: 600; color: var(--text-3); padding: 1px 6px; border-radius: 6px; background: var(--surface-2); }
+    .entry-title { display: block; font-size: .86rem; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .entry-preview { display: block; font-size: .8rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* L'état vide du panneau principal est centré dans sa colonne */
+    #view-empty { align-items: center; justify-content: center; padding: 24px; }
+
+    /* Éditeur */
+    .editor-date { font-size: .74rem; color: var(--text-3); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+    .emotions { margin-bottom: 10px; }
+    .emotions > button { min-height: 40px; flex-direction: row; padding: 4px 10px; font-size: .82rem; }
+    .domains { display: flex; gap: 6px; flex-wrap: wrap; }
+    .domain-btn { cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: .04em; font-size: .72rem; }
+    .domain-btn[aria-pressed="true"][data-key="none"]  { color: var(--text-1); border-color: var(--line-strong); background: var(--surface-3); }
+    .domain-btn[aria-pressed="true"][data-key="body"]  { color: var(--corps); border-color: var(--corps); background: var(--surface-2); }
+    .domain-btn[aria-pressed="true"][data-key="heart"] { color: var(--coeur); border-color: var(--coeur); background: var(--surface-2); }
+    .domain-btn[aria-pressed="true"][data-key="etre"]  { color: var(--etre);  border-color: var(--etre);  background: var(--surface-2); }
+    .domain-btn[aria-pressed="true"][data-key="order"] { color: var(--ordre); border-color: var(--ordre); background: var(--surface-2); }
+    .editor-title-input { width: 100%; font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; background: transparent; border: none; border-bottom: 1px solid var(--line); border-radius: 0; color: var(--text-1); padding: 0 0 9px; margin-bottom: 10px; }
+    .editor-title-input:focus { outline: none; border-bottom-color: var(--leaf); }
+    .editor-title-input::placeholder { color: var(--text-3); }
+    .jr-prompt { display: none; width: 100%; text-align: left; font: inherit; margin-bottom: 10px; padding: 12px 16px; background: var(--surface-2); border: 1px solid rgba(132,194,94,.3); border-radius: 12px; cursor: pointer; color: var(--text-1); }
+    .jr-prompt:hover { background: var(--surface-3); }
+    .jr-prompt-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: .68rem; text-transform: uppercase; letter-spacing: .09em; color: var(--leaf-text); font-weight: 700; }
+    .jr-prompt-head small { font-size: .72rem; color: var(--text-3); text-transform: none; letter-spacing: 0; font-weight: 500; }
+    #prompt-text { font-size: .9rem; color: var(--text-1); line-height: 1.6; font-style: italic; }
+    .editor-content-input { width: 100%; flex: 1; min-height: 180px; background: transparent; border: none; color: var(--text-1); resize: none; font: inherit; font-size: .96rem; line-height: 1.85; padding: 0; }
+    .editor-content-input:focus { outline: none; }
+    .editor-content-input::placeholder { color: var(--text-3); }
+    .editor-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 10px; flex-shrink: 0; }
+    .word-count { font-size: .74rem; color: var(--text-3); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .word-count-bar { display: inline-block; height: 3px; width: 40px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+    .word-count-bar-fill { height: 100%; background: var(--leaf); border-radius: 3px; transition: width .3s ease; }
+    .editor-actions { display: flex; gap: 8px; }
+
+    /* Lecture */
+    #read-domain-bar { height: 3px; width: 100%; background: transparent; flex-shrink: 0; }
+    .read-title { font-size: 1.3rem; margin: 0 0 6px; }
+    .read-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .78rem; color: var(--text-2); }
+    .read-meta > span:empty { display: none; }
+    .edited-badge { font-style: italic; color: var(--text-3); }
+    .read-content { font-size: .96rem; line-height: 1.85; color: var(--text-1); white-space: pre-wrap; }
+    .read-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 14px; }
+
+    /* Statistiques */
+    .stats-panel { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+    .stats-panel.active { display: flex; }
+    .stats-scroll { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 22px; }
+    .stats-kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .kpi-card { background: var(--surface-1); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+    .kpi-val { font-size: 1.6rem; line-height: 1; }
+    .kpi-label { font-size: .74rem; color: var(--text-2); margin-top: 4px; }
+    .months-chart { display: flex; gap: 6px; align-items: flex-end; height: 80px; }
+    .month-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+    .month-bar-bg { width: 100%; background: var(--surface-2); border-radius: 6px; overflow: hidden; flex: 1; display: flex; align-items: flex-end; min-height: 8px; }
+    .month-bar-fill { width: 100%; background: var(--leaf); border-radius: 6px; }
+    .month-label { font-size: .68rem; color: var(--text-3); font-weight: 700; }
+    .month-count { font-size: .68rem; color: var(--text-2); min-height: 1em; }
+    .emo-stat-list { display: flex; flex-direction: column; gap: 7px; }
+    .emo-stat-row { display: flex; align-items: center; gap: 8px; }
+    .emo-stat-bar-bg { flex: 1; height: 6px; background: var(--surface-2); border-radius: 10px; overflow: hidden; }
+    .emo-stat-bar-fill { height: 100%; border-radius: 10px; background: var(--leaf); }
+    .emo-stat-label { font-size: .82rem; min-width: 96px; }
+    .emo-stat-count { font-size: .78rem; color: var(--text-2); min-width: 22px; text-align: right; }
+    .domain-stat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .domain-stat-pill { display: flex; align-items: center; gap: 8px; background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+    .domain-stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .domain-stat-name { font-size: .82rem; flex: 1; }
+    .domain-stat-cnt { font-size: .82rem; font-weight: 700; }
+
+    @media (max-width: 900px) {
+      .jr-grid { grid-template-columns: 1fr; grid-template-rows: minmax(0, 38%) minmax(0, 1fr); }
     }
-    .emotion-btn:hover { background: rgba(255,255,255,0.1); }
-    .emotion-btn.selected { background: rgba(132,194,94,0.22); border-color: #8dca67; color: #fff; }
-
-    .domains { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .domain-btn {
-      padding: 4px 10px; border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: transparent; color: #afa99c;
-      cursor: pointer; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; transition: all 0.15s;
+    @media (max-width: 640px) {
+      .jr-col-head, .jr-col-body { padding-left: 12px; padding-right: 12px; }
+      .domain-stat-list { grid-template-columns: 1fr; }
     }
-    .domain-btn.sel-none  { border-color: #807a6b; color: #afa99c; background: rgba(107,114,128,0.15); }
-    .domain-btn.sel-body  { border-color: #44bd48; color: #44bd48; background: rgba(111,154,82,0.15); }
-    .domain-btn.sel-heart { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.15); }
-    .domain-btn.sel-etre  { border-color: #c8e5b6; color: #c8e5b6; background: rgba(156,163,255,0.15); }
-    .domain-btn.sel-order { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
-
-    .editor-date {
-      font-size: 0.75rem; color: var(--text-3); margin-bottom: 12px;
-      text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+    @media (prefers-reduced-motion: reduce) {
+      .entry-item, .word-count-bar-fill { transition: none; }
     }
-    .editor-title-input {
-      width: 100%; font-size: 1.25rem; font-weight: 700;
-      background: transparent; border: none; color: var(--text-1); outline: none;
-      margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 9px;
-      letter-spacing: -0.3px;
-    }
-    .editor-title-input::placeholder { color: rgba(229,238,248,0.2); }
-    .editor-content-input {
-      width: 100%; flex: 1; min-height: 180px;
-      background: transparent; border: none; color: #e1ded7; outline: none;
-      resize: none; font-size: 0.96rem; line-height: 1.85; font-family: inherit;
-    }
-    .editor-content-input::placeholder { color: rgba(229,238,248,0.18); }
-    .editor-footer {
-      display: flex; justify-content: space-between; align-items: center;
-      padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 10px; flex-shrink: 0;
-    }
-    .word-count {
-      font-size: 0.74rem; color: var(--text-3); font-weight: 500;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .word-count-bar {
-      display: inline-block; height: 3px; width: 40px; border-radius: 3px;
-      background: rgba(255,255,255,0.08); overflow: hidden; vertical-align: middle;
-    }
-    .word-count-bar-fill {
-      height: 100%; background: linear-gradient(90deg, var(--blue), #a4d486);
-      border-radius: 3px; transition: width 0.3s ease; min-width: 0;
-    }
-
-    .read-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; color: var(--text-1); }
-    .read-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-2); }
-    .read-content { font-size: 0.96rem; line-height: 1.85; color: #d3cfc5; white-space: pre-wrap; margin-top: 16px; }
-    .read-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 14px; }
-
-    .empty-editor { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #a79f8c; padding: 40px; }
-    .empty-editor-icon { font-size: 3rem; margin-bottom: 14px; }
-    .empty-editor-title { font-size: 1rem; font-weight: 600; color: #cae6b8; margin-bottom: 6px; }
-    .empty-editor-sub { font-size: 0.85rem; line-height: 1.5; }
-
-    .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
-    .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: linear-gradient(135deg,#8dca67,#7bc14f); border-color: transparent; box-shadow: 0 4px 14px rgba(132,194,94,.3); }
-    .btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(132,194,94,.4); }
-    .btn.danger { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
-    .btn.danger:hover { background: rgba(239,68,68,0.25); }
-
-    .toast { position: fixed; top: 22px; left: 50%; transform: translate(-50%, -130px); background: rgba(16,185,129,0.92); color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; z-index: 99999; transition: transform .3s ease; font-size: 0.9rem; }
-    .toast.show { transform: translate(-50%, 0); }
-    .toast.error { background: rgba(239,68,68,0.92); }
-
-    /* ── Domain filter pills ── */
-    .filter-section-label { font-size:0.66rem; color:#60594a; text-transform:uppercase; letter-spacing:.5px; margin: 7px 0 3px; font-weight:700; }
-    .filter-pill.dom-body   { border-color:rgba(111,154,82,.4); color:#44bd48; }
-    .filter-pill.dom-body.active   { background:rgba(111,154,82,.15);   border-color:#44bd48; }
-    .filter-pill.dom-heart  { border-color:rgba(239,68,68,.4);   color:#f87171; }
-    .filter-pill.dom-heart.active  { background:rgba(239,68,68,.15);    border-color:#f87171; }
-    .filter-pill.dom-etre   { border-color:rgba(189,175,214,.4); color:#bdafd6; }
-    .filter-pill.dom-etre.active   { background:rgba(189,175,214,.15);  border-color:#bdafd6; }
-    .filter-pill.dom-order  { border-color:rgba(251,191,36,.4);  color:#fbbf24; }
-    .filter-pill.dom-order.active  { background:rgba(251,191,36,.15);   border-color:#fbbf24; }
-
-    /* ── Stats view ── */
-    .stats-panel { display:none; flex-direction:column; height:100%; overflow:hidden; }
-    .stats-panel.active { display:flex; }
-    .stats-scroll { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:20px; }
-    .stats-section-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:.6px; color:#78705c; font-weight:700; margin-bottom:10px; }
-
-    .stats-kpi-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
-    .kpi-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; }
-    .kpi-val { font-size:1.6rem; font-weight:800; color:#fff; line-height:1; }
-    .kpi-label { font-size:0.72rem; color:#a79f8c; margin-top:3px; }
-
-    .months-chart { display:flex; gap:6px; align-items:flex-end; height:80px; }
-    .month-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
-    .month-bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:6px; overflow:hidden; flex:1; display:flex; align-items:flex-end; min-height:8px; }
-    .month-bar-fill { width:100%; background:linear-gradient(180deg,#8dca67,#6db540); border-radius:6px; transition:height .4s; }
-    .month-label { font-size:0.65rem; color:#78705c; font-weight:700; }
-    .month-count { font-size:0.65rem; color:#a79f8c; }
-
-    .emo-stat-list { display:flex; flex-direction:column; gap:7px; }
-    .emo-stat-row { display:flex; align-items:center; gap:8px; }
-    .emo-stat-bar-bg { flex:1; height:6px; background:rgba(255,255,255,0.07); border-radius:10px; overflow:hidden; }
-    .emo-stat-bar-fill { height:100%; border-radius:10px; background:#8dca67; transition:width .4s; }
-    .emo-stat-label { font-size:0.8rem; min-width:80px; }
-    .emo-stat-count { font-size:0.75rem; color:#a79f8c; min-width:22px; text-align:right; }
-
-    .domain-stat-list { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .domain-stat-pill {
-      display:flex; align-items:center; gap:8px;
-      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-      border-radius:10px; padding:8px 12px;
-    }
-    .domain-stat-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .domain-stat-name { font-size:0.8rem; color:#e1ded7; flex:1; }
-    .domain-stat-cnt { font-size:0.8rem; font-weight:700; color:#fff; }
-
-    /* ── Stats toggle btn ── */
-    .btn-stats-toggle {
-      margin-top:6px; width:100%; padding:6px; border-radius:8px;
-      border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03);
-      color:#78705c; font-size:0.72rem; font-weight:600; cursor:pointer;
-      transition:all .15s; text-align:center;
-    }
-    .btn-stats-toggle:hover { background:rgba(255,255,255,0.07); color:#cae6b8; }
-    .btn-stats-toggle.active { background:rgba(132,194,94,0.1); border-color:rgba(132,194,94,0.3); color:#c2e2ae; }
   </style>
 </head>
 <body>
-  <div id="toast" class="toast"></div>
-
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-    </button>
-  </nav>
-
-  <div class="layout" data-cyl-shift>
-    <!-- ── Sidebar ── -->
-    <aside class="panel">
-      <div class="panel-header">
-        <div class="sidebar-title">Journal</div>
-        <div class="sidebar-sub" id="entry-count">Chargement…</div>
-        <div class="sidebar-stats-row" id="sidebar-stats"></div>
-        <button class="btn-new" id="btn-new-entry">Nouvelle entrée</button>
-        <div class="search-bar">
-          <input type="text" id="journal-search" placeholder="Rechercher…" autocomplete="off" />
-          <button class="search-clear" id="search-clear" aria-label="Effacer">×</button>
-        </div>
-        <div class="filter-section-label">Humeur</div>
-        <div class="filter-pills" id="filter-pills"></div>
-        <div class="filter-section-label" id="domain-filter-label">Domaine</div>
-        <div class="filter-pills" id="domain-filter-pills"></div>
-        <div class="mood-chart-wrap" id="mood-chart-wrap" style="display:none">
-          <div style="font-size:0.7rem;color:#a79f8c;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px">Humeur · 7 jours</div>
-          <div class="mood-chart" id="mood-chart"></div>
-        </div>
-        <button id="btn-export" title="Exporter toutes les entrées en JSON" style="margin-top:8px;width:100%;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:#78705c;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center">Exporter (.json)</button>
-        <button class="btn-stats-toggle" id="btn-stats-toggle">Statistiques</button>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="book"></span>Journal</h1>
+        <p class="page-sub">Ce que tu déposes, jour après jour. Le texte reste ici.</p>
       </div>
-      <div class="panel-body" id="entry-list"></div>
-    </aside>
-
-    <!-- ── Main panel ── -->
-    <section class="panel" id="main-panel">
-
-      <!-- Empty state -->
-      <div class="panel-body empty-editor" id="view-empty">
-        <div class="empty-editor-icon">✍️</div>
-        <div class="empty-editor-title">Commence à écrire</div>
-        <div class="empty-editor-sub">Sélectionne une entrée à gauche,<br/>ou crée une nouvelle pour aujourd'hui.</div>
+      <div class="page-actions">
+        <button class="btn quiet sm" type="button" id="btn-export" title="Exporter toutes les entrées en JSON"><span class="ic" data-icon="download"></span>Exporter</button>
+        <button class="btn sm" type="button" id="btn-stats-toggle" aria-pressed="false"><span class="ic" data-icon="chart"></span>Statistiques</button>
+        <button class="btn primary" type="button" id="btn-new-entry"><span class="ic" data-icon="plus"></span>Nouvelle entrée</button>
       </div>
+    </header>
 
-      <!-- Editor -->
-      <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-editor">
-        <div class="panel-header">
-          <div class="editor-date" id="editor-date"></div>
-          <div class="emotions" id="emotion-picker"></div>
-          <div class="domains" id="domain-picker"></div>
-        </div>
-        <div class="panel-body" style="display:flex;flex-direction:column;gap:0">
-          <input type="text" class="editor-title-input" id="editor-title" placeholder="Titre (optionnel)…" maxlength="120" />
-          <div id="prompt-du-jour" style="display:none;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(132,194,94,0.08),rgba(167,213,133,0.05));border:1px solid rgba(132,194,94,0.22);border-radius:12px;cursor:pointer;transition:all 0.2s;user-select:none" title="Cliquer pour utiliser ce prompt">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-              <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.7px;color:var(--blue-light);font-weight:700">Prompt du jour</span>
-              <span style="font-size:0.72rem;color:var(--text-3)">Cliquer →</span>
+    <div class="page-body">
+      <div class="jr-grid">
+        <!-- La liste des entrées -->
+        <aside class="jr-col" aria-label="Entrées du journal">
+          <div class="jr-col-head">
+            <div class="jr-count" id="entry-count"><span class="sk" style="width:90px;height:12px"></span></div>
+            <div class="jr-stats" id="sidebar-stats"></div>
+            <div class="jr-search">
+              <input class="input" type="search" id="journal-search" placeholder="Rechercher" aria-label="Rechercher dans le journal" autocomplete="off" />
+              <button class="search-clear" type="button" id="search-clear" aria-label="Effacer la recherche"><span class="ic" data-icon="x" data-icon-size="14"></span></button>
             </div>
-            <div id="prompt-text" style="font-size:0.9rem;color:#ebe9e4;line-height:1.6;font-style:italic"></div>
-          </div>
-          <textarea class="editor-content-input" id="editor-content" placeholder="Commence à écrire… Que s'est-il passé aujourd'hui ? Comment te sens-tu ? Quelles pensées traversent ton esprit ?"></textarea>
-          <div class="editor-footer">
-            <span class="word-count" id="word-count">
-              <span class="word-count-bar"><span class="word-count-bar-fill" id="wc-bar" style="width:0%"></span></span>
-              <span id="wc-label">0 mot</span>
-            </span>
-            <div style="display:flex;gap:8px">
-              <button class="btn" id="btn-cancel-edit">Annuler</button>
-              <button class="btn primary" id="btn-save-entry">Sauvegarder</button>
+            <div class="filter-section-label">Humeur</div>
+            <div class="filter-pills" id="filter-pills" role="group" aria-label="Filtrer par humeur"></div>
+            <div class="filter-section-label" id="domain-filter-label">Domaine</div>
+            <div class="filter-pills" id="domain-filter-pills" role="group" aria-label="Filtrer par domaine"></div>
+            <div class="mood-chart-wrap" id="mood-chart-wrap" style="display:none">
+              <div class="filter-section-label">Humeur sur 7 jours</div>
+              <div class="mood-chart" id="mood-chart"></div>
             </div>
           </div>
-        </div>
-      </div>
+          <div class="jr-col-body" id="entry-list"></div>
+        </aside>
 
-      <!-- Stats view -->
-      <div class="stats-panel" id="view-stats">
-        <div class="panel-header" style="flex-shrink:0">
-          <div style="font-size:1.05rem;font-weight:700">Statistiques du journal</div>
-          <div style="font-size:0.78rem;color:#a79f8c;margin-top:2px" id="stats-sub">Analyse de tes entrées</div>
-        </div>
-        <div class="stats-scroll" id="stats-content"></div>
-      </div>
+        <!-- Le panneau principal -->
+        <section class="jr-col" id="main-panel" aria-label="Entrée">
 
-      <!-- Read view -->
-      <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-read">
-        <div id="read-domain-bar" style="height:3px;width:100%;border-radius:3px 3px 0 0;background:transparent;flex-shrink:0;transition:background .3s"></div>
-        <div class="panel-header">
-          <div class="read-title" id="read-title"></div>
-          <div class="read-meta">
-            <span id="read-emotion-badge"></span>
-            <span>·</span>
-            <span id="read-date"></span>
-            <span>·</span>
-            <span id="read-domain-badge"></span>
-            <span id="read-word-count"></span>
-            <span id="read-edited-badge" class="edited-badge" style="display:none">(modifié)</span>
+          <!-- État vide -->
+          <div class="jr-col-body" id="view-empty">
+            <div class="empty center">
+              <span class="empty-ic"><span class="ic" data-icon="edit"></span></span>
+              <h3>Commence à écrire</h3>
+              <p>Choisis une entrée à gauche, ou ouvre-en une nouvelle pour aujourd'hui.</p>
+              <button class="btn primary" type="button" id="btn-empty-new"><span class="ic" data-icon="plus"></span>Écrire aujourd'hui</button>
+            </div>
           </div>
-        </div>
-        <div class="panel-body" style="flex:1;overflow-y:auto">
-          <div class="read-content" id="read-content"></div>
-          <div class="read-footer">
-            <button class="btn danger" id="btn-delete-entry">Supprimer</button>
-            <button class="btn" id="btn-edit-entry">Modifier</button>
-          </div>
-        </div>
-      </div>
 
-    </section>
-  </div>
+          <!-- Éditeur -->
+          <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-editor">
+            <div class="jr-col-head">
+              <div class="editor-date" id="editor-date"></div>
+              <div class="pick emotions" id="emotion-picker" role="group" aria-label="Comment tu te sens"></div>
+              <div class="domains" id="domain-picker" role="group" aria-label="Domaine de l'entrée"></div>
+            </div>
+            <div class="jr-col-body column">
+              <input type="text" class="editor-title-input" id="editor-title" placeholder="Titre (facultatif)" aria-label="Titre de l'entrée" maxlength="120" />
+              <button type="button" class="jr-prompt" id="prompt-du-jour" title="Utiliser cette amorce">
+                <span class="jr-prompt-head"><span>Amorce du jour</span><small>Cliquer pour la reprendre</small></span>
+                <span id="prompt-text"></span>
+              </button>
+              <textarea class="editor-content-input" id="editor-content" aria-label="Texte de l'entrée" placeholder="Commence à écrire. Que s'est-il passé aujourd'hui ? Comment tu te sens ? Quelles pensées te traversent ?"></textarea>
+              <div class="editor-footer">
+                <span class="word-count" id="word-count">
+                  <span class="word-count-bar"><span class="word-count-bar-fill" id="wc-bar" style="width:0%"></span></span>
+                  <span id="wc-label">0 mot</span>
+                </span>
+                <div class="editor-actions">
+                  <button class="btn quiet" type="button" id="btn-cancel-edit">Annuler</button>
+                  <button class="btn primary" type="button" id="btn-save-entry">Sauvegarder</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistiques -->
+          <div class="stats-panel" id="view-stats">
+            <div class="jr-col-head">
+              <h2 style="font-size:1.1rem;margin:0">Statistiques du journal</h2>
+              <div class="jr-count" id="stats-sub"></div>
+            </div>
+            <div class="stats-scroll" id="stats-content"></div>
+          </div>
+
+          <!-- Lecture -->
+          <div style="display:none;flex-direction:column;height:100%;overflow:hidden" id="view-read">
+            <div id="read-domain-bar"></div>
+            <div class="jr-col-head">
+              <h2 class="read-title" id="read-title"></h2>
+              <div class="read-meta">
+                <span id="read-emotion-badge"></span>
+                <span id="read-date"></span>
+                <span id="read-domain-badge"></span>
+                <span id="read-word-count"></span>
+                <span id="read-edited-badge" class="edited-badge" style="display:none">(modifié)</span>
+              </div>
+            </div>
+            <div class="jr-col-body">
+              <div class="read-content" id="read-content"></div>
+              <div class="read-footer">
+                <button class="btn danger" type="button" id="btn-delete-entry">Supprimer</button>
+                <button class="btn" type="button" id="btn-edit-entry"><span class="ic" data-icon="edit"></span>Modifier</button>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </main>
 
   <script type="module" src="/js/journal.js"></script>
 </body>

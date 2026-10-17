@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/f
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { updateGlobalAvatar, toast, setContext } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
+import { icon } from '/js/icons.js';
 
 
 if(!window._cyfFirebase){await import('/js/firebase.js');}
@@ -12,7 +13,8 @@ let currentUser=null;
 try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 onAuthStateChanged(auth,u=>{currentUser=u;if(u)loadUserNotes();});
 
-const COLORS={corps:'#44bd48',coeur:'#f87171',etre:'#bdafd6',ordre:'#fbbf24',gen:'#a7d689'};
+// Les couleurs de domaine viennent des tokens : le theme clair les suit.
+const COLORS={corps:'var(--corps)',coeur:'var(--coeur)',etre:'var(--etre)',ordre:'var(--ordre)',gen:'var(--leaf-text)'};
 const CAT_LABELS={corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
 const HTML_ESCAPES={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
 const esc=(s)=>String(s==null?'':s).replace(/[&<>"']/g,ch=>HTML_ESCAPES[ch]);
@@ -134,8 +136,8 @@ async function loadUserNotes(){
 
 window.filterCat=(cat,btn)=>{
   currentCat=cat;
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.cat-btn').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});
+  btn.classList.add('active');btn.setAttribute('aria-pressed','true');
   const titles={all:'Tout le Codex',corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre',user:'Mes notes'};
   document.getElementById('main-title').textContent=titles[cat]||'Codex';
   renderCards();
@@ -145,7 +147,9 @@ window.applyFilters=()=>renderCards();
 window.setView=(v)=>{
   currentView=v;
   document.getElementById('vt-grid').classList.toggle('active',v==='grid');
+  document.getElementById('vt-grid').setAttribute('aria-pressed',v==='grid'?'true':'false');
   document.getElementById('vt-list').classList.toggle('active',v==='list');
+  document.getElementById('vt-list').setAttribute('aria-pressed',v==='list'?'true':'false');
   renderCards();
 };
 
@@ -168,36 +172,36 @@ function renderCards(){
   const items=getFiltered();
   const cont=document.getElementById('cards-container');
   cont.className=currentView==='grid'?'cards-grid':'cards-list';
-  if(!items.length){cont.innerHTML='<div class="no-results"><div class="ni">🔍</div><p>Aucun résultat pour cette recherche.</p></div>';return;}
+  if(!items.length){cont.className='';cont.innerHTML='<div class="empty"><h3>Aucun résultat</h3><p>Essaie un autre mot, ou élargis la catégorie.</p></div>';return;}
   cont.innerHTML=items.map((item,i)=>{
     const c=catColor(item.cat);
-    const badgeStyle=`color:${c};border-color:${c}44;`;
     const tags=(item.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
-    const userBadge=item.isUser?'<span class="user-badge">Ma note</span>':'';
-    const emoji=esc(item.emoji||'📌');
+    const userBadge=item.isUser?'<span class="tag mine">Ma note</span>':'';
+    // L'emoji d'une fiche integree est son contenu ; une note personnelle
+    // porte l'icone « note », pas une punaise.
+    const emoji=item.isUser?icon('edit',{size:20}):esc(item.emoji||'');
     const title=esc(item.title||'');
     const summary=esc(item.summary||'');
     const catLabel=safeCat(item.cat);
     if(currentView==='list'){
-      return `<div class="ccard ccard-list" style="border-color:${c}22;" data-idx="${i}">
-        <div class="ccard-emoji">${emoji}</div>
+      return `<div class="ccard ccard-list" style="--cc:${c};" data-idx="${i}" role="button" tabindex="0">
+        <div class="ccard-emoji" aria-hidden="true">${emoji}</div>
         <div class="cl-body">
           <h3>${title}</h3>
-          <p style="color:var(--muted);font-size:0.8rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${summary}</p>
+          <p>${summary}</p>
         </div>
-        <div class="ccard-badge" style="${badgeStyle}">${catLabel}</div>
+        <span class="chip ccard-badge">${catLabel}</span>
         ${userBadge}
       </div>`;
     }
-    return `<div class="ccard" style="--c:${c};" data-idx="${i}">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${c};border-radius:16px 16px 0 0;"></div>
+    return `<div class="ccard" style="--cc:${c};" data-idx="${i}" role="button" tabindex="0">
       <div class="ccard-top">
-        <div class="ccard-emoji">${emoji}</div>
-        <div class="ccard-badge" style="${badgeStyle}">${catLabel}</div>
+        <div class="ccard-emoji" aria-hidden="true">${emoji}</div>
+        <span class="chip ccard-badge">${catLabel}</span>
       </div>
       <h3>${title}</h3>
       <p>${summary}</p>
-      <div class="ccard-tags">${tags}${item.isUser?'<span class="tag" style="color:#a7d689;border-color:#60aeff33;">Ma note</span>':''}</div>
+      <div class="ccard-tags">${tags}${userBadge}</div>
     </div>`;
   }).join('');
 
@@ -211,8 +215,8 @@ window.openConcept=(idx)=>{
   activeItem=item;
   const c=catColor(item.cat);
   document.getElementById('modal-content').innerHTML=`
-    <div class="modal-emoji">${esc(item.emoji||'📌')}</div>
-    <div class="modal-cat" style="color:${c};border-color:${c}44;">${safeCat(item.cat)}</div>
+    <div class="modal-emoji" aria-hidden="true">${item.isUser?icon('edit',{size:30}):esc(item.emoji||'')}</div>
+    <span class="chip ccard-badge modal-cat" style="--cc:${c}">${safeCat(item.cat)}</span>
     <h2>${esc(item.title||'')}</h2>
     <div class="modal-tagline">${esc(item.tagline||item.summary||'')}</div>
     <div class="modal-body">${renderBody(item)}</div>
@@ -232,7 +236,7 @@ window.closeAddModal=(e)=>{
 window.saveNote=async()=>{
   const title=document.getElementById('note-title').value.trim();
   const summary=document.getElementById('note-summary').value.trim();
-  if(!title||!summary){alert('Titre et résumé obligatoires');return;}
+  if(!title||!summary){toast('Un titre et un résumé, au minimum.',{type:'error'});document.getElementById(title?'note-summary':'note-title').focus();return;}
   const note={
     title,summary,
     cat:document.getElementById('note-cat').value,
@@ -301,10 +305,23 @@ document.querySelectorAll('[data-action="save-note"]').forEach(el => {
 // Cards container - event delegation pour openConcept (cards générées dynamiquement)
 const cardsContainer = document.getElementById('cards-container');
 if (cardsContainer) {
-  cardsContainer.addEventListener('click', (e) => {
+  const open = (e) => {
     const card = e.target.closest('[data-idx]');
     if (!card) return;
     const idx = Number(card.dataset.idx);
     if (!Number.isNaN(idx)) window.openConcept(idx);
+  };
+  cardsContainer.addEventListener('click', open);
+  // Une fiche s'ouvre aussi au clavier (Entree ou Espace sur la carte).
+  cardsContainer.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (!e.target.closest('[data-idx]')) return;
+    e.preventDefault(); open(e);
   });
 }
+// Echap ferme la fiche ou le formulaire ouvert.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  window.closeConceptModal();
+  document.getElementById('add-modal').classList.remove('open');
+});

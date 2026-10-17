@@ -22,5 +22,6 @@
   <url><loc>https://changeyourlife.ai/frise/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://changeyourlife.ai/legal/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://changeyourlife.ai/cgu/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://changeyourlife.ai/aide/</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
   <url><loc>https://changeyourlife.ai/confidentialite/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

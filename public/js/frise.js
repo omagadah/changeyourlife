@@ -15,6 +15,11 @@ import {
   loadFrise, saveFrise, childrenOf, addNode, removeNode, eraOf, isFilled, stats, toMarkdown, esc, FULL_MSG,
 } from '/js/frise-data.js';
 import { createMap } from '/js/frise-map.js';
+import { icon } from '/js/icons.js';
+
+// Les piliers portent un emoji dans frise-data.js ; à l'écran c'est une icône
+// du jeu commun qui les représente, dans la couleur du pilier.
+const PILLAR_ICON = { sante: 'heart', esprit: 'sparkles', relations: 'users', carriere: 'award', evolution: 'mountain' };
 
 let auth, db;
 if (window._cyfFirebase) { ({ auth, db } = window._cyfFirebase); }
@@ -45,7 +50,11 @@ function touch() {
 // ── Onglets ─────────────────────────────────────────────────────────────────
 function setView(v) {
   view = v;
-  document.querySelectorAll('.view-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === v));
+  document.querySelectorAll('.view-btn').forEach((b) => {
+    const on = b.dataset.view === v;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
   document.querySelectorAll('.view-panel').forEach((p) => p.classList.toggle('active', p.id === 'view-' + v));
   document.body.classList.toggle('fr-mapmode', v === 'map');
   render();
@@ -156,7 +165,7 @@ function renderPiliers() {
   let h = '<div class="fr-pgrid">';
   for (const p of PILLARS) {
     h += '<section class="fr-pcol" style="--ac:' + p.color + '">';
-    h += '<header class="fr-phead"><span class="ic">' + p.emoji + '</span><b>' + esc(p.label) + '</b></header>';
+    h += '<header class="fr-phead"><span class="ic" aria-hidden="true">' + icon(PILLAR_ICON[p.key] || 'dot') + '</span><b>' + esc(p.label) + '</b></header>';
     for (const era of ERAS) {
       const node = map.nodes['p-' + era.key + '-' + p.key];
       const themes = node ? childrenOf(map, node.id) : [];
@@ -171,7 +180,7 @@ function renderPiliers() {
           + '<span class="tick" aria-hidden="true">' + (filled ? '●' : '○') + '</span>'
           + esc(t.label) + '</button></li>';
       }
-      if (!themes.length) h += '<li class="mut">-</li>';
+      if (!themes.length) h += '<li class="mut">Rien pour l\'instant</li>';
       h += '</ul></div>';
     }
     h += '</section>';
@@ -195,7 +204,9 @@ function openNode(id) {
   $('#fi-note').value = n.note;
   $('#fi-note').placeholder = n.hint || 'Ce que tu veux garder ici. Personne d\'autre ne le lit.';
   $('#fi-date').value = n.date ? new Date(n.date).toISOString().slice(0, 10) : '';
-  $('#fi-tag').textContent = [pil ? pil.label : null, era ? ERA_BY_KEY[era].label : null].filter(Boolean).join(' · ');
+  const tag = [pil ? pil.label : null, era ? ERA_BY_KEY[era].label : null].filter(Boolean).join(' · ');
+  $('#fi-tag').textContent = tag;
+  $('#fi-tag').hidden = !tag;
   $('#fi-del').disabled = id === ROOT_ID;
 
   // Les liens libres de ce noeud, pour pouvoir les defaire.
@@ -217,7 +228,7 @@ function openNode(id) {
     s.textContent = other.label;
     const b = document.createElement('button');
     b.type = 'button';
-    b.textContent = '✕';
+    b.innerHTML = icon('x', { size: 13 });
     b.title = 'Retirer ce lien';
     b.setAttribute('aria-label', 'Retirer le lien vers ' + other.label);
     b.addEventListener('click', () => {

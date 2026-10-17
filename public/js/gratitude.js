@@ -1,12 +1,14 @@
 // /js/gratitude.js - externalisé depuis gratitude/index.html
 
     import { auth, db } from '/js/firebase.js';
+    import { serieAvecPardon } from '/js/growth.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import {
       doc, getDoc, setDoc, collection, getDocs, query, orderBy, limit, getCountFromServer
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
+    import { updateGlobalAvatar, saveWithFeedback, setContext, toast, escapeHtml } from '/js/common.js';
     import { initUserMenu } from '/js/userMenu.js';
+    import { showXpFloat } from '/js/xp.js';
     try { updateGlobalAvatar(); initUserMenu(); } catch(e){}
 
     // ── Utils ──
@@ -18,25 +20,6 @@
       const [y, m, d] = str.split('-');
       return new Date(+y, +m - 1, +d).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
     }
-    function showToast(msg, dur = 3000) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), dur);
-    }
-    function showXpPop(x, y) {
-      const el = document.createElement('div');
-      el.className = 'xp-pop';
-      el.textContent = '+5 XP';
-      el.style.cssText = `left:${x}px;top:${y}px;`;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 1200);
-    }
-
-    function escapeHtml(s) {
-      return String(s ?? '').replace(/[&<>"']/g, c =>
-        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-    }
-
     const MOOD_EMOJIS = { 1:'😔', 2:'😕', 3:'😐', 4:'😊', 5:'😁' };
 
     let uid = null;
@@ -46,16 +29,28 @@
 
     // ── Date badge ──
     const today = todayStr();
-    document.getElementById('date-badge').textContent =
-      '' + formatDate(today).replace(/^\w/, c => c.toUpperCase());
+    // La pastille garde son icone : on ne remplace que le texte.
+    {
+      const badge = document.getElementById('date-badge');
+      const ic = badge.querySelector('.ic');
+      badge.textContent = '';
+      if (ic) badge.appendChild(ic);
+      badge.appendChild(document.createTextNode(formatDate(today).replace(/^\w/, c => c.toUpperCase())));
+    }
 
-    // ── Mood selection ──
+    // ── Mood selection : des boutons presses, aria-pressed porte l'etat ──
+    function markMood(level) {
+      document.querySelectorAll('.mood-btn').forEach(b => {
+        const on = +b.dataset.mood === level;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    markMood(selectedMood);
     document.querySelectorAll('.mood-btn').forEach(btn => {
-      if (+btn.dataset.mood === selectedMood) btn.classList.add('active');
       btn.addEventListener('click', () => {
         selectedMood = +btn.dataset.mood;
-        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        markMood(selectedMood);
       });
     });
 
@@ -100,13 +95,11 @@
         document.getElementById('g3').value = e.g3 || '';
         if (e.mood) {
           selectedMood = e.mood;
-          document.querySelectorAll('.mood-btn').forEach(b => {
-            b.classList.toggle('active', +b.dataset.mood === e.mood);
-          });
+          markMood(e.mood);
         }
-        document.getElementById('btn-save').textContent = 'Modifier ma gratitude';
-        document.getElementById('btn-save').style.background = 'linear-gradient(135deg,rgba(251,191,36,.4),rgba(245,158,11,.5))';
-        document.getElementById('btn-save').style.color = '#fde68a';
+        const btn = document.getElementById('btn-save');
+        btn.textContent = 'Modifier ma gratitude';
+        btn.classList.remove('primary');
       }
     }
 
@@ -115,14 +108,8 @@
       const totalDays = dates.length;
 
       // Streak
-      let streak = 0;
-      const check = new Date();
-      while (true) {
-        const ds = toDateStr(check);
-        if (entries[ds]) { streak++; check.setDate(check.getDate() - 1); }
-        else if (ds === today) { check.setDate(check.getDate() - 1); } // today not saved yet
-        else break;
-      }
+      // Série avec pardon (growth.js) : un jour manqué par semaine ne casse rien.
+      const streak = serieAvecPardon((k) => !!entries[k]).jours;
 
       // This month
       const monthPrefix = today.slice(0, 7);
@@ -131,7 +118,10 @@
       document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-total').textContent = totalDays;
       document.getElementById('stat-month').textContent = thisMonth;
-      document.getElementById('streak-badge').textContent = `${streak} jour${streak !== 1 ? 's' : ''} de suite`;
+      // Sans serie, la pastille se tait.
+      const badge = document.getElementById('streak-badge');
+      document.getElementById('streak-text').textContent = `${streak} jour${streak !== 1 ? 's' : ''} de suite`;
+      badge.hidden = streak === 0;
 
       // Des compteurs pour CYL, jamais le CONTENU des gratitudes : c'est ce
       // que la personne a de plus personnel sur cette page.
@@ -173,14 +163,14 @@
       const list = document.getElementById('history-list');
       const sorted = Object.keys(entries).sort().reverse().slice(0, 14);
       if (!sorted.length) {
-        list.innerHTML = '<div style="color:#544e40;font-size:.85rem;padding:12px 0;">Aucune entrée pour l\'instant.</div>';
+        list.innerHTML = '<div class="empty"><h3>Aucune entrée pour l\'instant</h3><p>Tes trois gratitudes du jour, une fois enregistrées, viendront se ranger ici.</p></div>';
         return;
       }
       list.innerHTML = '';
       sorted.forEach(ds => {
         const e = entries[ds];
         const item = document.createElement('div');
-        item.className = 'history-item';
+        item.className = 'card history-item';
         const moodEmoji = e.mood ? MOOD_EMOJIS[e.mood] : '';
         item.innerHTML = `
           <div class="history-date">
@@ -201,7 +191,7 @@
       const g1 = document.getElementById('g1').value.trim();
       const g2 = document.getElementById('g2').value.trim();
       const g3 = document.getElementById('g3').value.trim();
-      if (!g1 && !g2 && !g3) { showToast('Écris au moins une gratitude'); return; }
+      if (!g1 && !g2 && !g3) { toast('Écris au moins une gratitude'); document.getElementById('g1').focus(); return; }
 
       const data = {
         g1, g2, g3,
@@ -217,12 +207,10 @@
       if (!todayAlreadySaved) {
         // XP via Cloud Function addXp → branche Transcendance (la gratitude)
         try { await window._cyfFirebase.awardXp('transcendance', 5); } catch(_) {}
-        const btn = document.getElementById('btn-save');
-        const r = btn.getBoundingClientRect();
-        showXpPop(r.left + r.width / 2 - 20, r.top - 10);
+        try { showXpFloat(5, document.getElementById('btn-save')); } catch(_) {}
         todayAlreadySaved = true;
       }
 
       renderAll();
-      showToast('Gratitude enregistrée');
+      toast('Gratitude enregistrée', { type: 'success' });
     });

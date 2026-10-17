@@ -17,7 +17,7 @@
 
 /* Entre 900 et 1280 px, la barre de nav (232) + le panneau (360) prendraient
    592 px : le contenu n'a plus de quoi respirer. La colonne se resserre. */
-@media (max-width: 1280px) {
+@media (max-width: 1200px) {
   :root { --cylp-w: 316px; }
 }
 
@@ -221,8 +221,8 @@ body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !importa
   text-overflow: ellipsis;
 }
 .cylp-ico {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   border-radius: 8px;
   border: 1px solid var(--line, rgba(221, 205, 160, 0.12));
@@ -350,8 +350,14 @@ body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !importa
   border-color: rgba(132, 194, 94, 0.3);
   color: var(--text-1, #f4efe1);
 }
-.cylp-act-ic { font-size: 0.98rem; width: 18px; text-align: center; flex-shrink: 0; }
+.cylp-act-ic { width: 18px; display: inline-flex; justify-content: center; flex-shrink: 0; color: var(--text-3, #86806a); }
+.cylp-act:hover .cylp-act-ic { color: currentColor; }
 .cylp-act.go { border-style: dashed; }
+
+/* Garder une reponse dans le journal : un geste explicite sous le message */
+.cylp-keep { display:block; margin-top:8px; padding:5px 10px; border-radius:999px; border:1px solid var(--line-strong, rgba(221,205,160,.22)); background:transparent; color:var(--text-3, #86806a); font:inherit; font-size:.72rem; font-weight:600; cursor:pointer; }
+.cylp-keep:hover { color:var(--text-1, #f4efe1); border-color:rgba(132,194,94,.4); }
+.cylp-keep.on { color:var(--leaf-text, #a7d585); border-color:rgba(132,194,94,.4); cursor:default; }
 
 /* Amorces : six phrases a dire, affichees tant que la conversation est vide */
 .cylp-starters { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 4px; }

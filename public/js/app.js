@@ -7,7 +7,7 @@
         import { initUserMenu } from '/js/userMenu.js';
         import { initLivingTree } from '/js/living-tree.js';
         import { icon } from '/js/icons.js';
-        import { palierDe } from '/js/growth.js';
+        import { palierDe, xpTotal } from '/js/growth.js';
 
         // Early initialization of the user menu so the button responds immediately even before auth state fires.
         try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }
@@ -146,11 +146,18 @@
                 try {
                     const ylSnap = await getDoc(doc(db,'users',uid));
                     if (ylSnap.exists()) {
-                        const ylData = ylSnap.data().yourlife || {};
+                        // Deux formats : `yourlife.branches` (une liste par
+                        // branche de l'arbre, depuis le 2026-10-17) et l'ancien
+                        // `maVieSkills` (les cinq etages de la pyramide), lu
+                        // tant que la page « Ou j'en suis » ne l'a pas converti.
+                        const ylDoc = ylSnap.data();
+                        const lists = (ylDoc.yourlife && ylDoc.yourlife.branches && typeof ylDoc.yourlife.branches === 'object')
+                            ? Object.values(ylDoc.yourlife.branches)
+                            : ['self-actualization','esteem','love','safety','physiological'].map(lvl => (ylDoc.maVieSkills || {})[lvl]);
                         let total=0, done=0;
-                        ['self-actualization','esteem','love','safety','physiological'].forEach(lvl => {
-                            const s = ylData[lvl] || [];
-                            total += s.length; done += s.filter(x=>x.done).length;
+                        lists.forEach(s => {
+                            if (!Array.isArray(s)) return;
+                            total += s.length; done += s.filter(x=>x && x.done).length;
                         });
                         // UN COMPTE, PAS UNE NOTE. C'etait « Score Ma Vie », un
                         // pourcentage global sur une vie - exactement ce que la
@@ -315,7 +322,7 @@
           if (!grid) return;
 
           // Update total XP badge
-          const totalXP = DOMAINS.reduce((s,d) => s + (getInfo(levels[d.key]).xp), 0);
+          const totalXP = xpTotal(userData);
           const badge = document.getElementById('total-xp-badge');
           if (badge) badge.textContent = totalXP.toLocaleString('fr-FR') + ' XP';
           const corner = document.getElementById('xp-corner-val');

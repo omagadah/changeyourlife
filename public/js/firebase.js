@@ -29,11 +29,12 @@ export const auth      = getAuth(app);
 export const db        = getFirestore(app);
 export const functions = getFunctions(app);
 
-// ── XP - écriture de l'arbre côté client ────────────────────────────────────
-// Le projet est sur le plan Firebase gratuit (Spark) : les Cloud Functions ne
-// sont pas déployables. `addXp` (functions/src/index.ts) reste la référence
-// canonique ; on en reproduit ici la logique via tree-data.js (`applyXp` =
-// miroir exact). Écriture transactionnelle → pas de course entre deux actions.
+// ── XP - la Cloud Function d'abord, l'écriture client en repli ──────────────
+// `addXp` (functions/src/index.ts) est la voie normale depuis le 2026-10-17 :
+// plafond par appel, domaine sur liste, transaction serveur. Si la fonction ne
+// répond pas (réseau, quota, déploiement), on reproduit sa logique ici via
+// tree-data.js (`applyXp` = miroir exact) pour que l'arbre ne reste jamais
+// figé. Écriture transactionnelle → pas de course entre deux actions.
 // Sécurité : les Firestore rules autorisent l'owner à écrire SON `tree`. Un
 // utilisateur averti pourrait gonfler son propre XP - sans intérêt, il ne
 // triche que lui-même. L'anti-triche serveur reviendra avec le plan Blaze.
@@ -50,6 +51,26 @@ export async function awardXp(domain, amount) {
   const d = DOMAIN_ALIASES[domain] || domain;
   const branch = BRANCH_KEYS.includes(d) ? d : LEGACY_DOMAIN_MAP[d];
   if (!branch) return { ok: false, reason: 'invalid-domain' };
+
+  // LA VOIE NORMALE : la Cloud Function addXp (plafond par appel, domaine sur
+  // liste, transaction serveur). L'ecriture client ci-dessous n'est plus
+  // qu'un REPLI si la fonction ne repond pas : l'arbre ne doit jamais rester
+  // fige parce qu'un service est tombe (audit securite 2026-10-17, I7).
+  try {
+    const { httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js');
+    const call = httpsCallable(functions, 'addXp');
+    const r = await Promise.race([
+      call({ domain: branch, amount: a }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
+    ]);
+    if (r && r.data && r.data.ok !== false) {
+      try { showXpReward(branch, a); } catch (_) {}
+      try { document.dispatchEvent(new CustomEvent('cyl:xp-gained', { detail: { branch, amount: a } })); } catch (_) {}
+      return { ok: true, branch, amount: a, via: 'function' };
+    }
+  } catch (e) {
+    try { console.warn('[xp] addXp indisponible, repli client :', e && e.message); } catch (_) {}
+  }
 
   try {
     const ref = doc(db, 'users', uid);

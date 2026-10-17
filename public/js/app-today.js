@@ -21,6 +21,7 @@
 import { doc, getDoc, collection, getDocs, query, orderBy, limit }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { icon } from '/js/icons.js';
+import { xpTotal } from '/js/growth.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -138,8 +139,9 @@ export async function mountToday(db, uid, userData, prenom) {
   const items = GESTES.map((g) => ({ ...g, ...(etat[g.key] || {}) }));
   const faits = items.filter((g) => g.done).length;
 
-  const xp = Number(userData.xp_total || userData.totalXp || 0)
-    || ['xp_body', 'xp_heart', 'xp_etre', 'xp_order'].reduce((s, k) => s + (Number(userData[k]) || 0), 0);
+  // Les champs xp_total / xp_body n'ont jamais ete ecrits par personne : la
+  // barre affichait 0 XP. Une seule somme, celle de growth.js.
+  const xp = xpTotal(userData);
 
   // Serie : combien de jours d'affilee avec au moins un geste. Lue depuis les
   // habitudes et la meditation, les deux seules series deja tenues en base.
@@ -149,7 +151,19 @@ export async function mountToday(db, uid, userData, prenom) {
   // Le titre choisi dans le profil s'affichait dans l'ancienne ligne d'accueil.
   // Il la suit ici : le retirer aurait supprimé en silence une chose que
   // l'utilisateur a explicitement choisi d'afficher.
-  const titre = String(userData.selectedTitle || '').slice(0, 40);
+  const titre = String(userData.profileTitle || userData.selectedTitle || '').slice(0, 40);
+
+  // L'ARBRE NE REGRESSE JAMAIS (Finch : « no penalty for an off day »). Apres
+  // une absence, on accueille, on ne reproche pas : rien n'a ete perdu, et on
+  // le dit. La derniere action vient des branches (lastActionAt), la seule
+  // trace de vie datee que l'arbre tient.
+  let absence = 0;
+  try {
+    const br = (userData.tree && userData.tree.branches) || {};
+    const dernier = Math.max(0, ...Object.values(br).map((b) => Number(b && b.lastActionAt) || 0));
+    if (dernier) absence = Math.floor((Date.now() - dernier) / 86400000);
+  } catch (_) {}
+  const retour = absence >= 3;
 
   host.innerHTML = `
     <div class="td-head">
@@ -157,8 +171,9 @@ export async function mountToday(db, uid, userData, prenom) {
         ${anneau(faits, items.length)}
       </div>
       <div class="td-id">
-        <div class="td-hello">${esc(salutation())}${prenom ? ', ' + esc(prenom) : ''}</div>
+        <div class="td-hello">${retour ? 'Content de te revoir' : esc(salutation())}${prenom ? ', ' + esc(prenom) : ''}</div>
         <div class="td-date">${esc(date)}${titre ? ` <span class="td-titre">· ${esc(titre)}</span>` : ''}</div>
+        ${retour ? `<div class="td-retour">Ton arbre t'a attendu ${absence} jours. Il n'a rien perdu : il ne perd jamais ce qu'il a gagné.</div>` : ''}
       </div>
       <div class="td-meters">
         ${serie > 1 ? `<span class="td-meter" title="Jours d'affilée"><i>${icon('flame', { size: 13 })}</i>${serie} j</span>` : ''}

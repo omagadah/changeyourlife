@@ -5,8 +5,10 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { updateGlobalAvatar, saveWithFeedback, setContext } from '/js/common.js';
+import { updateGlobalAvatar, saveWithFeedback, setContext, toast, escapeHtml } from '/js/common.js';
 import { loadSkills, awardSkillXp } from '/js/skills.js';
+import { icon } from '/js/icons.js';
+import { BRANCHES, BRANCH_BY_KEY } from '/js/organizer-data.js';
 
 let auth, db, uid;
 let plan = { rhythm: {}, vitals: {}, tasks: [] };
@@ -22,22 +24,13 @@ try { initUserMenu(); } catch (e) {}
 if (!document.getElementById('cyl-emoji-js')) { const _e = document.createElement('script'); _e.id = 'cyl-emoji-js'; _e.src = '/js/emoji.js'; document.head.appendChild(_e); }
 
 // ── Métadonnées ──────────────────────────────────────────────────────────────
-const BRANCHES = [
-  { key: 'physio',          label: 'Physiologique',   emoji: '🌱', color: '#44bd48' },
-  { key: 'securite',        label: 'Sécurité',        emoji: '🛡️', color: '#fbbf24' },
-  { key: 'appartenance',    label: 'Appartenance',    emoji: '🤝', color: '#f87171' },
-  { key: 'estime',          label: 'Estime',          emoji: '🏆', color: '#fb923c' },
-  { key: 'cognitif',        label: 'Cognitif',        emoji: '📚', color: '#bdafd6' },
-  { key: 'esthetique',      label: 'Esthétique',      emoji: '🎨', color: '#d98cae' },
-  { key: 'accomplissement', label: 'Accomplissement', emoji: '🚀', color: '#67c96a' },
-  { key: 'transcendance',   label: 'Transcendance',   emoji: '✨', color: '#d6cde5' },
-];
-const BRANCH_BY_KEY = Object.fromEntries(BRANCHES.map((b) => [b.key, b]));
+// Les branches (libellé, icône, couleur) viennent d'organizer-data.js : une
+// seule source pour l'ORGANIZER, l'agenda et cette page.
 const VITALS = [
-  { key: 'sommeil',     label: 'Sommeil',     emoji: '🌙' },
-  { key: 'nutrition',   label: 'Nutrition',   emoji: '🥗' },
-  { key: 'hydratation', label: 'Hydratation', emoji: '💧' },
-  { key: 'mouvement',   label: 'Mouvement',   emoji: '🏃' },
+  { key: 'sommeil',     label: 'Sommeil',     ic: 'moon' },
+  { key: 'nutrition',   label: 'Nutrition',   ic: 'bowl' },
+  { key: 'hydratation', label: 'Hydratation', ic: 'droplet' },
+  { key: 'mouvement',   label: 'Mouvement',   ic: 'walk' },
 ];
 const VITAL_XP = 20;
 const RHYTHM_XP = 15;
@@ -45,24 +38,11 @@ const TASK_XP = 40;
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const uid4 = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-function toast(msg, xp) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.toggle('xp', !!xp);
-  t.classList.add('show');
-  clearTimeout(t._tm);
-  t._tm = setTimeout(() => t.classList.remove('show'), 2200);
-}
 async function award(branch, amount, label) {
   try {
     const fn = window._cyfFirebase && window._cyfFirebase.awardXp;
     if (fn) await fn(branch, amount);
-    toast(`+${amount} XP · ${label}`, true);
+    toast(`+${amount} XP · ${label}`, { type: 'success', duration: 2200 });
   } catch (e) { /* silencieux */ }
 }
 
@@ -80,6 +60,7 @@ onAuthStateChanged(auth, async (user) => {
   renderVitals();
   initTasks();
   renderTasks();
+  initEvening();
   updateCyl();
 });
 
@@ -114,13 +95,14 @@ function initRhythm() {
   if (time) time.value = r.time || '';
   if (focus) focus.value = r.focus || '';
   energy = Number(r.energy) || 0;
+  const paintEnergy = () => document.querySelectorAll('#energy-chips .energy-chip').forEach((x) => {
+    const on = Number(x.dataset.v) === energy;
+    x.classList.toggle('on', on);
+    x.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  paintEnergy();
   document.querySelectorAll('#energy-chips .energy-chip').forEach((c) => {
-    c.classList.toggle('on', Number(c.dataset.v) === energy);
-    c.onclick = () => {
-      energy = Number(c.dataset.v);
-      document.querySelectorAll('#energy-chips .energy-chip').forEach((x) =>
-        x.classList.toggle('on', Number(x.dataset.v) === energy));
-    };
+    c.onclick = () => { energy = Number(c.dataset.v); paintEnergy(); };
   });
   const btn = document.getElementById('btn-save-rhythm');
   if (btn) btn.onclick = saveRhythm;
@@ -138,9 +120,10 @@ async function saveRhythm() {
     savedDate: today,
   };
   await savePlan();
+  renderWorkload();
   updateCyl();
   if (!already) { await award('physio', RHYTHM_XP, 'Rythme du jour'); }
-  else { toast('Rythme mis à jour'); }
+  else { toast('Rythme mis à jour', { duration: 2200 }); }
 }
 
 // ── Base vitale ──────────────────────────────────────────────────────────────
@@ -151,11 +134,13 @@ function renderVitals() {
   grid.innerHTML = '';
   VITALS.forEach((v) => {
     const done = !!plan.vitals[v.key];
-    const el = document.createElement('div');
+    const el = document.createElement('button');
+    el.type = 'button';
     el.className = 'vital-card' + (done ? ' done' : '');
+    el.setAttribute('aria-pressed', done ? 'true' : 'false');
     el.innerHTML =
-      `<span class="vital-check">✓</span>` +
-      `<span class="vital-emoji">${v.emoji}</span>` +
+      `<span class="vital-check" aria-hidden="true">${icon('check', { size: 12 })}</span>` +
+      `<span class="ic" aria-hidden="true">${icon(v.ic, { size: 26 })}</span>` +
       `<span class="vital-name">${v.label}</span>`;
     el.onclick = () => toggleVital(v);
     grid.appendChild(el);
@@ -174,7 +159,7 @@ async function toggleVital(v) {
 // ── Tâches ───────────────────────────────────────────────────────────────────
 function initTasks() {
   const sel = document.getElementById('task-branch');
-  if (sel) sel.innerHTML = BRANCHES.map((b) => `<option value="${b.key}">${b.emoji} ${b.label}</option>`).join('');
+  if (sel) sel.innerHTML = BRANCHES.map((b) => `<option value="${b.key}">${escapeHtml(b.label)}</option>`).join('');
   const skSel = document.getElementById('task-skill');
   if (skSel) {
     const ids = Object.keys(userSkills);
@@ -209,7 +194,7 @@ async function toggleTask(id) {
     await award(t.branch, TASK_XP, BRANCH_BY_KEY[t.branch] ? BRANCH_BY_KEY[t.branch].label : 'Tâche');
     if (t.skillId && userSkills[t.skillId]) {
       const res = await awardSkillXp(db, uid, t.skillId, 25);
-      if (res && res.leveledUp) toast(`${userSkills[t.skillId].name} - niveau ${res.level} !`, true);
+      if (res && res.leveledUp) toast(`${userSkills[t.skillId].name} - niveau ${res.level}`, { type: 'success' });
     }
   }
 }
@@ -234,7 +219,71 @@ function publishContext() {
   } catch (_) { /* la journee s'affiche meme si CYL n'apprend rien */ }
 }
 
+// ── Charge du jour (Sunsama « workload warning ») ───────────────────────────
+// Le temps disponible declare donne une capacite indicative. Si les taches
+// ouvertes la depassent, on le DIT, sans trier a la place de la personne.
+const CAPACITE = { 1: 2, 3: 4, 6: 7, 9: 10 };
+function renderWorkload() {
+  const el = document.getElementById('workload-note');
+  if (!el) return;
+  const cap = CAPACITE[Number((plan.rhythm || {}).time)] || 0;
+  const ouvertes = plan.tasks.filter((t) => !t.done).length;
+  if (!cap || ouvertes <= cap) { el.hidden = true; return; }
+  const libelle = { 1: "moins d'une heure", 3: 'une à trois heures', 6: 'trois à six heures', 9: 'six heures et plus' }[Number(plan.rhythm.time)];
+  el.textContent = `${ouvertes} tâches ouvertes pour ${libelle} de disponible : certaines peuvent attendre demain, à toi de voir.`;
+  el.hidden = false;
+}
+
+// ── Clôture du soir ─────────────────────────────────────────────────────────
+function initEvening() {
+  const note = document.getElementById('evening-note');
+  const carry = document.getElementById('btn-carry');
+  const close = document.getElementById('btn-close-day');
+  const e = plan.evening && plan.evening.date === todayStr() ? plan.evening : null;
+  if (note && e) note.value = e.note || '';
+  if (carry) carry.addEventListener('click', async () => {
+    const restantes = plan.tasks.filter((t) => !t.done);
+    if (!restantes.length) { toast('Rien à reporter : tout est posé.', { type: 'success' }); return; }
+    const demain = new Date(); demain.setDate(demain.getDate() + 1);
+    const cle = `${demain.getFullYear()}-${String(demain.getMonth() + 1).padStart(2, '0')}-${String(demain.getDate()).padStart(2, '0')}`;
+    for (const t of restantes) { t.carried = (Number(t.carried) || 0) + 1; t.forDate = cle; }
+    await savePlan();
+    renderTasks();
+    toast(`${restantes.length} tâche${restantes.length > 1 ? 's reportées' : ' reportée'} à demain. Rien n'est perdu.`, { type: 'success' });
+  });
+  if (close) close.addEventListener('click', async () => {
+    const faites = plan.tasks.filter((t) => t.done);
+    plan.evening = { date: todayStr(), note: String((note && note.value) || '').slice(0, 280), closedAt: Date.now(), done: faites.length, open: plan.tasks.length - faites.length };
+    // Les taches faites sont rangees : la liste de demain repart propre, et le
+    // compte du jour reste dans plan.evening.
+    plan.tasks = plan.tasks.filter((t) => !t.done);
+    await savePlan();
+    renderTasks();
+    renderEvening();
+    try { await award('transcendance', 10, 'Clôture du soir'); } catch (_) {}
+  });
+  renderEvening();
+}
+function renderEvening() {
+  const sum = document.getElementById('evening-sum');
+  const done = document.getElementById('evening-done');
+  if (!sum) return;
+  const faites = plan.tasks.filter((t) => t.done).length;
+  const ouvertes = plan.tasks.length - faites;
+  const e = plan.evening && plan.evening.date === todayStr() ? plan.evening : null;
+  if (e) {
+    sum.textContent = `Journée clôturée. ${e.done} tâche${e.done > 1 ? 's' : ''} posée${e.done > 1 ? 's' : ''}, ${e.open} en attente.`;
+    if (done) { done.textContent = e.note ? `« ${e.note} »` : 'À demain.'; done.hidden = false; }
+  } else {
+    sum.textContent = plan.tasks.length
+      ? `Ce soir : ${faites} posée${faites > 1 ? 's' : ''}, ${ouvertes} encore ouverte${ouvertes > 1 ? 's' : ''}. Une journée à ${faites} sur ${plan.tasks.length} est une journée.`
+      : 'Aucune tâche aujourd\'hui. La journée a pu être pleine quand même.';
+    if (done) done.hidden = true;
+  }
+}
+
 function renderTasks() {
+  renderWorkload();
   publishContext();
   const list = document.getElementById('task-list');
   const prog = document.getElementById('tasks-progress');
@@ -242,7 +291,8 @@ function renderTasks() {
   const done = plan.tasks.filter((t) => t.done).length;
   if (prog) prog.textContent = plan.tasks.length ? `${done}/${plan.tasks.length} accomplies` : '';
   if (!plan.tasks.length) {
-    list.innerHTML = `<div class="empty-tasks">Ajoute ta première tâche du jour 🌿</div>`;
+    list.innerHTML = `<div class="empty"><span class="empty-ic">${icon('sapling')}</span>` +
+      `<h3>Rien de prévu pour l'instant</h3><p>Ajoute une première tâche du jour : chaque tâche accomplie nourrit une branche de ton arbre.</p></div>`;
     return;
   }
   // tâches non faites d'abord
@@ -254,10 +304,10 @@ function renderTasks() {
     card.className = 'task-card' + (t.done ? ' done' : '');
     card.style.setProperty('--bc', b.color);
     card.innerHTML =
-      `<button class="task-check" aria-label="Valider">✓</button>` +
+      `<button type="button" class="task-check" aria-label="${t.done ? 'Marquer comme à faire' : 'Valider'}" aria-pressed="${t.done ? 'true' : 'false'}"><span>${icon('check', { size: 14 })}</span></button>` +
       `<div class="task-body"><div class="task-title">${escapeHtml(t.title)}</div>` +
-      `<div class="task-branch">${b.emoji} ${b.label}${t.skillId && userSkills[t.skillId] ? ' · 🧗 ' + escapeHtml(userSkills[t.skillId].name) : ''}</div></div>` +
-      `<button class="task-del" aria-label="Supprimer">Suppr.</button>`;
+      `<div class="task-branch">${icon(b.ic, { size: 13 })}${escapeHtml(b.label)}${t.skillId && userSkills[t.skillId] ? ' · ' + escapeHtml(userSkills[t.skillId].name) : ''}</div></div>` +
+      `<button type="button" class="btn quiet sm task-del" aria-label="Supprimer la tâche">${icon('x', { size: 14 })}</button>`;
     card.querySelector('.task-check').onclick = () => toggleTask(t.id);
     card.querySelector('.task-del').onclick = () => delTask(t.id);
     list.appendChild(card);
@@ -273,18 +323,19 @@ function updateCyl() {
   const en = Number(r.energy) || 0;
   const vitalsDone = VITALS.filter((v) => plan.vitals[v.key]).length;
   let msg;
+  // CYL constate et propose : elle ne prescrit pas une journée.
   if (sleep && sleep < 6) {
-    msg = `Tu n'as dormi que ${sleep} h. Aujourd'hui, priorité au repos - on garde une journée légère, 1 ou 2 tâches suffisent.`;
+    msg = `Tu as dormi ${sleep} h. Une journée légère, avec une ou deux tâches, pourrait te convenir : à toi de voir.`;
   } else if (en && en <= 2) {
-    msg = `Énergie basse aujourd'hui. Choisis l'essentiel et avance pas à pas, sans te surcharger.`;
+    msg = `Ton énergie est basse aujourd'hui. Si tu veux, choisis une seule chose qui compte et laisse le reste pour plus tard.`;
   } else if (vitalsDone < 2) {
-    msg = `Pense à ta base : sommeil, eau, repas, mouvement. C'est elle qui tient tout le reste debout.`;
+    msg = `Ta base du jour (sommeil, eau, repas, mouvement) est encore peu cochée. C'est souvent elle qui tient le reste.`;
   } else if (r.focus) {
-    msg = `Belle énergie. Garde le cap sur ton focus : « ${escapeHtml(r.focus)} ».`;
+    msg = `Belle énergie. Ton focus du jour : « ${r.focus} ».`;
   } else if (r.savedDate) {
-    msg = `Ton rythme est calé. Ajoute tes tâches du jour, et coche-les au fur et à mesure - l'arbre grandira.`;
+    msg = `Ton rythme est calé. Tes tâches du jour viendront ici, et chaque coche fera pousser l'arbre.`;
   } else {
-    msg = `Bonjour. Commençons par caler ton rythme du jour.`;
+    msg = `Bonjour. Si tu veux, on commence par caler ton rythme du jour.`;
   }
-  el.innerHTML = msg;
+  el.textContent = msg;
 }

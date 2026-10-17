@@ -3,6 +3,7 @@
 // l'XP de l'utilisateur : jeune pousse à 0 XP -> arbre majestueux quand l'XP monte.
 
 import * as THREE from '/vendor/three/three.module.min.js';
+import { xpTotal } from '/js/growth.js';
 // Le constructeur de l'objet central (arbre OU architecture) est chargé en
 // différé selon l'univers choisi (cyl_universe).
 
@@ -30,18 +31,9 @@ function branchXpOf(userData, key) {
   return (b && Number(b.xp)) || 0;
 }
 
-function totalXpFrom(userData) {
-  let xp = 0;
-  const lv = (userData && userData.levels) || {};
-  for (const k in lv) xp += (lv[k] && lv[k].xp) || 0;
-  // si le schéma `tree` existe, on prend le max des deux sources
-  const br = userData && userData.tree && userData.tree.branches;
-  if (br && typeof br === 'object') {
-    let t = 0; for (const k in br) t += (br[k] && br[k].xp) || 0;
-    xp = Math.max(xp, t);
-  }
-  return xp;
-}
+// Une seule somme pour tout le site (growth.js) : l'arbre ne dit plus un
+// nombre different de la barre ou de l'accueil.
+function totalXpFrom(userData) { return xpTotal(userData); }
 
 export function initLivingTree(userData) {
   const stage = document.getElementById('tree-stage');

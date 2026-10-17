@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <script src="/js/theme-init.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Besoin d'aide, maintenant - Change Your Life</title>
+    <meta name="description" content="Les numéros qui répondent 24h/24 en France, ce que CYL fait et ne fait pas quand ça ne va pas, et le protocole de crise du site. Page publique, sans compte.">
+    <link rel="canonical" href="https://changeyourlife.ai/aide/">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#0a0f0a">
+    <link rel="stylesheet" href="/css/main.min.css"/>
+    <style>
+      /* Page PUBLIQUE : pas de barre latérale, pas de panneau CYL, pas de
+         compte. Quelqu'un qui arrive ici va peut-être mal : une colonne, de
+         grands numéros, rien qui bouge. */
+      body { overflow:auto; }
+      .aide { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+      .aide-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 28px; }
+      .aide-top a { color: var(--text-2); text-decoration:none; font-size:.88rem; }
+      .aide h1 { font-size: clamp(1.8rem, 1.4rem + 1.6vw, 2.6rem); margin: 0 0 8px; }
+      .aide .t-lead { margin: 0 0 26px; }
+      .num { display:grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items:center;
+        padding: 16px 18px; border: 1px solid var(--line-strong); border-radius: var(--r-lg);
+        background: var(--surface-1); text-decoration:none; color: inherit; margin-bottom: 10px; }
+      .num:hover { background: var(--surface-2); border-color: var(--glass-border-hover); }
+      .num b { font-size: 1.02rem; color: var(--text-1); }
+      .num small { display:block; font-size: .84rem; color: var(--text-2); margin-top: 2px; }
+      .num b, .num small { grid-column: 1; }
+      .num .n { grid-column: 2; grid-row: 1 / span 2; font-family: var(--font-display); font-size: 2rem; font-weight: 600;
+        color: var(--leaf-text); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+      .num.vital .n { color: var(--red); }
+      .aide h2 { font-size: 1.35rem; margin: 36px 0 10px; }
+      .aide p, .aide li { color: var(--text-2); line-height: 1.6; }
+      .aide ul { padding-left: 1.2rem; }
+      .aide li { margin: 6px 0; }
+      .breathe { display:flex; align-items:center; gap: 18px; padding: 18px 20px; border-radius: var(--r-lg);
+        border: 1px solid var(--line); background: var(--surface-1); margin-top: 10px; }
+      .breathe-dot { width: 46px; height: 46px; border-radius: 50%; flex-shrink:0; background: var(--leaf);
+        opacity: .85; animation: respire 8s ease-in-out infinite; }
+      @keyframes respire { 0%, 100% { transform: scale(.55); } 50% { transform: scale(1); } }
+      @media (prefers-reduced-motion: reduce) { .breathe-dot { animation: none; } }
+      .breathe p { margin: 0; }
+      .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--text-3); }
+      .foot a { color: var(--text-2); }
+    </style>
+</head>
+<body>
+  <main class="aide" aria-labelledby="t">
+    <div class="aide-top">
+      <a href="/">← Change Your Life</a>
+      <span class="t-eyebrow">Page publique, sans compte</span>
+    </div>
+    <h1 id="t">Besoin d'aide, maintenant.</h1>
+    <p class="t-lead">Si tu es en danger ou que tu penses à te faire du mal, parle à quelqu'un tout de suite. Ces numéros répondent, gratuitement, en France.</p>
+
+    <a class="num" href="tel:3114"><b>Prévention du suicide</b><small>National, gratuit, anonyme, 24h/24 et 7j/7</small><span class="n">3114</span></a>
+    <a class="num vital" href="tel:15"><b>SAMU, urgence vitale</b><small>Si tu es en danger immédiat, ou quelqu'un près de toi</small><span class="n">15</span></a>
+    <a class="num" href="tel:112"><b>Urgences, partout en Europe</b><small>Depuis n'importe quel téléphone, même sans crédit</small><span class="n">112</span></a>
+    <a class="num" href="sms:114"><b>Par SMS, si tu ne peux pas parler</b><small>Urgences pour personnes sourdes, malentendantes, ou qui ne peuvent pas téléphoner</small><span class="n">114</span></a>
+    <a class="num" href="tel:3919"><b>Violences faites aux femmes</b><small>Écoute, information, orientation. Anonyme et gratuit</small><span class="n">3919</span></a>
+    <a class="num" href="tel:119"><b>Enfance en danger</b><small>Pour un enfant ou un adolescent, 24h/24</small><span class="n">119</span></a>
+
+    <h2>Une minute pour respirer</h2>
+    <div class="breathe" aria-hidden="false">
+      <div class="breathe-dot" aria-hidden="true"></div>
+      <p>Inspire pendant que le point grandit, expire pendant qu'il rétrécit. Quatre secondes, quatre secondes. Trois fois. Puis appelle, ou écris à quelqu'un.</p>
+    </div>
+
+    <h2>Ce que CYL fait, et ne fait pas</h2>
+    <p>CYL est l'assistante du site. <strong>C'est une intelligence artificielle, pas un professionnel de santé.</strong> Elle ne pose pas de diagnostic, ne prescrit rien, ne remplace ni un médecin, ni un psychologue, ni une personne de confiance.</p>
+    <ul>
+      <li><strong>Quand elle détecte une détresse</strong> (mots qui parlent de se faire du mal, de ne plus vouloir vivre, d'un danger), elle arrête la conversation en cours et affiche ces numéros, avant toute autre réponse. Cette règle est appliquée sur nos serveurs, pas seulement dans ce qui s'affiche à l'écran.</li>
+      <li><strong>Elle ne décide jamais à ta place.</strong> Elle constate et propose ; elle n'ordonne pas et ne note pas une vie. C'est une règle du site, non négociable.</li>
+      <li><strong>Elle ne garde pas ta conversation</strong> au-delà de ta session de navigation, et le site ne l'utilise pas pour entraîner un modèle. Ce que tu écris dans ton journal ou tes notes ne lui est jamais transmis.</li>
+      <li><strong>Depuis ton espace</strong>, « Besoin d'aide ? » dans la barre latérale ouvre ces mêmes ressources en un geste, sur n'importe quelle page.</li>
+    </ul>
+
+    <h2>Si c'est pour quelqu'un d'autre</h2>
+    <p>Rester avec la personne, écouter sans juger, et composer le 3114 ensemble, c'est déjà beaucoup. Le 3114 conseille aussi les proches.</p>
+
+    <div class="foot">
+      Dernière vérification des numéros : octobre 2026. Si un numéro ne répond plus, <a href="mailto:noreply@changeyourlife.ai">écris-nous</a>.
+      · <a href="/confidentialite/">Confidentialité</a> · <a href="/cgu/">CGU</a>
+    </div>
+  </main>
+</body>
+</html>

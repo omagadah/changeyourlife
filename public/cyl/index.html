@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <script src="/js/theme-init.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Ce que CYL sait de moi - Change Your Life</title>
+    <meta name="description" content="Tout ce que CYL sait de toi, d'où ça vient, et comment l'effacer ligne par ligne.">
+    <meta name="robots" content="noindex">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#0a0f0a">
+    <link rel="stylesheet" href="/css/main.min.css"/>
+    <link rel="stylesheet" href="/css/transitions.css"/>
+    <style>
+      /* La mémoire visible et éditable : le standard 2026 des assistants
+         (Oura Memories, Replika, Pi). On montre TOUT ce que CYL reçoit, d'où ça
+         vient, et un bouton pour l'effacer. Rien n'est caché « pour simplifier ». */
+      .mem { display:grid; gap:14px; max-width:860px; }
+      .mem .card { padding:18px 20px; }
+      .mem-src { font-size:.74rem; color:var(--text-3); margin-top:2px; }
+      .mem .kv { margin-top:10px; }
+      .mem .kv dd { font-family:var(--font-body); font-size:.92rem; font-weight:500; font-variation-settings:normal; }
+      .mem-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+      .mem-list { list-style:none; padding:0; margin:10px 0 0; display:flex; flex-direction:column; gap:6px; }
+      .mem-list li { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:8px 0; border-top:1px solid var(--line); font-size:.9rem; color:var(--text-2); }
+      .mem-list li:first-child { border-top:none; }
+      .mem-list li b { color:var(--text-1); font-weight:600; }
+      .mem-note { font-size:.86rem; color:var(--text-2); line-height:1.55; margin:0; }
+      .mem-note + .mem-note { margin-top:8px; }
+      @media (max-width:640px) { .mem .card { padding:14px 14px; } }
+    </style>
+</head>
+<body>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="info"></span>Ce que CYL sait de moi</h1>
+        <p class="page-sub">Tout ce qui part avec une question à CYL, d'où ça vient, et comment l'effacer. Rien d'autre ne lui est transmis.</p>
+      </div>
+      <div class="page-actions">
+        <a class="btn quiet" href="/settings/#cyl"><span class="ic" data-icon="sliders"></span>Réglages de CYL</a>
+      </div>
+    </header>
+    <div class="page-body">
+      <div class="mem" id="mem">
+        <div class="sk" style="height:120px"></div>
+        <div class="sk" style="height:120px"></div>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/js/cyl-memoire.js"></script>
+</body>
+</html>

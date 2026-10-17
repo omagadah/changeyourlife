@@ -15,7 +15,7 @@
 
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
-const { candidats } = require('./_models.js');
+const { candidats, listAnthropic } = require('./_models.js');
 
 function getAdminApp() {
   if (getApps().length > 0) return getApps()[0];
@@ -77,6 +77,10 @@ module.exports = async function handler(req, res) {
   const attendu = process.env.CRON_SECRET;
   const recu = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   const estCron = Boolean(attendu) && recu === attendu;
+  // Sans secret, pas de rapport : chaque appel coute deux lectures d'annuaire
+  // et une ecriture Firestore, et le rapport nomme des variables internes.
+  // A la main : curl -H "Authorization: Bearer $CRON_SECRET" .../api/health
+  if (!estCron) return res.status(401).json({ statut: 'non autorise' });
 
   const [groq, gemini, firestore] = await Promise.all([
     checkModeles('groq', process.env.GROQ_API_KEY),
@@ -85,7 +89,13 @@ module.exports = async function handler(req, res) {
   ]);
 
   // La cle du chat de CYL porte deux noms selon l'historique du projet.
-  const anthropic = (process.env.API_ANTHROPIC_CHATBOT || process.env.ANTHROPIC_API_KEY)
+  const cleAnthropic = process.env.API_ANTHROPIC_CHATBOT || process.env.ANTHROPIC_API_KEY;
+  let annuaireAnthropic = null;
+  if (cleAnthropic) {
+    try { const l = await listAnthropic(cleAnthropic, 6000); annuaireAnthropic = { ok: true, detail: l.slice(0, 3).join(', ') }; }
+    catch (e) { annuaireAnthropic = { ok: false, detail: 'annuaire injoignable : ' + (e?.message || e) }; }
+  }
+  const anthropic = annuaireAnthropic ? annuaireAnthropic : (process.env.API_ANTHROPIC_CHATBOT || process.env.ANTHROPIC_API_KEY)
     ? { ok: true, detail: 'cle presente' }
     : { ok: false, detail: 'ni API_ANTHROPIC_CHATBOT ni ANTHROPIC_API_KEY' };
 

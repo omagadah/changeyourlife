@@ -1,27 +1,17 @@
 // /js/sommeil.js - externalisé depuis sommeil/index.html
 
     import { auth, db } from '/js/firebase.js';
+    import { serieAvecPardon } from '/js/growth.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, setDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { initUserMenu } from '/js/userMenu.js';
-    import { setContext } from '/js/common.js';
+    import { setContext, toast, escapeHtml } from '/js/common.js';
 
-
-    window.CYF_NAV_LINKS = [
-      { href: '/sommeil/',   label: '😴 Sommeil' },
-      { href: '/humeur/',    label: '🌡️ Humeur' },
-      { href: '/meditation/', label: '🧘 Méditation' },
-    ];
     try { initUserMenu(); } catch(e) {}
 
-    const QUALITY_EMOJI = { 1:'😩', 2:'😴', 3:'😐', 4:'😊', 5:'🌟' };
+    // L'echelle de qualite (--q1..--q5) est posee par la page, en tokens.
     const QUALITY_LABEL = { 1:'Mauvaise', 2:'Passable', 3:'Bonne', 4:'Excellente', 5:'Parfaite' };
-    const QUALITY_COLOR = { 1:'#ef4444', 2:'#f97316', 3:'#eab308', 4:'#22c55e', 5:'#a0d381' };
-
-    function escapeHtml(s) {
-      return String(s ?? '').replace(/[&<>"']/g, c =>
-        ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-    }
+    const QUALITY_COLOR = { 1:'var(--q1)', 2:'var(--q2)', 3:'var(--q3)', 4:'var(--q4)', 5:'var(--q5)' };
 
     let currentUser, allLogs = {}; // dateStr → {bedtime, waketime, quality, note, duration}
 
@@ -29,6 +19,12 @@
     const todayInput = document.getElementById('sleep-date');
     todayInput.value = new Date().toISOString().slice(0,10);
     todayInput.max = new Date().toISOString().slice(0,10);
+
+    // Le curseur dit sa valeur en mots au lecteur d'ecran.
+    const qualitySlider = document.getElementById('quality-slider');
+    const sayQuality = () => qualitySlider.setAttribute('aria-valuetext', QUALITY_LABEL[qualitySlider.value] || qualitySlider.value);
+    qualitySlider.addEventListener('input', sayQuality);
+    sayQuality();
 
     // ── Duration calculator ──
     function calcDuration(bed, wake) {
@@ -47,7 +43,7 @@
     function updateDuration() {
       const mins = calcDuration(document.getElementById('bedtime').value, document.getElementById('waketime').value);
       document.getElementById('duration-val').textContent = fmtDuration(mins);
-      const color = mins === null ? '#78705c' : mins >= 480 ? '#22c55e' : mins >= 360 ? '#eab308' : '#ef4444';
+      const color = mins === null ? 'var(--text-3)' : mins >= 480 ? 'var(--q5)' : mins >= 360 ? 'var(--q3)' : 'var(--q1)';
       document.getElementById('duration-val').style.color = color;
     }
     document.getElementById('bedtime').addEventListener('input', updateDuration);
@@ -79,6 +75,7 @@
         document.getElementById('bedtime').value = l.bedtime || '23:00';
         document.getElementById('waketime').value = l.waketime || '07:00';
         document.getElementById('quality-slider').value = l.quality || 3;
+        sayQuality();
         document.getElementById('sleep-note').value = l.note || '';
         document.getElementById('entry-title').textContent = 'Modifier la nuit d\'aujourd\'hui';
         document.getElementById('save-sleep-btn').textContent = 'Mettre à jour';
@@ -109,11 +106,11 @@
           try { await window._cyfFirebase.awardXp('physio', 10); } catch(_) {}
         }
         renderAll();
-        showToast(isNewNight ? '+10 XP · Nuit enregistrée !' : 'Nuit mise à jour !');
+        toast(isNewNight ? '+10 XP. Nuit enregistrée.' : 'Nuit mise à jour.', { type: 'success' });
         btn.textContent = 'Mettre à jour';
       } catch(e) {
         console.error(e);
-        showToast('Erreur, réessaie.');
+        toast('Impossible d\'enregistrer. Réessaie.', { type: 'error' });
         btn.textContent = 'Enregistrer cette nuit';
       }
       btn.disabled = false;
@@ -153,23 +150,27 @@
         const d = new Date(l.date);
         return d >= new Date(Date.now() - 7 * 86400000);
       });
+      // Sans nuit cette semaine, les moyennes se taisent : leurs blocs disparaissent.
+      const avgBlock = document.getElementById('stat-avg-block');
+      const qBlock = document.getElementById('stat-quality-block');
       if (last7.length) {
         const avgMins = last7.reduce((s,l) => s + (l.duration||0), 0) / last7.length;
         document.getElementById('stat-avg').textContent = fmtDuration(Math.round(avgMins));
-        const avgColor = avgMins >= 480 ? '#22c55e' : avgMins >= 360 ? '#eab308' : '#ef4444';
+        const avgColor = avgMins >= 480 ? 'var(--q5)' : avgMins >= 360 ? 'var(--q3)' : 'var(--q1)';
         document.getElementById('stat-avg').style.color = avgColor;
         const avgQ = (last7.reduce((s,l) => s + (l.quality||3), 0) / last7.length).toFixed(1);
         document.getElementById('stat-quality').textContent = avgQ + '/5';
-        document.getElementById('stat-quality').style.color = QUALITY_COLOR[Math.round(parseFloat(avgQ))] || '#f8f7f5';
+        document.getElementById('stat-quality').style.color = QUALITY_COLOR[Math.round(parseFloat(avgQ))] || 'var(--text-1)';
+        if (avgBlock) avgBlock.hidden = false;
+        if (qBlock) qBlock.hidden = false;
+      } else {
+        if (avgBlock) avgBlock.hidden = true;
+        if (qBlock) qBlock.hidden = true;
       }
 
       // Streak badge
-      let streak = 0;
-      const today = new Date();
-      for (let i = 0; i < 60; i++) {
-        const d = new Date(today); d.setDate(d.getDate()-i);
-        if (allLogs[dateKey(d)]) streak++; else break;
-      }
+      // Série avec pardon (growth.js) : une nuit manquée par semaine ne casse rien.
+      const streak = serieAvecPardon((k) => !!allLogs[k]).jours;
       if (streak > 1) {
         document.getElementById('streak-val').textContent = streak;
         document.getElementById('streak-badge').style.display = 'inline-flex';
@@ -194,7 +195,7 @@
         const fill = document.createElement('div'); fill.className = 'bar-fill';
         const pct = log ? Math.min(100, Math.round((log.duration||0) / maxMins * 100)) : 0;
         fill.style.height = pct + '%';
-        if (log) fill.style.background = `linear-gradient(180deg, ${QUALITY_COLOR[log.quality||3]}, ${QUALITY_COLOR[log.quality||3]}88)`;
+        if (log) fill.style.setProperty('--q-color', QUALITY_COLOR[log.quality||3]);
         fill.title = log ? `${fmtDuration(log.duration)} - ${QUALITY_LABEL[log.quality||3]}` : 'Pas de données';
         bg.appendChild(fill);
         const label = document.createElement('div'); label.className = 'bar-day';
@@ -215,17 +216,11 @@
         const label = dateObj.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
         return `<div class="log-item" style="--qi-color:${color}">
           <span class="log-date">${label}</span>
-          <span class="log-hours">${fmtDuration(l.duration)}</span>
-          <span class="log-quality">${QUALITY_EMOJI[l.quality||3]}</span>
-          <span class="log-note">${l.note ? escapeHtml(l.note) : '<em style="opacity:.4">Sans note</em>'}</span>
+          <span class="log-hours t-num">${fmtDuration(l.duration)}</span>
+          <span class="chip log-quality">${QUALITY_LABEL[l.quality||3]}</span>
+          <span class="log-note">${l.note ? escapeHtml(l.note) : '<em>Sans note</em>'}</span>
         </div>`;
       }).join('');
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.className = 'toast show';
-      setTimeout(() => t.classList.remove('show'), 2800);
     }
 
 

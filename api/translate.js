@@ -12,6 +12,10 @@
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { cleanText } = require('./_text.js');
+// La sortie du modele part dans un cache partage par tous les visiteurs : on
+// ne garde que les trois balises que safeI18nHtml reautorise cote client.
+const SAFE_TAG = /<(?!\/?(?:br\s*\/?|strong|em)>)[^>]*>/gi;
+const safeOut = (s) => cleanText(s).replace(SAFE_TAG, '');
 
 
 const MAX_ITEMS = 200;
@@ -115,7 +119,7 @@ STRICT RULES:
 - Preserve any HTML tags exactly (<br>, <strong>…) and their position.
 - Preserve placeholders like %s exactly.
 - Do NOT translate these: "ChangeYourLife.ai", "Cyl", "XP".
-- Use simple hyphens "-" only. NEVER use em dashes (—) or en dashes (–).
+- Use simple hyphens "-" only. NEVER use em dashes (-) or en dashes (–).
 - Keep the tone warm, encouraging, natural, not literal. Use the informal/friendly register when the language has one (tutoiement, du, tú…).
 - Output the translation in ${targetName} only.`;
 }
@@ -133,9 +137,22 @@ module.exports = async function handler(req, res) {
     return res.status(403).json({ error: 'Origine non autorisée' });
   }
 
-  const { target, targetName, items } = req.body || {};
+  // Le nom de la langue n'est PLUS accepte du client : il etait injecte tel
+  // quel dans le prompt systeme, ce qui permettait de dicter au modele une
+  // sortie arbitraire, ecrite ensuite dans le cache partage de tous les
+  // visiteurs (audit securite 2026-10-17). La table ci-dessous fait foi, et
+  // `target` sert aussi d'identifiant de document : il doit en faire partie.
+  const LANG_NAMES = {
+    en: 'English', es: 'Spanish', de: 'German', it: 'Italian', pt: 'Portuguese', nl: 'Dutch',
+    pl: 'Polish', ru: 'Russian', sv: 'Swedish', tr: 'Turkish', ja: 'Japanese',
+    zh: 'Chinese (Simplified)', ko: 'Korean', hi: 'Hindi', ar: 'Arabic',
+  };
+  const { target, items } = req.body || {};
   if (!target || typeof target !== 'string') {
     return res.status(400).json({ error: 'target (code langue) requis' });
+  }
+  if (!target.toLowerCase().startsWith('fr') && !LANG_NAMES[target]) {
+    return res.status(400).json({ error: 'langue non supportee' });
   }
   if (!items || typeof items !== 'object' || Array.isArray(items)) {
     return res.status(400).json({ error: 'items (objet {id: texte}) requis' });
@@ -145,6 +162,8 @@ module.exports = async function handler(req, res) {
   if (ids.length > MAX_ITEMS) {
     return res.status(413).json({ error: `Trop d'items (max ${MAX_ITEMS})` });
   }
+  if (ids.some((k) => k.length > 64)) return res.status(413).json({ error: 'identifiant trop long' });
+  if (ids.some((k) => String(items[k] || '').length > 600)) return res.status(413).json({ error: 'chaine trop longue' });
   const totalChars = ids.reduce((n, k) => n + String(items[k] || '').length, 0);
   if (totalChars > MAX_CHARS) {
     return res.status(413).json({ error: `Contenu trop volumineux (max ${MAX_CHARS} caractères)` });
@@ -216,7 +235,7 @@ module.exports = async function handler(req, res) {
     return res.status(503).json({ error: 'Service temporairement indisponible' });
   }
 
-  const langName = (typeof targetName === 'string' && targetName.trim()) || target;
+  const langName = LANG_NAMES[target];
   const system = sysPrompt(langName);
   // Seuls les textes encore inconnus partent au modele : un lot de 45 chaines
   // dont 44 sont deja en cache ne coute qu'une seule chaine.
@@ -232,11 +251,11 @@ module.exports = async function handler(req, res) {
       // est enregistree pour tous les visiteurs suivants. Un tiret long qui
       // passe ici s'y figerait definitivement, meme si on le nettoyait ensuite
       // a l'affichage.
-      if (typeof tr === 'string' && tr.trim()) add[fp(missing[id])] = cleanText(tr);
+      if (typeof tr === 'string' && tr.trim()) add[fp(missing[id])] = safeOut(tr);
     }
     await writeCache(db, target, add);
     const out = Object.assign({}, known);
-    for (const id of missingIds) if (parsed && parsed[id]) out[id] = cleanText(parsed[id]);
+    for (const id of missingIds) if (parsed && parsed[id]) out[id] = safeOut(parsed[id]);
     return res.status(200).json({ translations: out, provider });
   }
 

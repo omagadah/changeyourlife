@@ -1,7 +1,8 @@
 // /journal/ - journal de bord, gestion des entrées + stats + filtres.
 // Externalisé depuis l'inline pour permettre une CSP sans 'unsafe-inline'.
-import { updateGlobalAvatar, setContext } from '/js/common.js';
+import { updateGlobalAvatar, setContext, toast } from '/js/common.js';
 import { initUserMenu } from '/js/userMenu.js';
+import { icon } from '/js/icons.js';
 import { showXpFloat } from '/js/xp.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { collection, doc, getDocs, setDoc, deleteDoc, orderBy, query, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -37,7 +38,8 @@ const DOMAINS = [
   { key:'order', label:'Ordre' },
 ];
 const EMOTION_MAP = Object.fromEntries(EMOTIONS.map(e => [e.key, e]));
-const DOMAIN_COLORS = { body:'#44bd48', heart:'#ef4444', etre:'#c8e5b6', order:'#f59e0b', none:'#807a6b' };
+// Les couleurs de domaine viennent des tokens : le theme clair les suit.
+const DOMAIN_COLORS = { body:'var(--corps)', heart:'var(--coeur)', etre:'var(--etre)', order:'var(--ordre)', none:'var(--text-3)' };
 const MOOD_SCORE = { joy:9, grateful:8, calm:7, neutral:5, worried:4, sad:3, angry:2 };
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -73,28 +75,34 @@ async function loadEntries() {
 
 // ── Render: filter pills ────────────────────────────────────────────────────
 const DOMAIN_FILTER_CFG = [
-  { key:'body',  label:'🏃 Corps',  cls:'dom-body'  },
-  { key:'heart', label:'❤️ Cœur',  cls:'dom-heart' },
-  { key:'etre',  label:'✨ Être',   cls:'dom-etre'  },
-  { key:'order', label:'📋 Ordre',  cls:'dom-order' },
+  { key:'body',  label:'Corps' },
+  { key:'heart', label:'Cœur' },
+  { key:'etre',  label:'Être' },
+  { key:'order', label:'Ordre' },
 ];
 
 function renderFilterPills() {
   // Emotion pills
   const fp = document.getElementById('filter-pills'); fp.innerHTML = '';
   EMOTIONS.forEach(({ key, emoji }) => {
-    const p = document.createElement('button'); p.className = `filter-pill${filterEmotion===key?' active':''}`;
-    p.textContent = emoji; p.title = EMOTION_MAP[key].label;
+    const on = filterEmotion === key;
+    const p = document.createElement('button'); p.type = 'button';
+    p.className = `chip filter-pill${on?' on':''}`;
+    p.setAttribute('aria-pressed', on ? 'true' : 'false');
+    p.textContent = emoji; p.title = EMOTION_MAP[key].label; p.setAttribute('aria-label', EMOTION_MAP[key].label);
     p.addEventListener('click', () => { filterEmotion = filterEmotion===key ? null : key; renderFilterPills(); renderList(); });
     fp.appendChild(p);
   });
 
-  // Domain pills
+  // Domain pills : un point de la couleur du domaine, puis son nom
   const dp = document.getElementById('domain-filter-pills'); dp.innerHTML = '';
-  DOMAIN_FILTER_CFG.forEach(({ key, label, cls }) => {
-    const p = document.createElement('button');
-    p.className = `filter-pill ${cls}${filterDomain===key?' active':''}`;
-    p.textContent = label;
+  DOMAIN_FILTER_CFG.forEach(({ key, label }) => {
+    const on = filterDomain === key;
+    const p = document.createElement('button'); p.type = 'button';
+    p.className = `chip filter-pill${on?' on':''}`;
+    p.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const dot = document.createElement('span'); dot.className = 'jr-dot'; dot.style.background = DOMAIN_COLORS[key];
+    p.append(dot, document.createTextNode(label));
     p.addEventListener('click', () => { filterDomain = filterDomain===key ? null : key; renderFilterPills(); renderList(); });
     dp.appendChild(p);
   });
@@ -103,7 +111,8 @@ function renderFilterPills() {
   const hasFilter = filterEmotion || filterDomain || searchQuery;
   const existingClear = fp.querySelector('.clear-btn');
   if (hasFilter && !existingClear) {
-    const c = document.createElement('button'); c.className = 'filter-pill clear-btn'; c.textContent = '× Tout';
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'chip filter-pill clear-btn';
+    c.innerHTML = icon('x', { size: 12 }) + ' Tout';
     c.addEventListener('click', () => { filterEmotion=null; filterDomain=null; searchQuery=''; document.getElementById('journal-search').value=''; document.getElementById('search-clear').style.display='none'; renderFilterPills(); renderList(); });
     fp.appendChild(c);
   }
@@ -162,28 +171,32 @@ function renderList() {
     weekEntries.forEach(e => { if (e.emotion && e.emotion !== 'neutral') emotionCount[e.emotion] = (emotionCount[e.emotion]||0)+1; });
     const domEmo = Object.entries(emotionCount).sort((a,b)=>b[1]-a[1])[0];
     const domEmoData = domEmo ? EMOTION_MAP[domEmo[0]] : null;
-    statsEl.innerHTML = `
-      ${streak > 0 ? `<span class="sidebar-stat-pill streak">${streak} jour${streak>1?'s':''} d'affilée</span>` : ''}
-      ${domEmoData ? `<span class="sidebar-stat-pill mood">${domEmoData.emoji} ${domEmoData.label} cette semaine</span>` : ''}
-    `;
+    // Pas de pastille quand il n'y a rien a dire : le bloc se tait.
+    statsEl.innerHTML = [
+      streak > 0 ? `<span class="chip gold">${icon('flame', { size: 13 })}${streak} jour${streak>1?'s':''} d'affilée</span>` : '',
+      domEmoData ? `<span class="chip">${domEmoData.emoji} ${domEmoData.label} cette semaine</span>` : '',
+    ].join('');
   } else if (statsEl) { statsEl.innerHTML = ''; }
   list.innerHTML = '';
   if (!visible.length) {
-    const empty = document.createElement('div'); empty.className = 'empty-list';
-    const noMsg = entries.length ? 'Aucun résultat pour ce filtre' : 'Aucune entrée';
-    const noSub = entries.length ? 'Modifie ou efface le filtre' : 'Commence par écrire aujourd\'hui';
-    empty.innerHTML = `<div class="empty-list-icon">📝</div><div>${noMsg}</div><div style="font-size:.75rem;margin-top:4px">${noSub}</div>`;
+    const empty = document.createElement('div'); empty.className = 'empty';
+    const h = document.createElement('h3'); h.textContent = entries.length ? 'Aucun résultat pour ce filtre' : 'Aucune entrée';
+    const p = document.createElement('p'); p.textContent = entries.length ? 'Modifie ou efface le filtre.' : 'Commence par écrire aujourd\'hui.';
+    empty.append(h, p);
     list.appendChild(empty); return;
   }
   visible.forEach(e => {
-    const item = document.createElement('div');
+    // Un bouton, pas une div : la liste se parcourt au clavier.
+    const item = document.createElement('button');
+    item.type = 'button';
     item.className = `entry-item${e.id === readId ? ' active' : ''}`;
     item.dataset.id = e.id;
+    if (e.id === readId) item.setAttribute('aria-current', 'true');
     const domColor = DOMAIN_COLORS[e.domain || 'none'];
     item.style.setProperty('--entry-color', domColor);
 
     // Top row: emoji + date + word badge
-    const row = document.createElement('div'); row.className = 'entry-item-row';
+    const row = document.createElement('span'); row.className = 'entry-item-row';
     const emo = EMOTION_MAP[e.emotion] || EMOTION_MAP.neutral;
     const emoSpan = document.createElement('span'); emoSpan.className = 'entry-emoji';
     emoSpan.textContent = emo.emoji;
@@ -202,17 +215,17 @@ function renderList() {
 
     // Title or preview
     if (e.title) {
-      const titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:0.85rem;font-weight:700;color:#e9e7e2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      const titleEl = document.createElement('span');
+      titleEl.className = 'entry-title';
       titleEl.textContent = e.title;
       item.appendChild(titleEl);
       if (e.content) {
-        const prev = document.createElement('div'); prev.className = 'entry-preview';
+        const prev = document.createElement('span'); prev.className = 'entry-preview';
         prev.textContent = (e.content||'').slice(0,50) + ((e.content||'').length > 50 ? '…' : '');
         item.appendChild(prev);
       }
     } else {
-      const prev = document.createElement('div'); prev.className = 'entry-preview';
+      const prev = document.createElement('span'); prev.className = 'entry-preview';
       const raw = (e.content || '').slice(0, 65);
       prev.textContent = (e.content||'').length > 65 ? raw + '…' : (raw || '(vide)');
       item.appendChild(prev);
@@ -241,7 +254,7 @@ function renderMoodChart() {
     const bg = document.createElement('div'); bg.className = 'mood-bar-bg';
     const fill = document.createElement('div'); fill.className = 'mood-bar-fill';
     fill.style.height = `${h}px`;
-    fill.style.background = avg >= 7 ? '#59a862' : avg >= 5 ? '#8dca67' : avg > 0 ? '#f59e0b' : 'rgba(255,255,255,.06)';
+    fill.style.background = avg >= 7 ? 'var(--leaf)' : avg >= 5 ? 'var(--moss)' : avg > 0 ? 'var(--gold)' : 'var(--surface-3)';
     bg.appendChild(fill); bwrap.appendChild(bg);
     const ll = document.createElement('div'); ll.className = 'mood-bar-label'; ll.textContent = lbl;
     bwrap.appendChild(ll); chart.appendChild(bwrap);
@@ -253,24 +266,40 @@ function buildPickers() {
   // Emotions
   const ep = document.getElementById('emotion-picker'); ep.innerHTML = '';
   EMOTIONS.forEach(({ key, emoji, label }) => {
-    const btn = document.createElement('button'); btn.className = `emotion-btn${key===selEmotion?' selected':''}`; btn.dataset.key = key;
+    const btn = document.createElement('button'); btn.type = 'button';
+    btn.className = 'emotion-btn'; btn.dataset.key = key;
     const s1 = document.createElement('span'); s1.textContent = emoji;
     const s2 = document.createElement('span'); s2.textContent = label;
     btn.append(s1, s2);
-    btn.addEventListener('click', () => { selEmotion = key; ep.querySelectorAll('.emotion-btn').forEach(b => b.classList.toggle('selected', b.dataset.key===key)); });
+    btn.addEventListener('click', () => setEmotion(key));
     ep.appendChild(btn);
   });
   // Domains
   const dp = document.getElementById('domain-picker'); dp.innerHTML = '';
   DOMAINS.forEach(({ key, label }) => {
-    const btn = document.createElement('button'); btn.className = `domain-btn${key===selDomain?` sel-${key}`:''}`; btn.dataset.key = key; btn.textContent = label;
-    btn.addEventListener('click', () => { selDomain = key; dp.querySelectorAll('.domain-btn').forEach(b => { b.className = `domain-btn${b.dataset.key===key?` sel-${key}`:''}`; }); });
+    const btn = document.createElement('button'); btn.type = 'button';
+    btn.className = 'chip domain-btn'; btn.dataset.key = key; btn.textContent = label;
+    btn.addEventListener('click', () => setDomain(key));
     dp.appendChild(btn);
   });
+  setEmotion(selEmotion); setDomain(selDomain);
 }
 
-function setEmotion(key) { selEmotion = key; document.querySelectorAll('#emotion-picker .emotion-btn').forEach(b => b.classList.toggle('selected', b.dataset.key===key)); }
-function setDomain(key) { selDomain = key; document.querySelectorAll('#domain-picker .domain-btn').forEach(b => { b.className = `domain-btn${b.dataset.key===key?` sel-${key}`:''}`; }); }
+// Un choix est un bouton pressé : aria-pressed porte l'état, le style suit.
+function setEmotion(key) {
+  selEmotion = key;
+  document.querySelectorAll('#emotion-picker .emotion-btn').forEach(b => {
+    const on = b.dataset.key === key;
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+function setDomain(key) {
+  selDomain = key;
+  document.querySelectorAll('#domain-picker .domain-btn').forEach(b => {
+    const on = b.dataset.key === key;
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
 
 // ── Views ──────────────────────────────────────────────────────────────────
 function showView(name) {
@@ -281,7 +310,7 @@ function showView(name) {
   const statsPanel = document.getElementById('view-stats');
   statsPanel.classList.toggle('active', name === 'stats');
   const statsBtn = document.getElementById('btn-stats-toggle');
-  if (statsBtn) statsBtn.classList.toggle('active', name === 'stats');
+  if (statsBtn) { statsBtn.classList.toggle('active', name === 'stats'); statsBtn.setAttribute('aria-pressed', name === 'stats' ? 'true' : 'false'); }
 }
 
 // ── Stats view ────────────────────────────────────────────────────────────
@@ -289,7 +318,8 @@ function renderStatsView() {
   const content = document.getElementById('stats-content');
   const sub     = document.getElementById('stats-sub');
   if (!entries.length) {
-    content.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#78705c">Aucune entrée pour analyser</div>';
+    sub.textContent = '';
+    content.innerHTML = '<div class="empty"><h3>Rien à lire pour l\'instant</h3><p>Les statistiques se dessinent à partir de ta première entrée.</p></div>';
     return;
   }
   sub.textContent = `Analyse de ${entries.length} entrée${entries.length>1?'s':''}`;
@@ -325,25 +355,25 @@ function renderStatsView() {
   const domCount = {};
   entries.forEach(e => { const k=e.domain||'none'; domCount[k]=(domCount[k]||0)+1; });
 
-  const domColors  = { body:'#44bd48', heart:'#f87171', etre:'#bdafd6', order:'#fbbf24', none:'#807a6b' };
+  const domColors  = DOMAIN_COLORS;
   const domLabels  = { body:'Corps', heart:'Cœur', etre:'Être', order:'Ordre', none:'Général' };
 
   content.innerHTML = `
     <!-- KPIs -->
     <div>
-      <div class="stats-section-title">Vue d'ensemble</div>
+      <div class="sec-label">Vue d'ensemble</div>
       <div class="stats-kpi-row">
-        <div class="kpi-card"><div class="kpi-val">${entries.length}</div><div class="kpi-label">Entrées totales</div></div>
-        <div class="kpi-card"><div class="kpi-val">${streak}</div><div class="kpi-label">Série actuelle</div></div>
-        <div class="kpi-card"><div class="kpi-val">${longestStreak}</div><div class="kpi-label">Meilleure série</div></div>
-        <div class="kpi-card"><div class="kpi-val">${avgWords}</div><div class="kpi-label">Mots / entrée</div></div>
-        <div class="kpi-card"><div class="kpi-val">${totalWords}</div><div class="kpi-label">Mots écrits</div></div>
+        <div class="kpi-card"><div class="kpi-val t-num">${entries.length}</div><div class="kpi-label">Entrées totales</div></div>
+        <div class="kpi-card"><div class="kpi-val t-num">${streak}</div><div class="kpi-label">Série actuelle</div></div>
+        <div class="kpi-card"><div class="kpi-val t-num">${longestStreak}</div><div class="kpi-label">Meilleure série</div></div>
+        <div class="kpi-card"><div class="kpi-val t-num">${avgWords}</div><div class="kpi-label">Mots par entrée</div></div>
+        <div class="kpi-card"><div class="kpi-val t-num">${totalWords}</div><div class="kpi-label">Mots écrits</div></div>
       </div>
     </div>
 
     <!-- Monthly activity -->
     <div>
-      <div class="stats-section-title">Activité · 6 derniers mois</div>
+      <div class="sec-label">Activité sur 6 mois</div>
       <div class="months-chart">
         ${monthData.map(m=>`
           <div class="month-col">
@@ -359,7 +389,7 @@ function renderStatsView() {
 
     <!-- Emotions -->
     <div>
-      <div class="stats-section-title">Émotions dominantes</div>
+      <div class="sec-label">Émotions dominantes</div>
       <div class="emo-stat-list">
         ${emoSorted.slice(0,6).map(([key,cnt])=>{
           const em = EMOTION_MAP[key] || EMOTION_MAP.neutral;
@@ -374,11 +404,11 @@ function renderStatsView() {
 
     <!-- Domains -->
     <div>
-      <div class="stats-section-title">Répartition par domaine</div>
+      <div class="sec-label">Répartition par domaine</div>
       <div class="domain-stat-list">
         ${Object.entries(domCount).sort((a,b)=>b[1]-a[1]).map(([k,cnt])=>`
           <div class="domain-stat-pill">
-            <div class="domain-stat-dot" style="background:${domColors[k]||'#807a6b'}"></div>
+            <div class="domain-stat-dot" style="background:${domColors[k]||domColors.none}"></div>
             <span class="domain-stat-name">${domLabels[k]||k}</span>
             <span class="domain-stat-cnt">${cnt}</span>
           </div>
@@ -476,10 +506,14 @@ function openEditor(id = null) {
       // Show daily prompt (cycles by day)
       if (promptDiv && promptText) {
         const dayIndex = Math.floor(Date.now() / 86400000) % PROMPTS.length;
-        promptText.textContent = PROMPTS[dayIndex];
+        let amorce = PROMPTS[dayIndex];
+        promptText.textContent = amorce;
         promptDiv.style.display = 'block';
+        // « Moments » (Day One) : si l'agenda Google est connecté et qu'un
+        // événement a eu lieu aujourd'hui, l'amorce part de la vraie journée.
+        momentDuJour().then((m) => { if (m && !contentEl.value) { amorce = m; promptText.textContent = m; } }).catch(() => {});
         promptDiv.onclick = () => {
-          contentEl.value = PROMPTS[dayIndex] + '\n\n';
+          contentEl.value = amorce + '\n\n';
           promptDiv.style.display = 'none';
           contentEl.focus();
           updateWC();
@@ -502,7 +536,7 @@ function openReadView(id) {
   document.getElementById('read-date').textContent = ts.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + ts.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('read-emotion-badge').textContent = `${emo.emoji} ${emo.label}`;
   const domColor = DOMAIN_COLORS[e.domain || 'none'];
-  document.getElementById('read-domain-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:${domColor};display:inline-block"></span>${dm ? dm.label : 'Général'}</span>`;
+  document.getElementById('read-domain-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px"><span class="jr-dot" style="background:${domColor}"></span>${dm ? dm.label : 'Général'}</span>`;
   document.getElementById('read-word-count').textContent = `${wc} mot${wc!==1?'s':''}`;
   document.getElementById('read-domain-bar').style.background = `linear-gradient(90deg, ${domColor}, transparent)`;
   document.getElementById('read-content').textContent = e.content || '';
@@ -628,17 +662,17 @@ document.getElementById('btn-export').addEventListener('click', () => {
 
 // ── Button wiring ──────────────────────────────────────────────────────────
 document.getElementById('btn-new-entry').addEventListener('click', () => { readId = null; openEditor(null); });
+// Le geste de l'etat vide mene au meme endroit que le bouton d'en-tete.
+const btnEmptyNew = document.getElementById('btn-empty-new');
+if (btnEmptyNew) btnEmptyNew.addEventListener('click', () => { readId = null; openEditor(null); });
 document.getElementById('btn-cancel-edit').addEventListener('click', () => { localStorage.removeItem(DRAFT_KEY); editingId = null; showView(readId ? 'read' : 'empty'); if (readId) openReadView(readId); });
 document.getElementById('btn-edit-entry').addEventListener('click', () => { if (readId) openEditor(readId); });
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function tsToDate(ts) { return ts?.toDate ? ts.toDate() : new Date(ts || Date.now()); }
 function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-function showToast(msg, err = false) {
-  const t = document.getElementById('toast'); t.textContent = msg;
-  t.className = `toast${err?' error':''} show`;
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+// Le retour visuel passe par le toast commun (common.js), plus de #toast local.
+function showToast(msg, err = false) { toast(msg, { type: err ? 'error' : 'success' }); }
 
 // ── Stats toggle ──────────────────────────────────────────────────────────
 document.getElementById('btn-stats-toggle').addEventListener('click', () => {
@@ -653,3 +687,30 @@ document.getElementById('btn-stats-toggle').addEventListener('click', () => {
 
 // ── Init: show empty state ─────────────────────────────────────────────────
 showView('empty');
+
+
+// ── Moments : l'événement du jour, lu dans Google Agenda s'il est connecté ──
+// Rien n'est stocké, rien ne part à CYL : seul le titre du premier événement
+// passé de la journée sert d'amorce. Silence total en cas d'échec.
+async function momentDuJour() {
+  try {
+    const g = await import('/js/gcal.js');
+    if (!g.isConnected()) return null;
+    const token = g.getToken();
+    if (!token) return null;
+    const d = new Date(); const j0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const j1 = new Date(j0); j1.setDate(j1.getDate() + 1);
+    const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=10'
+      + '&timeMin=' + encodeURIComponent(j0.toISOString()) + '&timeMax=' + encodeURIComponent(j1.toISOString());
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 6000);
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + token }, signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const data = await r.json();
+    const now = Date.now();
+    const passes = (data.items || []).filter((e) => e && e.summary && !(e.start && e.start.date) && new Date((e.end && e.end.dateTime) || 0).getTime() < now);
+    const ev = passes[passes.length - 1] || (data.items || []).find((e) => e && e.summary);
+    if (!ev) return null;
+    return 'Tu avais « ' + String(ev.summary).slice(0, 80) + ' » aujourd\'hui. Comment ça s\'est passé ?';
+  } catch (_) { return null; }
+}

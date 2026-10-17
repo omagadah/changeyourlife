@@ -1,371 +1,262 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Agenda vivant - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="La projection temporelle de tout le reste : tes événements Google, tes fiches datées et les jalons de tes objectifs, en semaine, en mois ou en rivière." />
-  <link rel="stylesheet" href="/css/main.min.css" />
+  <meta charset="UTF-8">
+  <script src="/js/theme-init.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Agenda - Change Your Life</title>
+  <meta name="description" content="La projection temporelle de tout le reste : tes événements Google, tes fiches datées et les jalons de tes objectifs, en semaine, en mois ou en rivière.">
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="robots" content="noindex" />
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/main.min.css"/>
+  <link rel="stylesheet" href="/css/transitions.css"/>
   <style>
     /* ════════════════════════════════════════════════════════════
-       AGENDA VIVANT
-       L'agenda n'est pas un module de plus : c'est la projection
-       temporelle de tout le reste. Trois vues sur une même source.
+       AGENDA : trois vues sur une même source. La grille défile dans
+       la scène, pas la page : le corps est une colonne flex fermée.
        ════════════════════════════════════════════════════════════ */
-    body { color:var(--text-1); }
-    /* La barre de navigation du site est fixe et haute de 62 px : sans ce
-       décalage, l'en-tête de l'agenda passait dessous et ses boutons
-       devenaient inatteignables. */
-    .ap-shell {
-      position:fixed; inset:72px 16px 16px; background:var(--glass-bg);
-      backdrop-filter:blur(16px); border-radius:20px; border:1px solid var(--line);
-      padding:14px 16px 12px; display:grid; grid-template-rows:auto auto auto 1fr;
-      gap:11px; overflow:hidden; box-shadow:var(--shadow-lg);
-    }
+    .page-body { display:flex; flex-direction:column; gap:11px; overflow:hidden; }
     #ap-notice[hidden] { display:none; }
-    @media (max-width:700px){ .ap-shell { inset:68px 8px 8px; padding:11px 10px 8px; } }
 
-    /* ── Barre de commande, sur deux rangées lisibles ──
-       Rangée 1 : identité + vues + actions.  Rangée 2 : période.
-       Tout tenait sur une ligne avant, et se chevauchait dès que la fenêtre
-       rétrécissait. */
-    .ap-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .ap-bar2 { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-      padding-top:10px; border-top:1px solid var(--line); }
-    .ap-title { font-size:1.02rem; font-weight:800; letter-spacing:-.3px; line-height:1.15; }
-    .ap-title small { display:block; font-size:.66rem; font-weight:500; color:var(--text-3);
-      letter-spacing:.06em; text-transform:uppercase; margin-top:1px; }
-    .ap-sp { flex:1; }
-    .ap-range { font-size:.9rem; color:var(--text-1); font-weight:700; }
+    /* Rangée de période : précédent / aujourd'hui / suivant + libellé. */
+    .ap-bar2 { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .ap-range { font-family:var(--font-display); font-size:1.05rem; color:var(--text-1); font-weight:600; margin-left:4px; }
     .ap-range::first-letter { text-transform:uppercase; }
-    .ap-tabs { display:flex; gap:4px; padding:4px; background:var(--surface-1);
-      border:1px solid var(--line); border-radius:12px; }
-    .ap-tabs button { padding:6px 13px; border:none; background:none; border-radius:9px; cursor:pointer;
-      font:inherit; font-size:.82rem; font-weight:700; color:var(--text-2); transition:all .18s var(--ease); }
-    .ap-tabs button:hover { color:var(--text-1); }
-    .ap-tabs button.on { background:rgba(132,194,94,.18); color:var(--leaf);
-      box-shadow:inset 0 0 0 1px rgba(132,194,94,.3); }
-    .ap-b { padding:7px 13px; border-radius:11px; cursor:pointer; font:inherit; font-size:.8rem;
-      font-weight:700; color:var(--text-2); background:var(--surface-1);
-      border:1px solid var(--line); transition:all .18s var(--ease); }
-    .ap-b:hover { color:var(--text-1); border-color:var(--line-hov,rgba(132,194,94,.4)); transform:translateY(-1px); }
-    .ap-b.primary { background:linear-gradient(160deg,#84c25e,#4a7a3a); color:#08130a; border-color:transparent; }
-    .ap-b.ico { width:34px; padding:7px 0; text-align:center; }
 
     /* ── Corps : rail + scène ── */
-    .ap-body { display:grid; grid-template-columns:210px minmax(0,1fr); gap:14px; overflow:hidden; }
-    @media (max-width:1000px){ .ap-body { grid-template-columns:minmax(0,1fr); } .ap-rail { display:none; } }
+    .ap-body { flex:1; min-height:0; display:grid; grid-template-columns:210px minmax(0,1fr); gap:14px; overflow:hidden; }
     .ap-rail { overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
-    .ap-card { background:var(--surface-1); border:1px solid var(--line); border-radius:14px; padding:12px; }
-    .ap-card h3 { font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
-      color:var(--text-3); font-weight:800; margin-bottom:8px; }
-    .ap-brow { display:flex; align-items:center; gap:8px; padding:6px 7px; border-radius:9px; width:100%;
+    .ap-rail .card { padding:12px; }
+    .ap-rail .sec-label { margin:0 0 8px; }
+    .ap-brow { display:flex; align-items:center; gap:8px; padding:6px 7px; min-height:36px; border-radius:9px; width:100%;
       border:none; background:none; cursor:pointer; font:inherit; font-size:.8rem; color:var(--text-2);
-      transition:all .15s var(--ease); }
+      transition:background var(--duration), color var(--duration); }
     .ap-brow:hover { background:var(--surface-2); color:var(--text-1); }
-    .ap-brow.off { opacity:.34; }
+    .ap-brow.off { opacity:.4; }
     .ap-brow .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
-    .ap-brow .n { margin-left:auto; font-size:.7rem; color:var(--text-3); font-variant-numeric:tabular-nums; }
-    .ap-lbl { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-3); margin-bottom:5px; }
+    .ap-brow .n { margin-left:auto; font-size:.72rem; color:var(--text-3); font-variant-numeric:tabular-nums; }
+    .ap-lbl { display:flex; justify-content:space-between; font-size:.74rem; color:var(--text-3); margin-bottom:5px; }
     .ap-bar-g { height:6px; border-radius:99px; background:var(--surface-2); overflow:hidden; }
-    .ap-bar-g i { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--leaf),var(--gold)); }
-    .ap-hint { font-size:.7rem; color:var(--text-3); line-height:1.4; margin-top:7px; }
+    .ap-bar-g i { display:block; height:100%; border-radius:99px; background:var(--leaf); }
+    .ap-hint { font-size:.76rem; color:var(--text-3); line-height:1.45; margin-top:7px; }
+    .ap-hint b { color:var(--text-2); }
 
-    .ap-scene { overflow:auto; border:1px solid var(--line); border-radius:16px;
-      background:var(--surface-1); min-height:0; }
-    /* La grille occupe toute la hauteur disponible : sans ça, elle s'arrêtait
-       à 22 h et laissait un grand vide sous la dernière heure. */
+    .ap-scene { overflow:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface-1); min-height:0; }
+    /* La grille occupe toute la hauteur disponible. */
     .ap-scene > .ap-weekwrap { display:flex; flex-direction:column; min-height:100%; }
     .ap-weekbody { flex:1; }
     .ap-empty { padding:40px 20px; text-align:center; color:var(--text-3); font-size:.86rem; line-height:1.7; }
-    .ap-empty a { color:var(--leaf); }
+    .ap-empty a { color:var(--leaf-text); }
 
     /* ── Vue SEMAINE ── */
     .ap-weekhd { display:grid; grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr));
       border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg-surface); z-index:5; }
     .ap-weekhd .dh { padding:8px 4px; text-align:center; }
-    .ap-weekhd .dow { font-size:.64rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); }
-    .ap-weekhd .dnum { font-size:1rem; font-weight:800; margin-top:1px; }
-    .ap-weekhd .dh.today .dnum { color:#08130a; background:var(--leaf); width:26px; height:26px;
-      line-height:26px; border-radius:50%; margin:1px auto 0; }
-    .ap-weekhd .cap { font-size:.6rem; color:var(--text-3); margin-top:2px; }
-    .ap-allday { display:grid; grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr));
-      border-bottom:1px solid var(--line); background:var(--surface-1); }
-    .ap-allday .lb { font-size:.56rem; color:var(--text-3); text-align:right; padding:5px 7px 5px 0;
-      letter-spacing:.05em; text-transform:uppercase; }
-    .ap-allday .cell { border-left:1px solid var(--line); padding:3px; min-height:26px;
-      display:flex; flex-direction:column; gap:2px; }
-    .ap-jal { font-size:.64rem; font-weight:700; padding:2px 5px; border-radius:5px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:3px solid currentColor; }
+    .ap-weekhd .dow { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); }
+    .ap-weekhd .dnum { font-family:var(--font-display); font-size:1.05rem; font-weight:600; margin-top:1px; }
+    .ap-weekhd .dh.today .dnum { color:#08130a; background:var(--leaf); width:26px; height:26px; line-height:26px; border-radius:50%; margin:1px auto 0; }
+    .ap-weekhd .cap { font-size:.68rem; color:var(--text-3); margin-top:2px; }
+    .ap-allday { display:grid; grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr)); border-bottom:1px solid var(--line); background:var(--surface-1); }
+    .ap-allday .lb { font-size:.62rem; color:var(--text-3); text-align:right; padding:5px 7px 5px 0; letter-spacing:.05em; text-transform:uppercase; }
+    .ap-allday .cell { border-left:1px solid var(--line); padding:3px; min-height:26px; display:flex; flex-direction:column; gap:2px; }
+    .ap-jal { font-size:.68rem; font-weight:600; padding:2px 5px; border-radius:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:3px solid currentColor; }
     .ap-jal.done { opacity:.5; text-decoration:line-through; }
-    .ap-weekbody { position:relative; display:grid;
-      grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr)); }
-    .ap-hours .h { height:52px; font-size:.63rem; color:var(--text-3); text-align:right;
-      padding-right:7px; transform:translateY(-6px); }
-    .ap-col { position:relative; border-left:1px solid var(--line); }
-    .ap-col .slot { height:52px; border-bottom:1px solid rgba(221,205,160,.05); }
+    .ap-weekbody { position:relative; display:grid; grid-template-columns:50px repeat(var(--nd,7),minmax(0,1fr)); }
+    .ap-hours .h { height:52px; font-size:.68rem; color:var(--text-3); text-align:right; padding-right:7px; transform:translateY(-6px); }
+    .ap-col { position:relative; border-left:1px solid var(--line); cursor:cell; }
+    .ap-col .slot { height:52px; border-bottom:1px solid var(--line); }
     .ap-col.weekend { background:var(--surface-1); }
-    .ap-now { position:absolute; left:0; right:0; height:2px; background:var(--gold); z-index:6;
-      pointer-events:none; box-shadow:0 0 12px rgba(231,177,92,.6); }
-    .ap-now::before { content:''; position:absolute; left:-4px; top:-3px; width:8px; height:8px;
-      border-radius:50%; background:var(--gold); }
-    .ap-ev { position:absolute; border-radius:8px; padding:4px 6px; overflow:hidden; font-size:.7rem;
-      line-height:1.2; cursor:default; border-left:3px solid currentColor; }
-    .ap-ev .t { font-weight:700; color:var(--text-1); display:block; white-space:nowrap;
-      overflow:hidden; text-overflow:ellipsis; }
-    .ap-ev .s { color:var(--text-3); font-size:.62rem; }
+    .ap-now { position:absolute; left:0; right:0; height:2px; background:var(--gold); z-index:6; pointer-events:none; }
+    .ap-now::before { content:''; position:absolute; left:-4px; top:-3px; width:8px; height:8px; border-radius:50%; background:var(--gold); }
+    .ap-ev { position:absolute; border-radius:8px; padding:4px 6px; overflow:hidden; font-size:.72rem; line-height:1.2; cursor:default; border-left:3px solid currentColor; }
+    .ap-ev .t { font-weight:600; color:var(--text-1); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ap-ev .s { color:var(--text-3); font-size:.66rem; }
     .ap-ev.gcal { background:var(--surface-2); border-left-color:var(--text-3); }
     .ap-ev.done { opacity:.5; } .ap-ev.done .t { text-decoration:line-through; }
-    .ap-ev.late { border-left-color:#e0785f; }
+    .ap-ev.late { border-left-color:var(--red); }
 
-    /* ── Vue MOIS : la canopée ── */
+    /* ── Vue MOIS ── */
     .ap-month { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; padding:8px; }
-    .mdow { font-size:.64rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3);
-      text-align:center; padding:3px 0; }
-    .ap-mday { position:relative; min-height:86px; border-radius:11px; padding:6px 7px;
-      border:1px solid var(--line); background:var(--surface-1); cursor:pointer; overflow:hidden;
-      transition:all .18s var(--ease); }
-    .ap-mday:hover { border-color:rgba(132,194,94,.4); transform:translateY(-2px); }
-    .ap-mday.out { opacity:.3; }
-    .ap-mday.today { border-color:var(--leaf); box-shadow:inset 0 0 0 1px rgba(132,194,94,.3); }
-    .ap-mday .n { font-size:.78rem; font-weight:700; color:var(--text-2); }
-    .ap-mday .leaf { position:absolute; right:-14px; top:-14px; width:54px; height:54px;
-      border-radius:0 60% 0 60%; filter:blur(1px); transform:rotate(18deg); }
+    .mdow { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); text-align:center; padding:3px 0; }
+    .ap-mday { position:relative; min-height:86px; border-radius:11px; padding:6px 7px; border:1px solid var(--line); background:var(--surface-1); cursor:pointer; overflow:hidden;
+      transition:border-color var(--duration), background var(--duration); }
+    .ap-mday:hover { border-color:var(--glass-border-hover); background:var(--surface-2); }
+    .ap-mday.out { opacity:.35; }
+    .ap-mday.today { border-color:var(--leaf); }
+    .ap-mday .n { font-size:.8rem; font-weight:600; color:var(--text-2); }
+    .ap-mday .leaf { position:absolute; right:-14px; top:-14px; width:54px; height:54px; border-radius:0 60% 0 60%; transform:rotate(18deg); opacity:.35; }
     .ap-mday .chips { margin-top:5px; display:flex; flex-direction:column; gap:2px; }
-    .ap-mday .chip { font-size:.61rem; padding:1px 5px; border-radius:5px; background:rgba(0,0,0,.25);
-      border-left:2px solid currentColor; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ap-mday .chip { min-height:0; font-size:.66rem; padding:1px 5px; border-radius:5px; background:var(--surface-2); border:none; border-left:2px solid currentColor; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
     .ap-mday .chip.more { color:var(--text-3); border-left-color:transparent; }
-    .ap-mday .chip b { color:var(--text-1); font-weight:700; }
+    .ap-mday .chip b { color:var(--text-1); font-weight:600; }
     .ap-mday .fruit { position:absolute; bottom:5px; right:7px; font-size:.78rem; }
 
-    /* ── Vue RIVIÈRE : la signature ── */
+    /* ── Vue RIVIÈRE ── */
     .ap-river { padding:10px 4px 14px; }
     .ap-rscale { display:grid; grid-template-columns:120px minmax(0,1fr); gap:10px; padding:0 12px 6px; }
     .ap-rticks { position:relative; height:16px; }
-    .ap-rticks span { position:absolute; font-size:.62rem; color:var(--text-3); transform:translateX(-50%); }
-    .ap-rlane { display:grid; grid-template-columns:120px minmax(0,1fr); align-items:center;
-      gap:10px; padding:6px 12px; }
-    .ap-rlane .name { font-size:.74rem; font-weight:600; color:var(--text-2);
-      display:flex; align-items:center; gap:6px; }
+    .ap-rticks span { position:absolute; font-size:.66rem; color:var(--text-3); transform:translateX(-50%); }
+    .ap-rlane { display:grid; grid-template-columns:120px minmax(0,1fr); align-items:center; gap:10px; padding:6px 12px; }
+    .ap-rlane .name { font-size:.76rem; font-weight:600; color:var(--text-2); display:flex; align-items:center; gap:6px; }
     .ap-rlane .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
-    .ap-rtrack { position:relative; height:36px; border-radius:10px;
-      background:var(--surface-1); border:1px solid var(--line); }
-    .ap-ribbon { position:absolute; top:7px; height:22px; border-radius:99px; display:flex;
-      align-items:center; padding:0 10px; font-size:.67rem; font-weight:700; white-space:nowrap;
-      overflow:hidden; color:#08130a; }
-    .ap-ribbon .fill { position:absolute; left:0; top:0; bottom:0; background:rgba(255,255,255,.35);
-      border-radius:99px; }
+    .ap-rtrack { position:relative; height:36px; border-radius:10px; background:var(--surface-1); border:1px solid var(--line); }
+    .ap-ribbon { position:absolute; top:7px; height:22px; border-radius:99px; display:flex; align-items:center; padding:0 10px; font-size:.68rem; font-weight:600; white-space:nowrap; overflow:hidden; color:#08130a; }
+    .ap-ribbon .fill { position:absolute; left:0; top:0; bottom:0; background:rgba(255,255,255,.35); border-radius:99px; }
     .ap-ribbon span { position:relative; z-index:2; }
-    .ap-jalon { position:absolute; top:11px; width:13px; height:13px;
-      transform:rotate(45deg) translateX(-6px); border-radius:3px; border:2px solid; z-index:3; }
-    .ap-rnow { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold); z-index:4;
-      box-shadow:0 0 10px var(--gold); }
-    .ap-rroots { padding:12px 14px 0; font-size:.7rem; color:var(--text-3);
-      border-top:1px dashed var(--line); margin-top:8px; }
+    .ap-jalon { position:absolute; top:11px; width:13px; height:13px; transform:rotate(45deg) translateX(-6px); border-radius:3px; border:2px solid; z-index:3; }
+    .ap-rnow { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold); z-index:4; }
+    .ap-rroots { padding:12px 14px 0; font-size:.74rem; color:var(--text-3); border-top:1px dashed var(--line); margin-top:8px; }
 
-    /* ── Bandeau « rien n'est daté » ──
-       Rouge posé, terre cuite : on signale un manque, on n'annonce pas une
-       panne. Il porte toujours le geste qui le fait disparaître. */
-    .ap-notice { display:flex; align-items:center; gap:13px; padding:11px 14px;
-      border-radius:13px; background:rgba(224,120,95,.09);
-      border:1px solid rgba(224,120,95,.30); }
-    .ap-notice .ic { font-size:1.3rem; flex-shrink:0; }
-    .ap-notice b { display:block; font-size:.85rem; color:#e58e73; }
-    .ap-notice small { display:block; font-size:.75rem; color:var(--text-2);
-      line-height:1.45; margin-top:2px; }
-    .ap-notice-b { margin-left:auto; flex-shrink:0; padding:8px 14px; border-radius:99px;
-      text-decoration:none; font-size:.78rem; font-weight:700; white-space:nowrap;
-      background:rgba(224,120,95,.16); border:1px solid rgba(224,120,95,.45);
-      color:#f0a48d; transition:background .18s,color .18s; }
-    .ap-notice-b:hover { background:rgba(224,120,95,.3); color:#fff; }
-    @media (max-width:700px){
-      .ap-notice { flex-wrap:wrap; }
-      .ap-notice-b { margin-left:0; width:100%; text-align:center; }
-    }
+    /* ── Bandeau « rien n'est daté » : un manque, pas une panne. ── */
+    .ap-notice { display:flex; align-items:center; gap:13px; padding:11px 14px; border-radius:var(--r); background:var(--surface-1); border:1px dashed var(--line-strong); }
+    .ap-notice .ic { color:var(--gold-text); flex-shrink:0; }
+    .ap-notice b { display:block; font-size:.86rem; color:var(--text-1); }
+    .ap-notice small { display:block; font-size:.78rem; color:var(--text-2); line-height:1.45; margin-top:2px; }
+    .ap-notice-b { margin-left:auto; flex-shrink:0; }
 
     /* Créneau dessiné pendant le glissement (avant saisie du titre) */
-    .ap-ghost { position:absolute; left:3px; right:3px; z-index:7; border-radius:8px;
-      pointer-events:none; display:flex; align-items:center; justify-content:center;
-      font-size:.66rem; font-weight:700; color:var(--leaf);
-      background:rgba(132,194,94,.20); border:1px dashed rgba(132,194,94,.7); }
-    .ap-col { cursor:cell; }
+    .ap-ghost { position:absolute; left:3px; right:3px; z-index:7; border-radius:8px; pointer-events:none; display:flex; align-items:center; justify-content:center;
+      font-size:.68rem; font-weight:600; color:var(--leaf-text); background:rgba(132,194,94,.2); border:1px dashed rgba(132,194,94,.7); }
+    .ap-ghost.pending { border-style:solid; background:rgba(132,194,94,.28); }
 
     /* Fiche posée sur l'agenda mais pas encore rangée dans la matrice */
-    .ap-untri { display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px;
-      font-size:.56rem; font-weight:800; letter-spacing:.03em; text-transform:uppercase;
-      vertical-align:1px; background:rgba(231,177,92,.22); color:var(--gold-soft);
-      border:1px solid rgba(231,177,92,.4); }
+    .ap-untri { display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px; font-size:.6rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+      vertical-align:1px; background:rgba(231,177,92,.18); color:var(--gold-text); border:1px solid rgba(231,177,92,.4); }
 
-    .ap-toast { position:fixed; top:20px; left:50%; transform:translate(-50%,-130px);
-      background:rgba(74,122,58,.96); color:var(--text-1); padding:10px 20px; border-radius:10px;
-      font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.85rem; }
-    .ap-toast.show { transform:translate(-50%,0); }
+    /* ══ CRÉATION RAPIDE : la bulle ancrée au créneau, en fixed sur le body. ══ */
+    .qc-pop { position:fixed; z-index:120; width:308px; border-radius:var(--r); background:var(--sheet-bg); border:1px solid var(--line-strong);
+      box-shadow:var(--shadow); padding:13px 14px 12px; opacity:0; transform:scale(.94) translateY(6px);
+      transition:opacity .17s ease, transform .21s cubic-bezier(.16,1,.3,1); }
+    .qc-pop.in { opacity:1; transform:none; }
+    .qc-pop.left  { transform-origin:right center; }
+    .qc-pop.right { transform-origin:left center; }
+    .qc-pop.above { transform-origin:center bottom; }
+    .qc-pop.below { transform-origin:center top; }
+    .qc-when { display:flex; align-items:center; gap:7px; font-size:.74rem; color:var(--text-3); margin-bottom:9px; }
+    .qc-when b { color:var(--text-2); font-weight:600; }
+    .qc-x { margin-left:auto; background:none; border:none; color:var(--text-3); cursor:pointer; font-size:.9rem; line-height:1; min-width:32px; min-height:32px; border-radius:6px; }
+    .qc-x:hover { color:var(--text-1); background:var(--surface-2); }
+    .qc-t { width:100%; box-sizing:border-box; font:inherit; font-size:.94rem; font-weight:600; color:var(--text-1); background:none; border:none; border-bottom:2px solid var(--line); padding:5px 2px 7px; }
+    .qc-t:focus { outline:none; border-bottom-color:var(--leaf); }
+    .qc-t::placeholder { color:var(--text-3); font-weight:500; }
+    .qc-lb { display:block; font-size:.66rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-3); margin:12px 0 6px; }
+    .qc-br { display:flex; flex-wrap:wrap; gap:4px; }
+    .qc-b { display:inline-flex; align-items:center; gap:4px; min-height:28px; padding:0 9px; border-radius:99px; font:inherit; font-size:.72rem; font-weight:600; cursor:pointer;
+      background:var(--surface-1); border:1px solid var(--line); color:var(--text-3); transition:color var(--duration), border-color var(--duration); }
+    .qc-b:hover { color:var(--text-1); border-color:var(--ac); }
+    .qc-b.on { background:var(--acs); border-color:var(--ac); color:var(--text-1); }
+    .qc-acts { display:flex; align-items:center; gap:8px; margin-top:13px; }
+    .qc-hint { font-size:.68rem; color:var(--text-3); }
+    .qc-save { margin-left:auto; min-height:36px; padding:0 15px; border-radius:9px; font:inherit; font-size:.8rem; font-weight:600; cursor:pointer;
+      border:1px solid rgba(132,194,94,.45); background:rgba(132,194,94,.18); color:var(--leaf-text); }
+    .qc-save:hover { background:rgba(132,194,94,.3); }
+    .qc-save:disabled { opacity:.45; cursor:not-allowed; }
 
-    @media (max-width:700px){
-      .ap-shell { inset:8px; padding:12px 10px 8px; }
-      .ap-title small { display:none; }
+    @media (max-width:900px) {
+      .ap-body { grid-template-columns:minmax(0,1fr); }
+      .ap-rail { display:none; }
+    }
+    @media (max-width:640px) {
       .ap-month { gap:3px; padding:5px; }
       .ap-mday { min-height:62px; }
       .ap-mday .chips { display:none; }
+      .ap-notice { flex-wrap:wrap; }
+      .ap-notice-b { margin-left:0; width:100%; }
+      /* Trop étroit pour une bulle ancrée : carte posée en bas, à portée de pouce. */
+      .qc-pop { left:8px !important; right:8px; width:auto; top:auto !important; bottom:12px; transform-origin:center bottom !important; transform:translateY(14px); }
+      .qc-pop.in { transform:none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .qc-pop { transition:none; }
     }
 
     /* ════════════════════════════════════════════════════════════
-       IMPRESSION - on imprime la VUE COURANTE, sur fond blanc, sans
-       les commandes. Le but est un planning qu'on affiche au mur,
-       pas une capture d'écran sombre qui vide une cartouche d'encre.
+       IMPRESSION - la VUE COURANTE, sur fond blanc, sans les commandes :
+       un planning qu'on affiche au mur, pas une capture d'écran sombre.
        ════════════════════════════════════════════════════════════ */
     @media print {
       @page { margin: 12mm; size: landscape; }
       body { background:#fff !important; color:#111 !important; }
-      .site-nav, .ap-tabs, .ap-b, .ap-rail, .ap-toast, .user-panel-trigger,
-      #cyf-theme-toggle, .lang-switch--floating, .cylp, .cylp-fab { display:none !important; }
-      .ap-shell { position:static; inset:auto; background:#fff !important; border:none;
-        box-shadow:none; padding:0; display:block; }
+      .cyl-sb, .cyl-sb-burger, .cyl-sb-veil, .page-actions, .ap-bar2 .btn, .ap-rail, .ap-notice, .cylp, .cylp-fab { display:none !important; }
+      .page-shell { position:static !important; inset:auto !important; background:#fff !important; border:none; box-shadow:none; padding:0; display:block; overflow:visible; }
+      .page-body { overflow:visible; display:block; }
       .ap-body { display:block; }
       .ap-scene { overflow:visible; border:1px solid #ccc; background:#fff !important; }
-      .ap-bar { margin-bottom:8mm; }
-      .ap-title { color:#111 !important; font-size:1.2rem; }
-      .ap-range { color:#444 !important; }
+      .page-head { margin-bottom:8mm; }
+      .page-head h1, .ap-range { color:#111 !important; }
+      .page-sub { color:#444 !important; }
       .ap-weekhd { position:static; background:#fff !important; border-color:#ccc; }
       .ap-weekhd .dnum, .ap-mday .n, .ap-ev .t, .ap-rlane .name { color:#111 !important; }
       .ap-weekhd .dow, .ap-weekhd .cap, .ap-hours .h, .ap-ev .s { color:#555 !important; }
       .ap-col, .ap-col .slot, .ap-allday, .ap-allday .cell, .ap-mday { border-color:#ddd !important; }
       .ap-col.weekend, .ap-mday { background:#fafafa !important; }
-      .ap-ev, .ap-jal, .ap-mday .chip { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .ap-ev, .ap-jal, .ap-mday .chip, .ap-ribbon, .ap-jalon, .ap-bar-g i { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
       .ap-ev { background:#f4f4f4 !important; }
       .ap-mday .leaf, .ap-now { display:none !important; }
-      .ap-ribbon, .ap-jalon, .ap-bar-g i { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
       .ap-weekbody { page-break-inside:avoid; }
-    }
-
-    /* ══ CREATION RAPIDE - la bulle ancree au bloc, facon Google Agenda ══
-       Une fenetre au centre de l ecran fait perdre le lieu du geste : on vient
-       de dessiner un creneau, la reponse doit apparaitre A COTE de ce creneau.
-       La bulle est en position:fixed sur le body (et non dans .ap-shell) pour
-       ne jamais etre coupee par le defilement de la grille. */
-    .qc-pop { position:fixed; z-index:120; width:308px; border-radius:14px;
-      background:var(--panel,#111a12); border:1px solid var(--line);
-      box-shadow:0 16px 44px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
-      padding:13px 14px 12px;
-      opacity:0; transform:scale(.94) translateY(6px);
-      transition:opacity .17s ease, transform .21s cubic-bezier(.16,1,.3,1); }
-    .qc-pop.in { opacity:1; transform:none; }
-    /* La bulle grandit depuis son point d ancrage et s y retracte : le geste se
-       referme la ou il a commence, sans effet de saut. */
-    .qc-pop.left  { transform-origin:right center; }
-    .qc-pop.right { transform-origin:left center; }
-    .qc-pop.above { transform-origin:center bottom; }
-    .qc-pop.below { transform-origin:center top; }
-
-    .qc-when { display:flex; align-items:center; gap:7px; font-size:.71rem;
-      color:var(--text-3); margin-bottom:9px; }
-    .qc-when b { color:var(--text-2); font-weight:700; }
-    .qc-x { margin-left:auto; background:none; border:none; color:var(--text-3);
-      cursor:pointer; font-size:.85rem; line-height:1; padding:2px 4px; border-radius:6px; }
-    .qc-x:hover { color:var(--text-1); background:var(--surface-2); }
-
-    .qc-t { width:100%; box-sizing:border-box; font:inherit; font-size:.94rem; font-weight:600;
-      color:var(--text-1); background:none; border:none; border-bottom:2px solid var(--line);
-      padding:5px 2px 7px; }
-    .qc-t:focus { outline:none; border-bottom-color:var(--leaf); }
-    .qc-t::placeholder { color:var(--text-3); font-weight:500; }
-
-    .qc-lb { display:block; font-size:.62rem; font-weight:800; letter-spacing:.07em;
-      text-transform:uppercase; color:var(--text-3); margin:12px 0 6px; }
-    .qc-br { display:flex; flex-wrap:wrap; gap:4px; }
-    .qc-b { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:99px;
-      font-size:.68rem; font-weight:600; cursor:pointer; background:var(--surface-1);
-      border:1px solid var(--line); color:var(--text-3); transition:all .14s; }
-    .qc-b:hover { color:var(--text-1); border-color:var(--ac); }
-    .qc-b.on { background:var(--acs); border-color:var(--ac); color:var(--text-1); }
-
-    .qc-acts { display:flex; align-items:center; gap:8px; margin-top:13px; }
-    .qc-hint { font-size:.63rem; color:var(--text-3); }
-    .qc-save { margin-left:auto; padding:7px 15px; border-radius:9px; font-size:.77rem;
-      font-weight:700; cursor:pointer; border:1px solid rgba(132,194,94,.45);
-      background:rgba(132,194,94,.18); color:var(--leaf-text,#a8d98a); }
-    .qc-save:hover { background:rgba(132,194,94,.3); }
-    .qc-save:disabled { opacity:.45; cursor:not-allowed; }
-
-    /* Le creneau dessine reste visible et plein pendant la saisie. */
-    .ap-ghost.pending { border-style:solid; background:rgba(132,194,94,.28); }
-
-    @media (max-width:600px){
-      /* Trop etroit pour une bulle ancree : elle devient une carte posee en bas,
-         a portee de pouce, sans jamais sortir de l ecran. */
-      .qc-pop { left:8px !important; right:8px; width:auto;
-        top:auto !important; bottom:12px; transform-origin:center bottom !important;
-        transform:translateY(14px); }
-      .qc-pop.in { transform:none; }
     }
   </style>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu"></button>
-  </nav>
-
-  <main class="ap-shell">
-    <div class="ap-bar">
-      <div class="ap-title">Agenda vivant<small>tout ce qui a une date</small></div>
-      <div class="ap-tabs" id="ap-tabs">
-        <button data-v="week" class="on">Semaine</button>
-        <button data-v="month">Mois</button>
-        <button data-v="river">Rivière</button>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="calendar"></span>Agenda</h1>
+        <p class="page-sub">Tout ce qui a une date : tes créneaux, tes fiches datées et les jalons de tes objectifs.</p>
       </div>
-      <div class="ap-sp"></div>
-      <button class="ap-b" id="ap-print" title="Imprimer la vue affichée">Imprimer</button>
-      <button class="ap-b" id="ap-export" title="Télécharger un fichier .ics importable partout">Exporter .ics</button>
-      <button class="ap-b primary" id="ap-gsync">Connecter Google Agenda</button>
-    </div>
-
-    <div class="ap-bar2">
-      <button class="ap-b ico" id="ap-prev" aria-label="Période précédente">‹</button>
-      <button class="ap-b" id="ap-today">Aujourd'hui</button>
-      <button class="ap-b ico" id="ap-next" aria-label="Période suivante">›</button>
-      <span class="ap-range" id="ap-range"></span>
-    </div>
-
-    <div id="ap-notice" hidden></div>
-
-    <div class="ap-body">
-      <aside class="ap-rail">
-        <div class="ap-card">
-          <h3>Branches</h3>
-          <div id="ap-branches"></div>
+      <div class="page-actions">
+        <div class="seg" id="ap-tabs" role="group" aria-label="Vue">
+          <button type="button" data-v="week" class="on">Semaine</button>
+          <button type="button" data-v="month">Mois</button>
+          <button type="button" data-v="river">Rivière</button>
         </div>
-        <div class="ap-card">
-          <h3>Charge de la semaine</h3>
-          <div class="ap-lbl"><span>Engagé</span><span id="ap-load-txt">-</span></div>
-          <div class="ap-bar-g"><i id="ap-load-bar" style="width:0%"></i></div>
-          <div class="ap-hint" id="ap-load-hint"></div>
-        </div>
-        <div class="ap-card">
-          <h3>Sortie vers tes appareils</h3>
-          <div class="ap-hint">
-            <b style="color:var(--text-2)">Google Agenda</b> - une fiche planifiée depuis
-            l'ORGANIZER devient un vrai événement.<br><br>
-            <b style="color:var(--text-2)">Export .ics</b> - un fichier importable dans
-            Apple Calendrier, Outlook, Thunderbird. Réimporter le même fichier ne crée
-            plus de doublons.<br><br>
-            <b style="color:var(--text-2)">Impression</b> - la vue affichée, sur fond
-            blanc, prête à afficher au mur.
+        <button type="button" class="btn sm" id="ap-print" title="Imprimer la vue affichée">Imprimer</button>
+        <button type="button" class="btn sm" id="ap-export" title="Télécharger un fichier .ics importable partout"><span class="ic" data-icon="download"></span>Exporter .ics</button>
+        <button type="button" class="btn sm primary" id="ap-gsync">Connecter Google Agenda</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="ap-bar2">
+        <button type="button" class="btn sm tap" id="ap-prev" aria-label="Période précédente"><span class="ic" data-icon="chevronLeft"></span></button>
+        <button type="button" class="btn sm" id="ap-today">Aujourd'hui</button>
+        <button type="button" class="btn sm tap" id="ap-next" aria-label="Période suivante"><span class="ic" data-icon="chevronRight"></span></button>
+        <span class="ap-range" id="ap-range" aria-live="polite"></span>
+      </div>
+
+      <div id="ap-notice" hidden></div>
+
+      <div class="ap-body">
+        <aside class="ap-rail" aria-label="Filtres et repères">
+          <div class="card">
+            <div class="sec-label">Branches</div>
+            <div id="ap-branches"></div>
           </div>
-        </div>
-      </aside>
+          <div class="card">
+            <div class="sec-label">Charge de la semaine</div>
+            <div class="ap-lbl"><span>Engagé</span><span id="ap-load-txt"></span></div>
+            <div class="ap-bar-g"><i id="ap-load-bar" style="width:0%"></i></div>
+            <div class="ap-hint" id="ap-load-hint"></div>
+          </div>
+          <div class="card">
+            <div class="sec-label">Sortie vers tes appareils</div>
+            <div class="ap-hint">
+              <b>Google Agenda</b> : une fiche planifiée depuis l'ORGANIZER devient un vrai événement.<br><br>
+              <b>Export .ics</b> : un fichier importable dans Apple Calendrier, Outlook, Thunderbird. Réimporter le même fichier ne crée pas de doublons.<br><br>
+              <b>Impression</b> : la vue affichée, sur fond blanc, prête à afficher au mur.
+            </div>
+          </div>
+        </aside>
 
-      <section class="ap-scene" id="ap-view"></section>
+        <section class="ap-scene" id="ap-view" aria-label="Agenda"></section>
+      </div>
     </div>
   </main>
 
-  <div class="ap-toast" id="ap-toast" role="status" aria-live="polite"></div>
   <script type="module" src="/js/agenda-page.js"></script>
 </body>
 </html>

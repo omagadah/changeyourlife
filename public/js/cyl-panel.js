@@ -22,6 +22,7 @@
 // que le message (/api/chat vers Anthropic). Aucun tiers supplementaire.
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { icon } from '/js/icons.js';
 import { mountAvatar, setThinking } from '/js/cyl-avatar.js';
 import * as prefs from '/js/cyl-prefs.js';
 
@@ -58,152 +59,152 @@ if (window.__cylPanel) { /* deja charge */ } else {
     app: {
       label: 'Ton espace',
       acts: [
-        { ic: '🌱', ask: "Par quoi je pourrais commencer aujourd'hui ?" },
-        { ic: '🧭', ask: "Aide-moi a y voir clair dans ce que j'ai en cours." },
-        { ic: '📊', ask: "Qu'est-ce qui a bouge chez moi cette semaine ?" },
-        { ic: '🗂️', href: '/plan/', label: 'Ouvrir ma journée' },
+        { ic: 'sapling', ask: "Par quoi je pourrais commencer aujourd'hui ?" },
+        { ic: 'compass', ask: "Aide-moi a y voir clair dans ce que j'ai en cours." },
+        { ic: 'chart', ask: "Qu'est-ce qui a bouge chez moi cette semaine ?" },
+        { ic: 'inbox', href: '/plan/', label: 'Ouvrir ma journée' },
       ],
     },
     plan: {
       label: "Aujourd'hui",
       acts: [
-        { ic: '🎯', ask: "Ma journee me parait chargee. Aide-moi a la regarder autrement." },
-        { ic: '⏳', ask: "Qu'est-ce qui pourrait attendre demain, selon toi ?" },
-        { ic: '🪫', ask: "Je manque d'energie aujourd'hui. Comment je fais avec ca ?" },
-        { ic: '🗃️', href: '/organizer/', label: 'Voir toutes mes fiches' },
+        { ic: 'target', ask: "Ma journee me parait chargee. Aide-moi a la regarder autrement." },
+        { ic: 'clock', ask: "Qu'est-ce qui pourrait attendre demain, selon toi ?" },
+        { ic: 'zap', ask: "Je manque d'energie aujourd'hui. Comment je fais avec ca ?" },
+        { ic: 'inbox', href: '/organizer/', label: 'Voir toutes mes fiches' },
       ],
     },
     organizer: {
       label: 'ORGANIZER',
       acts: [
-        { ic: '🧹', ask: "Aide-moi a trier ce qui traine dans mon organizer." },
-        { ic: '🥱', ask: "Je repousse certaines fiches depuis longtemps. Qu'est-ce que ca peut vouloir dire ?" },
-        { ic: '⚖️', ask: "Comment je decide entre urgent et important ?" },
-        { ic: '📅', href: '/agenda/', label: 'Poser tout ca dans l agenda' },
+        { ic: 'sort', ask: "Aide-moi a trier ce qui traine dans mon organizer." },
+        { ic: 'moon', ask: "Je repousse certaines fiches depuis longtemps. Qu'est-ce que ca peut vouloir dire ?" },
+        { ic: 'sliders', ask: "Comment je decide entre urgent et important ?" },
+        { ic: 'calendar', href: '/agenda/', label: 'Poser tout ca dans l agenda' },
       ],
     },
     agenda: {
       label: 'Agenda',
       acts: [
-        { ic: '🫁', ask: "Mon agenda laisse-t-il de la place pour souffler ?" },
-        { ic: '🧩', ask: "Comment caler une habitude dans une semaine deja pleine ?" },
-        { ic: '🌙', ask: "Mes journees finissent tard. Qu'est-ce que j'en pense, moi ?" },
+        { ic: 'leaf', ask: "Mon agenda laisse-t-il de la place pour souffler ?" },
+        { ic: 'grid', ask: "Comment caler une habitude dans une semaine deja pleine ?" },
+        { ic: 'moon', ask: "Mes journees finissent tard. Qu'est-ce que j'en pense, moi ?" },
       ],
     },
     objectifs: {
       label: 'Objectifs',
       acts: [
-        { ic: '🔍', ask: "Mon objectif est flou. Aide-moi a le formuler avec mes mots." },
-        { ic: '🪜', ask: "Quelle serait la toute premiere marche ?" },
-        { ic: '🫥', ask: "J'ai perdu de vue pourquoi je voulais ca." },
-        { ic: '📈', href: '/bilan/', label: 'Regarder ou j en suis' },
+        { ic: 'search', ask: "Mon objectif est flou. Aide-moi a le formuler avec mes mots." },
+        { ic: 'mountain', ask: "Quelle serait la toute premiere marche ?" },
+        { ic: 'smile', ask: "J'ai perdu de vue pourquoi je voulais ca." },
+        { ic: 'chart', href: '/bilan/', label: 'Regarder ou j en suis' },
       ],
     },
     bilan: {
       label: 'Bilan',
       acts: [
-        { ic: '🪞', ask: "Aide-moi a relire ma semaine sans me juger." },
-        { ic: '✨', ask: "Qu'est-ce que je pourrais reconnaitre comme une vraie avancee ?" },
-        { ic: '🌿', ask: "Quelle branche de mon arbre a ete la plus nourrie ?" },
+        { ic: 'user', ask: "Aide-moi a relire ma semaine sans me juger." },
+        { ic: 'sparkles', ask: "Qu'est-ce que je pourrais reconnaitre comme une vraie avancee ?" },
+        { ic: 'leaf', ask: "Quelle branche de mon arbre a ete la plus nourrie ?" },
       ],
     },
     humeur: {
       label: 'Humeur',
       acts: [
-        { ic: '💬', ask: "J'ai du mal a nommer ce que je ressens." },
-        { ic: '🔗', ask: "Est-ce que mon humeur suit quelque chose, ces temps-ci ?" },
-        { ic: '🧘', href: '/meditation/', label: 'Prendre dix minutes' },
+        { ic: 'edit', ask: "J'ai du mal a nommer ce que je ressens." },
+        { ic: 'external', ask: "Est-ce que mon humeur suit quelque chose, ces temps-ci ?" },
+        { ic: 'leaf', href: '/meditation/', label: 'Prendre dix minutes' },
       ],
     },
     sommeil: {
       label: 'Sommeil',
       acts: [
-        { ic: '🌙', ask: "Je dors mal en ce moment. Je peux t'en parler ?" },
-        { ic: '🔄', ask: "Qu'est-ce qui, dans mes journees, pourrait jouer sur mes nuits ?" },
-        { ic: '🛏️', ask: "A quoi ressemblerait une soiree qui me convient vraiment ?" },
+        { ic: 'moon', ask: "Je dors mal en ce moment. Je peux t'en parler ?" },
+        { ic: 'refresh', ask: "Qu'est-ce qui, dans mes journees, pourrait jouer sur mes nuits ?" },
+        { ic: 'moon', ask: "A quoi ressemblerait une soiree qui me convient vraiment ?" },
       ],
     },
     habitudes: {
       label: 'Habitudes',
       acts: [
-        { ic: '🪫', ask: "J'ai laisse tomber une habitude. Comment je regarde ca ?" },
-        { ic: '🐣', ask: "Par quelle toute petite version je pourrais reprendre ?" },
-        { ic: '⚓', ask: "Comment accrocher une habitude a quelque chose que je fais deja ?" },
+        { ic: 'zap', ask: "J'ai laisse tomber une habitude. Comment je regarde ca ?" },
+        { ic: 'sapling', ask: "Par quelle toute petite version je pourrais reprendre ?" },
+        { ic: 'shield', ask: "Comment accrocher une habitude a quelque chose que je fais deja ?" },
       ],
     },
     gratitude: {
       label: 'Gratitude',
       acts: [
-        { ic: '🫀', ask: "Je ne trouve rien aujourd'hui. Aide-moi a chercher autrement." },
-        { ic: '🔭', ask: "Qu'est-ce que je pourrais remarquer que je ne remarque plus ?" },
+        { ic: 'heart', ask: "Je ne trouve rien aujourd'hui. Aide-moi a chercher autrement." },
+        { ic: 'search', ask: "Qu'est-ce que je pourrais remarquer que je ne remarque plus ?" },
       ],
     },
     journal: {
       label: 'Journal',
       acts: [
-        { ic: '🪶', ask: "Je ne sais pas par ou commencer a ecrire." },
-        { ic: '🌀', ask: "J'ai quelque chose en tete qui tourne. Je te raconte ?" },
-        { ic: '🔁', ask: "Aide-moi a relire ce que j'ecris depuis quelque temps." },
+        { ic: 'edit', ask: "Je ne sais pas par ou commencer a ecrire." },
+        { ic: 'refresh', ask: "J'ai quelque chose en tete qui tourne. Je te raconte ?" },
+        { ic: 'refresh', ask: "Aide-moi a relire ce que j'ecris depuis quelque temps." },
       ],
     },
     meditation: {
       label: 'Meditation',
       acts: [
-        { ic: '🌬️', ask: "Je suis agite. Qu'est-ce qui pourrait m'aider la, maintenant ?" },
-        { ic: '🕰️', ask: "Je n'ai que cinq minutes. Ca vaut le coup quand meme ?" },
-        { ic: '🧠', ask: "Mon esprit part dans tous les sens quand j'essaie." },
+        { ic: 'leaf', ask: "Je suis agite. Qu'est-ce qui pourrait m'aider la, maintenant ?" },
+        { ic: 'clock', ask: "Je n'ai que cinq minutes. Ca vaut le coup quand meme ?" },
+        { ic: 'book', ask: "Mon esprit part dans tous les sens quand j'essaie." },
       ],
     },
     yourlife: {
-      label: 'Ta pyramide',
+      label: "Où j'en suis",
       acts: [
-        { ic: '🌳', ask: "Quelle partie de ma vie me parait la plus a l'etroit ?" },
-        { ic: '🪴', ask: "Une branche est en jachere. Qu'est-ce que ca t'evoque ?" },
-        { ic: '🧭', ask: "Aide-moi a comprendre ce que Maslow raconte de moi." },
+        { ic: 'tree', ask: "Quelle partie de ma vie me parait la plus a l'etroit ?" },
+        { ic: 'sapling', ask: "Une branche est en jachere. Qu'est-ce que ca t'evoque ?" },
+        { ic: 'compass', ask: "Aide-moi à lire ce que mes branches disent de moi." },
       ],
     },
     frise: {
       label: 'Frise',
       acts: [
-        { ic: '🕯️', ask: "Aide-moi a relire mon histoire sans la juger." },
-        { ic: '🌊', ask: "Quels moments ont vraiment change quelque chose ?" },
-        { ic: '🔮', ask: "Et la suite, j'en fais quoi ?" },
+        { ic: 'sun', ask: "Aide-moi a relire mon histoire sans la juger." },
+        { ic: 'droplet', ask: "Quels moments ont vraiment change quelque chose ?" },
+        { ic: 'sparkles', ask: "Et la suite, j'en fais quoi ?" },
       ],
     },
     autoevaluation: {
       label: 'Roue de vie',
       acts: [
-        { ic: '⚖️', ask: "Ma roue est desequilibree. C'est grave, selon toi ?" },
-        { ic: '🎯', ask: "Sur quel axe je me sens le plus a l'aise d'agir ?" },
-        { ic: '🌿', href: '/yourlife/', label: 'Voir ca sur mon arbre' },
+        { ic: 'sliders', ask: "Ma roue est desequilibree. C'est grave, selon toi ?" },
+        { ic: 'target', ask: "Sur quel axe je me sens le plus a l'aise d'agir ?" },
+        { ic: 'leaf', href: '/yourlife/', label: 'Voir ca sur mon arbre' },
       ],
     },
     competences: {
       label: 'Compétences',
       acts: [
-        { ic: '🌱', ask: "Qu'est-ce que je suis en train d'apprendre sans m'en rendre compte ?" },
-        { ic: '🧗', ask: "Je stagne sur une competence. Comment je le vis ?" },
+        { ic: 'sapling', ask: "Qu'est-ce que je suis en train d'apprendre sans m'en rendre compte ?" },
+        { ic: 'mountain', ask: "Je stagne sur une competence. Comment je le vis ?" },
       ],
     },
     codex: {
       label: 'Codex',
       acts: [
-        { ic: '📚', ask: "Aide-moi a relier ce que je lis a ce que je vis." },
-        { ic: '✍️', ask: "Comment je transforme une note en quelque chose de concret ?" },
+        { ic: 'library', ask: "Aide-moi a relier ce que je lis a ce que je vis." },
+        { ic: 'edit', ask: "Comment je transforme une note en quelque chose de concret ?" },
       ],
     },
     profile: {
       label: 'Ton profil',
       acts: [
-        { ic: '🪪', ask: "Qu'est-ce que mon parcours ici raconte de moi ?" },
-        { ic: '🌳', href: '/yourlife/', label: 'Retour a mon arbre' },
+        { ic: 'user', ask: "Qu'est-ce que mon parcours ici raconte de moi ?" },
+        { ic: 'tree', href: '/yourlife/', label: 'Retour a mon arbre' },
       ],
     },
     settings: {
       label: 'Parametres',
       acts: [
-        { ic: '🔐', ask: "Quelles donnees sont stockees a mon sujet ?" },
-        { ic: '🧭', href: '/', label: 'Revenir a mon espace' },
+        { ic: 'shield', ask: "Quelles donnees sont stockees a mon sujet ?" },
+        { ic: 'compass', href: '/', label: 'Revenir a mon espace' },
       ],
     },
   };
@@ -219,9 +220,9 @@ if (window.__cylPanel) { /* deja charge */ } else {
     PAGES[key] = {
       label: nom,
       acts: [
-        { ic: '🌿', ask: `Qu'est-ce qui nourrit vraiment ma branche ${nom.toLowerCase()} ?` },
-        { ic: '🤔', ask: `Cette branche est en retrait chez moi. Je peux t'en parler ?` },
-        { ic: '🌳', href: '/yourlife/', label: 'Voir tout l arbre' },
+        { ic: 'leaf', ask: `Qu'est-ce qui nourrit vraiment ma branche ${nom.toLowerCase()} ?` },
+        { ic: 'info', ask: `Cette branche est en retrait chez moi. Je peux t'en parler ?` },
+        { ic: 'tree', href: '/yourlife/', label: 'Voir tout l arbre' },
       ],
     };
   }
@@ -229,9 +230,9 @@ if (window.__cylPanel) { /* deja charge */ } else {
   const FALLBACK = {
     label: 'Ton espace',
     acts: [
-      { ic: '🌱', ask: "Par quoi je pourrais commencer aujourd'hui ?" },
-      { ic: '🧭', ask: "Aide-moi a y voir clair." },
-      { ic: '💬', ask: "J'ai juste besoin de parler." },
+      { ic: 'sapling', ask: "Par quoi je pourrais commencer aujourd'hui ?" },
+      { ic: 'compass', ask: "Aide-moi a y voir clair." },
+      { ic: 'edit', ask: "J'ai juste besoin de parler." },
     ],
   };
 
@@ -448,7 +449,9 @@ if (window.__cylPanel) { /* deja charge */ } else {
     let etat;
     if (voulu === 'open' || voulu === 'min') etat = voulu;
     else if (saved === 'open' || saved === 'min') etat = saved;
-    else etat = routeKey() === 'app' ? 'open' : 'min';
+    // Sur un petit ecran, la feuille de CYL recouvrirait l'accueil des l'arrivee :
+    // elle reste repliee tant que l'utilisateur ne l'appelle pas.
+    else etat = (routeKey() === 'app' && window.innerWidth > 900) ? 'open' : 'min';
     setState(etat, { silent: true });
 
     const savedTab = ss.get(TAB_KEY) || prefs.lire().ongletDefaut;
@@ -541,7 +544,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
       if (isGo) { el.href = a.href; } else { el.type = 'button'; }
       const ic = document.createElement('span');
       ic.className = 'cylp-act-ic';
-      ic.textContent = a.ic || '•';
+      ic.innerHTML = icon(a.ic || 'dot', { size: 15 });
       const tx = document.createElement('span');
       tx.textContent = a.label || a.ask || '';
       el.append(ic, tx);
@@ -637,7 +640,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
     history.push({ role: 'user', content: msg });
     saveHist();
 
-    const wait = addMsg('wait', 'CYL reflechit...');
+    const wait = addMsg('wait', 'CYL réfléchit...');
     setThinking(avatarSvg, true);
 
     // Plafond de temps obligatoire sur tout appel sortant (regle du projet :
@@ -664,25 +667,65 @@ if (window.__cylPanel) { /* deja charge */ } else {
       const data = await r.json().catch(() => ({}));
       wait.remove();
       if (!r.ok) {
-        addMsg('err', data.error || "CYL est momentanement indisponible. Reessaie dans un instant.");
+        addMsg('err', data.error || "CYL est momentanément indisponible. Réessaie dans un instant.");
       } else {
         const reply = String(data.reply || '').trim() || 'Je suis là.';
-        addMsg('cyl', reply, data.modules);
+        const msgEl = addMsg('cyl', reply, data.modules);
+        offrirJournal(msgEl, text, reply);
         history.push({ role: 'assistant', content: reply, modules: data.modules || [] });
         saveHist();
         if (panel.dataset.state === 'min') { unread += 1; paintBadge(); }
       }
     } catch (e) {
       wait.remove();
-      if (e && e.name === 'AbortError') addMsg('err', "CYL met trop de temps a repondre. Reessaie.");
-      else if (e && e.message === 'AUTH') addMsg('err', 'Reconnecte-toi pour parler a CYL.');
-      else addMsg('err', "La connexion a echoue. Verifie ton reseau et reessaie.");
+      if (e && e.name === 'AbortError') addMsg('err', "CYL met trop de temps à répondre. Réessaie.");
+      else if (e && e.message === 'AUTH') addMsg('err', 'Reconnecte-toi pour parler à CYL.');
+      else addMsg('err', "La connexion a échoué. Vérifie ton réseau et réessaie.");
     } finally {
       clearTimeout(timer);
       setThinking(avatarSvg, false);
       busy = false;
       sendBtn.disabled = false;
     }
+  }
+
+  // ── « Garder dans mon journal » (Day One : Daily Chat -> entree) ──────────
+  // Un echange avec CYL peut devenir une entree du journal, sur un geste
+  // explicite et rien d'autre : jamais automatiquement. L'entree reprend le
+  // schema exact de journal.js (id, title, content, emotion, domain, userId,
+  // createdAt, updatedAt) pour s'afficher comme les autres.
+  function offrirJournal(msgEl, question, reponse) {
+    if (!msgEl || !question || !reponse) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cylp-keep';
+    b.textContent = 'Garder dans mon journal';
+    b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error('AUTH');
+        const { db } = window._cyfFirebase || {};
+        const { doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        const id = 'e_' + Date.now();
+        const jour = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        await setDoc(doc(db, 'users', user.uid, 'journal', id), {
+          id,
+          title: 'Échange avec CYL, ' + jour,
+          content: 'Moi : ' + question + '
+
+CYL : ' + reponse,
+          emotion: 'none', domain: 'none', userId: user.uid,
+          createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        });
+        b.textContent = 'Gardé dans ton journal';
+        b.classList.add('on');
+      } catch (_) {
+        b.disabled = false;
+        b.textContent = "Impossible d'enregistrer, réessaie";
+      }
+    });
+    msgEl.appendChild(b);
   }
 
   // ── Branchements ──────────────────────────────────────────────────────────

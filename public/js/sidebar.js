@@ -28,6 +28,7 @@ const NAV_LECTURE = [
   { href: '/frise/',       icon: 'timeline', label: 'Frise chronologique', note: 'D\'où tu viens, où tu vas' },
   { href: '/competences/', icon: 'mountain', label: 'Compétences',  note: 'Ce que tu sais faire' },
   { href: '/bilan/',       icon: 'chart', label: 'Bilan',        note: 'Ta semaine, résumée' },
+  { href: '/annee/',       icon: 'tree',  label: 'Ton année',    note: 'Ce qui a poussé' },
 ];
 const NAV_MORE = [
   { href: '/journal/',        icon: 'book', label: 'Journal' },
@@ -156,6 +157,15 @@ function injectCSS() {
   .cyl-sb-inst { color:var(--leaf,#84c25e); }
   .cyl-sb-inst:hover { background:rgba(132,194,94,.12); }
   .cyl-sb-inst[hidden] { display:none !important; }
+  .cyl-sb-notif { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
+  .cyl-sb-badge { display:inline-block; min-width:18px; padding:0 5px; margin-left:8px; border-radius:999px; background:var(--leaf,#84c25e); color:#08130a; font-size:.66rem; font-weight:700; text-align:center; line-height:18px; vertical-align:middle; }
+  .cyl-sb-badge[hidden] { display:none; }
+  .cyl-sb-notif-list { display:flex; flex-direction:column; gap:4px; max-height:220px; overflow-y:auto; padding:4px 6px 6px; margin-top:-4px; }
+  .cyl-sb-notif-list[hidden] { display:none; }
+  .cyl-sb-n-item { padding:7px 9px; border-radius:9px; background:var(--surface-1,rgba(255,255,255,.02)); border:1px solid var(--line,rgba(221,205,160,.12)); font-size:.74rem; color:var(--text-2,#b4ad94); }
+  .cyl-sb-n-item b { display:block; color:var(--text-1,#f4efe1); font-weight:600; font-size:.76rem; }
+  .cyl-sb-n-item.unread { border-color:rgba(132,194,94,.35); }
+  .cyl-sb-n-vide { padding:6px 9px; font-size:.74rem; color:var(--text-3,#86806a); }
   .cyl-sb-help { color:var(--text-2,#b4ad94); }
   .cyl-sb-help:hover { background:rgba(224,120,95,.10); color:#e58e73; }
   /* DECALAGE DES CONTENEURS PLEIN ECRAN
@@ -181,14 +191,14 @@ function injectCSS() {
   body.has-sb [data-cyl-shift] { margin-left:var(--sb-w) !important; }
 
   /* Bouton d'ouverture sur petit ecran */
-  .cyl-sb-burger { position:fixed; top:12px; left:12px; z-index:9900; width:38px; height:38px;
+  .cyl-sb-burger { position:fixed; top:12px; left:12px; z-index:9900; width:44px; height:44px;
     border-radius:11px; border:1px solid var(--line,rgba(221,205,160,.12)); cursor:pointer;
     background:var(--bg-surface,#0f1710); color:var(--text-1,#f4efe1); font-size:1.1rem;
     display:none; align-items:center; justify-content:center; }
   .cyl-sb-veil { position:fixed; inset:0; z-index:9790; background:rgba(5,8,4,.6);
     display:none; }
 
-  @media (max-width:1080px) {
+  @media (max-width:900px) {
     .cyl-sb { transform:translateX(-100%); transition:transform .26s cubic-bezier(.4,0,.2,1);
       box-shadow:0 0 60px rgba(0,0,0,.5); }
     body.sb-open .cyl-sb { transform:none; }
@@ -232,7 +242,7 @@ function injectCSS() {
   /* Sur téléphone, la barre latérale s'ouvre par-dessus : son propre haut doit
      aussi respecter l'encoche, y compris hors mode standalone (Safari masque
      sa barre au défilement). */
-  @media (max-width:1080px) {
+  @media (max-width:900px) {
     .cyl-sb { padding-top: env(safe-area-inset-top, 0px); }
   }
 
@@ -295,6 +305,7 @@ async function initAccount(sb) {
   }
 
   const out = sb.querySelector('#cyl-sb-out');
+  initNotifs(sb);
   const help = sb.querySelector('#cyl-sb-help');
   if (help) help.onclick = () => {
     document.body.classList.remove('sb-open');
@@ -334,6 +345,42 @@ async function initAccount(sb) {
   };
 }
 
+// Notifications : lues depuis notifications.js (localStorage), affichees a
+// plat dans la barre. Un clic ouvre la liste et marque tout comme lu.
+async function initNotifs(sb) {
+  const btn = sb.querySelector('#cyl-sb-notif');
+  const list = sb.querySelector('#cyl-sb-notif-list');
+  const badge = sb.querySelector('#cyl-sb-notif-n');
+  if (!btn || !list) return;
+  let api = null;
+  try { api = await import('/js/notifications.js'); } catch (_) { btn.hidden = true; return; }
+  const peindre = () => {
+    const n = api.unreadCount();
+    if (badge) { badge.textContent = String(n); badge.hidden = n === 0; }
+  };
+  const rendre = () => {
+    const items = api.getNotifs().slice(0, 12);
+    list.replaceChildren();
+    if (!items.length) { const v = document.createElement('div'); v.className = 'cyl-sb-n-vide'; v.textContent = 'Rien de nouveau.'; list.appendChild(v); return; }
+    for (const it of items) {
+      const d = document.createElement('div');
+      d.className = 'cyl-sb-n-item' + (it.read ? '' : ' unread');
+      const b = document.createElement('b'); b.textContent = String(it.title || '');
+      d.appendChild(b);
+      if (it.body) d.appendChild(document.createTextNode(String(it.body)));
+      list.appendChild(d);
+    }
+  };
+  btn.addEventListener('click', () => {
+    const ouvert = list.hidden;
+    if (ouvert) { rendre(); list.hidden = false; btn.setAttribute('aria-expanded', 'true'); api.markAllRead(); peindre(); }
+    else { list.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+  });
+  peindre();
+  window.addEventListener('cyl:notifs-changed', peindre);
+  window.addEventListener('storage', peindre);
+}
+
 // Somme des XP de branche, identique a celle de app.js. Silencieux en cas
 // d'echec : la barre garde son dernier affichage plutot que de mentir.
 async function lireXp(uid) {
@@ -343,14 +390,8 @@ async function lireXp(uid) {
     const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
     const snap = await getDoc(doc(db, 'users', uid));
     if (!snap.exists()) return;
-    const d = snap.data() || {};
-    let total = 0;
-    const br = d.tree && d.tree.branches;
-    if (br && typeof br === 'object') {
-      for (const v of Object.values(br)) total += Number((v && v.xp) || 0);
-    } else if (d.levels && typeof d.levels === 'object') {
-      for (const v of Object.values(d.levels)) total += Number(typeof v === 'number' ? v : (v && v.xp) || 0);
-    }
+    const { xpTotal } = await import('/js/growth.js');
+    const total = xpTotal(snap.data() || {});
     const dst = document.getElementById('cyl-sb-xp');
     if (dst) dst.textContent = total.toLocaleString('fr-FR') + ' XP';
   } catch (_) {}
@@ -378,6 +419,11 @@ export function initSidebar() {
     </div>
     <div class="cyl-sb-foot">
       <div class="cyl-sb-xp">${icon('zap', { size: 14 })} <span id="cyl-sb-xp">0 XP</span><small>total</small></div>
+      <button class="cyl-sb-i cyl-sb-notif" id="cyl-sb-notif" type="button" aria-expanded="false" aria-controls="cyl-sb-notif-list">
+        <span class="cyl-sb-ic" aria-hidden="true">${icon('bell')}</span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l">Notifications<span class="cyl-sb-badge" id="cyl-sb-notif-n" hidden></span></span></span>
+      </button>
+      <div class="cyl-sb-notif-list" id="cyl-sb-notif-list" hidden></div>
       <a class="cyl-sb-me${path === '/profile/' ? ' on' : ''}" href="/profile/">
         <span class="cyl-sb-av" id="cyl-sb-av" aria-hidden="true"></span>
         <span class="cyl-sb-txt"><span class="cyl-sb-l" id="cyl-sb-me-n">Mon profil</span>

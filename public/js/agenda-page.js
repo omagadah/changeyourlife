@@ -24,7 +24,8 @@ import {
   BRANCHES, BRANCH_BY_KEY, FINISH_ID, TRI_ID,
 } from '/js/organizer-data.js';
 import { initUserMenu } from '/js/userMenu.js';
-import { setContext } from '/js/common.js';
+import { setContext, toast as cylToast } from '/js/common.js';
+import { icon } from '/js/icons.js';
 import * as gcal from '/js/gcal.js';
 
 let auth, db, uid;
@@ -38,7 +39,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const fmtH = (h) => pad(Math.floor(h)) + ':' + pad(Math.round((h % 1) * 60));
 function weekStart(base) { const d = new Date(base); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; }
-function toast(m) { const t = $('#ap-toast'); if (!t) return; t.textContent = m; t.classList.add('show'); clearTimeout(t._x); t._x = setTimeout(() => t.classList.remove('show'), 2400); }
+// Retour visuel : le toast commun de common.js, plus de #ap-toast local.
+function toast(m) { cylToast(m, { duration: 2400 }); }
 
 // ── État ─────────────────────────────────────────────────────────────────────
 let view = 'week';
@@ -559,20 +561,20 @@ function renderEmptyNotice(all) {
 
   if (!cards && !goalsN) {
     host.innerHTML = `<div class="ap-notice">
-      <span class="ic">🗓️</span>
+      <span class="ic" aria-hidden="true">${icon('calendar', { size: 22 })}</span>
       <div><b>Ton agenda est vide, et c'est normal</b>
         <small>Rien n'a encore de date. Dépose ce que tu as en tête dans l'ORGANIZER,
         puis pose une échéance : ça apparaîtra ici.</small></div>
-      <a class="ap-notice-b" href="/organizer/">Ouvrir l'ORGANIZER →</a></div>`;
+      <a class="btn sm ap-notice-b" href="/organizer/">Ouvrir l'ORGANIZER ${icon('arrowRight', { size: 14 })}</a></div>`;
     return;
   }
   host.innerHTML = `<div class="ap-notice">
-    <span class="ic">📌</span>
+    <span class="ic" aria-hidden="true">${icon('info', { size: 22 })}</span>
     <div><b>${cards} fiche${cards > 1 ? 's' : ''} et ${goalsN} objectif${goalsN > 1 ? 's' : ''}, aucune date</b>
       <small>L'agenda ne montre que ce qui est daté. Pose une échéance sur une fiche
       (panneau de la fiche → « Quand ») ou un jalon sur un objectif, et il se remplira.
       Tu peux aussi tirer directement sur la grille pour poser un créneau.</small></div>
-    <a class="ap-notice-b" href="/organizer/">Dater mes fiches →</a></div>`;
+    <a class="btn sm ap-notice-b" href="/organizer/">Dater mes fiches ${icon('arrowRight', { size: 14 })}</a></div>`;
 }
 
 function render() {
@@ -659,7 +661,7 @@ $('#ap-gsync').onclick = async () => {
 function updateSync() {
   const b = $('#ap-gsync');
   const on = gcal.isConnected();
-  b.textContent = on ? 'Google connecté ✓' : 'Connecter Google Agenda';
+  b.innerHTML = on ? icon('check', { size: 14 }) + ' Google connecté' : 'Connecter Google Agenda';
   b.classList.toggle('primary', !on);
 }
 let rz;

@@ -75,8 +75,11 @@ module.exports = async function handler(req, res) {
       if (!uids.length) return res.status(200).json({ cycleId, count: 0, winnerUid: null, empty: true });
 
       const winnerUid = uids[crypto.randomInt(uids.length)];
+
+
+      console.log('[giveaway-draw] tirage par', decoded.uid);
       await resultRef.set({
-        winnerUid, count: uids.length, drawnAt: new Date(), drawnBy: decoded.uid,
+        winnerUid, count: uids.length, drawnAt: new Date(),
       }, { merge: true });
       return res.status(200).json({ cycleId, count: uids.length, winnerUid, drawn: true });
     }

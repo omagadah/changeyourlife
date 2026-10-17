@@ -2,11 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Sommeil - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Suivez vos cycles de sommeil, durée et qualité - pour identifier ce qui améliore vraiment votre repos et votre énergie.">
+  <meta name="description" content="Suis tes nuits, leur durée et leur qualité - pour repérer ce qui améliore vraiment ton repos et ton énergie.">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -15,212 +14,157 @@
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
   <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/transitions.css" />
   <style>
-    body { color:var(--text-1); }
-    .page-shell {
-      position:fixed; inset:20px;
-      background:var(--glass-bg); backdrop-filter:blur(15px);
-      border-radius:20px; border:1px solid var(--glass-border);
-      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
+    /* L'echelle de qualite, la meme que l'humeur (.px[data-v]) */
+    .page-shell { --q1:#b3312c; --q2:#d97b3a; --q3:#c9a227; --q4:#6f9a52; --q5:#44bd48; }
+    .content-area { display: flex; flex-direction: column; gap: 22px; }
+
+    /* La nuit a enregistrer */
+    .sleep-entry-card { position: relative; overflow: hidden; }
+    .sleep-entry-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--leaf); }
+    .entry-title { font-size: 1rem; margin: 0 0 14px; }
+    .time-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .time-field .input { font-size: 1rem; font-weight: 600; }
+    .duration-display { text-align: center; padding: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; }
+    .duration-value { font-size: 1.6rem; color: var(--leaf-text); }
+    .duration-label { font-size: .72rem; color: var(--text-3); margin-top: 2px; }
+    .quality-row { margin-bottom: 14px; }
+    .quality-slider { width: 100%; accent-color: var(--leaf); cursor: pointer; margin-top: 8px; min-height: 28px; }
+    .quality-labels { display: flex; justify-content: space-between; font-size: .7rem; color: var(--text-3); margin-top: 4px; }
+    .quality-labels span { flex: 1; text-align: center; }
+    .quality-labels span:first-child { text-align: left; }
+    .quality-labels span:last-child { text-align: right; }
+    .sleep-note-wrap { margin-bottom: 14px; }
+    .save-sleep-btn { width: 100%; min-height: 44px; }
+
+    /* Reperes */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .stat-block { text-align: center; padding: 14px 12px; border-bottom: 2px solid var(--sb-color, var(--line)); }
+    .stat-block-value { font-size: 1.6rem; line-height: 1.1; }
+    .stat-block-label { font-size: .68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+
+    /* 14 nuits */
+    .bar-chart { display: flex; gap: 4px; align-items: flex-end; height: 80px; }
+    .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; }
+    .bar-bg { width: 100%; background: var(--surface-2); border-radius: 4px 4px 0 0; overflow: hidden; flex: 1; display: flex; align-items: flex-end; }
+    .bar-fill { width: 100%; background: var(--q-color, var(--leaf)); border-radius: 4px 4px 0 0; transition: height .6s var(--ease); }
+    .bar-day { font-size: .62rem; color: var(--text-3); white-space: nowrap; }
+
+    /* Historique */
+    .log-list { display: flex; flex-direction: column; gap: 8px; }
+    .log-item { display: flex; align-items: center; gap: 12px; background: var(--surface-1); border: 1px solid var(--line); border-radius: 11px; padding: 10px 14px; position: relative; overflow: hidden; }
+    .log-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--qi-color, var(--leaf)); }
+    .log-date { font-size: .74rem; color: var(--text-3); font-weight: 600; width: 72px; flex-shrink: 0; }
+    .log-hours { font-size: 1rem; flex-shrink: 0; width: 52px; }
+    .log-quality { flex-shrink: 0; color: var(--qi-color, var(--text-2)); border-color: color-mix(in srgb, var(--qi-color, var(--text-3)) 30%, transparent); }
+    .log-note { font-size: .82rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .log-note em { color: var(--text-3); }
+
+    @media (max-width: 900px) {
+      .time-row { grid-template-columns: 1fr 1fr; }
     }
-    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
-    .header-sub { font-size:0.82rem; color:var(--text-2); margin-top:2px; }
-    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
-
-    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
-    .toast.show { transform:translate(-50%,0); }
-
-    .sec-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-    .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
-
-    /* ── Sleep entry card ── */
-    .sleep-entry-card {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:16px; padding:22px; position:relative; overflow:hidden;
+    @media (max-width: 640px) {
+      .time-row { grid-template-columns: 1fr; gap: 10px; }
+      .stats-grid { gap: 8px; }
+      .log-item { flex-wrap: wrap; }
+      .log-note { flex-basis: 100%; }
     }
-    .sleep-entry-card::before {
-      content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
-      background:linear-gradient(180deg,#b5dc9d,#a0d381); border-radius:16px 0 0 16px;
-    }
-
-    .time-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
-    .time-field { flex:1; min-width:120px; display:flex; flex-direction:column; gap:6px; }
-    .time-label { font-size:0.72rem; font-weight:700; color:var(--text-2); text-transform:uppercase; letter-spacing:.5px; }
-    .time-input {
-      padding:10px 13px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.05); color:var(--text-1); font-size:1rem; font-weight:700;
-      outline:none; transition:border-color .2s; width:100%; box-sizing:border-box;
-      font-family:inherit;
-    }
-    .time-input:focus { border-color:rgba(111,154,82,0.5); background:rgba(111,154,82,0.06); }
-
-    /* ── Duration display ── */
-    .duration-display {
-      text-align:center; padding:10px; background:rgba(111,154,82,0.08);
-      border:1px solid rgba(111,154,82,0.2); border-radius:10px; margin-bottom:16px;
-    }
-    .duration-value { font-size:1.6rem; font-weight:800; color:#cbe7ba; }
-    .duration-label { font-size:0.7rem; color:var(--text-3); margin-top:2px; }
-
-    /* ── Quality slider ── */
-    .quality-row { margin-bottom:16px; }
-    .quality-labels { display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-3); margin-top:4px; }
-    .quality-slider { width:100%; accent-color:#a0d381; cursor:pointer; margin-top:6px; }
-    .quality-emojis { display:flex; justify-content:space-between; font-size:1.1rem; margin-top:6px; }
-
-    /* ── Note ── */
-    .sleep-note {
-      width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.08); border-radius:10px;
-      color:var(--text-1); font-size:0.84rem; padding:9px 12px; resize:none;
-      font-family:inherit; line-height:1.5; transition:border-color .2s;
-      margin-bottom:14px;
-    }
-    .sleep-note:focus { outline:none; border-color:rgba(111,154,82,0.35); }
-    .sleep-note::placeholder { color:var(--text-3); }
-
-    .save-sleep-btn {
-      width:100%; padding:11px; border-radius:11px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#8ac863,#a0d381); color:#fff;
-      font-size:0.9rem; font-weight:700; font-family:inherit;
-      transition:filter .2s, transform .1s;
-    }
-    .save-sleep-btn:hover { filter:brightness(1.1); }
-    .save-sleep-btn:active { transform:scale(0.98); }
-    .save-sleep-btn:disabled { opacity:0.45; cursor:not-allowed; }
-
-    /* ── Stats ── */
-    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-    .stat-block { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px 14px; text-align:center; border-bottom:2px solid var(--sb-color, rgba(255,255,255,0.08)); }
-    .stat-block-icon { font-size:1.2rem; margin-bottom:4px; }
-    .stat-block-value { font-size:1.6rem; font-weight:800; color:var(--text-1); line-height:1.1; }
-    .stat-block-label { font-size:0.63rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
-
-    /* ── 14-day chart ── */
-    .chart-card { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:18px 20px; }
-    .bar-chart { display:flex; gap:4px; align-items:flex-end; height:80px; }
-    .bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
-    .bar-bg { width:100%; background:rgba(255,255,255,0.05); border-radius:4px 4px 0 0; overflow:hidden; flex:1; position:relative; display:flex; align-items:flex-end; }
-    .bar-fill { width:100%; background:linear-gradient(180deg,#a0d381,#8ac863); border-radius:4px 4px 0 0; transition:height .8s cubic-bezier(.4,0,.2,1); }
-    .bar-day { font-size:0.58rem; color:var(--text-3); white-space:nowrap; }
-
-    /* ── Log ── */
-    .log-list { display:flex; flex-direction:column; gap:8px; }
-    .log-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:11px; padding:11px 14px; position:relative; overflow:hidden; }
-    .log-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--qi-color, #a0d381); border-radius:11px 0 0 11px; }
-    .log-date { font-size:0.72rem; color:var(--text-3); font-weight:600; width:60px; flex-shrink:0; }
-    .log-hours { font-size:1rem; font-weight:800; color:var(--text-1); flex-shrink:0; width:48px; }
-    .log-quality { font-size:1.1rem; flex-shrink:0; }
-    .log-note { font-size:0.8rem; color:var(--text-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
-
-    @media (max-width:600px) {
-      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
-      .stats-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
-      .time-row { flex-direction:column; gap:10px; }
+    @media (prefers-reduced-motion: reduce) {
+      .bar-fill { transition: none; }
     }
   </style>
 </head>
 <body>
-  <div class="toast" id="toast"></div>
-  <header class="header">
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
-        <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
-          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-        </g>
-      </svg>
-    </button>
-  </header>
-
-  <div class="page-shell">
-    <div class="header-bar">
-      <div class="header-left">
-        <h1>Suivi du Sommeil</h1>
-        <div class="header-sub">Enregistre tes heures et la qualité de ton sommeil</div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="moon"></span>Sommeil</h1>
+        <p class="page-sub">Tes heures et la qualité de tes nuits, pour voir ce qui repose vraiment.</p>
       </div>
-      <div id="streak-badge" style="display:none;padding:6px 14px;border-radius:999px;background:rgba(111,154,82,0.12);border:1px solid rgba(111,154,82,0.3);font-size:0.78rem;font-weight:700;color:#cbe7ba">
-        🌙 <span id="streak-val">0</span> nuits de suite
+      <div class="page-actions">
+        <span class="chip on" id="streak-badge" style="display:none"><span class="ic" data-icon="moon" data-icon-size="13"></span><span id="streak-val">0</span>&nbsp;nuits de suite</span>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="content-area">
+
+        <!-- La nuit -->
+        <section class="card sleep-entry-card" id="entry-card" aria-labelledby="entry-title">
+          <h2 class="entry-title" id="entry-title">Ajouter une nuit</h2>
+          <div class="time-row">
+            <div class="field time-field">
+              <label for="bedtime">Coucher</label>
+              <input type="time" class="input" id="bedtime" value="23:00" />
+            </div>
+            <div class="field time-field">
+              <label for="waketime">Lever</label>
+              <input type="time" class="input" id="waketime" value="07:00" />
+            </div>
+            <div class="field time-field">
+              <label for="sleep-date">Nuit du</label>
+              <input type="date" class="input" id="sleep-date" />
+            </div>
+          </div>
+
+          <div class="duration-display" id="duration-display" aria-live="polite">
+            <div class="duration-value t-num" id="duration-val">8h00</div>
+            <div class="duration-label">durée estimée</div>
+          </div>
+
+          <div class="field quality-row">
+            <label for="quality-slider">Qualité du sommeil</label>
+            <input type="range" class="quality-slider" id="quality-slider" min="1" max="5" value="3" aria-valuetext="Bonne" />
+            <div class="quality-labels" aria-hidden="true"><span>Mauvaise</span><span>Passable</span><span>Bonne</span><span>Excellente</span><span>Parfaite</span></div>
+          </div>
+
+          <div class="field sleep-note-wrap">
+            <label for="sleep-note">Une note (facultatif)</label>
+            <textarea class="textarea" id="sleep-note" rows="2" placeholder="Rêves, réveils nocturnes, stress" style="min-height:64px"></textarea>
+          </div>
+          <button class="btn primary save-sleep-btn" type="button" id="save-sleep-btn">Enregistrer cette nuit</button>
+        </section>
+
+        <!-- Reperes -->
+        <section aria-label="Cette semaine">
+          <div class="sec-label">Cette semaine</div>
+          <div class="stats-grid">
+            <div class="card stat-block" id="stat-avg-block" style="--sb-color:var(--leaf)" hidden>
+              <div class="stat-block-value t-num" id="stat-avg"></div>
+              <div class="stat-block-label">Moyenne par nuit</div>
+            </div>
+            <div class="card stat-block" id="stat-quality-block" style="--sb-color:var(--etre)" hidden>
+              <div class="stat-block-value t-num" id="stat-quality"></div>
+              <div class="stat-block-label">Qualité moyenne</div>
+            </div>
+            <div class="card stat-block" style="--sb-color:var(--gold)">
+              <div class="stat-block-value t-num" id="stat-streak">0</div>
+              <div class="stat-block-label">Nuits suivies</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14 nuits -->
+        <section class="card" aria-label="Durée des 14 dernières nuits">
+          <div class="sec-label">Durée sur 14 nuits</div>
+          <div class="bar-chart" id="bar-chart"></div>
+        </section>
+
+        <!-- Historique -->
+        <section aria-label="Historique">
+          <div class="sec-label">Historique</div>
+          <div class="log-list" id="log-list">
+            <div class="empty">
+              <h3>Aucune nuit enregistrée</h3>
+              <p>Note ta première nuit ci-dessus : l'historique et les repères se remplissent à partir de là.</p>
+            </div>
+          </div>
+        </section>
+
       </div>
     </div>
-
-    <div class="content-area">
-
-      <!-- Entry form -->
-      <div class="sleep-entry-card" id="entry-card">
-        <div style="font-size:0.9rem;font-weight:700;color:#f8f7f5;margin-bottom:14px" id="entry-title">Ajouter une nuit</div>
-        <div class="time-row">
-          <div class="time-field">
-            <div class="time-label">🌙 Coucher</div>
-            <input type="time" class="time-input" id="bedtime" value="23:00" />
-          </div>
-          <div class="time-field">
-            <div class="time-label">☀️ Lever</div>
-            <input type="time" class="time-input" id="waketime" value="07:00" />
-          </div>
-          <div class="time-field" style="flex:0.6;min-width:80px">
-            <div class="time-label">📅 Nuit du</div>
-            <input type="date" class="time-input" id="sleep-date" />
-          </div>
-        </div>
-
-        <div class="duration-display" id="duration-display">
-          <div class="duration-value" id="duration-val">8h00</div>
-          <div class="duration-label">durée estimée</div>
-        </div>
-
-        <div class="quality-row">
-          <div class="time-label">Qualité du sommeil</div>
-          <div class="quality-emojis"><span>😩</span><span>😴</span><span>😐</span><span>😊</span><span>🌟</span></div>
-          <input type="range" class="quality-slider" id="quality-slider" min="1" max="5" value="3" />
-          <div class="quality-labels"><span>Mauvaise</span><span>Passable</span><span>Bonne</span><span>Excellente</span><span>Parfaite</span></div>
-        </div>
-
-        <textarea class="sleep-note" id="sleep-note" rows="2" placeholder="Rêves, réveils nocturnes, stress… (optionnel)"></textarea>
-        <button class="save-sleep-btn" id="save-sleep-btn">Enregistrer cette nuit</button>
-      </div>
-
-      <!-- Stats -->
-      <div>
-        <div class="sec-label">Cette semaine</div>
-        <div class="stats-grid">
-          <div class="stat-block" style="--sb-color:#a0d381">
-            <div class="stat-block-icon">⏱</div>
-            <div class="stat-block-value" id="stat-avg">-</div>
-            <div class="stat-block-label">Moy. / nuit</div>
-          </div>
-          <div class="stat-block" style="--sb-color:#bdafd6">
-            <div class="stat-block-icon">⭐</div>
-            <div class="stat-block-value" id="stat-quality">-</div>
-            <div class="stat-block-label">Qualité moy.</div>
-          </div>
-          <div class="stat-block" style="--sb-color:#fbbf24">
-            <div class="stat-block-icon">🔥</div>
-            <div class="stat-block-value" id="stat-streak">0</div>
-            <div class="stat-block-label">Nuits suivies</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 14-day bar chart -->
-      <div class="chart-card">
-        <div class="sec-label" style="margin-bottom:10px">Durée · 14 dernières nuits</div>
-        <div class="bar-chart" id="bar-chart"></div>
-      </div>
-
-      <!-- Log -->
-      <div>
-        <div class="sec-label">Historique</div>
-        <div class="log-list" id="log-list">
-          <div style="text-align:center;padding:24px;color:#78705c;font-size:0.85rem">Aucune nuit enregistrée - commence ce soir !</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  </main>
 
   <script type="module" src="/js/sommeil.js"></script>
 </body>

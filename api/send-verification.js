@@ -66,7 +66,7 @@ function buildEmailHtml(code, email) {
             <div style="height:1px;background:rgba(255,255,255,0.08);margin:0 0 28px;"></div>
 
             <p style="margin:0 0 6px;font-size:0.85rem;color:#6b8aaa;">Ce code a été demandé pour :</p>
-            <p style="margin:0 0 24px;font-size:0.9rem;font-weight:600;color:#7bbfff;">${email}</p>
+            <p style="margin:0 0 24px;font-size:0.9rem;font-weight:600;color:#a7d585;">${String(email).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))}</p>
 
             <p style="margin:0;font-size:0.82rem;color:#4a6580;line-height:1.6;">
               Si vous n'avez pas créé de compte sur ChangeYourLife, ignorez simplement cet email.
@@ -100,7 +100,7 @@ module.exports = async function handler(req, res) {
   // Check env vars before attempting anything
   if (!process.env.RESEND_API_KEY) {
     console.error('[send-verification] RESEND_API_KEY is not set');
-    return res.status(500).json({ error: 'Configuration email manquante (RESEND_API_KEY)', code: 'MISSING_API_KEY' });
+    return res.status(500).json({ error: 'Configuration email manquante', code: 'MISSING_API_KEY' });
   }
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.error('[send-verification] FIREBASE_SERVICE_ACCOUNT is not set');
@@ -166,14 +166,19 @@ module.exports = async function handler(req, res) {
       `- L'équipe ChangeYourLife\nhttps://changeyourlife.ai\n`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { data: resendData, error: resendError } = await resend.emails.send({
+    // Plafond de temps (regle du projet) : Resend n'en a pas en propre.
+    const envoi = resend.emails.send({
       from: 'ChangeYourLife <noreply@changeyourlife.ai>',
       to: email,
-      reply_to: 'noreply@changeyourlife.ai',
+      replyTo: 'noreply@changeyourlife.ai',
       subject: `Code de vérification ChangeYourLife · ${code}`,
       html: buildEmailHtml(code, email),
       text: textVersion,
     });
+    const { data: resendData, error: resendError } = await Promise.race([
+      envoi,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout resend')), 10_000)),
+    ]);
 
     if (resendError) {
       console.error('[send-verification] Resend error:', JSON.stringify(resendError, null, 2));

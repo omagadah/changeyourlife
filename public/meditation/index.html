@@ -2,205 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Méditation guidée - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <link rel="stylesheet" href="/css/main.min.css" />
-  <style>
-    body { color:#f1efec; }
-    .page-shell { position: fixed; inset: 20px; background: var(--glass-bg); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: grid; grid-template-rows: auto 1fr; gap: 16px; overflow: hidden; }
-    .header-bar { display: flex; justify-content: space-between; align-items: center; }
-    .header-bar h1 { margin: 0; font-size: 1.4rem; }
-    .content-area { overflow-y: auto; display: grid; gap: 20px; }
-    /* ── Accueil CYL (humeur → reco) ── */
-    .lya-accueil { display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border-radius:16px;
-      background:linear-gradient(135deg,rgba(111,154,82,0.14),rgba(111,154,82,0.06)); border:1px solid rgba(111,154,82,0.22); }
-    .la-orb { width:42px; height:42px; flex-shrink:0; border-radius:50%;
-      background:radial-gradient(circle at 36% 32%,#fbe6b0,#e7b15c 40%,#4a7a3a 100%);
-      box-shadow:0 0 18px rgba(231,177,92,.5), inset 0 0 10px rgba(255,255,255,.25); }
-    .la-name { font-size:0.64rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#c9e6b6; }
-    .la-line { font-size:0.95rem; color:#f1efec; line-height:1.4; margin:2px 0 10px; }
-    .la-moods { display:flex; flex-wrap:wrap; gap:8px; }
-    .la-moods button { padding:7px 13px; border-radius:99px; border:1px solid rgba(255,255,255,0.12);
-      background:rgba(255,255,255,0.05); color:#e1ded7; font-size:0.82rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
-    .la-moods button:hover { background:rgba(111,154,82,0.18); border-color:rgba(111,154,82,0.5); transform:translateY(-1px); }
-    .sessions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-    /* ── Session cards ── */
-    .session-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 16px; padding: 18px; cursor: pointer;
-      transition: all 0.25s var(--ease); position: relative; overflow: hidden;
-    }
-    .session-card::after {
-      content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
-      background: var(--card-color, transparent); opacity: 0.6;
-      transition: opacity 0.2s;
-    }
-    .session-card:hover { background: rgba(255,255,255,0.07); transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.25); }
-    .session-card:hover::after { opacity: 1; }
-    .session-card.active { border-color: rgba(132,194,94,0.4); background: rgba(132,194,94,0.08); }
-    .session-card.playing { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.07); }
-    .session-icon { font-size: 2.2rem; margin-bottom: 10px; }
-    .session-title { font-weight: 700; font-size: 1rem; margin-bottom: 5px; letter-spacing: -0.2px; }
-    .session-desc { font-size: 0.83rem; color: var(--text-2); line-height: 1.45; }
-    .session-duration {
-      position: absolute; top: 12px; right: 12px;
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
-      padding: 3px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; color: var(--text-2);
-    }
-
-    /* ── Player panel ── */
-    .player-panel {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px; padding: 28px 24px; display: none;
-    }
-    .player-panel.active { display: block; }
-    .player-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:4px; }
-    .player-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px; }
-    .player-subtitle { color: var(--text-2); font-size: 0.85rem; margin-bottom: 20px; }
-
-    /* ── Timer with circular progress ── */
-    .timer-wrap { display:flex; justify-content:center; margin: 20px 0; }
-    .timer-ring { position:relative; width:160px; height:160px; }
-    .timer-ring svg { position:absolute; top:0; left:0; transform:rotate(-90deg); }
-    .timer-ring-bg { stroke:rgba(255,255,255,0.06); fill:none; stroke-width:4; }
-    .timer-ring-fill { stroke:var(--blue); fill:none; stroke-width:4; stroke-linecap:round;
-      stroke-dasharray:440; stroke-dashoffset:440; transition:stroke-dashoffset 0.9s linear; }
-    .timer-inner { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-    .timer-display {
-      font-size: 2.8rem; font-weight: 200; color: var(--text-1);
-      font-variant-numeric: tabular-nums; letter-spacing: -1px;
-    }
-    .timer-label { font-size:0.7rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
-
-    .controls { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
-    .btn { padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-weight: 600; font-size:0.88rem; transition: all 0.2s; }
-    .btn:hover { background: rgba(255,255,255,0.12); transform: scale(1.02); }
-    .btn.primary { background: var(--blue); border-color: transparent; box-shadow:0 4px 14px rgba(132,194,94,0.3); }
-    .btn.primary:hover { background: #71bd42; }
-    .btn.pause-active { background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.4); color:#fbbf24; }
-
-    /* ── Breathing guide ── */
-    .breathing-guide { text-align: center; margin: 16px 0 8px; display: none; }
-    .breathing-guide.active { display: block; }
-    .breathing-rings { position:relative; width:160px; height:160px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; }
-    .b-ring {
-      position:absolute; border-radius:50%; border:2px solid;
-      transition: transform 0.6s ease, opacity 0.6s ease;
-    }
-    .b-ring-1 { width:80px;  height:80px;  border-color:rgba(167,213,133,0.7);  background:rgba(167,213,133,0.08); }
-    .b-ring-2 { width:110px; height:110px; border-color:rgba(167,213,133,0.35); background:rgba(167,213,133,0.04); }
-    .b-ring-3 { width:140px; height:140px; border-color:rgba(167,213,133,0.15); background:transparent; }
-    .b-core  { width:30px;  height:30px;   border-radius:50%; background:radial-gradient(circle,rgba(167,213,133,0.8),rgba(167,213,133,0.2)); box-shadow:0 0 20px rgba(167,213,133,0.4); z-index:1; transition:transform 0.6s ease; }
-
-    /* Phase animations */
-    .breathing-rings.inhale .b-ring-1 { transform:scale(1.3); }
-    .breathing-rings.inhale .b-ring-2 { transform:scale(1.2); }
-    .breathing-rings.inhale .b-ring-3 { transform:scale(1.1); opacity:0.8; }
-    .breathing-rings.inhale .b-core  { transform:scale(1.4); }
-    .breathing-rings.hold   .b-ring-1 { transform:scale(1.3); opacity:0.8; }
-    .breathing-rings.hold   .b-ring-2 { transform:scale(1.2); opacity:0.6; }
-    .breathing-rings.hold   .b-core  { transform:scale(1.4); }
-    .breathing-rings.exhale .b-ring-1 { transform:scale(0.85); }
-    .breathing-rings.exhale .b-ring-2 { transform:scale(0.9); }
-    .breathing-rings.exhale .b-ring-3 { transform:scale(0.95); opacity:0.5; }
-    .breathing-rings.exhale .b-core  { transform:scale(0.85); }
-
-    .breathing-phase-label {
-      font-size:0.72rem; text-transform:uppercase; letter-spacing:.8px; font-weight:700;
-      color:var(--text-3); margin-bottom:4px;
-    }
-    .breathing-text { font-size: 1.1rem; color: #cae6b8; font-weight: 500; }
-    .breathing-progress { display:flex; gap:6px; justify-content:center; margin-top:10px; }
-    .bp-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.15); transition:background .3s, transform .3s; }
-    .bp-dot.active { background:var(--blue-light); transform:scale(1.3); }
-
-    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 20px; }
-    .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; text-align: center; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--blue-light); }
-    .stat-label { font-size: 0.78rem; color: var(--text-2); margin-top: 4px; }
-    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; }
-    .toast.show { transform:translate(-50%,0); }
-    .toast.error { background:rgba(239,68,68,.92); }
-    /* ── Ambient sounds ── */
-    .ambient-section { margin:20px 0 4px; }
-    .ambient-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:.6px; color:#99c87b; font-weight:600; margin-bottom:8px; }
-    .ambient-grid { display:flex; gap:8px; flex-wrap:wrap; }
-    .amb-btn {
-      padding:7px 14px; border-radius:999px; font-size:0.82rem; cursor:pointer; transition:all .2s;
-      border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:#c5c0b4;
-      display:flex; align-items:center; gap:5px;
-    }
-    .amb-btn:hover { background:rgba(255,255,255,0.1); }
-    .amb-btn.active { background:rgba(132,194,94,0.2); border-color:#8dca67; color:#c2e2ae; }
-    .amb-volume { display:flex; align-items:center; gap:8px; margin-top:10px; }
-    .amb-volume label { font-size:0.75rem; color:#99c87b; white-space:nowrap; }
-    .amb-volume input[type=range] { flex:1; accent-color:#8dca67; cursor:pointer; }
-
-    /* ── Custom duration card ── */
-    .custom-duration-wrap { display:none; margin-top:10px; align-items:center; gap:10px; flex-wrap:wrap; }
-    .custom-duration-wrap.open { display:flex; }
-    .custom-duration-input {
-      width:80px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15);
-      border-radius:8px; padding:7px 10px; color:#f1efec; font-size:0.9rem; text-align:center; outline:none;
-      transition: border-color .2s;
-    }
-    .custom-duration-input:focus { border-color: rgba(132,194,94,.5); }
-
-    /* ── Session history ── */
-    .history-section { margin-top:8px; }
-    .history-title {
-      font-size:0.72rem; text-transform:uppercase; letter-spacing:.6px; color:#78705c;
-      font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px;
-    }
-    .history-list { display:flex; flex-direction:column; gap:6px; }
-    .history-item {
-      display:flex; align-items:center; gap:10px;
-      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
-      border-radius:10px; padding:9px 14px;
-    }
-    .history-icon { font-size:1.3rem; flex-shrink:0; }
-    .history-info { flex:1; min-width:0; }
-    .history-name { font-size:0.85rem; font-weight:600; color:#e1ded7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .history-date { font-size:0.72rem; color:#78705c; margin-top:1px; }
-    .history-dur { font-size:0.8rem; font-weight:700; color:#8dca67; flex-shrink:0; }
-
-    /* ── Mobile ── */
-    @media (max-width:600px) {
-      .page-shell { inset:8px; padding:14px 12px; border-radius:16px; }
-      .sessions-grid { grid-template-columns: 1fr; }
-      .header-bar { flex-direction:column; align-items:flex-start; gap:8px; }
-      .timer-ring { width:130px; height:130px; }
-      .timer-ring svg { width:130px; height:130px; }
-      .timer-display { font-size:1.6rem; }
-      .session-detail { padding:16px; }
-      .breathing-rings { width:180px; height:180px; }
-      .amb-btns { flex-wrap:wrap; }
-    }
-
-    /* ══ GUIDAGE ══
-       La phrase occupe le centre de l attention pendant la seance. Elle entre
-       en fondu montant : une apparition seche casserait le calme qu on vient
-       justement d installer. */
-    .guide-wrap { min-height:64px; display:flex; align-items:center; justify-content:center;
-      padding:6px 12px; margin:6px 0 2px; }
-    .guide-line { font-size:1.02rem; line-height:1.55; text-align:center; max-width:30rem;
-      color:var(--text-1); font-weight:500; margin:0;
-      opacity:0; transform:translateY(6px);
-      transition:opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
-    .guide-line.in { opacity:1; transform:none; }
-    .btn-voice.off { opacity:.55; }
-
-    /* Le confort de lecture prime sur la densite : une phrase de meditation
-       lue sur un telephone doit rester lisible sans plisser les yeux. */
-    @media (max-width:600px){
-      .guide-wrap { min-height:76px; }
-      .guide-line { font-size:.97rem; }
-    }
-  </style>
+  <title>Méditation - Change Your Life</title>
+  <meta name="description" content="Méditation guidée avec des séances courtes, des exercices de respiration et des sons d'ambiance, pour souffler et avancer." />
   <meta name="robots" content="index,follow" />
-  <meta name="description" content="Méditation guidée avec sessions personnalisées, exercices de respiration et sons d'ambiance pour progresser dans votre bien-être." />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -208,128 +14,254 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
+  <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/transitions.css" />
+  <style>
+    .content-area { display: grid; gap: 20px; }
+
+    /* Accueil CYL : on cale l'humeur avant de proposer un mode */
+    .med-cyl { display: flex; gap: 14px; align-items: flex-start; border-color: rgba(132,194,94,.28); background: rgba(132,194,94,.06); }
+    .med-cyl-ic { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--surface-3); color: var(--leaf-text); }
+    .med-cyl-body { flex: 1; min-width: 0; }
+    .med-cyl-name { font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--leaf-text); }
+    .la-line { font-size: .96rem; color: var(--text-1); line-height: 1.45; margin: 2px 0 10px; }
+    .la-moods { display: flex; flex-wrap: wrap; gap: 8px; }
+    .la-moods button { cursor: pointer; font-family: inherit; min-height: 36px; color: var(--text-1); }
+    .la-moods button:hover { border-color: rgba(132,194,94,.5); background: rgba(132,194,94,.12); }
+
+    /* Les seances */
+    .sessions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .session-card { text-align: left; font: inherit; color: var(--text-1); background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 18px; cursor: pointer; position: relative; overflow: hidden; transition: background var(--duration), border-color var(--duration); }
+    .session-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--card-color, transparent); opacity: .6; }
+    .session-card:hover { background: var(--surface-2); border-color: var(--line-strong); }
+    .session-card.active { border-color: rgba(132,194,94,.4); background: rgba(132,194,94,.08); }
+    .session-card.playing { border-color: rgba(132,194,94,.5); background: rgba(132,194,94,.1); }
+    .session-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--surface-3); color: var(--card-color, var(--leaf-text)); margin-bottom: 10px; }
+    .session-title { display: block; font-family: var(--font-display); font-weight: 600; font-size: 1.02rem; margin-bottom: 4px; }
+    .session-desc { display: block; font-size: .84rem; color: var(--text-2); line-height: 1.45; }
+    .session-duration { position: absolute; top: 12px; right: 12px; }
+
+    /* Duree personnalisee */
+    .custom-duration-wrap { display: none; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+    .custom-duration-wrap.open { display: flex; }
+    .custom-duration-wrap .field { width: 120px; }
+
+    /* Le lecteur */
+    .player-panel { display: none; padding: 24px; }
+    .player-panel.active { display: block; }
+    .player-title { font-size: 1.15rem; margin: 0 0 2px; }
+    .player-subtitle { color: var(--text-2); font-size: .88rem; margin: 0 0 16px; }
+    .timer-wrap { display: flex; justify-content: center; margin: 16px 0; }
+    .timer-ring { position: relative; width: 160px; height: 160px; }
+    .timer-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); width: 100%; height: 100%; }
+    .timer-ring-bg { stroke: var(--surface-3); fill: none; stroke-width: 4; }
+    .timer-ring-fill { stroke: var(--leaf); fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset .9s linear; }
+    .timer-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-display { font-size: 2.6rem; font-weight: 300; color: var(--text-1); letter-spacing: -.02em; }
+    .timer-display svg { width: 40px; height: 40px; color: var(--leaf-text); }
+    .timer-label { font-size: .7rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+    .controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+    .controls .btn { min-height: 44px; }
+    .btn.pause-active { color: var(--gold-text); border-color: rgba(231,177,92,.4); }
+    .btn-voice.off { color: var(--text-3); }
+
+    /* Guidage : la phrase en cours entre en fondu montant, une apparition
+       seche casserait le calme qu'on vient d'installer. */
+    .guide-wrap { min-height: 64px; display: flex; align-items: center; justify-content: center; padding: 6px 12px; margin: 6px 0 2px; }
+    .guide-line { font-family: var(--font-display); font-size: 1.08rem; line-height: 1.55; text-align: center; max-width: 30rem; color: var(--text-1); margin: 0; opacity: 0; transform: translateY(6px); transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+    .guide-line.in { opacity: 1; transform: none; }
+
+    /* Respiration */
+    .breathing-guide { text-align: center; margin: 12px 0 4px; display: none; }
+    .breathing-guide.active { display: block; }
+    .breathing-rings { position: relative; width: 160px; height: 160px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; }
+    .b-ring { position: absolute; border-radius: 50%; border: 2px solid; transition: transform .6s ease, opacity .6s ease; }
+    .b-ring-1 { width: 80px; height: 80px; border-color: rgba(167,213,133,.7); background: rgba(167,213,133,.08); }
+    .b-ring-2 { width: 110px; height: 110px; border-color: rgba(167,213,133,.35); background: rgba(167,213,133,.04); }
+    .b-ring-3 { width: 140px; height: 140px; border-color: rgba(167,213,133,.15); }
+    .b-core { width: 30px; height: 30px; border-radius: 50%; background: var(--leaf); opacity: .85; z-index: 1; transition: transform .6s ease; }
+    .breathing-rings.inhale .b-ring-1 { transform: scale(1.3); }
+    .breathing-rings.inhale .b-ring-2 { transform: scale(1.2); }
+    .breathing-rings.inhale .b-ring-3 { transform: scale(1.1); opacity: .8; }
+    .breathing-rings.inhale .b-core { transform: scale(1.4); }
+    .breathing-rings.hold .b-ring-1 { transform: scale(1.3); opacity: .8; }
+    .breathing-rings.hold .b-ring-2 { transform: scale(1.2); opacity: .6; }
+    .breathing-rings.hold .b-core { transform: scale(1.4); }
+    .breathing-rings.exhale .b-ring-1 { transform: scale(.85); }
+    .breathing-rings.exhale .b-ring-2 { transform: scale(.9); }
+    .breathing-rings.exhale .b-ring-3 { transform: scale(.95); opacity: .5; }
+    .breathing-rings.exhale .b-core { transform: scale(.85); }
+    .breathing-phase-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--text-3); margin-bottom: 4px; }
+    .breathing-text { font-size: 1.1rem; color: var(--leaf-text); font-weight: 500; }
+    .breathing-progress { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+    .bp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--surface-3); transition: background .3s, transform .3s; }
+    .bp-dot.active { background: var(--leaf-text); transform: scale(1.3); }
+
+    /* Sons d'ambiance */
+    .ambient-section { margin: 18px 0 4px; }
+    .ambient-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .amb-btn { cursor: pointer; font-family: inherit; min-height: 36px; }
+    .amb-btn.active { background: rgba(132,194,94,.14); border-color: rgba(132,194,94,.4); color: var(--leaf-text); }
+    .amb-volume { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .amb-volume label { font-size: .78rem; color: var(--text-2); white-space: nowrap; }
+    .amb-volume input[type=range] { flex: 1; accent-color: var(--leaf); cursor: pointer; min-height: 28px; }
+
+    /* Reperes et historique */
+    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .stat-card { text-align: center; padding: 14px; }
+    .stat-value { font-size: 1.5rem; line-height: 1.1; color: var(--leaf-text); }
+    .stat-label { font-size: .76rem; color: var(--text-2); margin-top: 4px; }
+    .history-list { display: flex; flex-direction: column; gap: 6px; }
+    .history-item { display: flex; align-items: center; gap: 10px; background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px; padding: 9px 14px; }
+    .history-icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-3); color: var(--leaf-text); flex-shrink: 0; }
+    .history-info { flex: 1; min-width: 0; }
+    .history-name { font-size: .86rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-date { font-size: .74rem; color: var(--text-3); margin-top: 1px; }
+    .history-dur { font-size: .82rem; font-weight: 700; color: var(--leaf-text); flex-shrink: 0; }
+
+    @media (max-width: 900px) {
+      .sessions-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .sessions-grid { grid-template-columns: 1fr; }
+      .timer-ring { width: 130px; height: 130px; }
+      .timer-display { font-size: 1.9rem; }
+      .guide-wrap { min-height: 76px; }
+      .guide-line { font-size: 1rem; }
+      .player-panel { padding: 18px 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .guide-line, .b-ring, .b-core, .bp-dot, .timer-ring-fill, .session-card { transition: none; }
+    }
+  </style>
 </head>
 <body>
-  <div id="toast" class="toast"></div>
-  <nav class="site-nav">
-    <a href="/" class="site-nav__back">← Mon espace</a>
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Ouvrir le menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:36px;height:36px;display:block;border-radius:6px;"><g stroke-width="3"><circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/><line x1="100" y1="60" x2="130" y2="30" stroke="white"/><line x1="100" y1="60" x2="130" y2="60" stroke="white"/><line x1="100" y1="60" x2="130" y2="90" stroke="white"/><circle cx="150" cy="30" r="18" fill="none" stroke="white"/><circle cx="150" cy="60" r="18" fill="none" stroke="white"/><circle cx="150" cy="90" r="18" fill="none" stroke="white"/></g></svg>
-    </button>
-  </nav>
-  <main class="page-shell page-shell-nav">
-    <div class="header-bar">
-      <div>
-        <h1>Méditation guidée</h1>
-        <div style="font-size:0.85rem;color:#c5c0b4">Trouve ta sérénité, respire, progresse</div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="leaf"></span>Méditation</h1>
+        <p class="page-sub">Respire, pose-toi, repars. Des séances courtes, guidées par la voix ou en silence.</p>
       </div>
-    </div>
-    <div class="content-area">
-      <!-- Accueil CYL : on cale l'humeur avant de proposer un mode -->
-      <div class="lya-accueil">
-        <div class="la-orb" aria-hidden="true"></div>
-        <div style="flex:1;min-width:0">
-          <div class="la-name">CYL</div>
-          <div class="la-line" id="la-line">Avant de méditer - comment te sens-tu, là, maintenant ?</div>
-          <div class="la-moods" id="la-moods">
-            <button data-mood="stress">😣 Stressé</button>
-            <button data-mood="agite">😵‍💫 Agité</button>
-            <button data-mood="fatigue">😴 Fatigué</button>
-            <button data-mood="triste">😔 Triste</button>
-            <button data-mood="sens">🌌 En quête de sens</button>
-            <button data-mood="bien">🙂 Plutôt bien</button>
-          </div>
-        </div>
-      </div>
-      <div id="player" class="player-panel">
-        <div class="player-header">
-          <div>
-            <div class="player-title" id="player-title">Session</div>
-            <div class="player-subtitle" id="player-subtitle"></div>
-          </div>
-        </div>
-        <div class="timer-wrap">
-          <div class="timer-ring">
-            <svg viewBox="0 0 160 160" width="160" height="160">
-              <circle class="timer-ring-bg" cx="80" cy="80" r="70"/>
-              <circle class="timer-ring-fill" id="timer-ring-fill" cx="80" cy="80" r="70"/>
-            </svg>
-            <div class="timer-inner">
-              <div class="timer-display" id="timer">00:00</div>
-              <div class="timer-label" id="timer-label">restant</div>
+    </header>
+
+    <div class="page-body">
+      <div class="content-area">
+
+        <!-- Accueil CYL : on cale l'humeur avant de proposer un mode -->
+        <section class="card med-cyl" aria-label="CYL te propose une séance">
+          <div class="med-cyl-ic" aria-hidden="true"><span class="ic" data-icon="sparkles"></span></div>
+          <div class="med-cyl-body">
+            <div class="med-cyl-name">CYL</div>
+            <p class="la-line" id="la-line">Avant de méditer : comment tu te sens, là, maintenant ?</p>
+            <div class="la-moods" id="la-moods" role="group" aria-label="Comment tu te sens">
+              <button type="button" class="chip" data-mood="stress">Stressé</button>
+              <button type="button" class="chip" data-mood="agite">Agité</button>
+              <button type="button" class="chip" data-mood="fatigue">Fatigué</button>
+              <button type="button" class="chip" data-mood="triste">Triste</button>
+              <button type="button" class="chip" data-mood="sens">En quête de sens</button>
+              <button type="button" class="chip" data-mood="bien">Plutôt bien</button>
             </div>
           </div>
-        </div>
-        <!-- ── Guidage : la phrase en cours ──
-             Le texte est affiche MEME quand la voix parle : on peut couper le
-             son (transports, bureau, quelqu un qui dort a cote) et suivre la
-             seance en entier. La voix est un confort, pas une condition. -->
-        <div class="guide-wrap" id="guide-wrap">
-          <p class="guide-line" id="guide-line"></p>
-        </div>
-        <div class="breathing-guide" id="breathing-guide">
-          <div class="breathing-rings" id="breathing-rings">
-            <div class="b-ring b-ring-3"></div>
-            <div class="b-ring b-ring-2"></div>
-            <div class="b-ring b-ring-1"></div>
-            <div class="b-core"></div>
+        </section>
+
+        <!-- Le lecteur -->
+        <section id="player" class="card player-panel" aria-live="polite">
+          <h2 class="player-title" id="player-title">Séance</h2>
+          <p class="player-subtitle" id="player-subtitle"></p>
+          <div class="timer-wrap">
+            <div class="timer-ring">
+              <svg viewBox="0 0 160 160" width="160" height="160" aria-hidden="true">
+                <circle class="timer-ring-bg" cx="80" cy="80" r="70"/>
+                <circle class="timer-ring-fill" id="timer-ring-fill" cx="80" cy="80" r="70"/>
+              </svg>
+              <div class="timer-inner">
+                <div class="timer-display t-num" id="timer">00:00</div>
+                <div class="timer-label" id="timer-label">restant</div>
+              </div>
+            </div>
           </div>
-          <div class="breathing-phase-label" id="breathing-phase-label">Respiration guidée</div>
-          <div class="breathing-text" id="breathing-text">Inspire...</div>
-          <div class="breathing-progress" id="breathing-progress">
-            <div class="bp-dot active" id="bp-0"></div>
-            <div class="bp-dot" id="bp-1"></div>
-            <div class="bp-dot" id="bp-2"></div>
+          <!-- Guidage : la phrase en cours. Le texte est affiche MEME quand la
+               voix parle : on peut couper le son et suivre la seance. -->
+          <div class="guide-wrap" id="guide-wrap">
+            <p class="guide-line" id="guide-line"></p>
           </div>
-        </div>
-        <!-- ── Sons ambiants ── -->
-        <div class="ambient-section">
-          <div class="ambient-label">Son d'ambiance</div>
-          <div class="ambient-grid">
-            <button class="amb-btn active" data-sound="none">🔇 Silence</button>
-            <button class="amb-btn" data-sound="rain">🌧 Pluie</button>
-            <button class="amb-btn" data-sound="ocean">🌊 Océan</button>
-            <button class="amb-btn" data-sound="forest">🌿 Forêt</button>
-            <button class="amb-btn" data-sound="white">📻 Bruit blanc</button>
+          <div class="breathing-guide" id="breathing-guide">
+            <div class="breathing-rings" id="breathing-rings" aria-hidden="true">
+              <div class="b-ring b-ring-3"></div>
+              <div class="b-ring b-ring-2"></div>
+              <div class="b-ring b-ring-1"></div>
+              <div class="b-core"></div>
+            </div>
+            <div class="breathing-phase-label" id="breathing-phase-label">Respiration guidée</div>
+            <div class="breathing-text" id="breathing-text">Inspire</div>
+            <div class="breathing-progress" id="breathing-progress" aria-hidden="true">
+              <div class="bp-dot active" id="bp-0"></div>
+              <div class="bp-dot" id="bp-1"></div>
+              <div class="bp-dot" id="bp-2"></div>
+            </div>
           </div>
-          <div class="amb-volume">
-            <label>Volume</label>
-            <input type="range" id="amb-volume" min="0" max="100" value="40" />
+          <!-- Sons d'ambiance -->
+          <div class="ambient-section">
+            <div class="sec-label" id="ambient-label">Son d'ambiance</div>
+            <div class="ambient-grid" role="group" aria-labelledby="ambient-label">
+              <button type="button" class="chip amb-btn active" data-sound="none" aria-pressed="true"><span class="ic" data-icon="minimize" data-icon-size="13"></span>Silence</button>
+              <button type="button" class="chip amb-btn" data-sound="rain" aria-pressed="false"><span class="ic" data-icon="droplet" data-icon-size="13"></span>Pluie</button>
+              <button type="button" class="chip amb-btn" data-sound="ocean" aria-pressed="false"><span class="ic" data-icon="water" data-icon-size="13"></span>Océan</button>
+              <button type="button" class="chip amb-btn" data-sound="forest" aria-pressed="false"><span class="ic" data-icon="leaf" data-icon-size="13"></span>Forêt</button>
+              <button type="button" class="chip amb-btn" data-sound="white" aria-pressed="false"><span class="ic" data-icon="sort" data-icon-size="13"></span>Bruit blanc</button>
+            </div>
+            <div class="amb-volume">
+              <label for="amb-volume">Volume</label>
+              <input type="range" id="amb-volume" min="0" max="100" value="40" />
+            </div>
           </div>
+          <div class="controls">
+            <button class="btn primary" type="button" id="btn-start">Démarrer</button>
+            <button class="btn" type="button" id="btn-pause" style="display:none">Pause</button>
+            <button class="btn quiet" type="button" id="btn-stop">Arrêter</button>
+            <button class="btn quiet btn-voice" type="button" id="btn-voice" aria-pressed="true" title="Couper ou remettre la voix"><span class="ic" data-icon="mic"></span>Voix</button>
+          </div>
+        </section>
+
+        <!-- Les seances -->
+        <section aria-label="Les séances">
+          <div class="sec-label">Les séances</div>
+          <div class="sessions-grid" id="sessions-grid"></div>
+        </section>
+
+        <!-- Duree personnalisee -->
+        <div class="card custom-duration-wrap" id="custom-dur-wrap">
+          <div class="field">
+            <label for="custom-dur-input">Durée (minutes)</label>
+            <input type="number" class="input" id="custom-dur-input" min="1" max="120" value="20" />
+          </div>
+          <button class="btn primary" type="button" id="custom-dur-confirm">Commencer<span class="ic" data-icon="arrowRight"></span></button>
         </div>
-        <div class="controls">
-          <button class="btn primary" id="btn-start">Démarrer</button>
-          <button class="btn" id="btn-pause" style="display:none">Pause</button>
-          <button class="btn" id="btn-stop">Arrêter</button>
-          <button class="btn btn-voice" id="btn-voice" aria-pressed="true" title="Couper ou remettre la voix">🔊 Voix</button>
-        </div>
-      </div>
-      <div class="sessions-grid" id="sessions-grid"></div>
-      <!-- Custom duration -->
-      <div class="custom-duration-wrap" id="custom-dur-wrap">
-        <span style="font-size:0.85rem;color:#cae6b8;font-weight:600">Durée :</span>
-        <input type="number" class="custom-duration-input" id="custom-dur-input" min="1" max="120" value="20" />
-        <span style="font-size:0.85rem;color:#a79f8c">min</span>
-        <button class="btn primary" id="custom-dur-confirm" style="padding:7px 16px;font-size:0.85rem">Commencer →</button>
-      </div>
-      <div class="stats-bar">
-        <div class="stat-card">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-label">Sessions complétées</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-time">0 min</div>
-          <div class="stat-label">Temps total</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-streak">0</div>
-          <div class="stat-label">Série actuelle (jours)</div>
-        </div>
-      </div>
-      <!-- Session history -->
-      <div class="history-section" id="history-section" style="display:none">
-        <div class="history-title">Sessions récentes</div>
-        <div class="history-list" id="history-list"></div>
+
+        <!-- Reperes -->
+        <section aria-label="Repères">
+          <div class="sec-label">Repères</div>
+          <div class="stats-bar">
+            <div class="card stat-card">
+              <div class="stat-value t-num" id="stat-total">0</div>
+              <div class="stat-label">Séances terminées</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-value t-num" id="stat-time">0 min</div>
+              <div class="stat-label">Temps total</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-value t-num" id="stat-streak">0</div>
+              <div class="stat-label">Jours de suite</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Historique -->
+        <section class="history-section" id="history-section" style="display:none" aria-label="Séances récentes">
+          <div class="sec-label">Séances récentes</div>
+          <div class="history-list" id="history-list"></div>
+        </section>
       </div>
     </div>
   </main>

@@ -8,7 +8,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'No build step — frontend statique'",
+    "build": "echo 'No build step - frontend statique'",
     "format": "prettier --write \"**/*.{js,ts,html,css,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,ts,html,css,json,md}\"",
     "deploy:functions": "cd functions && npm run deploy",
@@ -18,8 +18,8 @@
     "logs:functions": "cd functions && npm run logs"
   },
   "dependencies": {
-    "firebase-admin": "^12.6.0",
-    "resend": "^3.0.0"
+    "firebase-admin": "^14.5.0",
+    "resend": "^6.34.1"
   },
   "devDependencies": {
     "prettier": "^3.3.0"

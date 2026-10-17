@@ -2,11 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-    <script src="/js/theme-init.js"></script>
+  <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Bilan Hebdomadaire - Change Your Life</title>
-    <link rel="stylesheet" href="/css/transitions.css"/>
-  <meta name="description" content="Récapitulatif hebdomadaire de votre humeur, sommeil, gratitude et habitudes - pour célébrer vos progrès et identifier vos axes d'amélioration.">
+  <title>Bilan - Change Your Life</title>
+  <meta name="description" content="Ton bilan de la semaine - ce que tu as fait, ce que tu as ressenti, et ce que tu veux changer pour la suivante.">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" href="/favicon.ico">
@@ -15,291 +14,205 @@
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
   <link rel="stylesheet" href="/css/main.min.css" />
+  <link rel="stylesheet" href="/css/transitions.css" />
   <style>
-    body { color:var(--text-1); }
-    .page-shell {
-      position:fixed; inset:20px;
-      background:var(--glass-bg); backdrop-filter:blur(15px);
-      border-radius:20px; border:1px solid var(--glass-border);
-      padding:20px; display:grid; grid-template-rows:auto 1fr; gap:16px; overflow:hidden;
-    }
-    .header-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-    .header-left h1 { font-size:1.4rem; font-weight:800; letter-spacing:-.3px; }
-    .header-sub { font-size:0.82rem; color:var(--text-2); margin-top:2px; }
-    .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:20px; padding-bottom:20px; }
+    .content-area { display: flex; flex-direction: column; gap: 22px; }
 
-    /* ── Toast ── */
-    .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
-    .toast.show { transform:translate(-50%,0); }
+    /* Navigation de semaine, dans les actions de l'en-tete */
+    .week-nav { display: flex; align-items: center; gap: 6px; }
+    .week-btn { width: 40px; padding: 0; }
+    .week-range { font-size: .88rem; font-weight: 600; min-width: 150px; text-align: center; }
 
-    /* ── Section label ── */
-    .sec-label {
-      font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
-      color:var(--text-3); font-weight:700; margin-bottom:12px;
-      display:flex; align-items:center; gap:8px;
-    }
-    .sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+    /* En chiffres */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat-card { text-align: center; padding: 14px 12px; border-bottom: 2px solid var(--sc-color, var(--line)); }
+    .stat-card-ic { color: var(--sc-color, var(--text-3)); margin-bottom: 4px; display: inline-flex; }
+    .stat-card-value { font-size: 1.7rem; line-height: 1.1; }
+    .stat-card-label { font-size: .68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+    .stat-card-delta { font-size: .72rem; margin-top: 5px; font-weight: 600; }
+    .stat-card-delta:empty { display: none; }
+    .stat-card-delta.up { color: var(--leaf-text); }
+    .stat-card-delta.down { color: var(--coeur); }
+    .stat-card-delta.same { color: var(--text-3); }
 
-    /* ── Week nav ── */
-    .week-nav { display:flex; align-items:center; gap:12px; }
-    .week-btn {
-      width:32px; height:32px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.04); color:var(--text-2); cursor:pointer; font-size:1rem;
-      display:flex; align-items:center; justify-content:center; transition:all .15s;
-      flex-shrink:0;
-    }
-    .week-btn:hover { background:rgba(255,255,255,0.09); color:var(--text-1); }
-    .week-btn:disabled { opacity:0.3; cursor:not-allowed; }
-    .week-range { font-size:0.85rem; font-weight:700; color:var(--text-1); flex:1; text-align:center; }
+    /* XP par domaine */
+    .xp-domain-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .xp-domain-row:last-child { margin-bottom: 0; }
+    .xp-domain-label { width: 52px; font-size: .8rem; font-weight: 700; color: var(--dc); }
+    .xp-domain-bar-bg { flex: 1; height: 6px; background: var(--surface-3); border-radius: 6px; overflow: hidden; }
+    .xp-domain-bar { height: 100%; border-radius: 6px; width: 0%; background: var(--dc); transition: width 1s var(--ease); }
+    .xp-domain-val { width: 64px; text-align: right; font-size: .8rem; font-weight: 700; color: var(--dc); }
 
-    /* ── Stats grid ── */
-    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-    .stat-card {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:14px; padding:16px 14px; text-align:center;
-      border-bottom:2px solid var(--sc-color, rgba(255,255,255,0.08));
-      transition:transform .15s;
-    }
-    .stat-card:hover { transform:translateY(-2px); }
-    .stat-card-icon { font-size:1.3rem; margin-bottom:4px; }
-    .stat-card-value { font-size:1.7rem; font-weight:800; color:var(--text-1); line-height:1.1; }
-    .stat-card-label { font-size:0.63rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
-    .stat-card-delta { font-size:0.7rem; margin-top:5px; font-weight:600; }
-    .stat-card-delta.up { color:#22c55e; }
-    .stat-card-delta.down { color:#f87171; }
-    .stat-card-delta.same { color:var(--text-3); }
+    /* Activite quotidienne */
+    .activity-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .act-cell { aspect-ratio: 1; border-radius: 5px; background: var(--surface-2); position: relative; }
+    .act-cell.has-activity { background: rgba(132,194,94,.3); }
+    .act-cell.full-day { background: var(--leaf); }
+    .activity-day-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 6px; }
+    .act-day-label { font-size: .64rem; color: var(--text-3); text-align: center; }
+    .act-tooltip { display: none; position: absolute; bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%); background: var(--sheet-bg); border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 8px; font-size: .7rem; color: var(--text-1); white-space: nowrap; z-index: 10; pointer-events: none; }
+    .act-cell:hover .act-tooltip { display: block; }
 
-    /* ── XP domains bar ── */
-    .xp-domains-card {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:14px; padding:18px 20px;
-    }
-    .xp-domain-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-    .xp-domain-row:last-child { margin-bottom:0; }
-    .xp-domain-label { width:52px; font-size:0.76rem; font-weight:700; }
-    .xp-domain-bar-bg { flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; }
-    .xp-domain-bar { height:100%; border-radius:6px; width:0%; transition:width 1s cubic-bezier(.4,0,.2,1); }
-    .xp-domain-val { width:40px; text-align:right; font-size:0.78rem; font-weight:700; }
+    /* Moments cles */
+    .highlights-list { display: flex; flex-direction: column; gap: 8px; }
+    .highlight-item { display: flex; align-items: center; gap: 12px; background: var(--surface-1); border: 1px solid var(--line); border-radius: 11px; padding: 10px 14px; position: relative; overflow: hidden; }
+    .highlight-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--hl-color, var(--leaf)); }
+    .highlight-icon { flex-shrink: 0; display: inline-flex; color: var(--hl-color, var(--leaf-text)); }
+    .highlight-text { font-size: .86rem; flex: 1; }
+    .highlight-val { font-size: .9rem; font-weight: 700; flex-shrink: 0; }
 
-    /* ── Activity heatmap ── */
-    .activity-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
-    .act-cell {
-      aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.05);
-      position:relative; transition:transform .15s; cursor:default;
-    }
-    .act-cell:hover { transform:scale(1.2); z-index:2; }
-    .act-cell.has-activity { background:rgba(132,194,94,0.25); }
-    .act-cell.full-day { background:rgba(132,194,94,0.65); }
-    .act-day-label { font-size:0.6rem; color:var(--text-3); text-align:center; margin-top:4px; }
-    .act-tooltip {
-      display:none; position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%);
-      background:rgba(10,22,40,0.95); border:1px solid rgba(255,255,255,0.1);
-      border-radius:6px; padding:4px 8px; font-size:0.68rem; color:var(--text-1);
-      white-space:nowrap; z-index:10; pointer-events:none;
-    }
-    .act-cell:hover .act-tooltip { display:block; }
+    /* Reflexion guidee */
+    .reflection-card { padding: 0; overflow: hidden; }
+    .question-block { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .question-block:last-of-type { border-bottom: none; }
+    .question-num { font-size: .66rem; font-weight: 800; color: var(--leaf-text); letter-spacing: .1em; margin-bottom: 6px; }
+    .question-text { font-size: .9rem; margin-bottom: 10px; line-height: 1.5; font-weight: 600; display: block; }
+    .question-block .textarea { min-height: 64px; }
+    .reflection-foot { padding: 16px 20px; }
+    .save-btn { width: 100%; min-height: 44px; }
 
-    /* ── Reflection questions ── */
-    .reflection-card {
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:16px; overflow:hidden;
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
-    .question-block {
-      padding:18px 20px; border-bottom:1px solid rgba(255,255,255,0.05);
+    @media (max-width: 640px) {
+      .stats-grid { gap: 8px; }
+      .week-range { min-width: 0; }
+      .question-block { padding: 14px 14px; }
+      .reflection-foot { padding: 14px; }
     }
-    .question-block:last-child { border-bottom:none; }
-    .question-num { font-size:0.65rem; font-weight:800; color:rgba(132,194,94,0.5); letter-spacing:1px; margin-bottom:6px; }
-    .question-text { font-size:0.88rem; color:#e0ddd6; margin-bottom:10px; line-height:1.5; font-weight:600; }
-    .question-textarea {
-      width:100%; box-sizing:border-box; background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.07); border-radius:9px;
-      color:var(--text-1); font-size:0.84rem; padding:9px 12px; resize:none;
-      font-family:inherit; line-height:1.6; transition:border-color .2s;
+    @media (prefers-reduced-motion: reduce) {
+      .xp-domain-bar { transition: none; }
     }
-    .question-textarea:focus { outline:none; border-color:rgba(96,164,255,0.35); background:rgba(255,255,255,0.05); }
-    .question-textarea::placeholder { color:var(--text-3); }
-
-    /* ── Highlights ── */
-    .highlights-list { display:flex; flex-direction:column; gap:8px; }
-    .highlight-item {
-      display:flex; align-items:center; gap:12px;
-      background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
-      border-radius:11px; padding:11px 14px;
-      position:relative; overflow:hidden;
-    }
-    .highlight-item::before {
-      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
-      background:var(--hl-color, rgba(132,194,94,0.5)); border-radius:11px 0 0 11px;
-    }
-    .highlight-icon { font-size:1.3rem; flex-shrink:0; }
-    .highlight-text { font-size:0.85rem; color:#e0ddd6; flex:1; }
-    .highlight-val { font-size:0.9rem; font-weight:800; color:var(--text-1); flex-shrink:0; }
-
-    /* ── Save button ── */
-    .save-btn {
-      width:100%; padding:12px; border-radius:12px; border:none; cursor:pointer;
-      background:linear-gradient(135deg,#548d31,var(--blue)); color:#fff;
-      font-size:0.92rem; font-weight:700; font-family:inherit;
-      transition:filter .2s, transform .1s;
-    }
-    .save-btn:hover { filter:brightness(1.1); }
-    .save-btn:active { transform:scale(0.98); }
-
-    /* ── Domain score ring mini ── */
-    .domain-score-row { display:flex; gap:12px; flex-wrap:wrap; }
-    .domain-score-chip {
-      flex:1; min-width:80px; background:rgba(255,255,255,0.025);
-      border:1px solid rgba(255,255,255,0.07); border-radius:12px;
-      padding:12px 10px; text-align:center;
-      border-top:2px solid var(--dsc-color, rgba(255,255,255,0.1));
-    }
-    .dsc-emoji { font-size:1.3rem; margin-bottom:4px; }
-    .dsc-value { font-size:1.2rem; font-weight:800; color:var(--dsc-color, var(--text-1)); }
-    .dsc-label { font-size:0.62rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
-
-    @media (max-width:600px) {
-      .stats-grid { grid-template-columns:repeat(2,1fr); }
-    }
+    .cyl-relire { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .cyl-relire h3 { margin:0; font-size:1rem; }
+    .xp-br { display:grid; grid-template-columns:22px 1fr auto; gap:4px 10px; align-items:center; padding:6px 0; }
+    .xp-br .ic { color:var(--bc, var(--leaf)); }
+    .xp-br b { font-weight:600; color:var(--text-1); font-size:.88rem; }
+    .xp-br small { color:var(--text-3); font-size:.74rem; margin-left:6px; }
+    .xp-br em { font-style:normal; color:var(--text-2); font-size:.84rem; font-variant-numeric:tabular-nums; }
+    .xp-br i { grid-column:2 / span 2; display:block; height:3px; border-radius:3px; background:var(--surface-3); overflow:hidden; }
+    .xp-br i span { display:block; height:100%; width:0; background:var(--bc, var(--leaf)); transition:width 1s var(--ease); }
   </style>
 </head>
 <body>
-  <div class="toast" id="toast"></div>
-
-  <script type="module" src="/js/bilan.js"></script>
-
-  <header class="header">
-    <button class="user-panel-trigger" title="Mon Compte" aria-label="Menu">
-      <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:40px;height:40px;display:block;border-radius:6px;">
-        <g stroke-width="3">
-          <circle cx="60" cy="60" r="40" fill="black" stroke="#8eca68" stroke-width="8"/>
-          <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-          <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-        </g>
-      </svg>
-    </button>
-  </header>
-
-  <div class="page-shell">
-    <div class="header-bar">
-      <div class="header-left">
-        <h1>Bilan Hebdomadaire</h1>
-        <div class="header-sub">Réflexion guidée sur ta semaine passée</div>
+  <main class="page-shell" aria-labelledby="page-title">
+    <header class="page-head">
+      <div class="page-head-id">
+        <h1 id="page-title"><span class="ic" data-icon="chart"></span>Bilan</h1>
+        <p class="page-sub">La semaine, relue tranquillement : ce que tu as fait, et ce que tu en retiens.</p>
       </div>
-      <div class="week-nav">
-        <button class="week-btn" id="prev-week" title="Semaine précédente">‹</button>
-        <span class="week-range" id="week-range">Chargement…</span>
-        <button class="week-btn" id="next-week" title="Semaine suivante" disabled>›</button>
+      <div class="page-actions">
+        <div class="week-nav" role="group" aria-label="Changer de semaine">
+          <button class="btn quiet week-btn" type="button" id="prev-week" aria-label="Semaine précédente" title="Semaine précédente"><span class="ic" data-icon="chevronLeft"></span></button>
+          <span class="week-range" id="week-range" aria-live="polite"><span class="sk" style="width:120px;height:12px;display:inline-block"></span></span>
+          <button class="btn quiet week-btn" type="button" id="next-week" aria-label="Semaine suivante" title="Semaine suivante" disabled><span class="ic" data-icon="chevronRight"></span></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="content-area">
+
+        <!-- En chiffres -->
+        <section aria-label="En chiffres">
+          <div class="sec-label">En chiffres</div>
+          <div class="stats-grid">
+            <div class="card stat-card" style="--sc-color:var(--etre)">
+              <span class="stat-card-ic"><span class="ic" data-icon="zap"></span></span>
+              <div class="stat-card-value t-num" id="stat-xp"></div>
+              <div class="stat-card-label">XP gagnés</div>
+              <div class="stat-card-delta" id="stat-xp-delta"></div>
+            </div>
+            <div class="card stat-card" style="--sc-color:var(--leaf-text)">
+              <span class="stat-card-ic"><span class="ic" data-icon="book"></span></span>
+              <div class="stat-card-value t-num" id="stat-journal"></div>
+              <div class="stat-card-label">Entrées de journal</div>
+              <div class="stat-card-delta" id="stat-journal-delta"></div>
+            </div>
+            <div class="card stat-card" style="--sc-color:var(--corps)">
+              <span class="stat-card-ic"><span class="ic" data-icon="leaf"></span></span>
+              <div class="stat-card-value t-num" id="stat-meditation"></div>
+              <div class="stat-card-label">Séances de méditation</div>
+              <div class="stat-card-delta" id="stat-meditation-delta"></div>
+            </div>
+            <div class="card stat-card" style="--sc-color:var(--leaf)">
+              <span class="stat-card-ic"><span class="ic" data-icon="checks"></span></span>
+              <div class="stat-card-value t-num" id="stat-habits"></div>
+              <div class="stat-card-label">Habitudes tenues</div>
+              <div class="stat-card-delta" id="stat-habits-delta"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- XP par branche : les 8 branches de l'arbre, lues dans tree.branches.
+             Avant : quatre barres sur xp_body / xp_heart / xp_etre / xp_order,
+             des champs que personne n'écrivait, donc toujours à zéro. -->
+        <section aria-label="XP par branche">
+          <div class="sec-label">Là où ton énergie est allée <a class="sec-more" href="/yourlife/">Où j'en suis</a></div>
+          <div class="card" id="xp-domains-card"></div>
+        </section>
+
+        <!-- Relire la semaine avec CYL : une entrée en matière, pas un rapport.
+             Les chiffres partent comme prefill, l'utilisateur envoie s'il veut. -->
+        <section aria-label="Relire avec CYL">
+          <div class="card cyl-relire">
+            <div>
+              <h3>Relire ma semaine avec CYL</h3>
+              <p class="t-muted" style="margin:4px 0 0;font-size:.86rem">Les chiffres de la semaine partent dans la conversation, tu envoies si tu veux. Rien de ton journal ne lui est transmis.</p>
+            </div>
+            <button class="btn" type="button" id="btn-cyl-semaine"><span class="ic" data-icon="edit"></span>Ouvrir avec CYL</button>
+          </div>
+        </section>
+
+        <!-- Activite quotidienne -->
+        <section aria-label="Activité quotidienne">
+          <div class="sec-label">Activité quotidienne</div>
+          <div class="card" id="activity-week">
+            <div class="activity-grid" id="activity-grid"></div>
+            <div class="activity-day-labels" id="activity-day-labels" aria-hidden="true"></div>
+          </div>
+        </section>
+
+        <!-- Moments cles -->
+        <section id="highlights-section" style="display:none" aria-label="Moments clés">
+          <div class="sec-label">Moments clés</div>
+          <div class="highlights-list" id="highlights-list"></div>
+        </section>
+
+        <!-- Reflexion guidee -->
+        <section aria-label="Réflexion de la semaine">
+          <div class="sec-label">Réflexion de la semaine</div>
+          <div class="card reflection-card" id="reflection-form">
+            <div class="question-block">
+              <div class="question-num">01</div>
+              <label class="question-text" for="q1">Quelle est ta plus belle victoire de la semaine ?</label>
+              <textarea class="textarea" id="q1" rows="2" placeholder="Un moment de fierté, une habitude tenue, un cap franchi"></textarea>
+            </div>
+            <div class="question-block">
+              <div class="question-num">02</div>
+              <label class="question-text" for="q2">Qu'est-ce qui t'a le plus bousculé ? Comment tu as réagi ?</label>
+              <textarea class="textarea" id="q2" rows="2" placeholder="Un obstacle, une émotion difficile, un imprévu"></textarea>
+            </div>
+            <div class="question-block">
+              <div class="question-num">03</div>
+              <label class="question-text" for="q3">Qu'est-ce que tu veux faire autrement la semaine prochaine ?</label>
+              <textarea class="textarea" id="q3" rows="2" placeholder="Une intention, un ajustement, une habitude à installer"></textarea>
+            </div>
+            <div class="question-block">
+              <div class="question-num">04</div>
+              <label class="question-text" for="q4">Pour quoi es-tu reconnaissant cette semaine ?</label>
+              <textarea class="textarea" id="q4" rows="2" placeholder="Une personne, un événement, un apprentissage, un moment"></textarea>
+            </div>
+            <div class="reflection-foot">
+              <button class="btn primary save-btn" type="button" id="save-btn">Enregistrer mon bilan</button>
+            </div>
+          </div>
+        </section>
+
       </div>
     </div>
+  </main>
 
-    <div class="content-area">
-
-      <!-- Stats de la semaine -->
-      <div>
-        <div class="sec-label">En chiffres</div>
-        <div class="stats-grid">
-          <div class="stat-card" style="--sc-color:#bdafd6">
-            <div class="stat-card-icon">⭐</div>
-            <div class="stat-card-value" id="stat-xp">-</div>
-            <div class="stat-card-label">XP gagnés</div>
-            <div class="stat-card-delta" id="stat-xp-delta"></div>
-          </div>
-          <div class="stat-card" style="--sc-color:#a4d486">
-            <div class="stat-card-icon">📔</div>
-            <div class="stat-card-value" id="stat-journal">-</div>
-            <div class="stat-card-label">Entrées journal</div>
-            <div class="stat-card-delta" id="stat-journal-delta"></div>
-          </div>
-          <div class="stat-card" style="--sc-color:#44bd48">
-            <div class="stat-card-icon">🧘</div>
-            <div class="stat-card-value" id="stat-meditation">-</div>
-            <div class="stat-card-label">Séances méd.</div>
-            <div class="stat-card-delta" id="stat-meditation-delta"></div>
-          </div>
-          <div class="stat-card" style="--sc-color:#22c55e">
-            <div class="stat-card-icon">✅</div>
-            <div class="stat-card-value" id="stat-habits">-</div>
-            <div class="stat-card-label">Habitudes faites</div>
-            <div class="stat-card-delta" id="stat-habits-delta"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activité par domaine -->
-      <div>
-        <div class="sec-label">XP par domaine cette semaine</div>
-        <div class="xp-domains-card" id="xp-domains-card">
-          <div class="xp-domain-row">
-            <span class="xp-domain-label" style="color:#44bd48">Corps</span>
-            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-corps" style="background:#44bd48"></div></div>
-            <span class="xp-domain-val" style="color:#44bd48" id="xp-val-corps">0</span>
-          </div>
-          <div class="xp-domain-row">
-            <span class="xp-domain-label" style="color:#f87171">Cœur</span>
-            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-coeur" style="background:#f87171"></div></div>
-            <span class="xp-domain-val" style="color:#f87171" id="xp-val-coeur">0</span>
-          </div>
-          <div class="xp-domain-row">
-            <span class="xp-domain-label" style="color:#bdafd6">Être</span>
-            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-etre" style="background:#bdafd6"></div></div>
-            <span class="xp-domain-val" style="color:#bdafd6" id="xp-val-etre">0</span>
-          </div>
-          <div class="xp-domain-row">
-            <span class="xp-domain-label" style="color:#fbbf24">Ordre</span>
-            <div class="xp-domain-bar-bg"><div class="xp-domain-bar" id="xp-bar-ordre" style="background:#fbbf24"></div></div>
-            <span class="xp-domain-val" style="color:#fbbf24" id="xp-val-ordre">0</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activité quotidienne (7 jours) -->
-      <div>
-        <div class="sec-label">Activité quotidienne</div>
-        <div id="activity-week" style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px 20px;">
-          <div class="activity-grid" id="activity-grid"></div>
-          <div style="display:flex;justify-content:space-between;margin-top:6px;" id="activity-day-labels"></div>
-        </div>
-      </div>
-
-      <!-- Points forts de la semaine -->
-      <div id="highlights-section" style="display:none">
-        <div class="sec-label">Moments clés</div>
-        <div class="highlights-list" id="highlights-list"></div>
-      </div>
-
-      <!-- Réflexion guidée -->
-      <div>
-        <div class="sec-label">Réflexion de la semaine</div>
-        <div class="reflection-card" id="reflection-form">
-          <div class="question-block">
-            <div class="question-num">01</div>
-            <div class="question-text">Quelle est ta plus grande victoire de cette semaine ?</div>
-            <textarea class="question-textarea" id="q1" rows="2" placeholder="Un moment de fierté, une habitude tenue, un objectif franchi…"></textarea>
-          </div>
-          <div class="question-block">
-            <div class="question-num">02</div>
-            <div class="question-text">Qu'est-ce qui t'a le plus challengé ? Comment tu as réagi ?</div>
-            <textarea class="question-textarea" id="q2" rows="2" placeholder="Un obstacle, une émotion difficile, une situation imprévue…"></textarea>
-          </div>
-          <div class="question-block">
-            <div class="question-num">03</div>
-            <div class="question-text">Qu'est-ce que tu veux faire différemment la semaine prochaine ?</div>
-            <textarea class="question-textarea" id="q3" rows="2" placeholder="Une intention, un ajustement, une nouvelle habitude à adopter…"></textarea>
-          </div>
-          <div class="question-block">
-            <div class="question-num">04</div>
-            <div class="question-text">Pour quoi es-tu reconnaissant(e) cette semaine ?</div>
-            <textarea class="question-textarea" id="q4" rows="2" placeholder="Une personne, un événement, un apprentissage, un moment de bonheur…"></textarea>
-          </div>
-          <div style="padding:16px 20px">
-            <button class="save-btn" id="save-btn">Sauvegarder mon bilan</button>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /content-area -->
-  </div><!-- /page-shell -->
-
+  <script type="module" src="/js/bilan.js"></script>
 </body>
 </html>

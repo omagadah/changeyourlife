@@ -73,6 +73,8 @@ const P = {
   users:       '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-5-6.7"/>',
   award:       '<circle cx="12" cy="9" r="6"/><path d="M8.5 14l-1.5 8 5-3 5 3-1.5-8"/>',
   palette:     '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2h1.5a3.5 3.5 0 0 0 3.5-3.5A9.5 9.5 0 0 0 12 3z"/><path d="M7.5 10.5h.01M10.5 7h.01M14.5 7.5h.01M17 11h.01"/>',
+  lock:        '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  unlock:      '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.7-1.5"/>',
   hand:        '<path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.6L3.4 15a2 2 0 0 1 3.2-2.4L8 14"/>',
 };
 
@@ -122,3 +124,19 @@ export const ROUTE_ICON = {
 // Expose aussi en global pour les scripts classiques (non-module) qui en ont
 // besoin ponctuellement, sans import.
 try { window.cylIcon = icon; } catch (_) {}
+
+// ── Hydratation declarative ──────────────────────────────────────────────────
+// Une page HTML ne peut pas appeler icon() : elle pose
+//   <span class="ic" data-icon="calendar"></span>
+// et common.js appelle hydrateIcons() une fois le DOM pret. Les noeuds ajoutes
+// ensuite par un module passent par icon() directement, ou par un second appel.
+export function hydrateIcons(root) {
+  const scope = root || document;
+  scope.querySelectorAll('[data-icon]').forEach((el) => {
+    if (el.dataset.iconDone) return;
+    const size = Number(el.dataset.iconSize) || 18;
+    el.innerHTML = icon(el.dataset.icon, { size, stroke: Number(el.dataset.iconStroke) || 1.75 });
+    el.dataset.iconDone = '1';
+  });
+}
+try { window.cylHydrateIcons = hydrateIcons; } catch (_) {}
