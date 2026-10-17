@@ -117,8 +117,10 @@ le chargement initial.
 - **`console.log` admin** (`settings.js:25-26`) : affiche UID + email en console,
   volontaire pour le bootstrap admin, à retirer quand `ROOT_ADMIN_UID` partira.
 - **`web/`** (refonte Next.js gelée) toujours absente de CLAUDE.md.
-- **npm** : 8 modérées racine + 10 modérées functions - inchangé, toutes
-  attendent le major `firebase-admin 12 → 14` (breaking, à planifier).
+- **npm** : 9 avis racine (8 modérés, 1 élevé sur @fastify/busboy, multipart
+  jamais parsé ici) + 10 modérées functions. `firebase-admin` est en 13 : la 14
+  tire jose 6 (ESM pur) via jwks-rsa 4 et plante au chargement sur le runtime
+  Vercel (constaté le 2026-10-18, six fonctions en 500).
 
 ---
 
