@@ -1,42 +1,20 @@
-// /js/cyl-bg.js - Le fond anime, partout et de la meme facon.
+// /js/cyl-bg.js - Le fond, partout et de la meme facon.
 //
-// Il existait deja, mais en QUATORZE implementations divergentes : deux noms
-// de conteneur (#vanta-bg et #vanta-birds-bg), des reglages differents d'une
-// page a l'autre, et surtout - c'etait le bug - un conteneur SANS AUCUN STYLE
-// sur la moitie des pages. Le div etait bien la, Vanta s'y initialisait, mais
-// dans une boite de zero pixel : rien ne s'affichait. D'ou un fond visible sur
-// le Codex et la Roue de vie, et absent du Journal, du Sommeil, de l'Humeur,
-// de la Meditation et des Habitudes.
+// AVANT (2026-08-20 -> 2026-10-17) : Vanta « birds », soit three.js + un
+// effet WebGL, 630 Ko charges sur chaque page connectee, pour des oiseaux
+// bleus sur un fond navy. Le navy etait le reste de la charte v2 : il
+// contredisait la foret nocturne de tout le reste du site, et c'est lui qui
+// donnait aux pages /profile/, /settings/ et /yourlife/ leur air « rapporte ».
 //
-// Ici : un seul conteneur, un seul style, un seul reglage.
+// MAINTENANT : zero script, zero WebGL. Deux lumieres douces (une dorée en
+// haut, une mousse en bas) et un grain de papier, en CSS. Le grain est ce qui
+// fait « matiere » plutot que « degrade de generateur ». La derive est lente
+// (40 s) et coupee quand le systeme demande moins de mouvement.
 //
-// LE POIDS EST ASSUME. Three.js et Vanta pesent environ 630 Ko. On les charge
-// donc APRES le contenu (requestIdleCallback), jamais en bloquant l'affichage,
-// et jamais sur un petit ecran ni en economie de donnees - un fond decoratif
-// ne vaut pas de vider un forfait mobile.
+// L'API publique est conservee (initBackground, scheduleBackground,
+// destroyBackground) : common.js n'a pas change.
 
 const HOST_ID = 'cyl-bg';
-const THREE_URL = '/vendor/three-r134/three.min.js';   // vendorisé (audit 2026-08-26) : zéro CDN
-const VANTA_URL = '/vendor/vanta/vanta.birds.min.js';
-
-// Les teintes du fond restent BLEUES, a la difference du reste du site : elles
-// signent l'espace numerique, la couche « machine » sur laquelle l'arbre pousse.
-const SETTINGS = {
-  backgroundColor: 0x07192f,
-  color1: 0x7192ff,
-  color2: 0x00d1ff,
-  colorMode: 'varianceGradient',
-  quantity: 3,
-  birdSize: 1,
-  wingSpan: 20,
-  speedLimit: 4,
-  separation: 60,
-  mouseControls: true,
-  touchControls: false,     // sur mobile, le doigt sert a faire defiler
-  gyroControls: false,
-};
-
-let effect = null;
 let started = false;
 
 function injectCSS() {
@@ -44,51 +22,39 @@ function injectCSS() {
   const s = document.createElement('style');
   s.id = 'cyl-bg-css';
   s.textContent = `
-    /* NE JAMAIS TOUCHER AUX ENFANTS DU BODY ICI.
-       Une version de ce fichier ajoutait body > *:not(#cyl-bg) en
-       position:relative, pour garantir que le contenu passe devant. La barre
-       laterale, la bulle de CYL et le cadre de chaque page sont en
-       position:FIXED : les basculer en relative les a jetes dans le flux
-       normal. La barre a disparu, la bulle est remontee en haut a droite et
-       toute la mise en page s est effondree.
-       Le fond n a besoin de rien de tel : en z-index 0 il est peint avant les
-       elements positionnes, et tous les cadres de page du site en sont
-       (.app-container, .page-shell, .ap-shell, .layout, .fr-shell). C est
-       exactement ce que faisait deja le Codex, seule page ou ca marchait. */
-    /* z-index 0 et non -1 : a -1 le fond passe DERRIERE la couleur de fond du
-       body, qui est opaque sur la plupart des pages, et redevient invisible. */
-    #${HOST_ID}{position:fixed;inset:0;z-index:0;pointer-events:none;}
-    @media print { #${HOST_ID}{display:none !important;} }`;
+    /* NE JAMAIS TOUCHER AUX ENFANTS DU BODY ICI (cf. historique : passer les
+       enfants en position:relative avait jete la barre et la bulle hors de
+       leur position fixed). z-index 0, pas -1 : a -1 le fond passe derriere la
+       couleur du body et disparait. */
+    #${HOST_ID}{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+    #${HOST_ID}::before{
+      content:'';position:absolute;inset:-18%;
+      background:
+        radial-gradient(58% 46% at 18% 8%, rgba(231,177,92,.11), transparent 62%),
+        radial-gradient(52% 60% at 86% 92%, rgba(74,122,58,.20), transparent 62%),
+        radial-gradient(38% 40% at 72% 22%, rgba(111,154,82,.07), transparent 60%);
+      animation:cylbg-drift 40s ease-in-out infinite alternate;
+    }
+    #${HOST_ID}::after{
+      content:'';position:absolute;inset:0;
+      background-image:var(--grain);opacity:.05;mix-blend-mode:overlay;
+    }
+    body.light-mode #${HOST_ID}::before{
+      background:
+        radial-gradient(58% 46% at 18% 8%, rgba(231,177,92,.22), transparent 62%),
+        radial-gradient(52% 60% at 86% 92%, rgba(74,122,58,.16), transparent 62%);
+    }
+    body.light-mode #${HOST_ID}::after{opacity:.09;mix-blend-mode:multiply;}
+    @keyframes cylbg-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-3%,2%,0)}}
+    @media (prefers-reduced-motion: reduce){#${HOST_ID}::before{animation:none;}}
+    @media print{#${HOST_ID}{display:none !important;}}`;
   document.head.appendChild(s);
 }
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    // Les anciennes pages chargeaient deja ces scripts : on ne les remet pas.
-    if ([...document.scripts].some((x) => x.src === src)) return resolve();
-    const el = document.createElement('script');
-    el.src = src;
-    el.async = true;
-    el.onload = resolve;
-    el.onerror = () => reject(new Error('script ' + src));
-    document.head.appendChild(el);
-  });
-}
-
-// Un fond decoratif ne doit couter ni batterie ni forfait.
-function shouldRun() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-  if (window.innerWidth < 900) return false;
-  const c = navigator.connection;
-  if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return false;
-  return true;
-}
-
-export async function initBackground() {
+export function initBackground() {
   if (started) return;
   started = true;
   injectCSS();
-
   let host = document.getElementById(HOST_ID);
   if (!host) {
     host = document.createElement('div');
@@ -96,37 +62,13 @@ export async function initBackground() {
     host.setAttribute('aria-hidden', 'true');
     document.body.insertBefore(host, document.body.firstChild);
   }
-  if (!shouldRun()) return;
-
-  try {
-    await loadScript(THREE_URL);
-    await loadScript(VANTA_URL);
-    if (!window.VANTA || !window.VANTA.BIRDS) return;
-    effect = window.VANTA.BIRDS(Object.assign({ el: '#' + HOST_ID }, SETTINGS));
-  } catch (e) {
-    // Un fond qui ne charge pas ne doit jamais empecher la page de servir.
-    console.warn('[cyl-bg]', e && e.message || e);
-  }
 }
 
 export function destroyBackground() {
-  if (effect && effect.destroy) { try { effect.destroy(); } catch (_) {} }
-  effect = null;
+  const host = document.getElementById(HOST_ID);
+  if (host) host.remove();
+  started = false;
 }
 
-// Une animation WebGL qui tourne dans un onglet cache consomme pour rien.
-document.addEventListener('visibilitychange', () => {
-  if (!effect) return;
-  try {
-    if (document.hidden && effect.pause) effect.pause();
-    else if (!document.hidden && effect.play) effect.play();
-  } catch (_) {}
-});
-
-// Charge quand le navigateur n'a plus rien d'urgent a faire : le contenu de la
-// page passe toujours avant 630 Ko de decor.
-export function scheduleBackground() {
-  const go = () => initBackground();
-  if ('requestIdleCallback' in window) window.requestIdleCallback(go, { timeout: 2500 });
-  else setTimeout(go, 900);
-}
+// Conserve pour common.js : il n'y a plus rien a differer, le fond est du CSS.
+export function scheduleBackground() { initBackground(); }

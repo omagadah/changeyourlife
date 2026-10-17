@@ -1,5 +1,5 @@
-// service-worker.js - v210 (fin du mur Google a chaque reconnexion)
-const CACHE_NAME = 'changeyourlife-v217';
+// service-worker.js - v218 (design system v3 : polices locales, icones SVG, fin de Vanta)
+const CACHE_NAME = 'changeyourlife-v218';
 const urlsToCache = [
   '/',
   '/bienvenue.html',
@@ -91,7 +91,17 @@ const urlsToCache = [
   '/js/giveaway.js',
   '/js/admin-giveaway.js',
   '/js/ez-tree-build.js',
-  '/js/living-tree.js'
+  '/js/living-tree.js',
+  '/js/icons.js',
+  '/vendor/fonts/fonts.css',
+  '/vendor/fonts/fraunces-italic-latin-ext.woff2',
+  '/vendor/fonts/fraunces-italic-latin.woff2',
+  '/vendor/fonts/fraunces-normal-latin-ext.woff2',
+  '/vendor/fonts/fraunces-normal-latin.woff2',
+  '/vendor/fonts/hanken-grotesk-italic-latin-ext.woff2',
+  '/vendor/fonts/hanken-grotesk-italic-latin.woff2',
+  '/vendor/fonts/hanken-grotesk-normal-latin-ext.woff2',
+  '/vendor/fonts/hanken-grotesk-normal-latin.woff2'
   // Bundle vendor three (~733 KB) volontairement omis ici :
   // - addAll() est atomique, un échec ferait planter tout l'install
   // - mis en cache automatiquement par la stratégie "cache first" du

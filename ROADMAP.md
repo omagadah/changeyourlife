@@ -471,6 +471,17 @@ de toute responsabilité sur les décisions des utilisateurs.
 - [ ] **Références visuelles owner** (sites/templates donnés en session) - à ré-appliquer
   une par une (l'owner doit re-partager les liens ; non conservés entre sessions).
 
+## Refonte UX / UI (audit du 2026-10-17)
+
+Rapport et détail : [docs/AUDIT-UX-2026-10-17.md](docs/AUDIT-UX-2026-10-17.md).
+
+- [x] **Lot 1 - fondations v3** ✅ (2026-10-17) : polices locales, icônes SVG, fond CSS, palette v2 balayée, accueil connecté, barre, amorces CYL, année en pixels, thème au chargement.
+- [ ] **Lot 2 - un seul gabarit de page** : `page-shell` v3 + en-tête commun, les 30 pages l'adoptent, suppression du CSS inline, des sidebars internes (codex, settings) et des liens « ← Mon espace ».
+- [ ] **Lot 3 - une seule vérité XP / domaines** : `xpTotal()` dans `growth.js`, 4 domaines hérités mappés vers les 8 branches.
+- [ ] **Lot 4 - idées concurrentes** : l'arbre ne régresse jamais, série avec pardon, récap hebdo CYL, « ce que CYL sait de moi », rituel matin / soir + alerte de surcharge, Moments depuis l'agenda, Daily Chat → journal, protocole de crise public, récap annuel partageable.
+- [ ] **Lot 5 - mobile et accessibilité** : deux breakpoints, CYL fermé sous 900 px, cibles 44 px, h1 et labels partout, divs cliquables → boutons.
+- [ ] **Lot 6 - profil et /yourlife/** dans le vocabulaire de l'arbre.
+
 ## Principes de priorisation
 
 1. **Cohérence narrative d'abord.** Chaque ajout doit s'expliquer comme une partie de l'arbre, sinon il n'a pas sa place.

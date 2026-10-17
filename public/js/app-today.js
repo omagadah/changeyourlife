@@ -20,6 +20,7 @@
 
 import { doc, getDoc, collection, getDocs, query, orderBy, limit }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { icon } from '/js/icons.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -29,13 +30,13 @@ const sameDay = (ts) => ts && new Date(ts).toDateString() === new Date().toDateS
 // on se reveille (sommeil), on se situe (humeur), on agit, on relit (journal,
 // gratitude). C'est ce qui rend la barre lisible sans la lire.
 const GESTES = [
-  { key: 'sommeil',   ic: '🌙', label: 'Sommeil',   href: '/sommeil/' },
-  { key: 'humeur',    ic: '😌', label: 'Humeur',    href: '/humeur/' },
-  { key: 'habitudes', ic: '✅', label: 'Habitudes', href: '/habitudes/' },
-  { key: 'meditation', ic: '🧘', label: 'Méditer',  href: '/meditation/' },
-  { key: 'organizer', ic: '🗂️', label: 'Trier',    href: '/organizer/' },
-  { key: 'journal',   ic: '✍️', label: 'Journal',   href: '/journal/' },
-  { key: 'gratitude', ic: '🌟', label: 'Gratitude', href: '/gratitude/' },
+  { key: 'sommeil',   ic: 'moon', label: 'Sommeil',   href: '/sommeil/' },
+  { key: 'humeur',    ic: 'smile', label: 'Humeur',    href: '/humeur/' },
+  { key: 'habitudes', ic: 'checks', label: 'Habitudes', href: '/habitudes/' },
+  { key: 'meditation', ic: 'leaf', label: 'Méditer',  href: '/meditation/' },
+  { key: 'organizer', ic: 'inbox', label: 'Trier',    href: '/organizer/' },
+  { key: 'journal',   ic: 'book', label: 'Journal',   href: '/journal/' },
+  { key: 'gratitude', ic: 'sparkles', label: 'Gratitude', href: '/gratitude/' },
 ];
 
 // ── Lecture de l'etat du jour ────────────────────────────────────────────────
@@ -160,8 +161,8 @@ export async function mountToday(db, uid, userData, prenom) {
         <div class="td-date">${esc(date)}${titre ? ` <span class="td-titre">· ${esc(titre)}</span>` : ''}</div>
       </div>
       <div class="td-meters">
-        ${serie > 1 ? `<span class="td-meter" title="Jours d'affilée"><i>🔥</i>${serie} j</span>` : ''}
-        <span class="td-meter gold" title="Ton XP total - il fait grandir ton arbre"><i>⚡</i>${xp.toLocaleString('fr-FR')} XP</span>
+        ${serie > 1 ? `<span class="td-meter" title="Jours d'affilée"><i>${icon('flame', { size: 13 })}</i>${serie} j</span>` : ''}
+        <span class="td-meter gold" title="Ton XP total - il fait grandir ton arbre"><i>${icon('zap', { size: 13 })}</i>${xp.toLocaleString('fr-FR')} XP</span>
       </div>
     </div>
     <div class="td-gestes">
@@ -169,10 +170,10 @@ export async function mountToday(db, uid, userData, prenom) {
         const cls = g.done ? ' on' : g.partiel ? ' half' : '';
         const detail = g.detail ? `<span class="td-g-n">${esc(g.detail)}</span>` : '';
         return `<a class="td-g${cls}" href="${g.href}">
-          <span class="td-g-ic">${g.ic}</span>
+          <span class="td-g-ic">${icon(g.ic, { size: 15 })}</span>
           <span class="td-g-l">${esc(g.label)}</span>
           ${detail}
-          <span class="td-g-check" aria-hidden="true">✓</span>
+          <span class="td-g-check" aria-hidden="true">${icon('check', { size: 13, stroke: 2.4 })}</span>
         </a>`;
       }).join('')}
     </div>`;

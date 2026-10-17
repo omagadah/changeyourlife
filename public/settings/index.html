@@ -2,9 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <script src="/js/theme-init.js"></script>
     <!-- Deploy test: Vérification connexion Vercel - 2025-11-12T10:00:00Z | Ce commentaire sert à déclencher un build -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Dashboard & Paramètres - Change Your Life</title>
+    <title>Paramètres - Change Your Life</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
     <meta name="description" content="Tableau de bord et paramètres de votre compte Change Your Life - préférences, notifications, données personnelles.">
     <link rel="manifest" href="/manifest.json">
@@ -80,11 +81,11 @@
         margin-bottom: 2px;
       }
       .nav-item:hover {
-        background: rgba(0,112,243,0.08);
+        background: rgba(132,194,94,0.08);
         color: var(--text-1);
       }
       .nav-item.active {
-        background: rgba(0,112,243,0.16);
+        background: rgba(132,194,94,0.16);
         color: var(--text-1); font-weight: 700;
         box-shadow: inset 2px 0 0 var(--blue);
       }
@@ -139,8 +140,8 @@
         border-radius: var(--r-sm);
         display: flex; align-items: center; justify-content: center;
       }
-      .stat-icon.blue   { background: rgba(0,112,243,0.16); }
-      .stat-icon.purple { background: rgba(167,139,250,0.16); }
+      .stat-icon.blue   { background: rgba(132,194,94,0.16); }
+      .stat-icon.purple { background: rgba(189,175,214,0.16); }
       .stat-icon.green  { background: rgba(34,197,94,0.16); }
       .stat-icon.orange { background: rgba(251,191,36,0.16); }
       .stat-card:has(.stat-icon.blue)   { border-left-color: var(--blue); }
@@ -199,13 +200,13 @@
         font-family: inherit;
       }
       .filter-btn:hover {
-        background: rgba(0,112,243,0.08);
+        background: rgba(132,194,94,0.08);
         color: var(--text-1);
       }
       .filter-btn.active {
-        background: rgba(0,112,243,0.18);
+        background: rgba(132,194,94,0.18);
         color: var(--text-1);
-        border-color: rgba(0,112,243,0.4);
+        border-color: rgba(132,194,94,0.4);
       }
 
       /* ── Settings sections + groups ──────────────────────────── */
@@ -296,7 +297,7 @@
       .btn-primary:hover {
         background: #71bd42;
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(0,112,243,0.45);
+        box-shadow: 0 6px 20px rgba(132,194,94,0.45);
       }
       .btn-secondary {
         background: rgba(255,255,255,0.05);
@@ -337,9 +338,9 @@
         transition: border-color var(--duration), background var(--duration), box-shadow var(--duration);
       }
       .input-field:focus {
-        border-color: rgba(0,112,243,0.5);
-        background: rgba(0,112,243,0.06);
-        box-shadow: 0 0 0 3px rgba(0,112,243,0.12);
+        border-color: rgba(132,194,94,0.5);
+        background: rgba(132,194,94,0.06);
+        box-shadow: 0 0 0 3px rgba(132,194,94,0.12);
       }
       .input-field::placeholder { color: var(--text-3); }
 
@@ -369,8 +370,8 @@
       .hint-card {
         padding: 12px 16px;
         border-radius: var(--r-sm);
-        background: rgba(0,112,243,0.06);
-        border: 1px dashed rgba(0,112,243,0.35);
+        background: rgba(132,194,94,0.06);
+        border: 1px dashed rgba(132,194,94,0.35);
         color: var(--text-1);
         font-size: 0.88rem;
         margin-bottom: 18px;
@@ -463,18 +464,18 @@
 <main class="main-content">
 <section id="dashboard" class="settings-section active">
 <div class="content-header">
-<h2>Dashboard ChangeYourLife.ai</h2>
-<p>Vue d'ensemble de ta progression et de ton bien-être</p>
+<h2>Vue d'ensemble</h2>
+<p>Quelques repères, sans note sur ta vie.</p>
 </div>
 <div class="stats-grid">
-<div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div><div class="stat-trend up"> 0%</div></div><div class="stat-value" id="stat-humeur">0</div><div class="stat-label">Humeur moyenne</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon purple"></div><div class="stat-trend up"> 0</div></div><div class="stat-value" id="stat-habitudes">0</div><div class="stat-label">Habitudes tenues</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div><div class="stat-trend down"> 0%</div></div><div class="stat-value" id="stat-focus">0</div><div class="stat-label">Minutes de focus</div></div>
-<div class="stat-card"><div class="stat-header"><div class="stat-icon orange"></div><div class="stat-trend up"> 0</div></div><div class="stat-value" id="stat-journal">0</div><div class="stat-label">Entrées journal</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon blue"></div></div><div class="stat-value" id="stat-humeur">0</div><div class="stat-label">Humeur moyenne du journal (/10)</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon purple"></div></div><div class="stat-value" id="stat-habitudes">0</div><div class="stat-label">Objectifs complétés</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon green"></div></div><div class="stat-value" id="stat-focus">0</div><div class="stat-label">Minutes de méditation</div></div>
+<div class="stat-card"><div class="stat-header"><div class="stat-icon orange"></div></div><div class="stat-value" id="stat-journal">0</div><div class="stat-label">Entrées journal</div></div>
 </div>
 <div class="chart-card">
 <div class="chart-header">
-<h3 class="chart-title" id="chart-title">Évolution ChangeYourLife.ai (7 derniers jours)</h3>
+<h3 class="chart-title" id="chart-title">Humeur du journal (7 derniers jours)</h3>
 <div class="chart-filters">
 <button class="filter-btn active">7J</button>
 <button class="filter-btn">30J</button>
@@ -600,7 +601,7 @@
 <div class="content-header">
     <h2>Panel Administrateur</h2>
     <p>Outils réservés aux administrateurs</p>
-    <div id="admin-user-info" style="margin-top:12px;padding:14px 18px;background:rgba(0,112,243,0.08);border-radius:12px;border:1px solid rgba(0,112,243,0.25);color:var(--blue-light);font-weight:600;font-size:0.92rem;display:none;">
+    <div id="admin-user-info" style="margin-top:12px;padding:14px 18px;background:rgba(132,194,94,0.08);border-radius:12px;border:1px solid rgba(132,194,94,0.25);color:var(--blue-light);font-weight:600;font-size:0.92rem;display:none;">
         <span id="admin-email"></span>
         <br>
         <span style="font-size:0.8rem;color:#afa99c;font-weight:400;">UID: <code id="admin-uid-display" style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;"></code></span>

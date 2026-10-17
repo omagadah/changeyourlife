@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+    <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Aujourd'hui - Change Your Life</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
@@ -25,7 +26,7 @@
     .content-area { overflow-y:auto; display:flex; flex-direction:column; gap:22px; padding-bottom:24px; }
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; box-shadow:0 8px 28px rgba(0,0,0,.35); }
     .toast.show { transform:translate(-50%,0); }
-    .toast.xp { background:rgba(59,130,246,.92); }
+    .toast.xp { background:rgba(132,194,94,.92); }
 
     /* ── Section ── */
     .sec-head { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
@@ -35,7 +36,7 @@
 
     /* ── CYL bandeau ── */
     .lya-bar { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:16px;
-      background:linear-gradient(135deg,rgba(99,102,241,0.14),rgba(45,212,191,0.06)); border:1px solid rgba(99,102,241,0.22); }
+      background:linear-gradient(135deg,rgba(111,154,82,0.14),rgba(111,154,82,0.06)); border:1px solid rgba(111,154,82,0.22); }
     .lya-orb { width:42px; height:42px; flex-shrink:0; border-radius:50%;
       background:radial-gradient(circle at 36% 32%,#fbe6b0,#e7b15c 40%,#4a7a3a 100%);
       box-shadow:0 0 18px rgba(231,177,92,.5), inset 0 0 10px rgba(255,255,255,.25); }
@@ -48,14 +49,14 @@
     .rf-label { font-size:0.72rem; font-weight:700; color:var(--text-2); margin-bottom:6px; display:block; }
     .rf-input, .rf-select { width:100%; padding:9px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
       background:rgba(255,255,255,0.05); color:var(--text-1); font-size:0.88rem; font-family:inherit; transition:border-color .2s; }
-    .rf-input:focus, .rf-select:focus { outline:none; border-color:rgba(45,212,191,0.5); }
+    .rf-input:focus, .rf-select:focus { outline:none; border-color:rgba(111,154,82,0.5); }
     /* Liste déroulante native lisible (sinon blanc sur blanc sous Windows) */
     .rf-select { color-scheme: dark; }
     .rf-select option { background:#1d1b17; color:#f8f7f5; }
     .energy-chips { display:flex; gap:6px; }
     .energy-chip { flex:1; padding:9px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.1);
       background:rgba(255,255,255,0.04); color:var(--text-2); font-size:1rem; cursor:pointer; text-align:center; transition:all .15s; }
-    .energy-chip.on { background:rgba(45,212,191,0.14); border-color:rgba(45,212,191,0.5); transform:translateY(-1px); }
+    .energy-chip.on { background:rgba(111,154,82,0.14); border-color:rgba(111,154,82,0.5); transform:translateY(-1px); }
     .rhythm-save-row { display:flex; justify-content:flex-end; margin-top:16px; }
 
     /* ── Boutons ── */
@@ -63,8 +64,8 @@
       background:linear-gradient(135deg,#44bd48,#2f8431); color:#141310; font-weight:800; font-size:0.86rem; cursor:pointer; transition:transform .2s, filter .2s; }
     .btn-primary:hover { transform:translateY(-2px); filter:brightness(1.06); }
     .btn-ghost { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:99px;
-      border:1px dashed rgba(45,212,191,0.4); background:rgba(45,212,191,0.06); color:#8cd68e; font-size:0.84rem; font-weight:700; cursor:pointer; transition:all .2s; }
-    .btn-ghost:hover { background:rgba(45,212,191,0.12); border-style:solid; }
+      border:1px dashed rgba(111,154,82,0.4); background:rgba(111,154,82,0.06); color:#8cd68e; font-size:0.84rem; font-weight:700; cursor:pointer; transition:all .2s; }
+    .btn-ghost:hover { background:rgba(111,154,82,0.12); border-style:solid; }
 
     /* ── Base vitale ── */
     .vitals-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; }

@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+    <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Autoévaluation - ChangeYourLife</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
@@ -14,11 +15,12 @@
   <meta name="theme-color" content="#0a0f0a">
   <meta name="msapplication-TileColor" content="#0a0f0a">
   <script src="/vendor/chart/chart.umd.min.js"></script>
-  <style>
+  <link rel="stylesheet" href="/css/main.min.css"/>
+    <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     :root{
       --text-2:#b5ae9e;--blue:#6cb43f;--blue-light:#a4d486;
-      --bg:#1f1c17;--card:rgba(10,22,45,0.88);--border:rgba(0,112,243,0.2);
+      --bg:#1f1c17;--card:rgba(15,23,16,0.88);--border:rgba(132,194,94,0.2);
       --text:#f5f4f1;--muted:var(--text-2);
       --corps:#44bd48;--coeur:#f87171;--etre:#bdafd6;--ordre:#fbbf24;
     }
@@ -43,8 +45,8 @@
     .d-chip .dc-emoji{font-size:1.6rem;margin-bottom:6px;}
     .d-chip .dc-name{font-size:0.88rem;font-weight:700;}
     .d-chip .dc-sub{font-size:0.72rem;color:var(--muted);margin-top:3px;}
-    .btn-start{display:inline-flex;align-items:center;gap:10px;padding:16px 40px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#5b9735);color:#fff;font-weight:700;font-size:1.05rem;border:none;cursor:pointer;transition:all .2s;box-shadow:0 6px 24px rgba(0,112,243,0.4);}
-    .btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,112,243,0.5);}
+    .btn-start{display:inline-flex;align-items:center;gap:10px;padding:16px 40px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#5b9735);color:#fff;font-weight:700;font-size:1.05rem;border:none;cursor:pointer;transition:all .2s;box-shadow:0 6px 24px rgba(132,194,94,0.4);}
+    .btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(132,194,94,0.5);}
     .history-link{display:block;margin-top:16px;font-size:0.84rem;color:var(--muted);cursor:pointer;text-decoration:underline;}
     .history-link:hover{color:var(--text);}
 
@@ -61,8 +63,8 @@
     .rating-hint{display:flex;justify-content:space-between;font-size:0.74rem;color:var(--muted);margin-bottom:8px;}
     .rating-row{display:flex;gap:5px;}
     .rb{flex:1;padding:10px 0;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--muted);font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;}
-    .rb:hover{border-color:rgba(0,112,243,0.45);background:rgba(0,112,243,0.1);color:var(--text);}
-    .rb.sel{background:rgba(0,112,243,0.22);border-color:var(--blue);color:#fff;}
+    .rb:hover{border-color:rgba(132,194,94,0.45);background:rgba(132,194,94,0.1);color:var(--text);}
+    .rb.sel{background:rgba(132,194,94,0.22);border-color:var(--blue);color:#fff;}
     .qdots{display:flex;gap:7px;justify-content:center;margin-top:22px;}
     .qdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.13);transition:all .2s;}
     .qdot.done{background:var(--blue);}
@@ -101,7 +103,7 @@
     /* HISTORY */
     .hist-list{display:flex;flex-direction:column;gap:10px;}
     .hist-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;backdrop-filter:blur(16px);display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .2s;}
-    .hist-item:hover{border-color:rgba(0,112,243,0.4);}
+    .hist-item:hover{border-color:rgba(132,194,94,0.4);}
     .hist-date{font-size:0.8rem;color:var(--muted);width:100px;flex-shrink:0;}
     .hist-chips{display:flex;gap:10px;flex:1;flex-wrap:wrap;}
     .hchip{display:flex;align-items:center;gap:5px;font-size:0.8rem;font-weight:600;}

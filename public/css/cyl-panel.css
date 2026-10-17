@@ -353,6 +353,17 @@ body.has-cylp.cylp-min #fr-insp { right: calc(var(--cylp-min-w) + 16px) !importa
 .cylp-act-ic { font-size: 0.98rem; width: 18px; text-align: center; flex-shrink: 0; }
 .cylp-act.go { border-style: dashed; }
 
+/* Amorces : six phrases a dire, affichees tant que la conversation est vide */
+.cylp-starters { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 4px; }
+.cylp-starter {
+  padding: 7px 11px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line-strong, rgba(221, 205, 160, 0.22));
+  background: transparent; color: var(--text-2, #b4ad94);
+  font: inherit; font-size: 0.78rem; font-weight: 500; text-align: left;
+  transition: background 0.16s, color 0.16s, border-color 0.16s;
+}
+.cylp-starter:hover { background: rgba(132, 194, 94, 0.12); border-color: rgba(132, 194, 94, 0.35); color: var(--text-1, #f4efe1); }
+
 /* Zone de saisie */
 .cylp-compose {
   display: flex;

@@ -188,7 +188,7 @@ export function initUserMenu() {
             .cyf-signout:hover { background: rgba(239,68,68,0.12); }
             .cyf-ctx .cyf-vlabel { color: #c2e2ae; }
             .cyf-ctx:hover .cyf-vlabel { color: #e3e0da; }
-            .cyf-ctx-sep { background: rgba(59,130,246,0.18); }
+            .cyf-ctx-sep { background: rgba(132,194,94,0.18); }
 
             /* Vue Notifications */
             .cyf-back {

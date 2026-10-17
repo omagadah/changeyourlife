@@ -254,7 +254,7 @@ function initChart() {
                 label: "Score ChangeYourLife.ai",
                 data: chartDataSets[defaultPeriod].data,
                 borderColor: "#8dca67",
-                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                backgroundColor: "rgba(132,194,94, 0.1)",
                 borderWidth: 3,
                 tension: 0.4,
                 fill: true,
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('delete account failed', err);
             alert(dataDeleted
                 ? "Tes données ont bien été effacées, mais la fermeture du compte n'a pas pu aller au bout. Reconnecte-toi et réessaie."
-                : "Échec de la suppression. Tes données n'ont pas été touchées — réessaie plus tard.");
+                : "Échec de la suppression. Tes données n'ont pas été touchées - réessaie plus tard.");
             delBtn.disabled = false;
         }
     });

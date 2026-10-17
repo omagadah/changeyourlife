@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+    <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Humeur - Change Your Life</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
@@ -30,7 +31,7 @@
     /* ── Toast ── */
     .toast { position:fixed; top:22px; left:50%; transform:translate(-50%,-130px); background:rgba(16,185,129,.92); color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; z-index:99999; transition:transform .3s ease; font-size:.88rem; white-space:nowrap; pointer-events:none; }
     .toast.show { transform:translate(-50%,0); }
-    .toast.xp { background:rgba(59,130,246,.92); }
+    .toast.xp { background:rgba(132,194,94,.92); }
 
     /* ── Section titles ── */
     .section-title {
@@ -288,6 +289,13 @@
           </span>
         </div>
         <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+
+      <!-- L'annee en pixels : un carre par jour sur 365 jours -->
+      <div class="heatmap-card" style="margin-top:14px">
+        <div class="section-title" style="margin-bottom:8px;">Ton année en pixels <span id="pixels-note" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;font-size:0.7rem;color:var(--text-3)"></span></div>
+        <div class="pixels" id="pixels-grid" aria-label="Humeur de chaque jour des 365 derniers jours"></div>
+        <style>.px.vide{visibility:hidden}</style>
       </div>
 
       <!-- Recent entries -->

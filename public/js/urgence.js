@@ -30,7 +30,7 @@
   .urg-b.danger{border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.12);}
   .urg-b.danger:hover{background:rgba(239,68,68,0.2);}
   .urg-b.warn{border-color:rgba(251,191,36,0.45);background:rgba(251,191,36,0.1);}
-  .urg-b.calm{border-color:rgba(45,212,191,0.45);background:rgba(45,212,191,0.1);}
+  .urg-b.calm{border-color:rgba(111,154,82,0.45);background:rgba(111,154,82,0.1);}
   .urg-b.call{border-color:rgba(127,209,255,0.5);background:rgba(127,209,255,0.12);font-size:1.02rem;}
   .urg-b.call:hover{background:rgba(127,209,255,0.2);}
   .urg-b.call .num{margin-left:auto;font-weight:800;color:#e3e1db;font-size:1.1rem;}

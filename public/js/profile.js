@@ -398,7 +398,7 @@ function renderTitles(unlockedNames, selectedTitle, uid) {
         pill.style.cssText = 'border:1px solid rgba(255,255,255,0.14);padding:8px 13px;border-radius:999px;background:transparent;color:#f1efec;cursor:pointer;font-weight:600;font-size:.84rem;transition:background .15s,border-color .15s,opacity .15s;';
         if (!isUnlocked) { pill.style.opacity = '0.38'; pill.style.cursor = 'default'; }
         if (def.id === 'fondateur' && isUnlocked) { pill.style.borderColor = 'rgba(231,177,92,0.6)'; pill.style.color = '#f1cd92'; }
-        if (selectedTitle === def.name) { pill.style.background = 'rgba(59,130,246,0.2)'; pill.style.borderColor = 'rgba(59,130,246,0.5)'; }
+        if (selectedTitle === def.name) { pill.style.background = 'rgba(132,194,94,0.2)'; pill.style.borderColor = 'rgba(132,194,94,0.5)'; }
         if (isUnlocked) {
             pill.addEventListener('click', async () => {
                 try {

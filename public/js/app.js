@@ -3,9 +3,11 @@
 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { doc, getDoc, setDoc, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { updateGlobalAvatar } from '/js/common.js?v=16';
+        import { updateGlobalAvatar } from '/js/common.js';
         import { initUserMenu } from '/js/userMenu.js';
         import { initLivingTree } from '/js/living-tree.js';
+        import { icon } from '/js/icons.js';
+        import { palierDe } from '/js/growth.js';
 
         // Early initialization of the user menu so the button responds immediately even before auth state fires.
         try { initUserMenu(); } catch(e) { console.warn('initUserMenu early failed', e); }
@@ -174,6 +176,19 @@
                     const jEl = document.getElementById('stat-journal'); if (jEl) jEl.textContent = '-';
                 }
             } catch(e) { console.warn('stats load failed', e); }
+            tailleReperes();
+        }
+
+        // Une ligne de repere dont la valeur est « - », vide ou zero n'a rien
+        // a dire : elle se tait plutot que d'afficher un tiret. Appelee apres
+        // chaque chargeur qui ecrit dans #stats-row.
+        function tailleReperes() {
+            document.querySelectorAll('#stats-row .stat-chip').forEach(c => {
+                const v = c.querySelector('.stat-chip-value');
+                const t = v ? v.textContent.trim() : '';
+                const vide = !t || t === '-' || t === '0' || t === '0/0';
+                c.classList.toggle('muet', vide);
+            });
         }
 
         // ── Roue de Vie widget ──────────────────────────────────────────────────
@@ -254,19 +269,19 @@
         // ── XP par branche de l'arbre ──────────────────────────────────────────
         // Source de vérité = `tree` (8 branches Maslow), PAS le miroir legacy
         // `levels` qui ne couvre que 4 domaines. Bug corrigé (AUDIT 2026-08-16) :
-        // BRANCH_TO_LEGACY ne mappe que physio/appartenance/cognitif/securite —
+        // BRANCH_TO_LEGACY ne mappe que physio/appartenance/cognitif/securite -
         // l'XP gagné sur estime, esthétique, accomplissement et transcendance
         // (les branches les plus fréquentes via l'ORGANIZER) n'apparaissait
         // NULLE PART à l'écran : anneaux figés et total XP bloqué.
         const BRANCHES_UI = [
-          {key:'physio',          label:'Physiologique',   emoji:'🌱', color:'#84c25e'},
-          {key:'securite',        label:'Sécurité',        emoji:'🛡️', color:'#e7b15c'},
-          {key:'appartenance',    label:'Appartenance',    emoji:'🤝', color:'#e0785f'},
-          {key:'estime',          label:'Estime',          emoji:'🏆', color:'#c39a6b'},
-          {key:'cognitif',        label:'Cognitif',        emoji:'📚', color:'#9d8ec4'},
-          {key:'esthetique',      label:'Esthétique',      emoji:'🎨', color:'#d98cae'},
-          {key:'accomplissement', label:'Accomplissement', emoji:'🚀', color:'#6f9a52'},
-          {key:'transcendance',   label:'Transcendance',   emoji:'✨', color:'#f1cd92'},
+          {key:'physio',          label:'Physiologique',   ic:'leaf',     color:'#84c25e'},
+          {key:'securite',        label:'Sécurité',        ic:'shield',   color:'#e7b15c'},
+          {key:'appartenance',    label:'Appartenance',    ic:'users',    color:'#e0785f'},
+          {key:'estime',          label:'Estime',          ic:'award',    color:'#c39a6b'},
+          {key:'cognitif',        label:'Cognitif',        ic:'book',     color:'#9d8ec4'},
+          {key:'esthetique',      label:'Esthétique',      ic:'palette',  color:'#d98cae'},
+          {key:'accomplissement', label:'Accomplissement', ic:'mountain', color:'#6f9a52'},
+          {key:'transcendance',   label:'Transcendance',   ic:'sun',      color:'#f1cd92'},
         ];
         const LEGACY_TO_BRANCH = { body:'physio', heart:'appartenance', etre:'cognitif', order:'securite' };
 
@@ -312,29 +327,25 @@
           const xpBar = document.getElementById('stat-xp-bar');
           if (xpBar) setTimeout(() => { xpBar.style.width = `${Math.min(100,(totalXP%1000)/10)}%`; }, 400);
 
+          // Une ligne par branche : icone, nom, palier (germe, pousse, rameau…)
+          // et une jauge fine de la progression DANS le palier. Le palier vient
+          // de growth.js, seul socle de la progression : plus de « Novice »,
+          // « Legende » ni de « Lv3 » - c'est un arbre, pas un RPG.
           grid.innerHTML = DOMAINS.map(d => {
-            const { xp, lvl, title, pct } = getInfo(levels[d.key]);
-            return `<div class="ring-card">
-              <div class="ring-wrap" data-pct="${pct}" data-color="${d.color}" style="background:conic-gradient(rgba(255,255,255,0.04) 100%,transparent 0)">
-                <div class="ring-inner">
-                  <span class="ring-emoji">${d.emoji}</span>
-                  <span class="ring-level" style="color:${d.color}">Lv${lvl}</span>
-                </div>
-              </div>
-              <div class="ring-meta">
-                <div class="ring-title" style="color:${d.color}">${title}</div>
-                <div class="ring-xp">${xp} XP</div>
-              </div>
+            const { xp } = getInfo(levels[d.key]);
+            const p = palierDe(xp);
+            const etape = p.suivant ? `<b>${p.nom}</b> · ${p.reste} XP avant ${p.suivant.nom.toLowerCase()}` : `<b>${p.nom}</b>`;
+            return `<div class="br-row" style="--br-c:${d.color}" title="${d.label} : ${xp} XP">
+              <span class="br-ic" aria-hidden="true">${icon(d.ic)}</span>
+              <span class="br-name">${d.label}</span>
+              <span class="br-stage">${etape}</span>
+              <span class="br-bar"><i data-pct="${p.pct}"></i></span>
             </div>`;
           }).join('');
-          // Animate rings filling in
           setTimeout(() => {
-            grid.querySelectorAll('.ring-wrap').forEach(r => {
-              const pct = parseInt(r.dataset.pct) || 0;
-              const col = r.dataset.color || '#8dca67';
-              r.style.background = `conic-gradient(${col} ${pct}%, rgba(255,255,255,0.05) 0%)`;
-            });
-          }, 200);
+            grid.querySelectorAll('.br-bar i').forEach(b => { b.style.width = (parseInt(b.dataset.pct) || 0) + '%'; });
+          }, 150);
+          tailleReperes();
         }
 
         // ── Action du jour ─────────────────────────────────────────────────────
@@ -354,7 +365,7 @@
           const hasXp = (branches[active.key]?.xp || 0) > 0;
           if (!hasXp) return;   // rien d'observé -> on n'affiche rien plutôt que d'inventer
 
-          const icon = quiet.emoji;
+          const ic = icon(quiet.ic || 'sapling');
           const label = 'Ce que ton arbre montre';
           const text = `Ces temps-ci, <strong>${active.label}</strong> reçoit le plus de ton énergie ; `
             + `<strong>${quiet.label}</strong> est la plus silencieuse. `
@@ -363,7 +374,7 @@
           const href = quiet.href;
 
           el.innerHTML = `<div class="action-card">
-            <div class="action-card-icon">${icon}</div>
+            <div class="action-card-icon">${ic}</div>
             <div class="action-card-body">
               <div class="action-card-label">${label}</div>
               <div class="action-card-text">${text}</div>

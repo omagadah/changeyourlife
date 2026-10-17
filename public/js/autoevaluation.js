@@ -153,7 +153,7 @@ function showResults(){
       labels:DOMAINS.map(d=>d.emoji+' '+d.label),
       datasets:[{
         label:'Score',data:DOMAINS.map(d=>scores[d.key]),
-        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#6cb43f',borderWidth:2,
+        backgroundColor:'rgba(132,194,94,0.12)',borderColor:'#6cb43f',borderWidth:2,
         pointBackgroundColor:DOMAINS.map(d=>d.color),pointBorderColor:'transparent',pointRadius:6,pointHoverRadius:8
       }]
     },
@@ -213,7 +213,7 @@ function showResults(){
       const target = allSame ? sorted[0] : low;
       const domainLabels = {corps:'Corps',coeur:'Cœur',etre:'Être',ordre:'Ordre'};
       actionEl.innerHTML=`
-        <div style="margin-top:16px;padding:16px 18px;background:rgba(0,112,243,0.06);border:1px solid rgba(0,112,243,0.2);border-radius:12px">
+        <div style="margin-top:16px;padding:16px 18px;background:rgba(132,194,94,0.06);border:1px solid rgba(132,194,94,0.2);border-radius:12px">
           <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.6px;color:#a7d689;font-weight:700;margin-bottom:8px">Passe à l'action maintenant</div>
           <p style="font-size:0.85rem;color:#bfb9ac;margin-bottom:12px">Ton domaine <strong style="color:${target.color}">${target.emoji} ${target.label}</strong> a le plus besoin d'attention. Crée un objectif concret cette semaine.</p>
           <a href="/objectifs/?domain=${target.key}" data-action="hover-shadow" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#6cb43f,#5b9735);color:white;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.86rem;transition:box-shadow .2s">
@@ -262,7 +262,7 @@ window.showHistDetail=(i)=>{
     data:{
       labels:DOMAINS.map(d=>d.emoji+' '+d.label),
       datasets:[{label:'Score',data:DOMAINS.map(d=>scores[d.key]??0),
-        backgroundColor:'rgba(0,112,243,0.12)',borderColor:'#6cb43f',borderWidth:2,
+        backgroundColor:'rgba(132,194,94,0.12)',borderColor:'#6cb43f',borderWidth:2,
         pointBackgroundColor:DOMAINS.map(d=>d.color),pointBorderColor:'transparent',pointRadius:6,pointHoverRadius:8}]
     },
     options:{responsive:true,scales:{r:{min:0,max:10,ticks:{stepSize:2,color:'rgba(155,179,208,0.5)',backdropColor:'transparent',font:{size:9}},
@@ -377,7 +377,7 @@ const actionBridge = document.getElementById('action-bridge');
 if (actionBridge) {
   actionBridge.addEventListener('mouseover', (e) => {
     const el = e.target.closest('[data-action="hover-shadow"]');
-    if (el) el.style.boxShadow = '0 4px 20px rgba(0,112,243,0.5)';
+    if (el) el.style.boxShadow = '0 4px 20px rgba(132,194,94,0.5)';
   });
   actionBridge.addEventListener('mouseout', (e) => {
     const el = e.target.closest('[data-action="hover-shadow"]');

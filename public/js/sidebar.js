@@ -13,29 +13,31 @@
 
 // La navigation suit le PARCOURS, pas l'ordre de construction des modules :
 //   ce que j'ai en tete -> quand -> ou je vais -> ce que ca donne de moi.
+import { icon } from '/js/icons.js';
+
 const NAV = [
-  { href: '/',          icon: '🌳', label: 'Mon espace',   note: 'Vue d\'ensemble' },
-  { href: '/organizer/',    icon: '🗂️', label: 'ORGANIZER',    note: 'Tes idées enfin triées & priorisées' },
-  { href: '/agenda/',       icon: '🗓️', label: 'Agenda',       note: 'Ce qui a une date' },
-  { href: '/plan/',         icon: '🌅', label: "Aujourd'hui",  note: 'Rythme du jour' },
-  { href: '/objectifs/',    icon: '🎯', label: 'Objectifs',    note: 'Où tu vas' },
+  { href: '/',          icon: 'home', label: 'Mon espace',   note: 'Vue d\'ensemble' },
+  { href: '/organizer/',    icon: 'inbox', label: 'ORGANIZER',    note: 'Tes idées enfin triées & priorisées' },
+  { href: '/agenda/',       icon: 'calendar', label: 'Agenda',       note: 'Ce qui a une date' },
+  { href: '/plan/',         icon: 'sun', label: "Aujourd'hui",  note: 'Rythme du jour' },
+  { href: '/objectifs/',    icon: 'target', label: 'Objectifs',    note: 'Où tu vas' },
 ];
 // Ce que le site conclut de toi. On ne s'y modifie pas : on s'y lit.
 const NAV_LECTURE = [
-  { href: '/yourlife/',    icon: '🪜', label: 'Où j\'en suis', note: 'Ta position, vue par CYL' },
-  { href: '/frise/',       icon: '➡️', label: 'Frise chronologique', note: 'D\'où tu viens, où tu vas' },
-  { href: '/competences/', icon: '🧗', label: 'Compétences',  note: 'Ce que tu sais faire' },
-  { href: '/bilan/',       icon: '📊', label: 'Bilan',        note: 'Ta semaine, résumée' },
+  { href: '/yourlife/',    icon: 'compass', label: 'Où j\'en suis', note: 'Ta position, vue par CYL' },
+  { href: '/frise/',       icon: 'timeline', label: 'Frise chronologique', note: 'D\'où tu viens, où tu vas' },
+  { href: '/competences/', icon: 'mountain', label: 'Compétences',  note: 'Ce que tu sais faire' },
+  { href: '/bilan/',       icon: 'chart', label: 'Bilan',        note: 'Ta semaine, résumée' },
 ];
 const NAV_MORE = [
-  { href: '/journal/',        icon: '📔', label: 'Journal' },
-  { href: '/habitudes/',      icon: '✅', label: 'Habitudes' },
-  { href: '/meditation/',     icon: '🧘', label: 'Méditation' },
-  { href: '/humeur/',         icon: '😌', label: 'Humeur' },
-  { href: '/sommeil/',        icon: '🌙', label: 'Sommeil' },
-  { href: '/gratitude/',      icon: '🌟', label: 'Gratitude' },
-  { href: '/codex/',          icon: '📚', label: 'Codex' },
-  { href: '/autoevaluation/', icon: '🎡', label: 'Roue de vie' },
+  { href: '/journal/',        icon: 'book', label: 'Journal' },
+  { href: '/habitudes/',      icon: 'checks', label: 'Habitudes' },
+  { href: '/meditation/',     icon: 'leaf', label: 'Méditation' },
+  { href: '/humeur/',         icon: 'smile', label: 'Humeur' },
+  { href: '/sommeil/',        icon: 'moon', label: 'Sommeil' },
+  { href: '/gratitude/',      icon: 'sparkles', label: 'Gratitude' },
+  { href: '/codex/',          icon: 'library', label: 'Codex' },
+  { href: '/autoevaluation/', icon: 'pie', label: 'Roue de vie' },
 ];
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -88,7 +90,9 @@ function injectCSS() {
   .cyl-sb-i.on { background:rgba(132,194,94,.14); color:var(--leaf,#84c25e);
     box-shadow:inset 0 0 0 1px rgba(132,194,94,.26); }
   .cyl-sb-i.on .cyl-sb-l { font-weight:800; }
-  .cyl-sb-ic { font-size:1.02rem; width:20px; text-align:center; flex-shrink:0; }
+  .cyl-sb-ic { width:20px; height:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--text-3,#86806a); transition:color .16s; }
+  .cyl-sb-ic svg { width:18px; height:18px; display:block; }
+  .cyl-sb-i:hover .cyl-sb-ic, .cyl-sb-i.on .cyl-sb-ic { color:currentColor; }
   .cyl-sb-txt { min-width:0; flex:1; }
   .cyl-sb-l { display:block; font-size:.83rem; font-weight:600; line-height:1.2;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -147,11 +151,13 @@ function injectCSS() {
   .cyl-sb-av.img { color:transparent; }
   /* Les deux boutons du pied reprennent l'allure des liens voisins : sans ce
      reset, un <button> impose sa police et son fond au milieu de <a>. */
-  .cyl-sb-out, .cyl-sb-inst { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
+  .cyl-sb-out, .cyl-sb-inst, .cyl-sb-help { width:100%; border:none; background:none; font:inherit; cursor:pointer; text-align:left; }
   .cyl-sb-out:hover { background:rgba(224,120,95,.12); color:#e58e73; }
   .cyl-sb-inst { color:var(--leaf,#84c25e); }
   .cyl-sb-inst:hover { background:rgba(132,194,94,.12); }
   .cyl-sb-inst[hidden] { display:none !important; }
+  .cyl-sb-help { color:var(--text-2,#b4ad94); }
+  .cyl-sb-help:hover { background:rgba(224,120,95,.10); color:#e58e73; }
   /* DECALAGE DES CONTENEURS PLEIN ECRAN
      Les pages posent leur cadre en position:fixed : padding-left sur le body
      ne les touche pas, il faut nommer chaque conteneur. Une page qui invente sa
@@ -238,7 +244,7 @@ function injectCSS() {
 function item(o, path, withNote) {
   const on = path === o.href;
   return `<a class="cyl-sb-i${on ? ' on' : ''}" href="${o.href}"${on ? ' aria-current="page"' : ''}>
-    <span class="cyl-sb-ic" aria-hidden="true">${o.icon}</span>
+    <span class="cyl-sb-ic" aria-hidden="true">${icon(o.icon)}</span>
     <span class="cyl-sb-txt"><span class="cyl-sb-l">${esc(o.label)}</span>
     ${withNote && o.note ? `<span class="cyl-sb-n">${esc(o.note)}</span>` : ''}</span>
   </a>`;
@@ -289,6 +295,15 @@ async function initAccount(sb) {
   }
 
   const out = sb.querySelector('#cyl-sb-out');
+  const help = sb.querySelector('#cyl-sb-help');
+  if (help) help.onclick = () => {
+    document.body.classList.remove('sb-open');
+    if (window.cylUrgence && window.cylUrgence.open) { window.cylUrgence.open(); return; }
+    // urgence.js arrive avec le panneau CYL ; s'il n'est pas encore la, on l'appelle.
+    const sc = document.createElement('script'); sc.src = '/js/urgence.js'; sc.defer = true;
+    sc.onload = () => { try { window.cylUrgence && window.cylUrgence.open(); } catch (_) {} };
+    document.head.appendChild(sc);
+  };
 
   // L'avatar enregistre localement s'affiche tout de suite, sans attendre Firebase.
   try {
@@ -309,6 +324,7 @@ async function initAccount(sb) {
     const label = user.displayName || (user.email || '').split('@')[0] || 'Mon profil';
     if (nm) nm.textContent = label;
     if (av && !av.classList.contains('img')) av.textContent = label.charAt(0).toUpperCase();
+    if (!document.getElementById('xp-corner-val')) lireXp(user.uid);
   });
 
   if (out) out.onclick = async () => {
@@ -316,6 +332,28 @@ async function initAccount(sb) {
     try { await signOut(auth); } catch (_) {}
     window.location.href = '/login';
   };
+}
+
+// Somme des XP de branche, identique a celle de app.js. Silencieux en cas
+// d'echec : la barre garde son dernier affichage plutot que de mentir.
+async function lireXp(uid) {
+  try {
+    const { db } = window._cyfFirebase || {};
+    if (!db) return;
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const snap = await getDoc(doc(db, 'users', uid));
+    if (!snap.exists()) return;
+    const d = snap.data() || {};
+    let total = 0;
+    const br = d.tree && d.tree.branches;
+    if (br && typeof br === 'object') {
+      for (const v of Object.values(br)) total += Number((v && v.xp) || 0);
+    } else if (d.levels && typeof d.levels === 'object') {
+      for (const v of Object.values(d.levels)) total += Number(typeof v === 'number' ? v : (v && v.xp) || 0);
+    }
+    const dst = document.getElementById('cyl-sb-xp');
+    if (dst) dst.textContent = total.toLocaleString('fr-FR') + ' XP';
+  } catch (_) {}
 }
 
 export function initSidebar() {
@@ -339,26 +377,31 @@ export function initSidebar() {
       ${NAV_MORE.map((o) => item(o, path, false)).join('')}
     </div>
     <div class="cyl-sb-foot">
-      <div class="cyl-sb-xp">⚡ <span id="cyl-sb-xp">0 XP</span><small>total</small></div>
+      <div class="cyl-sb-xp">${icon('zap', { size: 14 })} <span id="cyl-sb-xp">0 XP</span><small>total</small></div>
       <a class="cyl-sb-me${path === '/profile/' ? ' on' : ''}" href="/profile/">
         <span class="cyl-sb-av" id="cyl-sb-av" aria-hidden="true"></span>
         <span class="cyl-sb-txt"><span class="cyl-sb-l" id="cyl-sb-me-n">Mon profil</span>
           <span class="cyl-sb-n">Voir et modifier</span></span>
       </a>
       <a class="cyl-sb-i${path === '/settings/' ? ' on' : ''}" href="/settings/">
-        <span class="cyl-sb-ic" aria-hidden="true">⚙️</span>
-        <span class="cyl-sb-txt"><span class="cyl-sb-l">PARAMÈTRES</span></span>
+        <span class="cyl-sb-ic" aria-hidden="true">${icon('sliders')}</span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l">Paramètres</span></span>
       </a>
       <!-- Installer l'app : masqué par défaut, révélé par install.js seulement
            s'il y a quelque chose à proposer. C'est la porte de sortie pour qui
            a fermé la bannière - sans lui, un refus était définitif. -->
       <button class="cyl-sb-i cyl-sb-inst" id="cyl-sb-inst" type="button" data-cyl-install hidden>
-        <span class="cyl-sb-ic" aria-hidden="true">📲</span>
+        <span class="cyl-sb-ic" aria-hidden="true">${icon('download')}</span>
         <span class="cyl-sb-txt"><span class="cyl-sb-l">Installer l'app</span>
           <span class="cyl-sb-n">Sur ton écran d'accueil</span></span>
       </button>
+      <button class="cyl-sb-i cyl-sb-help" id="cyl-sb-help" type="button">
+        <span class="cyl-sb-ic" aria-hidden="true">${icon('lifebuoy')}</span>
+        <span class="cyl-sb-txt"><span class="cyl-sb-l">Besoin d'aide ?</span>
+          <span class="cyl-sb-n">Maintenant, sans attendre</span></span>
+      </button>
       <button class="cyl-sb-i cyl-sb-out" id="cyl-sb-out" type="button">
-        <span class="cyl-sb-ic" aria-hidden="true">↪</span>
+        <span class="cyl-sb-ic" aria-hidden="true">${icon('logout')}</span>
         <span class="cyl-sb-txt"><span class="cyl-sb-l">Se déconnecter</span></span>
       </button>
       <div class="cyl-sb-ctl" id="cyl-sb-ctl"></div>
@@ -370,7 +413,7 @@ export function initSidebar() {
   burger.className = 'cyl-sb-burger';
   burger.type = 'button';
   burger.setAttribute('aria-label', 'Ouvrir la navigation');
-  burger.textContent = '☰';
+  burger.innerHTML = icon('menu', { size: 20 });
 
   document.body.appendChild(sb);
   document.body.appendChild(veil);

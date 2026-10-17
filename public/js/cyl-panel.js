@@ -61,7 +61,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
         { ic: '🌱', ask: "Par quoi je pourrais commencer aujourd'hui ?" },
         { ic: '🧭', ask: "Aide-moi a y voir clair dans ce que j'ai en cours." },
         { ic: '📊', ask: "Qu'est-ce qui a bouge chez moi cette semaine ?" },
-        { ic: '🗂️', href: '/plan/', label: 'Ouvrir ma journee' },
+        { ic: '🗂️', href: '/plan/', label: 'Ouvrir ma journée' },
       ],
     },
     plan: {
@@ -179,7 +179,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
       ],
     },
     competences: {
-      label: 'Competences',
+      label: 'Compétences',
       acts: [
         { ic: '🌱', ask: "Qu'est-ce que je suis en train d'apprendre sans m'en rendre compte ?" },
         { ic: '🧗', ask: "Je stagne sur une competence. Comment je le vis ?" },
@@ -211,8 +211,8 @@ if (window.__cylPanel) { /* deja charge */ } else {
   // Les huit branches de l'arbre partagent la meme trame : leur libelle change,
   // et la question s'ecrit avec le nom de la branche.
   const BRANCHES = {
-    physio: 'Physiologique', securite: 'Securite', appartenance: 'Appartenance',
-    estime: 'Estime', cognitif: 'Cognitif', esthetique: 'Esthetique',
+    physio: 'Physiologique', securite: 'Sécurité', appartenance: 'Appartenance',
+    estime: 'Estime', cognitif: 'Cognitif', esthetique: 'Esthétique',
     accomplissement: 'Accomplissement', transcendance: 'Transcendance',
   };
   for (const [key, nom] of Object.entries(BRANCHES)) {
@@ -348,7 +348,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
             </span>
           </button>
           <button class="cylp-ico cylp-clear" type="button" title="Nouvelle conversation" aria-label="Nouvelle conversation">⟳</button>
-          <button class="cylp-ico cylp-min-btn" type="button" title="Reduire (Echap)" aria-label="Reduire le panneau">⇥</button>
+          <button class="cylp-ico cylp-min-btn" type="button" title="Réduire (Échap)" aria-label="Réduire le panneau">⇥</button>
         </header>
         <div class="cylp-tabs" role="tablist" aria-label="Sections de CYL">
           <button class="cylp-tab" type="button" role="tab" id="cylp-tab-chat" aria-controls="cylp-pane-chat" aria-selected="true">Chat</button>
@@ -359,7 +359,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
             <div class="cylp-msgs" aria-live="polite"></div>
           </div>
           <div class="cylp-pane" id="cylp-pane-acts" role="tabpanel" aria-labelledby="cylp-tab-acts" tabindex="0" hidden>
-            <p class="cylp-acts-note">Des entrees en matiere, pas des consignes. Le choix reste le tien.</p>
+            <p class="cylp-acts-note">Des entrées en matière, pas des consignes. Le choix reste le tien.</p>
             <div class="cylp-acts"></div>
           </div>
           <!-- Les réglages : un troisième volet, pas une fenêtre par-dessus.
@@ -370,7 +370,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
           </div>
         </div>
         <form class="cylp-compose">
-          <textarea class="cylp-input" rows="1" placeholder="Parle a CYL... (Ctrl+K)" aria-label="Ton message pour CYL"></textarea>
+          <textarea class="cylp-input" rows="1" placeholder="Parle à CYL... (Ctrl+K)" aria-label="Ton message pour CYL"></textarea>
           <button class="cylp-send" type="submit" title="Envoyer" aria-label="Envoyer">➤</button>
         </form>
         <div class="cylp-mention" id="cylp-mention">CYL est une IA. Elle ne décide pas à ta place.</div>
@@ -378,12 +378,12 @@ if (window.__cylPanel) { /* deja charge */ } else {
           <div class="cylp-consent-orb"></div>
           <div class="cylp-consent-title">Avant de commencer</div>
           <div class="cylp-consent-body">
-            CYL est une intelligence artificielle, pas un professionnel de sante.
+            CYL est une intelligence artificielle, pas un professionnel de santé.
             <ul>
               <li>Elle <b>ne decide jamais</b> a ta place et ne te dit pas quoi faire de ta vie.</li>
               <li>Elle ne remplace ni un medecin, ni un psychologue, ni un avocat.</li>
               <li>Tes messages sont envoyes a un modele de langage pour generer la reponse. <b>Ne partage rien que tu ne veuilles pas transmettre.</b></li>
-              <li>En cas de detresse : <b>3114</b> (prevention du suicide, 24h/24), <b>15</b>, <b>112</b>.</li>
+              <li>En cas de détresse : <b>3114</b> (prévention du suicide, 24h/24), <b>15</b>, <b>112</b>.</li>
             </ul>
           </div>
           <label class="cylp-consent-check">
@@ -488,18 +488,44 @@ if (window.__cylPanel) { /* deja charge */ } else {
   }
 
   const MODULE_LABELS = {
-    meditation: 'Meditation', journal: 'Journal', objectifs: 'Objectifs', habitudes: 'Habitudes',
+    meditation: 'Méditation', journal: 'Journal', objectifs: 'Objectifs', habitudes: 'Habitudes',
     sommeil: 'Sommeil', humeur: 'Humeur', gratitude: 'Gratitude', bilan: 'Bilan',
-    autoevaluation: 'Roue de vie', codex: 'Codex', organizer: 'ORGANIZER', plan: 'Ma journee',
-    competences: 'Competences', agenda: 'Agenda', yourlife: 'Ma pyramide',
-    physio: 'Physiologique', securite: 'Securite', appartenance: 'Appartenance', estime: 'Estime',
-    cognitif: 'Cognitif', esthetique: 'Esthetique', accomplissement: 'Accomplissement', transcendance: 'Transcendance',
+    autoevaluation: 'Roue de vie', codex: 'Codex', organizer: 'ORGANIZER', plan: 'Ma journée',
+    competences: 'Compétences', agenda: 'Agenda', yourlife: 'Où j'en suis',
+    physio: 'Physiologique', securite: 'Sécurité', appartenance: 'Appartenance', estime: 'Estime',
+    cognitif: 'Cognitif', esthetique: 'Esthétique', accomplissement: 'Accomplissement', transcendance: 'Transcendance',
   };
+
+  // Des amorces plutot qu'une page blanche (Headspace / Ebb : « I need a pep
+  // talk »). Ce sont des phrases que l'utilisateur DIT, pas des consignes :
+  // un clic envoie la phrase telle quelle, comme s'il l'avait tapee.
+  const AMORCES = [
+    "J'ai besoin d'un coup de pouce.",
+    "J'ai trop de choses en tête, aide-moi à trier.",
+    "Je ne sais pas par quoi commencer aujourd'hui.",
+    "Qu'est-ce que mon arbre montre en ce moment ?",
+    "Je veux juste parler cinq minutes.",
+    "Ça ne va pas fort.",
+  ];
+  function renderAmorces() {
+    const wrap = document.createElement('div');
+    wrap.className = 'cylp-starters';
+    for (const t of AMORCES) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cylp-starter';
+      b.textContent = t;
+      b.addEventListener('click', () => { wrap.remove(); send(t); });
+      wrap.appendChild(b);
+    }
+    msgsEl.appendChild(wrap);
+  }
 
   function renderHistory() {
     msgsEl.replaceChildren();
     if (!history.length) {
-      addMsg('cyl', "Bonjour. Je suis CYL. Je regarde " + pageDef().label.toLowerCase() + " avec toi, si tu veux. Comment ca va, aujourd'hui ?");
+      addMsg('cyl', "Bonjour. Je suis CYL. Je regarde " + pageDef().label.toLowerCase() + " avec toi, si tu veux. Comment ça va, aujourd'hui ?");
+      renderAmorces();
       return;
     }
     for (const m of history) addMsg(m.role === 'user' ? 'user' : 'cyl', m.content, m.modules);
@@ -640,7 +666,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
       if (!r.ok) {
         addMsg('err', data.error || "CYL est momentanement indisponible. Reessaie dans un instant.");
       } else {
-        const reply = String(data.reply || '').trim() || 'Je suis la.';
+        const reply = String(data.reply || '').trim() || 'Je suis là.';
         addMsg('cyl', reply, data.modules);
         history.push({ role: 'assistant', content: reply, modules: data.modules || [] });
         saveHist();
@@ -725,7 +751,7 @@ if (window.__cylPanel) { /* deja charge */ } else {
       const p = prefs.lire();
       const m = panel.querySelector('#cylp-mention');
       if (m) m.hidden = !p.rappelPro;
-      inputEl.placeholder = p.raccourci ? 'Parle a CYL... (Ctrl+K)' : 'Parle a CYL...';
+      inputEl.placeholder = p.raccourci ? 'Parle à CYL... (Ctrl+K)' : 'Parle à CYL...';
       paintBadge();
     };
     document.addEventListener('cyl:prefs', appliquerPrefs);

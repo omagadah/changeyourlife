@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+    <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ChangeYourLife.ai - Ta vie a une forme. Ici, elle devient visible.</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
@@ -35,6 +36,7 @@
        `unsafe-inline`, un script inline ici serait purement et simplement
        bloqué, et l'accueil perdrait arbre, environnement et XP. -->
   <script src="/js/home-boot.js"></script>
+  <link rel="stylesheet" href="/vendor/fonts/fonts.css"/>
   <style>
     /* ════════════════════════════════════════════════════════════
        ChangeYourLife.ai - Accueil "organisme vivant" · Design v3
@@ -62,7 +64,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       height: 100%; overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      font-family: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg); color: var(--text-1);
       -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     }
@@ -242,8 +244,9 @@
       background: var(--leaf); box-shadow: 0 0 8px var(--leaf);
     }
     .headline h1 {
-      font-size: clamp(2.1rem, 5.2vw, 3.7rem); font-weight: 800;
-      line-height: 1.08; letter-spacing: -1px;
+      font-family: "Fraunces", Georgia, serif; font-variation-settings: "opsz" 144, "SOFT" 40;
+      font-size: clamp(2.1rem, 5.2vw, 3.9rem); font-weight: 520;
+      line-height: 1.04; letter-spacing: -0.02em;
       color: var(--text-1);
     }
     .headline h1 br { display: block; }
@@ -390,7 +393,7 @@
       background: linear-gradient(160deg, rgba(238,108,108,0.92), rgba(150,34,34,0.94));
       -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
       writing-mode: vertical-rl; text-orientation: upright;
-      font: 700 0.46rem "Segoe UI", sans-serif; letter-spacing: 0.5px; text-transform: uppercase;
+      font: 700 0.46rem inherit; font-family: inherit; letter-spacing: 0.5px; text-transform: uppercase;
       display: flex; align-items: center; justify-content: center; padding: 0;
       box-shadow: 0 6px 16px rgba(150,20,20,0.36), inset 0 1px 0 rgba(255,255,255,0.18);
       transition: transform .15s, box-shadow .2s, filter .2s;
@@ -593,7 +596,7 @@
     @media (max-width: 820px) { .hero-kicker { margin-bottom: 10px; letter-spacing: 1.2px; } }
 
     /* ══════════════════════════════════════════════════════════════
-       MODE LÉGER (.lite) — mobile, connexion lente, économie de données.
+       MODE LÉGER (.lite) - mobile, connexion lente, économie de données.
        Pas de WebGL, pas de textures : un décor peint en CSS. On garde le
        message, les CTA et le parcours. Ce qui disparaît est décoratif ou,
        sur écran étroit, activement nuisible (étiquettes qui se superposent
@@ -636,7 +639,12 @@
       width: 2px; height: 2px; border-radius: 50%;
     }
     /* Le hero respire : plus rien ne passe derrière lui */
-    html.lite .headline { position: relative; z-index: 4; top: clamp(76px, 11vh, 110px); }
+    /* En flux, pas en absolu : le bouton d'entree venait se poser SUR le
+       paragraphe parce que le titre, decale par top, ne reservait aucune place.
+       Une marge reserve, un decalage ne reserve pas. */
+    html.lite .headline { position: relative; z-index: 4; top: auto; margin-top: clamp(76px, 11vh, 110px); max-width: calc(100vw - 40px); }
+    html.lite .headline h1 { font-size: clamp(2rem, 9vw, 2.6rem); }
+    html.lite .hero-kicker { font-size: 0.68rem; letter-spacing: 1px; }
     html.lite .lya { position: relative; z-index: 4; }
 
     /* ── Responsive ── */
@@ -644,6 +652,10 @@
       .headline { max-width: 80vw; top: clamp(82px, 12vh, 116px); }
     }
     @media (max-width: 720px) {
+      .site-header { padding: 12px 14px; }
+      .brand-name { font-size: 0.95rem; }
+      .header-login { padding: 8px 12px; font-size: 0.8rem; }
+      .lang-btn { padding: 7px 9px 7px 8px; }
       .lya { flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 14px; padding-left: clamp(20px, 5vw, 64px); padding-bottom: 84px; }
       .lya-top { display: flex; align-items: center; gap: 14px; }
       .actions { justify-content: space-between; }

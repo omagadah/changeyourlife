@@ -2,7 +2,7 @@
 
 > Contexte permanent pour Claude Code travaillant sur changeyourlife.ai.
 > Lu automatiquement à chaque session. Si tu modifies des conventions du projet, mets à jour ce fichier.
-> Dernière vérification contre le code : **2026-09-02** (SW v210).
+> Dernière vérification contre le code : **2026-10-17** (SW v218).
 
 ## ⚠️ Vision produit - à lire en premier
 
@@ -15,6 +15,10 @@ doit s'inscrire dans la métaphore de l'arbre.
 
 Le cap opérationnel le plus récent est **[docs/CAP-2026-08-26.md](docs/CAP-2026-08-26.md)** :
 diagnostic de l'espace connecté, huit axes, ordre d'exécution.
+
+L'état de l'interface et les lots de refonte restants sont dans
+**[docs/AUDIT-UX-2026-10-17.md](docs/AUDIT-UX-2026-10-17.md)** (design system v3,
+veille concurrents, six lots ordonnés).
 
 ## Projet
 - **Nom** : Change Your Life · `changeyourlife.ai`
@@ -41,7 +45,9 @@ diagnostic de l'espace connecté, huit axes, ordre d'exécution.
 │   ├── {module}/            # 1 dossier par module
 │   ├── js/                  # ~70 modules JS (firebase.js singleton, common.js, sidebar.js, …)
 │   ├── vendor/              # Libs tierces hébergées en local - AUCUN CDN de script
-│   ├── css/main.min.css     # Design system v2 unique
+│   ├── css/main.min.css     # Design system v3 unique (polices, tokens, composants)
+│   ├── js/icons.js          # LE jeu d'icônes SVG - plus d'emoji en guise d'icône
+│   ├── vendor/fonts/        # Fraunces + Hanken Grotesk, hébergées ici (OFL)
 │   ├── manifest.json        # PWA manifest
 │   ├── service-worker.js    # SW offline
 │   └── sitemap.xml
@@ -144,7 +150,25 @@ Co-Authored-By: Claude <modèle> <noreply@anthropic.com>
 - **Helpers partagés** : `escapeHtml`, `toast`, `saveWithFeedback` viennent de
   `/js/common.js`. Ne pas en recopier une variante locale.
 - **Thème** : uniquement via les tokens CSS. Un module qui code une couleur en
-  dur casse le thème.
+  dur casse le thème. **Le navy et le violet de la v2 sont morts** (balayés le
+  2026-10-17) : ne jamais réintroduire `0,112,243`, `99,102,241`, `167,139,250`.
+- **Typographie** : deux familles, pas plus. `var(--font-display)` (Fraunces)
+  pour les titres et les grands chiffres, `var(--font-body)` (Hanken Grotesk)
+  pour le reste. Hébergées dans `public/vendor/fonts/`, inlinées en
+  `@font-face` dans `main.min.css`. **Aucune police depuis un CDN** (la CSP
+  `font-src 'self'` le bloquerait de toute façon).
+- **Icônes** : `import { icon } from '/js/icons.js'`, SVG trait 1,75 px en
+  `currentColor`. **Jamais d'emoji en guise d'icône** dans ce qui est commun
+  (barre, accueil, CYL). Un emoji reste possible comme *contenu* (humeurs).
+- **Fond** : `cyl-bg.js` est du CSS pur (lumières + grain). **Plus de WebGL
+  décoratif** : l'arbre est la seule 3D du site. Vanta et three r134 ont été
+  supprimés du dépôt.
+- **Composants communs v3** dans `main.min.css` : `.btn`, `.chip`, `.card`,
+  `.empty`, `.kv`, `.sec-label`, `.sk`, `.pixels`. Les prendre avant de
+  recopier une variante locale.
+- **Progression** : le vocabulaire est celui de `growth.js` (dormante, germe,
+  pousse, rameau, feuillue, en fruits). Plus de « Lv3 », « Novice », « Légende ».
+- **Une donnée absente se tait** : jamais de chip ou de ligne à « - ».
 - **L'ordre du DOM est l'ordre visuel** : pas de réordonnancement en CSS
   (`order:`), ça casse le tab-order et les lecteurs d'écran.
 - **WebGL** : `prefers-reduced-motion` doit être lu en JS (`matchMedia`), la
@@ -221,6 +245,7 @@ atomique : une seule manquante fait échouer l'installation pour tout le monde).
 | Début session | Je lis ce `CLAUDE.md` + dernier fichier dans `docs/sessions/` |
 | Pendant | Tasks via `TodoWrite`, edits ciblés, commits autonomes si demandé |
 | Fin session | Slash command `/session-end` - crée/MAJ `docs/sessions/YYYY-MM-DD.md` + INDEX |
+| Captures | Serveur statique local + Chrome headless (`--headless=new --timeout=9000 --screenshot`). Pour entrer dans l'espace connecté, le serveur substitue aux modules gstatic un faux SDK Firebase (cf. session 2026-10-17) |
 | Audit | Slash command `/audit` - relance un scan complet et MAJ `AUDIT.md` |
 
 ## Préférences communication

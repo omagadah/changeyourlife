@@ -52,10 +52,10 @@ function injectMilestoneCss() {
       background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
       color:#e0ddd7;font:500 0.78rem inherit;width:142px;flex-shrink:0;
       color-scheme:dark;outline:none;transition:border-color .15s;}
-    .subtask-add-date:focus{border-color:rgba(0,112,243,0.4);}
+    .subtask-add-date:focus{border-color:rgba(132,194,94,0.4);}
     .next-milestone{display:flex;align-items:center;gap:10px;padding:9px 13px;
       border-radius:10px;margin:10px 0 4px;
-      background:rgba(0,112,243,0.08);border:1px solid rgba(0,112,243,0.22);}
+      background:rgba(132,194,94,0.08);border:1px solid rgba(132,194,94,0.22);}
     .next-milestone-emoji{font-size:1.05rem;flex-shrink:0;}
     .next-milestone-label{flex:1;min-width:0;font-size:0.84rem;font-weight:600;color:#eeece8;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

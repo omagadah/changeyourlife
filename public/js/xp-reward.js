@@ -28,7 +28,7 @@ function ensure() {
       display:flex;flex-direction:column;gap:10px;pointer-events:none;}
     .xpr-card{display:flex;align-items:center;gap:12px;min-width:212px;
       padding:12px 16px 12px 13px;border-radius:14px;
-      background:rgba(11,24,41,0.97);
+      background:rgba(15,23,16,0.97);
       border:1px solid var(--xpr-color,#6cb43f);
       border-left:4px solid var(--xpr-color,#6cb43f);
       box-shadow:0 12px 34px rgba(0,0,0,0.5),0 0 22px -8px var(--xpr-color,#6cb43f);

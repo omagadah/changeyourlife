@@ -45,6 +45,7 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   await loadEntries();
   renderHeatmap();
+  renderPixels();
   renderEntries();
   computeStats();
 });
@@ -70,7 +71,7 @@ function selectDomain(domain, el) {
 // ── Load entries from Firestore ──
 async function loadEntries() {
   const col = collection(db, 'users', currentUser.uid, 'moods');
-  const q = query(col, orderBy('timestamp', 'desc'), limit(90));
+  const q = query(col, orderBy('timestamp', 'desc'), limit(400));
   const snap = await getDocs(q);
   allEntries = {};
   snap.forEach(d => { allEntries[d.id] = d.data(); });
@@ -194,6 +195,43 @@ function renderHeatmap() {
     }
     grid.appendChild(cell);
   }
+}
+
+// ── L'annee en pixels (Daylio) : un carre par jour, 53 semaines ──────────
+// La grille se lit comme un calendrier : colonnes = semaines, lignes = jours.
+// Rien n'est note, rien n'est compare : c'est une photo de l'annee, pas une
+// moyenne. Les jours non renseignes restent vides, sans reproche.
+function renderPixels() {
+  const grid = document.getElementById('pixels-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const today = new Date();
+  const start = new Date(today); start.setDate(start.getDate() - 364);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // on commence un lundi
+  const todayStr = todayDateStr();
+  let renseignes = 0;
+  const cells = [];
+  for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const e = allEntries[key];
+    const cell = document.createElement('span');
+    cell.className = 'px' + (key === todayStr ? ' today' : '');
+    if (e && e.mood) { cell.setAttribute('data-v', e.mood); renseignes++; }
+    cell.title = `${d.getDate()}/${d.getMonth()+1}${e && e.mood ? ' - ' + MOOD_LABELS[e.mood] : ''}`;
+    cells.push(cell);
+  }
+  // La grille est en colonnes (une semaine par colonne) : on remplit par
+  // lignes de 7, en transposant.
+  const semaines = Math.ceil(cells.length / 7);
+  grid.style.gridTemplateColumns = `repeat(${semaines}, 1fr)`;
+  for (let jour = 0; jour < 7; jour++) {
+    for (let w = 0; w < semaines; w++) {
+      const c = cells[w * 7 + jour];
+      grid.appendChild(c || Object.assign(document.createElement('span'), { className: 'px vide' }));
+    }
+  }
+  const note = document.getElementById('pixels-note');
+  if (note) note.textContent = renseignes ? `${renseignes} jour${renseignes > 1 ? 's' : ''} renseigne${renseignes > 1 ? 's' : ''} sur les 365 derniers` : 'Chaque jour note ici ajoute un carre.';
 }
 
 // ── Render recent entries list ──

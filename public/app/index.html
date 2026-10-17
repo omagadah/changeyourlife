@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <script src="/js/theme-init.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mon Espace - Change Your Life</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
@@ -16,134 +17,56 @@
     <link rel="stylesheet" href="/css/main.min.css"/>
     <style>
         /* ════════════════════════════════════════════════════════════
-           /app/ - refonte « palette organique » (forêt nocturne, or, mousse).
-           Hiérarchie d'arrivée : 1. ORGANIZER (le cerveau) · 2. CYL ·
-           3. ta journée · 4. raccourcis · 5. l'arbre · 6. le reste.
-           L'ordre du DOM EST l'ordre visuel (plus de réordonnancement CSS).
+           /app/ - v3 (2026-10-17).
+           Ce qui a disparu, et pourquoi :
+           · la grille « Tous les modules » (11 cartes) : elle dupliquait la
+             barre de navigation, mot pour mot, icône pour icône ;
+           · la citation du jour : un bloc générique qu'on retrouve dans
+             toutes les apps de motivation, et qui ne parle pas de TA vie ;
+           · les sept « chips » de statistiques avec un tiret quand la donnée
+             manque : une donnée se lit, elle ne se « cardifie » pas. Elles
+             deviennent une liste de repères, et une ligne sans donnée se tait.
+           Hiérarchie : 1. ta journée · 2. ORGANIZER (le cerveau) · 3. CYL ·
+           4. l'agenda · 5. l'arbre et ce qu'il montre. L'ordre du DOM EST
+           l'ordre visuel.
            ════════════════════════════════════════════════════════════ */
-        :root {
-          --line:     rgba(221,205,160,0.12);
-          --line-hov: rgba(132,194,94,0.42);
-        }
-        body {
-          background:
-            radial-gradient(ellipse 64% 42% at 50% -6%, rgba(231,177,92,0.13), transparent 62%),
-            radial-gradient(ellipse 80% 60% at 50% 110%, rgba(74,122,58,0.16), transparent 64%),
-            radial-gradient(ellipse 90% 70% at 12% 50%, rgba(111,154,82,0.06), transparent 60%),
-            var(--bg);
-        }
+        :root { --line-hov: rgba(132,194,94,0.42); }
 
-        /* ══ BANDEAU SUPÉRIEUR ══
-           Quand le bandeau d'annonce (giveaway) est présent, TOUT ce qui est
-           fixé en haut descend de sa hauteur exacte (34 px) : l'espace de
-           travail, le logo, le sélecteur de langue, le thème, la pastille XP
-           et le menu utilisateur. Un seul nombre à changer : --gw-h.
-           Ces règles sont scopées à /app/ : les autres pages ne bougent pas. */
+        /* ══ BANDEAU D'ANNONCE ══
+           Quand le bandeau (giveaway) est présent, tout ce qui est fixé en
+           haut descend de sa hauteur exacte. Un seul nombre : --gw-h. */
         :root { --gw-h: 34px; }
-        /* Le bandeau d'annonce pousse l'espace de travail ET la barre latérale
-           vers le bas. Un seul nombre à changer : --gw-h. */
         body.has-gw-bar .app-container { top: calc(15px + var(--gw-h)); }
         body.has-gw-bar .cyl-sb        { top: var(--gw-h); }
         body.has-gw-bar #cyf-user-menu { top: calc(66px + var(--gw-h)); }
         .app-container, .cyl-sb { transition: top .35s cubic-bezier(.4,0,.2,1); }
-        @media (prefers-reduced-motion: reduce) {
-          .app-container, .cyl-sb { transition: none; }
-        }
+        @media (prefers-reduced-motion: reduce) { .app-container, .cyl-sb { transition: none; } }
 
-        /* Le sélecteur de thème était resté en navy v2 : on le raccorde au
-           verre organique, maintenant qu'il vit dans le pied de la barre. */
-        #cyf-theme-toggle {
-          background: var(--surface-2) !important;
-          border-color: var(--line) !important;
-          color: var(--gold-soft) !important;
-        }
-        #cyf-theme-toggle:hover {
-          background: rgba(231,177,92,0.16) !important;
-          border-color: rgba(231,177,92,0.45) !important;
-        }
+        #cyf-theme-toggle { background: var(--surface-2) !important; border-color: var(--line) !important; color: var(--gold-soft) !important; }
+        #cyf-theme-toggle:hover { background: rgba(231,177,92,0.16) !important; border-color: rgba(231,177,92,0.45) !important; }
 
-        /* ── App container : verre forêt ── */
+        /* ── Le cadre : un aplat, plus de verre flouté sur du verre ── */
         .app-container {
           position:absolute; top:15px; bottom:15px; left:15px; right:15px;
-          background:var(--glass-bg);
-          backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+          background:var(--bg-surface);
           border-radius:22px;
           border:1px solid var(--line);
-          box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset, 0 1px 0 rgba(255,255,255,0.05) inset, var(--shadow-lg);
-          padding:28px 28px 24px;
+          box-shadow:var(--shadow-sm);
+          padding:26px 28px 28px;
           z-index:1; overflow-y:auto;
           display:flex; flex-direction:column;
+          container-type: inline-size; container-name: dash;
+          --lvl1: var(--surface-3);
+          --lvl2: var(--surface-2);
+          --lvl3: var(--surface-1);
         }
-        /* En colonne flex, les enfants ne doivent PAS se compresser. */
         .app-container > * { flex-shrink: 0; }
+        #organizer-hub:empty, #agenda-card:empty, #cyl-brief:empty, #action-today:empty { display: none; }
+        .xp-corner, .total-xp-badge { display:none; }
 
-        /* Les blocs rendus par JS (organizer, CYL, agenda) restent invisibles
-           tant qu'ils sont vides : sinon deux cadres bordés vides s'affichent
-           au premier paint, avant que l'auth ne résolve. */
-        #organizer-hub:empty, #agenda-card:empty, #cyl-brief:empty { display: none; }
-
-        /* La ligne d'accueil (bonjour + date + XP) a été absorbée par la barre
-           du jour : elle disait la même chose, en plus petit, sans rien
-           apporter que l'anneau ne dise mieux. */
-
-        /* L'XP vit désormais dans le pied de la barre latérale. Cette pastille
-           reste dans le DOM (app.js l'alimente, la barre la recopie) mais ne
-           s'affiche plus : deux compteurs identiques à l'écran, c'est un de trop. */
-        .xp-corner { display:none; }
-        .total-xp-badge { display:none; }
-
-        /* ── Arbre : le reflet de ce que tu fais ── */
-        .tree-caption {
-          font-size:0.66rem; text-transform:uppercase; letter-spacing:.8px;
-          color:var(--text-3); font-weight:700; margin-bottom:8px;
-        }
-        #tree-stage.tree-stage:not(.expanded) {
-          position:relative; width:100%; height:260px; border-radius:20px; overflow:hidden;
-          background:var(--stage-bg);
-          border:1px solid var(--line); cursor:grab; touch-action:none;
-          /* Plus de marge propre : l'arbre vit dans une .side-card qui gère
-             son espacement au `gap`. Une marge en plus creusait un vide sous
-             lui, dans la carte. */
-          margin-bottom:0;
-        }
-        .tree-stage:active { cursor:grabbing; }
-
-        /* ── Raccourcis (rangée compacte) ── */
-        /* Les 3 « raccourcis » menaient aux mêmes pages que les 7 actions
-           rapides et que les 10 cartes de modules : trois listes de liens pour
-           un seul besoin. Il n'en reste qu'une, la grille des modules en bas. */
-
-        /* ── Today progress ── */
-        /* ── UNE ÉCHELLE DE POIDS ────────────────────────────────────────────
-           Cinq familles de blocs (journée, raccourcis, jauges, roue, modules)
-           partageaient EXACTEMENT le même traitement : rgba(255,255,255,0.02)
-           + 1px de bordure. Rien ne pesait plus lourd que le reste, donc l'œil
-           ne pouvait pas trier - la page se lisait comme un empilement plutôt
-           que comme une séquence.
-
-           Trois niveaux désormais, du plus lourd au plus léger :
-             1. ce qui concerne AUJOURD'HUI      -> surface marquée + liseré
-             2. ce qui se consulte d'un coup d'œil -> surface intermédiaire
-             3. ce qui sert à NAVIGUER            -> surface discrète
-           Les trois se déclinent depuis les mêmes tokens : un seul endroit à
-           toucher pour rééquilibrer la page. */
-        .app-container {
-          --lvl1: rgba(255,255,255,0.055);
-          --lvl2: rgba(255,255,255,0.032);
-          --lvl3: rgba(255,255,255,0.018);
-          /* Le conteneur se déclare mesurable : c'est LUI qui commande la
-             bascule une/deux colonnes, pas le viewport. Voir .dash. */
-          container-type: inline-size;
-          container-name: dash;
-        }
-
-        /* ══════════════════════════════════════════════════════════════════
-           LA BARRE DU JOUR
-           Un anneau qui se remplit, remis à zéro chaque matin (Oura, Apple
-           Fitness). C'est la seule chose de la page qui change tous les jours,
-           donc la seule qui donne une raison de revenir demain.
-           Elle absorbe l'ancienne ligne d'accueil ET les 7 actions rapides.
-           ══════════════════════════════════════════════════════════════════ */
+        /* ══ LA BARRE DU JOUR ═══════════════════════════════════════════════
+           Un anneau qui se remplit, remis à zéro chaque matin. Rendu par
+           /js/app-today.js. C'est la seule chose qui change chaque jour. */
         .today-bar {
           background:var(--lvl1); border:1px solid var(--line);
           border-radius:18px; padding:16px 18px; margin-bottom:16px;
@@ -152,297 +75,155 @@
         .td-head { display:flex; align-items:center; gap:15px; }
         .td-ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
         .td-ring { width:64px; height:64px; transform:rotate(-90deg); }
-        .td-ring-bg { fill:none; stroke:var(--lvl1); stroke-width:6; }
-        .td-ring-fg {
-          fill:none; stroke:var(--leaf); stroke-width:6; stroke-linecap:round;
-          transition:stroke-dashoffset .9s var(--ease);
-        }
-        .td-ring-txt {
-          position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-          font-size:0.78rem; color:var(--text-3); letter-spacing:-.4px;
-        }
-        .td-ring-txt b { font-size:1.18rem; font-weight:800; color:var(--text-1); }
+        .td-ring-bg { fill:none; stroke:var(--line); stroke-width:6; }
+        .td-ring-fg { fill:none; stroke:var(--leaf); stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset .9s var(--ease); }
+        .td-ring-txt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.78rem; color:var(--text-3); letter-spacing:-.4px; }
+        .td-ring-txt b { font-family:var(--font-display); font-size:1.3rem; font-weight:600; color:var(--text-1); font-variation-settings:"opsz" 32; }
         .td-ring-txt i { font-style:normal; }
         .td-id { flex:1; min-width:0; }
-        .td-hello { font-size:1.06rem; font-weight:800; color:var(--text-1); letter-spacing:-.3px; }
-        .td-date { font-size:0.78rem; color:var(--text-3); margin-top:2px; text-transform:capitalize; }
-        /* Le titre choisi dans le profil, à la suite de la date. */
-        .td-titre { color:var(--gold-soft); font-style:italic; text-transform:none; }
+        .td-hello { font-family:var(--font-display); font-size:1.45rem; font-weight:560; color:var(--text-1); letter-spacing:-.015em; line-height:1.1; font-variation-settings:"opsz" 48, "SOFT" 30; }
+        .td-date { font-size:0.8rem; color:var(--text-3); margin-top:4px; text-transform:capitalize; }
+        .td-titre { color:var(--gold-text); font-style:italic; text-transform:none; }
         .td-meters { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
         .td-meter {
           display:inline-flex; align-items:center; gap:5px; padding:6px 11px; border-radius:99px;
           background:var(--lvl2); border:1px solid var(--line);
-          font-size:0.78rem; font-weight:800; color:var(--text-2); white-space:nowrap;
+          font-size:0.78rem; font-weight:700; color:var(--text-2); white-space:nowrap;
+          font-variant-numeric:tabular-nums;
         }
-        .td-meter.gold { background:rgba(231,177,92,0.11); border-color:rgba(231,177,92,0.26); color:var(--gold-soft); }
-        .td-meter i { font-style:normal; }
-
-        /* Les gestes : un rail qui défile plutôt que des boutons qui passent
-           à la ligne. Sept éléments sur deux rangées se lisent comme une
-           corvée ; sur une ligne, comme une journée. */
-        .td-gestes {
-          display:flex; gap:7px; margin-top:14px;
-          overflow-x:auto; overscroll-behavior-x:contain;
-          padding-bottom:2px; scrollbar-width:thin;
-        }
+        .td-meter.gold { background:rgba(231,177,92,0.11); border-color:rgba(231,177,92,0.26); color:var(--gold-text); }
+        .td-meter i { font-style:normal; display:inline-flex; }
+        .td-gestes { display:flex; gap:7px; margin-top:14px; overflow-x:auto; overscroll-behavior-x:contain; padding-bottom:2px; scrollbar-width:thin; }
         .td-g {
           display:flex; align-items:center; gap:7px; flex-shrink:0;
           padding:8px 12px; border-radius:12px; text-decoration:none;
           background:var(--lvl3); border:1px solid var(--line);
-          color:var(--text-2); font-size:0.8rem; font-weight:700;
+          color:var(--text-2); font-size:0.8rem; font-weight:600;
           transition:transform .18s var(--ease), background .18s, border-color .18s, color .18s;
         }
         .td-g:hover { transform:translateY(-2px); background:var(--lvl2); color:var(--text-1); }
-        .td-g-ic { font-size:0.98rem; line-height:1; }
-        .td-g-n { font-size:0.7rem; font-weight:700; color:var(--text-3); }
-        /* La coche n'apparaît QUE sur ce qui est fait. Un geste non posé n'est
-           pas une case vide qui attend : c'est juste un lien de plus. */
-        .td-g-check { display:none; font-size:0.78rem; line-height:1; }
-        .td-g.on {
-          background:rgba(132,194,94,0.13); border-color:rgba(132,194,94,0.32); color:var(--leaf-text,#a8d98a);
-        }
-        .td-g.on .td-g-check { display:inline; }
-        .td-g.on .td-g-l { opacity:.85; }
+        .td-g-ic { display:inline-flex; color:var(--text-3); }
+        .td-g:hover .td-g-ic, .td-g.on .td-g-ic { color:currentColor; }
+        .td-g-n { font-size:0.7rem; font-weight:600; color:var(--text-3); }
+        .td-g-check { display:none; line-height:1; }
+        .td-g.on { background:rgba(132,194,94,0.13); border-color:rgba(132,194,94,0.32); color:var(--leaf-text); }
+        .td-g.on .td-g-check { display:inline-flex; }
         .td-g.half { border-color:rgba(231,177,92,0.3); background:rgba(231,177,92,0.08); }
-        .td-g.half .td-g-n { color:var(--gold-soft); }
+        .td-g.half .td-g-n { color:var(--gold-text); }
 
         /* ══ LE POSTE DE PILOTAGE : deux colonnes ═══════════════════════════ */
-        .dash { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; margin-bottom:22px; }
+        .dash { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; margin-bottom:8px; }
         .dash-main { display:flex; flex-direction:column; gap:16px; min-width:0; }
         .dash-side { display:flex; flex-direction:column; gap:14px; min-width:0; }
-        /* La bascule dépend de la place RÉELLE, pas de la taille de l'écran :
-           barre de nav (232) + panneau CYL (360) peuvent manger 592 px. */
+        /* La bascule dépend de la place RÉELLE (barre 232 + CYL 360), pas du viewport. */
         @container dash (min-width: 880px) {
-          .dash { grid-template-columns:minmax(0,1fr) 306px; align-items:start; }
-          /* La colonne droite se consulte d'un coup d'œil : elle reste en vue
-             pendant qu'on travaille dans la colonne principale. */
+          .dash { grid-template-columns:minmax(0,1fr) 318px; align-items:start; }
           .dash-side { position:sticky; top:0; }
+          #tree-stage.tree-stage:not(.expanded) { height:250px; }
         }
-        .side-card {
-          background:var(--lvl2); border:1px solid var(--line);
-          border-radius:16px; padding:13px 14px;
-        }
+        .side-card { background:var(--lvl2); border:1px solid var(--line); border-radius:16px; padding:13px 14px; }
         .side-card.tree-card { padding:10px 10px 12px; }
         .side-label {
           display:flex; align-items:baseline; justify-content:space-between; gap:8px;
-          font-size:0.67rem; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+          font-size:0.67rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
           color:var(--text-3); margin-bottom:10px;
         }
-        .side-label a { color:var(--leaf); text-decoration:none; font-size:0.66rem; font-weight:700; letter-spacing:0; text-transform:none; }
+        .side-label a { color:var(--leaf-text); text-decoration:none; font-size:0.7rem; font-weight:600; letter-spacing:0; text-transform:none; }
         .side-label a:hover { text-decoration:underline; }
-        /* Dans la colonne, les jauges passent sur deux colonnes au lieu de
-           quatre, et les chips sur deux au lieu de sept : c'est la même donnée,
-           dans un gabarit qui tient dans 306 px. */
-        @container dash (min-width: 880px) {
-          .dash-side .rings-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
-          .dash-side .stats-row { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:0; }
-          .dash-side .stat-chip { padding:10px 10px 9px; }
-          /* L'ID est là EXPRÈS : la règle d'origine est `#tree-stage.tree-stage`
-             (1,2,0). Une règle de classe, même plus tardive, ne pèse pas assez
-             et l'arbre garderait ses 260 px avec sa marge de 18 px dans une
-             colonne de 306. */
-          #tree-stage.tree-stage:not(.expanded) { height:232px; }
-        }
-        .dash-side .stats-row { margin-bottom:0; }
 
-        /* Niveau 1 : la journée en cours. Le liseré gauche vert la rattache au
-           langage de l'arbre et la distingue au premier regard. */
-        /* L'ancienne carte « Aujourd'hui » et les 7 « actions rapides » vivent
-           maintenant dans la barre du jour (.today-bar) : mêmes liens, plus
-           leur état, en haut de page au lieu d'être cachés en 7e position.
-           Le gain d'XP affiché sur chaque bouton a disparu au passage - on
-           lisait la récompense avant le geste. */
+        /* ── L'arbre ── */
+        .tree-caption { font-size:0.66rem; text-transform:uppercase; letter-spacing:.09em; color:var(--text-3); font-weight:700; margin-bottom:8px; }
+        #tree-stage.tree-stage:not(.expanded) {
+          position:relative; width:100%; height:260px; border-radius:14px; overflow:hidden;
+          background:var(--stage-bg); border:1px solid var(--line); cursor:grab; touch-action:none; margin-bottom:0;
+        }
+        .tree-stage:active { cursor:grabbing; }
 
-        /* ── Stats bar ── */
-        /* 7 chips : auto-fit évite la dernière rangée orpheline d'une grille fixe */
-        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px; margin-bottom:22px; }
-        /* Niveau 2 : des données qu'on consulte, pas des boutons. Elles ne se
-           soulèvent donc pas au survol - seul ce qui mène quelque part bouge. */
-        .stat-chip {
-          background:var(--lvl2); border:1px solid var(--line);
-          border-radius:14px; padding:14px 14px 12px;
-          display:flex; flex-direction:column; gap:3px;
-          position:relative; overflow:hidden;
-          border-bottom:2px solid var(--chip-color,var(--line));
-          transition:border-color .2s, background .2s;
-        }
-        /* `border-color` en raccourci reecrivait les QUATRE cotes : le liseré
-           coloré du bas - la seule chose qui distinguait une jauge d'une autre -
-           disparaissait au survol. Les côtés sont désormais nommés un par un. */
-        .stat-chip:hover {
-          border-top-color:var(--line-hov); border-right-color:var(--line-hov);
-          border-left-color:var(--line-hov); background:rgba(255,255,255,0.05);
-        }
-        .stat-chip-icon { font-size:1.1rem; }
-        .stat-chip-value { font-size:1.5rem; font-weight:800; color:var(--text-1); line-height:1.1; }
-        .stat-chip-label { font-size:0.65rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
-        .stat-chip.streak { --chip-color:var(--gold); }
-        .stat-chip.xp     { --chip-color:var(--leaf); }
-        .stat-chip.goals  { --chip-color:var(--bark); }
-        .stat-chip.journal{ --chip-color:var(--etre); }
-        .stat-chip.streak .stat-chip-value { color:var(--gold-soft); }
-        .xp-bar-outer { height:2px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; margin-top:6px; }
-        .xp-bar-inner { height:100%; background:linear-gradient(90deg,var(--leaf-deep),var(--leaf)); border-radius:4px; transition:width .8s ease; }
+        /* ── Les branches : une ligne par branche, pas huit anneaux-gadgets ──
+           Icône, nom, palier (le vocabulaire de l'arbre : germe, pousse,
+           rameau…) et une jauge fine. Rendu par app.js. */
+        .rings-grid { display:flex; flex-direction:column; gap:7px; }
+        .br-row { display:grid; grid-template-columns:22px 1fr auto; gap:4px 10px; align-items:center; padding:5px 2px; }
+        .br-ic { display:flex; color:var(--br-c, var(--leaf)); }
+        .br-ic svg { width:16px; height:16px; }
+        .br-name { font-size:0.82rem; font-weight:600; color:var(--text-1); line-height:1.15; }
+        .br-stage { font-size:0.72rem; color:var(--text-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+        .br-stage b { font-weight:600; color:var(--text-2); }
+        .br-bar { grid-column:2 / span 2; height:3px; border-radius:3px; background:var(--surface-3); overflow:hidden; }
+        .br-bar i { display:block; height:100%; width:0; background:var(--br-c, var(--leaf)); border-radius:3px; transition:width 1s var(--ease); }
 
-        /* ── Domain rings (XP) ── */
-        /* Les jauges sont passées dans la colonne de droite : leur en-tête est
-           désormais celui, commun, de .side-card. */
-        .rings-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-        .ring-card {
-          display:flex; flex-direction:column; align-items:center; gap:10px;
-          padding:16px 10px; border-radius:16px;
-          background:rgba(255,255,255,0.02); border:1px solid var(--line);
-          transition:transform .2s, background .2s;
-        }
-        .ring-card:hover { transform:translateY(-2px); background:rgba(255,255,255,0.04); }
-        .ring-wrap {
-          width:72px; height:72px; border-radius:50%; flex-shrink:0;
-          background:conic-gradient(var(--rcolor,var(--leaf)) var(--rpct,0%), rgba(255,255,255,0.05) 0%);
-          display:flex; align-items:center; justify-content:center;
-          position:relative; transition:background 1s var(--ease);
-        }
-        .ring-wrap::before {
-          content:''; position:absolute; inset:7px; border-radius:50%;
-          background:var(--bg-elevated);
-        }
-        .ring-inner { position:relative; z-index:1; text-align:center; }
-        .ring-emoji { font-size:1.2rem; display:block; }
-        .ring-level { font-size:0.65rem; font-weight:800; color:var(--rcolor,var(--leaf)); line-height:1; }
-        .ring-meta { text-align:center; }
-        .ring-title { font-size:0.65rem; font-weight:700; color:var(--rcolor); text-transform:uppercase; letter-spacing:.4px; }
-        .ring-xp { font-size:0.62rem; color:var(--text-3); margin-top:2px; }
+        /* ── Les repères : une liste, pas des chips à tiret ── */
+        .stats-row { display:grid; grid-template-columns:1fr; gap:0; }
+        .stat-chip { display:grid; grid-template-columns:1fr auto; align-items:baseline; gap:10px; padding:7px 2px; border-top:1px solid var(--line); }
+        .stat-chip:first-child { border-top:none; }
+        .stat-chip-icon { display:none; }
+        .stat-chip-label { font-size:0.8rem; color:var(--text-2); }
+        .stat-chip-value { font-family:var(--font-display); font-variation-settings:"opsz" 32; font-size:1.02rem; font-weight:600; color:var(--text-1); font-variant-numeric:tabular-nums; text-align:right; }
+        .stat-chip.streak .stat-chip-value { color:var(--gold-text); }
+        /* Une ligne dont la valeur est « - » n'a rien à dire : elle se tait. */
+        .stat-chip.muet { display:none; }
+        .xp-bar-outer { grid-column:1 / -1; height:2px; background:var(--surface-3); border-radius:4px; overflow:hidden; margin-top:2px; }
+        .xp-bar-inner { height:100%; background:var(--leaf); border-radius:4px; transition:width .8s ease; }
 
-        /* ── Action du jour ── */
-        #action-today { margin-bottom:22px; }
-        #action-today:empty { display:none; }
+        /* ── Ce que l'arbre montre (constat, jamais consigne) ── */
         .action-card {
-          display:flex; align-items:center; gap:16px;
-          padding:16px 20px; border-radius:16px;
-          background:rgba(132,194,94,0.05); border:1px solid rgba(132,194,94,0.18);
-          position:relative; overflow:hidden;
-        }
-        .action-card::before {
-          content:''; position:absolute; left:0; top:0; bottom:0;
-          width:3px; background:linear-gradient(180deg,var(--leaf),var(--leaf-deep));
-          border-radius:3px 0 0 3px;
-        }
-        .action-card-icon { font-size:1.8rem; flex-shrink:0; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
-        .action-card-body { flex:1; }
-        .action-card-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:.6px; color:var(--leaf); font-weight:700; margin-bottom:3px; }
-        .action-card-text { font-size:0.86rem; color:var(--text-2); line-height:1.45; }
-        .action-card-text strong { color:var(--text-1); }
-        .action-card-btn {
-          display:inline-flex; align-items:center; gap:4px; margin-top:8px;
-          padding:6px 12px; border-radius:8px; font-size:0.76rem; font-weight:700;
-          background:rgba(132,194,94,0.14); border:1px solid rgba(132,194,94,0.3);
-          color:var(--leaf); text-decoration:none; transition:background .2s;
-        }
-        .action-card-btn:hover { background:rgba(132,194,94,0.24); }
-
-        /* ── Citation du jour ── */
-        .quote-card {
-          padding:16px 20px; border-radius:16px;
-          background:rgba(255,255,255,0.02); border:1px solid var(--line);
           display:flex; align-items:flex-start; gap:14px;
-          position:relative; overflow:hidden;
+          padding:16px 18px; border-radius:16px;
+          background:rgba(132,194,94,0.05); border:1px solid rgba(132,194,94,0.18);
         }
-        .quote-mark { font-size:2.2rem; line-height:1; color:rgba(231,177,92,0.25); flex-shrink:0; font-family:Georgia,serif; margin-top:-4px; }
-        .quote-body { flex:1; min-width:0; }
-        .quote-text { font-size:0.9rem; color:var(--text-2); line-height:1.65; font-style:italic; margin-bottom:6px; }
-        .quote-author { font-size:0.72rem; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
+        .action-card-icon { display:flex; width:34px; height:34px; border-radius:10px; align-items:center; justify-content:center; background:var(--surface-3); color:var(--leaf-text); flex-shrink:0; }
+        .action-card-icon svg { width:17px; height:17px; }
+        .action-card-body { flex:1; }
+        .action-card-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:.09em; color:var(--leaf-text); font-weight:700; margin-bottom:4px; }
+        .action-card-text { font-size:0.88rem; color:var(--text-2); line-height:1.5; }
+        .action-card-text strong { color:var(--text-1); font-weight:600; }
+        .action-card-btn {
+          display:inline-flex; align-items:center; gap:4px; margin-top:9px;
+          padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:600;
+          background:var(--surface-2); border:1px solid var(--line-strong);
+          color:var(--text-1); text-decoration:none; transition:background .2s;
+        }
+        .action-card-btn:hover { background:var(--surface-3); }
 
-        /* ── Roue de Vie ── */
-        #wheel-section { margin-bottom:22px; }
+        /* ── Roue de vie (si une évaluation existe) ── */
         .wheel-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
-        .wheel-section-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); font-weight:700; }
+        .wheel-section-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:.09em; color:var(--text-3); font-weight:700; }
         .wheel-eval-date { font-size:0.72rem; color:var(--text-3); flex:1; text-align:center; }
-        .wheel-new-eval-btn { font-size:0.72rem; color:var(--leaf); text-decoration:none; padding:4px 10px; border:1px solid rgba(132,194,94,0.28); border-radius:7px; transition:background .2s; white-space:nowrap; font-weight:600; }
-        .wheel-new-eval-btn:hover { background:rgba(132,194,94,0.10); }
+        .wheel-new-eval-btn { font-size:0.74rem; color:var(--text-1); text-decoration:none; padding:5px 11px; border:1px solid var(--line-strong); background:var(--surface-2); border-radius:8px; transition:background .2s; white-space:nowrap; font-weight:600; }
+        .wheel-new-eval-btn:hover { background:var(--surface-3); }
         .wheel-card { background:var(--lvl2); border:1px solid var(--line); border-radius:16px; padding:20px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
         .wheel-radar-box { width:150px; height:150px; flex-shrink:0; }
         .wheel-domain-bars { flex:1; min-width:180px; display:flex; flex-direction:column; gap:10px; }
         .wdb-row { display:flex; align-items:center; gap:8px; }
-        .wdb-label { width:60px; font-size:0.74rem; color:var(--text-2); white-space:nowrap; }
-        .wdb-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden; }
+        .wdb-label { width:60px; font-size:0.78rem; color:var(--text-2); white-space:nowrap; }
+        .wdb-bar-bg { flex:1; height:4px; background:var(--surface-3); border-radius:4px; overflow:hidden; }
         .wdb-bar { height:100%; border-radius:4px; width:0%; transition:width 1.2s var(--ease); }
-        .wdb-val { width:24px; text-align:right; font-size:0.76rem; font-weight:700; }
-        .wheel-cta-card { background:rgba(231,177,92,0.04); border:1px dashed rgba(231,177,92,0.25); border-radius:16px; padding:22px; text-align:center; text-decoration:none; display:block; transition:background .2s, border-color .2s; margin-bottom:22px; }
-        .wheel-cta-card:hover { background:rgba(231,177,92,0.08); border-color:rgba(231,177,92,0.4); }
-
-        /* ── Intertitres ──────────────────────────────────────────────────────
-           Les modules avaient le leur, pas les raccourcis ni les jauges : les
-           trois rangées s'enchaînaient sans qu'on sache où l'une finit. Un
-           libellé nomme chaque groupe, et le trait le prolonge jusqu'au bord -
-           c'est ce qui fait lire une SÉQUENCE plutôt qu'une pile.
-           .modules-label garde son nom : elle est posée dans le HTML et par
-           i18n.js (clé app.modules). */
-        .sec-label, .modules-label {
-          font-size:0.68rem; text-transform:uppercase; letter-spacing:.8px;
-          color:var(--text-3); font-weight:700; margin-bottom:12px;
-        }
-        .sec-label { display:flex; align-items:center; gap:12px; margin-top:4px; }
-        .sec-label::after {
-          content:''; flex:1; height:1px;
-          background:linear-gradient(90deg, var(--line), transparent);
-        }
-        .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; }
-        .tool-card {
-          display:flex; align-items:flex-start; gap:12px;
-          background:var(--lvl3); border:1px solid var(--line);
-          border-radius:14px; padding:13px 14px; text-decoration:none;
-          transition:transform .2s var(--ease), border-color .2s, background .2s;
-          position:relative; overflow:hidden;
-        }
-        .tool-card:hover {
-          transform:translateY(-2px);
-          background:rgba(132,194,94,0.06);
-          border-color:var(--card-accent,var(--line-hov));
-        }
-        .tool-card-ic { font-size:1.45rem; flex-shrink:0; line-height:1.2; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.35)); }
-        .tool-card-body { min-width:0; flex:1; }
-        .tool-card h3 { font-size:0.85rem; font-weight:800; margin:0 0 2px; color:var(--text-1); letter-spacing:-.2px; }
-        .tool-card p { font-size:0.72rem; color:var(--text-3); line-height:1.45; margin:0; }
-        .tool-card-stat { font-size:0.68rem; font-weight:700; color:var(--leaf); margin-top:5px; display:block; }
-        .tool-card-stat:empty { display:none; }
-
-        /* ── Toast connexion (héritée) ── */
-        .toast-notification .checkmark { stroke:var(--leaf); }
+        .wdb-val { width:24px; text-align:right; font-size:0.78rem; font-weight:600; font-variant-numeric:tabular-nums; }
+        .wheel-cta-card { background:transparent; border:1px dashed var(--line-strong); border-radius:16px; padding:20px; text-align:left; text-decoration:none; display:block; transition:background .2s, border-color .2s; }
+        .wheel-cta-card:hover { background:var(--surface-1); border-color:var(--glass-border-hover); }
+        .wheel-cta-card h3 { font-size:1rem; margin:0 0 4px; }
+        .wheel-cta-card p { margin:0; font-size:0.84rem; color:var(--text-2); }
 
         /* ── Animations d'entrée ── */
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         #organizer-hub { animation:fadeUp .5s var(--ease) both; animation-delay:40ms; }
         #cyl-brief     { animation:fadeUp .5s var(--ease) both; animation-delay:100ms; }
         #agenda-card   { animation:fadeUp .5s var(--ease) both; animation-delay:160ms; }
-        .hub-shortcuts { animation:fadeUp .5s var(--ease) both; animation-delay:220ms; }
-        .tree-caption, #tree-stage { animation:fadeUp .5s var(--ease) both; animation-delay:280ms; }
+        .tree-caption, #tree-stage { animation:fadeUp .5s var(--ease) both; animation-delay:220ms; }
 
-        /* ── Responsive ── */
         @media (max-width: 760px) {
-          .quick-actions { grid-template-columns: repeat(4,1fr); gap:8px; }
-          .stats-row { grid-template-columns: repeat(3,1fr); }
-          .rings-grid { grid-template-columns: repeat(2,1fr); }
-          .app-container { padding: 18px 16px 16px; }
-        }
-        @media (max-width: 480px) {
-          .stats-row { grid-template-columns: repeat(2,1fr); }
-          .quick-actions { grid-template-columns: repeat(4,1fr); }
-          .qa-btn { padding:10px 6px; }
-          .qa-icon { font-size:1.3rem; }
-          .qa-label { font-size:0.62rem; }
-          .qa-xp { font-size:0.56rem; }
+          .app-container { padding: 18px 16px 16px; border-radius:16px; }
+          .td-hello { font-size:1.25rem; }
+          .td-meters { display:none; }
         }
         @media (prefers-reduced-motion: reduce) {
           .app-container *, #organizer-hub, #cyl-brief, #agenda-card { animation:none !important; }
-          /* Les animations étaient coupées, pas les TRANSFORMS de survol : les
-             cartes continuaient de se soulever sous la souris alors que le
-             système demandait l'inverse. Le retour visuel reste assuré par la
-             bordure et le fond, qui eux ne déplacent rien. */
-          .qa-btn:hover, .tool-card:hover, .hub-sc:hover, .qa-btn:active { transform:none !important; }
+          .td-g:hover { transform:none !important; }
         }
     </style>
 </head>
 <body>
-    <div class="xp-corner" title="Ton XP total - il fait grandir ton arbre">⚡ <span id="xp-corner-val">0 XP</span></div>
+    <div class="xp-corner" title="Ton XP total - il fait grandir ton arbre"><span id="xp-corner-val">0 XP</span></div>
     <div id="login-toast" class="toast-notification">
         <div class="toast-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -450,82 +231,63 @@
                 <polyline points="22 4 12 14.01 9 11.01" class="checkmark"></polyline>
             </svg>
         </div>
-        <span>Connexion réussie !</span>
+        <span>Connexion réussie</span>
     </div>
-    <!-- defer : Chart.js ne sert qu'au widget Roue de Vie, tout en bas et souvent
-         masqué. En bloquant, il retardait le premier rendu pour rien. -->
+    <!-- defer : Chart.js ne sert qu'au widget Roue de Vie, souvent masqué. -->
     <script defer src="/vendor/chart/chart.umd.min.js"></script>
-        <header class="header">
-                <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
-                            <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
-                                <g stroke-width="3">
-                                    <circle cx="60" cy="60" r="40" fill="black" stroke="#84c25e" stroke-width="8"/>
-                                    <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
-                                    <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
-                                    <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
-                                    <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
-                                    <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
-                                    <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
-                                    <g fill="none" stroke="white" stroke-linecap="round">
-                                        <circle cx="145" cy="30" r="3"/>
-                                        <circle cx="155" cy="30" r="3"/>
-                                        <line x1="145" y1="30" x2="155" y2="30"/>
-                                        <path d="M 150 52 l 6 10 h -12 z" />
-                                        <circle cx="150" cy="85" r="3"/>
-                                        <circle cx="144" cy="95" r="3"/>
-                                        <circle cx="156" cy="95" r="3"/>
-                                        <line x1="150" y1="85" x2="144" y2="95"/>
-                                        <line x1="150" y1="85" x2="156" y2="95"/>
-                                    </g>
-                                </g>
-                            </svg>
-                </button>
-        </header>
+    <header class="header">
+        <button class="user-panel-trigger" title="Mon Compte" aria-label="Logo - Ouvrir le menu">
+            <svg data-cyf-logo="1" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="width:40px;height:40px;display:block;border-radius:6px;">
+                <g stroke-width="3">
+                    <circle cx="60" cy="60" r="40" fill="black" stroke="#84c25e" stroke-width="8"/>
+                    <line x1="100" y1="60" x2="130" y2="30" stroke="white"/>
+                    <line x1="100" y1="60" x2="130" y2="60" stroke="white"/>
+                    <line x1="100" y1="60" x2="130" y2="90" stroke="white"/>
+                    <circle cx="150" cy="30" r="18" fill="none" stroke="white"/>
+                    <circle cx="150" cy="60" r="18" fill="none" stroke="white"/>
+                    <circle cx="150" cy="90" r="18" fill="none" stroke="white"/>
+                </g>
+            </svg>
+        </button>
+    </header>
     <main class="app-container">
-        <!-- ══ 1 · LA BARRE DU JOUR ══════════════════════════════════════════
-             Anneau de la journée + gestes du jour avec leur état.
-             Rendue par /js/app-today.js.
-
-             Elle REMPLACE trois blocs qui se répétaient : la ligne d'accueil,
-             les sept « actions rapides » (des liens vers les mêmes modules que
-             la grille du bas) et la carte « Aujourd'hui » - qui était cachée
-             par défaut, en 7e position, sous l'arbre.
-
-             Les anciens ids de la ligne d'accueil (greeting-h1, welcome-date,
-             welcome-sub, user-title, total-xp-badge) ont disparu avec elle :
-             app.js les écrit tous derrière un `if (el)`, rien ne casse.
-             `xp-corner-val`, lui, RESTE dans la page : la barre de navigation
-             s'en sert comme source pour son propre compteur d'XP. -->
+        <!-- 1 · LA BARRE DU JOUR (rendue par /js/app-today.js). `xp-corner-val`
+             reste dans la page : la barre de navigation y lit son compteur. -->
         <div id="today-bar" class="today-bar" aria-label="Ta journée"></div>
 
-        <!-- ══ 2 · LE POSTE DE PILOTAGE ══════════════════════════════════════
-             Deux colonnes : à gauche ce sur quoi on agit maintenant, à droite
-             ce qu'on consulte. L'arbre remonte ici - il est l'identité du
-             produit, il n'a rien à faire en milieu de page.
-
-             La bascule une/deux colonnes se fait en CONTAINER QUERY, pas en
-             media query : le panneau CYL prend 360 px à droite et la barre de
-             navigation 232 px à gauche, donc la largeur du viewport ne dit
-             rien de la place réellement disponible ici. -->
+        <!-- 2 · LE POSTE DE PILOTAGE. À gauche ce sur quoi on agit, à droite ce
+             qu'on consulte. L'arbre est l'identité du produit : il vit ici. -->
         <div class="dash">
           <div class="dash-main">
-            <!-- Le cerveau : tout ce qui passe par la tête se dépose ici, se
-                 range (Eisenhower), se rattache à une branche (Maslow) et part
-                 dans l'agenda. Rendu par /js/app-organizer.js. -->
+            <!-- Le cerveau : rendu par /js/app-organizer.js -->
             <section id="organizer-hub" aria-label="ORGANIZER - ton espace de pensées et de priorités"></section>
-
             <!-- CYL lit l'organizer + l'agenda et propose une lecture. -->
             <div id="cyl-brief"></div>
-
             <!-- Ta journée : Google Agenda + fiches échues, fusionnés. -->
             <div id="agenda-card" class="agenda-card"></div>
+            <!-- Ce que l'arbre montre : un constat, jamais une consigne. -->
+            <div id="action-today"></div>
+
+            <div id="wheel-section" style="display:none">
+              <div class="wheel-section-header">
+                <span class="wheel-section-label">Roue de vie</span>
+                <span id="wheel-eval-date" class="wheel-eval-date"></span>
+                <a href="/autoevaluation/" class="wheel-new-eval-btn">Refaire l'évaluation</a>
+              </div>
+              <div class="wheel-card">
+                <div class="wheel-radar-box"><canvas id="dash-radar"></canvas></div>
+                <div id="dash-domain-bars" class="wheel-domain-bars"></div>
+              </div>
+            </div>
+            <a id="wheel-cta-section" href="/autoevaluation/" style="display:none" class="wheel-cta-card">
+              <h3>Faire le point en quatre questions</h3>
+              <p>La roue de vie te situe sur Corps, Cœur, Être et Ordre. Dix minutes, sans note sur ta vie.</p>
+            </a>
           </div>
 
           <aside class="dash-side" aria-label="Ta progression">
-            <!-- Pas de role="button" : l'interaction (orbite, clic sur les
-                 nœuds) est gérée par le canvas injecté par living-tree.js, qui
-                 contient ses propres boutons. Annoncer un bouton inerte
-                 trompait le clavier. -->
+            <!-- Pas de role="button" : le canvas de living-tree.js porte ses
+                 propres boutons. -->
             <div class="side-card tree-card">
               <div class="tree-caption">Ton arbre - il pousse là où tu agis</div>
               <div id="tree-stage" class="tree-stage" aria-label="Ton arbre de vie"></div>
@@ -533,186 +295,55 @@
 
             <div class="side-card">
               <div class="side-label">
-                <span data-i18n="app.domains">Niveaux par domaine</span>
-                <a href="/profile/" id="link-profile">Profil →</a>
+                <span>Les branches</span>
+                <a href="/yourlife/" id="link-profile">Voir en détail</a>
               </div>
               <div class="rings-grid" id="rings-grid"><!-- rempli par app.js --></div>
             </div>
 
             <div class="side-card">
-              <div class="side-label"><span>Où tu en es</span></div>
+              <div class="side-label"><span>Repères</span><a href="/bilan/">Bilan de la semaine</a></div>
               <div class="stats-row" id="stats-row">
-          <div class="stat-chip streak">
-            <div class="stat-chip-icon">🔥</div>
-            <div class="stat-chip-value" id="stat-streak">-</div>
-            <div class="stat-chip-label">Série méditation</div>
-          </div>
-          <div class="stat-chip xp">
-            <div class="stat-chip-icon">⚡</div>
-            <div class="stat-chip-value" id="stat-xp">-</div>
-            <div class="stat-chip-label">XP total</div>
-            <div class="xp-bar-outer"><div class="xp-bar-inner" id="stat-xp-bar" style="width:0%"></div></div>
-          </div>
-          <div class="stat-chip goals">
-            <div class="stat-chip-icon">🎯</div>
-            <div class="stat-chip-value" id="stat-goals">-</div>
-            <div class="stat-chip-label">Objectifs actifs</div>
-          </div>
-          <div class="stat-chip journal">
-            <div class="stat-chip-icon">📔</div>
-            <div class="stat-chip-value" id="stat-journal">-</div>
-            <div class="stat-chip-label">Entrées journal</div>
-          </div>
-          <div class="stat-chip" style="--chip-color:var(--green)">
-            <div class="stat-chip-icon">✅</div>
-            <div class="stat-chip-value" id="stat-habits" style="color:var(--leaf)">-</div>
-            <div class="stat-chip-label">Habitudes aujourd'hui</div>
-          </div>
-          <div class="stat-chip" style="--chip-color:var(--corps)">
-            <div class="stat-chip-icon">🧘</div>
-            <div class="stat-chip-value" id="stat-med-sessions" style="color:var(--corps)">-</div>
-            <div class="stat-chip-label">Sessions méditation</div>
-          </div>
-          <div class="stat-chip" style="--chip-color:var(--moss)">
-            <div class="stat-chip-icon">🌳</div>
-            <div class="stat-chip-value" id="stat-mylife" style="color:var(--moss)">-</div>
-            <div class="stat-chip-label">Jalons posés</div>
-          </div>
+                <div class="stat-chip streak muet">
+                  <div class="stat-chip-label">Jours de suite en méditation</div>
+                  <div class="stat-chip-value" id="stat-streak">-</div>
+                </div>
+                <div class="stat-chip xp">
+                  <div class="stat-chip-label">XP total</div>
+                  <div class="stat-chip-value" id="stat-xp">-</div>
+                  <div class="xp-bar-outer"><div class="xp-bar-inner" id="stat-xp-bar" style="width:0%"></div></div>
+                </div>
+                <div class="stat-chip goals muet">
+                  <div class="stat-chip-label">Objectifs en cours</div>
+                  <div class="stat-chip-value" id="stat-goals">-</div>
+                </div>
+                <div class="stat-chip journal muet">
+                  <div class="stat-chip-label">Entrées de journal</div>
+                  <div class="stat-chip-value" id="stat-journal">-</div>
+                </div>
+                <div class="stat-chip habits muet">
+                  <div class="stat-chip-label">Habitudes aujourd'hui</div>
+                  <div class="stat-chip-value" id="stat-habits">-</div>
+                </div>
+                <div class="stat-chip med muet">
+                  <div class="stat-chip-label">Séances de méditation</div>
+                  <div class="stat-chip-value" id="stat-med-sessions">-</div>
+                </div>
+                <div class="stat-chip mylife muet">
+                  <div class="stat-chip-label">Jalons posés</div>
+                  <div class="stat-chip-value" id="stat-mylife">-</div>
+                </div>
               </div>
             </div>
           </aside>
-        </div><!-- /.dash -->
-
-        <!-- ── Action du jour ── -->
-        <div id="action-today"></div>
-
-        <!-- ── Citation du jour ── -->
-        <div id="quote-du-jour" style="margin-bottom:22px"></div>
-
-        <!-- ── Roue de Vie - dernière évaluation ── -->
-        <div id="wheel-section" style="display:none">
-          <div class="wheel-section-header">
-            <span class="wheel-section-label">Roue de Vie</span>
-            <span id="wheel-eval-date" class="wheel-eval-date"></span>
-            <a href="/autoevaluation/" class="wheel-new-eval-btn">+ Nouvelle éval.</a>
-          </div>
-          <div class="wheel-card">
-            <div class="wheel-radar-box"><canvas id="dash-radar"></canvas></div>
-            <div id="dash-domain-bars" class="wheel-domain-bars"></div>
-          </div>
-        </div>
-        <a id="wheel-cta-section" href="/autoevaluation/" style="display:none" class="wheel-cta-card">
-          <div style="font-size:2rem;margin-bottom:8px">🎡</div>
-          <div style="font-weight:700;color:var(--text-1);margin-bottom:5px">Lance ta première Roue de Vie</div>
-          <div style="font-size:0.82rem;color:var(--text-2)">5 minutes · 20 questions · Résultat radar visuel immédiat</div>
-        </a>
-
-        <!-- ── Modules : grille compacte, une seule IA (CYL) ── -->
-        <div class="modules-label" data-i18n="app.modules">Tous les modules</div>
-        <div class="tools-grid">
-
-          <a href="/yourlife" class="tool-card" id="tool-card-1" style="--card-accent:rgba(132,194,94,0.5)">
-            <span class="tool-card-ic">🌳</span>
-            <div class="tool-card-body">
-              <h3>Your Life</h3>
-              <p>Pyramide de Maslow interactive et carte de ta progression.</p>
-              <span id="card-stat-mylife" class="tool-card-stat"></span>
-            </div>
-          </a>
-
-          <a href="/meditation/" class="tool-card" id="card-meditation" style="--card-accent:rgba(45,212,191,0.4)">
-            <span class="tool-card-ic">🧘</span>
-            <div class="tool-card-body">
-              <h3>Méditation Guidée</h3>
-              <p>Séances guidées, sons ambiants, streak et bien-être quotidien.</p>
-              <span id="card-stat-med" class="tool-card-stat"></span>
-            </div>
-          </a>
-
-          <a href="/objectifs/" class="tool-card" id="card-objectifs" style="--card-accent:rgba(231,177,92,0.45)">
-            <span class="tool-card-ic">🎯</span>
-            <div class="tool-card-body">
-              <h3>Objectifs & Progrès</h3>
-              <p>Crée tes objectifs, fixe des deadlines et suis ta progression.</p>
-              <span id="card-stat-goals" class="tool-card-stat"></span>
-            </div>
-          </a>
-
-          <a href="/journal/" class="tool-card" id="card-journal" style="--card-accent:rgba(167,139,250,0.4)">
-            <span class="tool-card-ic">📔</span>
-            <div class="tool-card-body">
-              <h3>Journal</h3>
-              <p>Réflexions, émotions, insights - ton espace intime quotidien.</p>
-              <span id="card-stat-journal" class="tool-card-stat"></span>
-            </div>
-          </a>
-
-          <a href="/habitudes/" class="tool-card" id="card-habitudes" style="--card-accent:rgba(34,197,94,0.4)">
-            <span class="tool-card-ic">✅</span>
-            <div class="tool-card-body">
-              <h3>Habitudes</h3>
-              <p>Routines quotidiennes, streaks et gains d'XP chaque jour.</p>
-            </div>
-          </a>
-
-          <a href="/codex/" class="tool-card" id="card-codex" style="--card-accent:rgba(195,154,107,0.4)">
-            <span class="tool-card-ic">📚</span>
-            <div class="tool-card-body">
-              <h3>Codex de Connaissance</h3>
-              <p>Tes apprentissages, citations et insights en un seul endroit.</p>
-            </div>
-          </a>
-
-          <a href="/autoevaluation/" class="tool-card" id="card-autoeval" style="--card-accent:rgba(45,212,191,0.4)">
-            <span class="tool-card-ic">🎡</span>
-            <div class="tool-card-body">
-              <h3>Autoévaluation</h3>
-              <p>Tests rapides et bilans réguliers pour mesurer tes niveaux.</p>
-            </div>
-          </a>
-
-          <a href="/humeur/" class="tool-card" id="card-humeur" style="--card-accent:rgba(167,139,250,0.4)">
-            <span class="tool-card-ic">😌</span>
-            <div class="tool-card-body">
-              <h3>Humeur</h3>
-              <p>Suis ton bien-être émotionnel et observe tes tendances sur 30 jours.</p>
-            </div>
-          </a>
-
-          <a href="/bilan/" class="tool-card" id="card-bilan" style="--card-accent:rgba(132,194,94,0.4)">
-            <span class="tool-card-ic">📊</span>
-            <div class="tool-card-body">
-              <h3>Bilan Hebdomadaire</h3>
-              <p>Résumé de ta semaine + 4 questions pour ancrer ta progression.</p>
-            </div>
-          </a>
-
-          <a href="/sommeil/" class="tool-card" id="card-sommeil" style="--card-accent:rgba(111,154,82,0.45)">
-            <span class="tool-card-ic">🌙</span>
-            <div class="tool-card-body">
-              <h3>Sommeil</h3>
-              <p>Enregistre tes nuits et identifie tes patterns sur 14 jours.</p>
-            </div>
-          </a>
-
-          <a href="/gratitude/" class="tool-card" id="card-gratitude" style="--card-accent:rgba(231,177,92,0.45)">
-            <span class="tool-card-ic">🌟</span>
-            <div class="tool-card-body">
-              <h3>Gratitude</h3>
-              <p>3 lignes par jour pour ancrer le positif et voir la vie autrement.</p>
-            </div>
-          </a>
-
         </div>
     </main>
-    <script src="/js/quotes.js"></script>
     <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/app-organizer.js"></script>
     <script type="module" src="/js/cyl-brief.js"></script>
     <script type="module" src="/js/agenda.js"></script>
     <script type="module" src="/js/app.js"></script>
     <script type="module" src="/js/giveaway.js"></script>
-    <!-- CYL est chargée globalement par common.js sur toutes les pages
-         authentifiées : pas de balise ici, sinon deux orbes se superposent. -->
+    <!-- CYL est chargée globalement par common.js : pas de balise ici. -->
 </body>
 </html>

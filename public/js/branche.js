@@ -129,7 +129,7 @@ function injectCSS() {
     body{color:var(--text-1,#f1efec);}
     .page-shell{position:fixed;inset:20px;background:var(--glass-bg);backdrop-filter:blur(15px);border-radius:20px;border:1px solid var(--glass-border);padding:24px;overflow-y:auto;}
     .toast{position:fixed;top:22px;left:50%;transform:translate(-50%,-130px);background:rgba(16,185,129,.92);color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;z-index:99999;transition:transform .3s ease;font-size:.88rem;box-shadow:0 8px 28px rgba(0,0,0,.35);}
-    .toast.show{transform:translate(-50%,0);} .toast.xp{background:rgba(59,130,246,.92);}
+    .toast.show{transform:translate(-50%,0);} .toast.xp{background:rgba(132,194,94,.92);}
     .dim-head{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
     .dim-emoji{font-size:2.6rem;filter:drop-shadow(0 0 18px var(--c,#44bd48));}
     .dim-title{font-size:1.7rem;font-weight:800;letter-spacing:-.5px;margin:0;}

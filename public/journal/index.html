@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+    <script src="/js/theme-init.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Journal - Change Your Life</title>
     <link rel="stylesheet" href="/css/transitions.css"/>
@@ -51,16 +52,16 @@
       background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#a79f8c;
     }
     .sidebar-stat-pill.streak { background:rgba(245,158,11,0.08); border-color:rgba(245,158,11,0.2); color:#fbbf24; }
-    .sidebar-stat-pill.mood { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.2); color:#d6cde5; }
+    .sidebar-stat-pill.mood { background:rgba(189,175,214,0.08); border-color:rgba(189,175,214,0.2); color:#d6cde5; }
 
     .btn-new {
       display: flex; align-items: center; justify-content: center; gap: 6px;
       width: 100%; margin-top: 10px; padding: 9px;
-      border-radius: 10px; border: 1px dashed rgba(59,130,246,0.45);
-      background: rgba(59,130,246,0.07); color: #cae6b8;
+      border-radius: 10px; border: 1px dashed rgba(132,194,94,0.45);
+      background: rgba(132,194,94,0.07); color: #cae6b8;
       font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
     }
-    .btn-new:hover { background: rgba(59,130,246,0.18); border-color: #8dca67; }
+    .btn-new:hover { background: rgba(132,194,94,0.18); border-color: #8dca67; }
 
     .entry-item {
       padding: 11px 13px 11px 17px; border-radius: 13px;
@@ -77,7 +78,7 @@
     }
     .entry-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.13); transform: translateX(2px); }
     .entry-item:hover::before { opacity: 1; width: 4px; }
-    .entry-item.active { background: rgba(59,130,246,0.09); border-color: rgba(59,130,246,0.3); }
+    .entry-item.active { background: rgba(132,194,94,0.09); border-color: rgba(132,194,94,0.3); }
     .entry-item.active::before { opacity: 1; width: 4px; }
 
     .entry-word-badge {
@@ -88,13 +89,13 @@
     }
     .search-bar { margin-top: 8px; position: relative; }
     .search-bar input { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 28px 7px 10px; color:#f1efec; font-size:0.82rem; outline:none; transition:border-color .2s; }
-    .search-bar input:focus { border-color:rgba(59,130,246,.5); }
+    .search-bar input:focus { border-color:rgba(132,194,94,.5); }
     .search-bar input::placeholder { color:#6e6654; }
     .search-clear { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#a79f8c; cursor:pointer; font-size:1rem; padding:0; display:none; }
     .filter-pills { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
     .filter-pill { padding:3px 8px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#a79f8c; cursor:pointer; font-size:0.75rem; transition:all .15s; }
     .filter-pill:hover { background:rgba(255,255,255,0.08); }
-    .filter-pill.active { background:rgba(59,130,246,0.2); border-color:#8dca67; color:#cae6b8; }
+    .filter-pill.active { background:rgba(132,194,94,0.2); border-color:#8dca67; color:#cae6b8; }
     .filter-pill.clear-btn { border-color:rgba(239,68,68,.3); color:#ef4444; }
     .edited-badge { font-size:0.72rem; color:#a79f8c; font-style:italic; margin-left:6px; }
     .entry-item-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
@@ -122,7 +123,7 @@
       display: flex; align-items: center; gap: 4px;
     }
     .emotion-btn:hover { background: rgba(255,255,255,0.1); }
-    .emotion-btn.selected { background: rgba(59,130,246,0.22); border-color: #8dca67; color: #fff; }
+    .emotion-btn.selected { background: rgba(132,194,94,0.22); border-color: #8dca67; color: #fff; }
 
     .domains { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
     .domain-btn {
@@ -132,7 +133,7 @@
       cursor: pointer; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; transition: all 0.15s;
     }
     .domain-btn.sel-none  { border-color: #807a6b; color: #afa99c; background: rgba(107,114,128,0.15); }
-    .domain-btn.sel-body  { border-color: #44bd48; color: #44bd48; background: rgba(45,212,191,0.15); }
+    .domain-btn.sel-body  { border-color: #44bd48; color: #44bd48; background: rgba(111,154,82,0.15); }
     .domain-btn.sel-heart { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.15); }
     .domain-btn.sel-etre  { border-color: #c8e5b6; color: #c8e5b6; background: rgba(156,163,255,0.15); }
     .domain-btn.sel-order { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
@@ -183,8 +184,8 @@
 
     .btn { padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #f1efec; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
     .btn:hover { background: rgba(255,255,255,0.12); }
-    .btn.primary { background: linear-gradient(135deg,#8dca67,#7bc14f); border-color: transparent; box-shadow: 0 4px 14px rgba(59,130,246,.3); }
-    .btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,.4); }
+    .btn.primary { background: linear-gradient(135deg,#8dca67,#7bc14f); border-color: transparent; box-shadow: 0 4px 14px rgba(132,194,94,.3); }
+    .btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(132,194,94,.4); }
     .btn.danger { background: rgba(239,68,68,0.12); border-color: #ef4444; color: #ef4444; }
     .btn.danger:hover { background: rgba(239,68,68,0.25); }
 
@@ -194,12 +195,12 @@
 
     /* ── Domain filter pills ── */
     .filter-section-label { font-size:0.66rem; color:#60594a; text-transform:uppercase; letter-spacing:.5px; margin: 7px 0 3px; font-weight:700; }
-    .filter-pill.dom-body   { border-color:rgba(45,212,191,.4); color:#44bd48; }
-    .filter-pill.dom-body.active   { background:rgba(45,212,191,.15);   border-color:#44bd48; }
+    .filter-pill.dom-body   { border-color:rgba(111,154,82,.4); color:#44bd48; }
+    .filter-pill.dom-body.active   { background:rgba(111,154,82,.15);   border-color:#44bd48; }
     .filter-pill.dom-heart  { border-color:rgba(239,68,68,.4);   color:#f87171; }
     .filter-pill.dom-heart.active  { background:rgba(239,68,68,.15);    border-color:#f87171; }
-    .filter-pill.dom-etre   { border-color:rgba(167,139,250,.4); color:#bdafd6; }
-    .filter-pill.dom-etre.active   { background:rgba(167,139,250,.15);  border-color:#bdafd6; }
+    .filter-pill.dom-etre   { border-color:rgba(189,175,214,.4); color:#bdafd6; }
+    .filter-pill.dom-etre.active   { background:rgba(189,175,214,.15);  border-color:#bdafd6; }
     .filter-pill.dom-order  { border-color:rgba(251,191,36,.4);  color:#fbbf24; }
     .filter-pill.dom-order.active  { background:rgba(251,191,36,.15);   border-color:#fbbf24; }
 
@@ -246,7 +247,7 @@
       transition:all .15s; text-align:center;
     }
     .btn-stats-toggle:hover { background:rgba(255,255,255,0.07); color:#cae6b8; }
-    .btn-stats-toggle.active { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:#c2e2ae; }
+    .btn-stats-toggle.active { background:rgba(132,194,94,0.1); border-color:rgba(132,194,94,0.3); color:#c2e2ae; }
   </style>
 </head>
 <body>
@@ -304,7 +305,7 @@
         </div>
         <div class="panel-body" style="display:flex;flex-direction:column;gap:0">
           <input type="text" class="editor-title-input" id="editor-title" placeholder="Titre (optionnel)…" maxlength="120" />
-          <div id="prompt-du-jour" style="display:none;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(0,112,243,0.08),rgba(96,165,250,0.05));border:1px solid rgba(0,112,243,0.22);border-radius:12px;cursor:pointer;transition:all 0.2s;user-select:none" title="Cliquer pour utiliser ce prompt">
+          <div id="prompt-du-jour" style="display:none;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(132,194,94,0.08),rgba(167,213,133,0.05));border:1px solid rgba(132,194,94,0.22);border-radius:12px;cursor:pointer;transition:all 0.2s;user-select:none" title="Cliquer pour utiliser ce prompt">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
               <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.7px;color:var(--blue-light);font-weight:700">Prompt du jour</span>
               <span style="font-size:0.72rem;color:var(--text-3)">Cliquer →</span>
